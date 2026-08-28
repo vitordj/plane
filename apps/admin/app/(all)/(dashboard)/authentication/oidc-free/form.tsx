@@ -52,6 +52,7 @@ export function InstanceOidcFreeConfigForm(props: Props) {
       OIDC_FREE_AUTH_URL: config["OIDC_FREE_AUTH_URL"],
       OIDC_FREE_TOKEN_URL: config["OIDC_FREE_TOKEN_URL"],
       OIDC_FREE_USERINFO_URL: config["OIDC_FREE_USERINFO_URL"],
+      OIDC_FREE_JWKS_URL: config["OIDC_FREE_JWKS_URL"],
       OIDC_FREE_SCOPE: config["OIDC_FREE_SCOPE"],
       OIDC_FREE_ALLOW_UNVERIFIED_EMAIL: config["OIDC_FREE_ALLOW_UNVERIFIED_EMAIL"] || "0",
       ENABLE_OIDC_FREE_SYNC: config["ENABLE_OIDC_FREE_SYNC"] || "0",
@@ -135,6 +136,20 @@ export function InstanceOidcFreeConfigForm(props: Props) {
       required: false,
     },
     {
+      key: "OIDC_FREE_JWKS_URL",
+      type: "text",
+      label: "JWKS URL",
+      description: (
+        <>
+          The keys Plane verifies your provider&apos;s <CodeBlock>id_token</CodeBlock> with. A discovery URL supplies
+          this, and leaving it blank means sign-in tokens are not verified.
+        </>
+      ),
+      placeholder: "https://sso.example.com/.well-known/jwks.json",
+      error: Boolean(errors.OIDC_FREE_JWKS_URL),
+      required: false,
+    },
+    {
       key: "OIDC_FREE_SCOPE",
       type: "text",
       label: "Scopes",
@@ -195,6 +210,7 @@ export function InstanceOidcFreeConfigForm(props: Props) {
         OIDC_FREE_AUTH_URL: response.find((item) => item.key === "OIDC_FREE_AUTH_URL")?.value,
         OIDC_FREE_TOKEN_URL: response.find((item) => item.key === "OIDC_FREE_TOKEN_URL")?.value,
         OIDC_FREE_USERINFO_URL: response.find((item) => item.key === "OIDC_FREE_USERINFO_URL")?.value,
+        OIDC_FREE_JWKS_URL: response.find((item) => item.key === "OIDC_FREE_JWKS_URL")?.value,
         OIDC_FREE_SCOPE: response.find((item) => item.key === "OIDC_FREE_SCOPE")?.value,
         OIDC_FREE_ALLOW_UNVERIFIED_EMAIL: response.find((item) => item.key === "OIDC_FREE_ALLOW_UNVERIFIED_EMAIL")
           ?.value,

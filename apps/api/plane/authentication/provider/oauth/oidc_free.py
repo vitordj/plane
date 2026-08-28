@@ -2,13 +2,18 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
+import base64
+import hashlib
 import os
+import secrets
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, urlparse
 
+import jwt
 import pytz
 import requests
 from django.core.cache import cache
+from jwt import PyJWKClient
 
 # Module imports
 from plane.authentication.adapter.oauth import OauthAdapter
@@ -28,6 +33,28 @@ CALLBACK_PATH = "auth/oidc-free/callback/"
 DISCOVERY_SUFFIX = "/.well-known/openid-configuration"
 DISCOVERY_CACHE_TIMEOUT = 60 * 60
 DISCOVERY_TIMEOUT = 10
+
+# PKCE and the nonce are minted on the authorization request and read back when
+# the code is exchanged, so they live in the session in between.
+SESSION_CODE_VERIFIER = "oidc_free_code_verifier"
+SESSION_NONCE = "oidc_free_nonce"
+
+# Asymmetric algorithms only: a symmetric one would let a provider sign an
+# id_token with a key we also hold, and "none" would let anyone sign one.
+ID_TOKEN_ALGORITHMS = ["RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512"]
+ID_TOKEN_LEEWAY = 60
+
+# PyJWKClient caches the key set it fetches, so one client per URL keeps the
+# JWKS out of the critical path of every sign-in.
+_JWKS_CLIENTS = {}
+
+
+def _jwks_client(jwks_url):
+    client = _JWKS_CLIENTS.get(jwks_url)
+    if client is None:
+        client = PyJWKClient(jwks_url, cache_keys=True, timeout=DISCOVERY_TIMEOUT)
+        _JWKS_CLIENTS[jwks_url] = client
+    return client
 
 
 class OidcFreeOAuthProvider(OauthAdapter):
@@ -108,7 +135,15 @@ class OidcFreeOAuthProvider(OauthAdapter):
             document.get("authorization_endpoint"),
             document.get("token_endpoint"),
             document.get("userinfo_endpoint"),
+            document.get("jwks_uri"),
+            document.get("issuer"),
         )
+
+    @staticmethod
+    def __code_challenge(code_verifier):
+        """S256 challenge for the verifier: base64url(sha256(verifier)), unpadded."""
+        digest = hashlib.sha256(code_verifier.encode("ascii")).digest()
+        return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
 
     def __init__(self, request, code=None, state=None, callback=None):
         (
@@ -118,6 +153,7 @@ class OidcFreeOAuthProvider(OauthAdapter):
             OIDC_FREE_AUTH_URL,
             OIDC_FREE_TOKEN_URL,
             OIDC_FREE_USERINFO_URL,
+            OIDC_FREE_JWKS_URL,
             OIDC_FREE_SCOPE,
             OIDC_FREE_ALLOW_UNVERIFIED_EMAIL,
         ) = get_configuration_value(
@@ -128,6 +164,7 @@ class OidcFreeOAuthProvider(OauthAdapter):
                 self.__read_option_from_env("OIDC_FREE_AUTH_URL"),
                 self.__read_option_from_env("OIDC_FREE_TOKEN_URL"),
                 self.__read_option_from_env("OIDC_FREE_USERINFO_URL"),
+                self.__read_option_from_env("OIDC_FREE_JWKS_URL"),
                 self.__read_option_from_env("OIDC_FREE_SCOPE", "openid email profile"),
                 self.__read_option_from_env("OIDC_FREE_ALLOW_UNVERIFIED_EMAIL", "0"),
             ]
@@ -139,18 +176,31 @@ class OidcFreeOAuthProvider(OauthAdapter):
         # Discovery fills in whatever the admin has not set explicitly, so a
         # provider that serves a discovery document needs only its URL, and one
         # that does not can still be wired up endpoint by endpoint.
+        discovered_issuer = None
         if OIDC_FREE_DISCOVERY_URL:
-            discovered_auth_url, discovered_token_url, discovered_userinfo_url = self.__discover_endpoints(
-                OIDC_FREE_DISCOVERY_URL
-            )
+            (
+                discovered_auth_url,
+                discovered_token_url,
+                discovered_userinfo_url,
+                discovered_jwks_url,
+                discovered_issuer,
+            ) = self.__discover_endpoints(OIDC_FREE_DISCOVERY_URL)
             OIDC_FREE_AUTH_URL = OIDC_FREE_AUTH_URL or discovered_auth_url
             OIDC_FREE_TOKEN_URL = OIDC_FREE_TOKEN_URL or discovered_token_url
             OIDC_FREE_USERINFO_URL = OIDC_FREE_USERINFO_URL or discovered_userinfo_url
+            OIDC_FREE_JWKS_URL = OIDC_FREE_JWKS_URL or discovered_jwks_url
 
         auth_endpoint = self.__validate_endpoint(OIDC_FREE_AUTH_URL)
         self.token_url = self.__validate_endpoint(OIDC_FREE_TOKEN_URL)
         self.userinfo_url = self.__validate_endpoint(OIDC_FREE_USERINFO_URL)
         self.allow_unverified_email = str(OIDC_FREE_ALLOW_UNVERIFIED_EMAIL) == "1"
+
+        # The id_token is only worth checking if we know the keys it should be
+        # signed with. Discovery supplies them, so the signed-in path validates
+        # by default; configuring the endpoints by hand and leaving the JWKS URL
+        # blank is the way to run against a provider that cannot support it.
+        self.jwks_url = self.__validate_endpoint(OIDC_FREE_JWKS_URL) if OIDC_FREE_JWKS_URL else None
+        self.expected_issuer = discovered_issuer or None
 
         scope = OIDC_FREE_SCOPE
         client_id = OIDC_FREE_CLIENT_ID
@@ -166,6 +216,18 @@ class OidcFreeOAuthProvider(OauthAdapter):
             "response_type": "code",
             "state": state,
         }
+
+        # Only the authorization leg mints these; the callback reads them back
+        # out of the session.
+        if state:
+            code_verifier = secrets.token_urlsafe(64)
+            nonce = secrets.token_urlsafe(32)
+            request.session[SESSION_CODE_VERIFIER] = code_verifier
+            request.session[SESSION_NONCE] = nonce
+            url_params["code_challenge"] = self.__code_challenge(code_verifier)
+            url_params["code_challenge_method"] = "S256"
+            url_params["nonce"] = nonce
+
         # The authorization endpoint may already carry query parameters of its
         # own, which a plain "?" would discard.
         separator = "&" if urlparse(auth_endpoint).query else "?"
@@ -185,6 +247,48 @@ class OidcFreeOAuthProvider(OauthAdapter):
             callback=callback,
         )
 
+    def __validate_id_token(self, id_token, expected_nonce):
+        """Verify the id_token's signature and claims against the provider's keys.
+
+        Skipped when no JWKS URL is known, since there is then nothing to verify
+        the signature against.
+        """
+        if not self.jwks_url:
+            return
+
+        if not id_token:
+            raise AuthenticationException(
+                error_code=AUTHENTICATION_ERROR_CODES["OIDC_FREE_OAUTH_PROVIDER_ERROR"],
+                error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR: token response carried no id_token",
+            )
+
+        try:
+            signing_key = _jwks_client(self.jwks_url).get_signing_key_from_jwt(id_token)
+            claims = jwt.decode(
+                id_token,
+                signing_key.key,
+                algorithms=ID_TOKEN_ALGORITHMS,
+                audience=self.client_id,
+                # The issuer is only checked when discovery told us what it is.
+                issuer=self.expected_issuer,
+                leeway=ID_TOKEN_LEEWAY,
+                options={"require": ["exp", "iat", "aud"], "verify_iss": bool(self.expected_issuer)},
+            )
+        except jwt.PyJWTError:
+            self.logger.warning("Rejected an oidc-free id_token", exc_info=True)
+            raise AuthenticationException(
+                error_code=AUTHENTICATION_ERROR_CODES["OIDC_FREE_OAUTH_PROVIDER_ERROR"],
+                error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR: the id_token did not validate",
+            )
+
+        # Binds this token to the authorization request we started, so one
+        # obtained for another session cannot be replayed into this one.
+        if expected_nonce and claims.get("nonce") != expected_nonce:
+            raise AuthenticationException(
+                error_code=AUTHENTICATION_ERROR_CODES["OIDC_FREE_OAUTH_PROVIDER_ERROR"],
+                error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR: the id_token nonce did not match",
+            )
+
     def set_token_data(self):
         data = {
             "code": self.code,
@@ -193,8 +297,15 @@ class OidcFreeOAuthProvider(OauthAdapter):
             "redirect_uri": self.redirect_uri,
             "grant_type": "authorization_code",
         }
+        # Both are single use: taken out of the session as the code is redeemed.
+        code_verifier = self.request.session.pop(SESSION_CODE_VERIFIER, None)
+        expected_nonce = self.request.session.pop(SESSION_NONCE, None)
+        if code_verifier:
+            data["code_verifier"] = code_verifier
+
         headers = {"Accept": "application/json"}
         token_response = self.get_user_token(data=data, headers=headers)
+        self.__validate_id_token(token_response.get("id_token"), expected_nonce)
         super().set_token_data(
             {
                 "access_token": token_response.get("access_token"),
