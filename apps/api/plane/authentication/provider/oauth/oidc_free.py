@@ -6,7 +6,6 @@ import os
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, urlparse
 import pytz
-import requests
 
 # Module imports
 from plane.authentication.adapter.oauth import OauthAdapter
@@ -50,7 +49,9 @@ class OidcFreeOAuthProvider(OauthAdapter):
             ]
         )
 
-        if any(v is None for v in [
+        if any(
+            v is None
+            for v in [
                 OIDC_FREE_CLIENT_ID,
                 OIDC_FREE_CLIENT_SECRET,
                 OIDC_FREE_HOST,
@@ -58,8 +59,9 @@ class OidcFreeOAuthProvider(OauthAdapter):
                 OIDC_FREE_USERINFO_URL,
                 OIDC_FREE_TOKEN_URL,
                 OIDC_FREE_CALLBACK_URI,
-                OIDC_FREE_AUTH_URI
-        ]):
+                OIDC_FREE_AUTH_URI,
+            ]
+        ):
             raise AuthenticationException(
                 error_code=AUTHENTICATION_ERROR_CODES["OIDC_FREE_NOT_CONFIGURED"],
                 error_message="OIDC_FREE_NOT_CONFIGURED",
@@ -82,8 +84,11 @@ class OidcFreeOAuthProvider(OauthAdapter):
         client_id = OIDC_FREE_CLIENT_ID
         client_secret = OIDC_FREE_CLIENT_SECRET
 
-        server_host = request.get_host() + (":" + request.get_port() if request.get_port() != 80 else "")
-        redirect_uri = f"{'https' if request.is_secure() else 'http'}://{server_host}/{OIDC_FREE_CALLBACK_URI.lstrip('/')}"
+        # get_host() already carries the non-default port, and honours the
+        # X-Forwarded-Host header when USE_X_FORWARDED_HOST is enabled.
+        redirect_uri = (
+            f"{'https' if request.is_secure() else 'http'}://{request.get_host()}/{OIDC_FREE_CALLBACK_URI.lstrip('/')}"
+        )
         url_params = {
             "client_id": client_id,
             "scope": scope,
@@ -135,60 +140,41 @@ class OidcFreeOAuthProvider(OauthAdapter):
             }
         )
 
-    def __get_email(self, headers):
-        try:
-            # Gitea may not provide email in user response, so fetch it separately
-            emails_url = f"{self.userinfo_url}/emails"
-            response = requests.get(emails_url, headers=headers)
-            if not response.ok:
-                raise AuthenticationException(
-                    error_code=AUTHENTICATION_ERROR_CODES["OIDC_FREE_OAUTH_PROVIDER_ERROR"],
-                    error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR: Failed to fetch emails",
-                )
-            emails_response = response.json()
-
-            if not emails_response:
-                raise AuthenticationException(
-                    error_code=AUTHENTICATION_ERROR_CODES["OIDC_FREE_OAUTH_PROVIDER_ERROR"],
-                    error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR: No emails found",
-                )
-            # Prefer primary+verified, then any verified, then primary, else first
-            email = next((e.get("email") for e in emails_response if e.get("primary") and e.get("verified")), None)
-            if not email:
-                email = next((e.get("email") for e in emails_response if e.get("verified")), None)
-            if not email:
-                email = next((e.get("email") for e in emails_response if e.get("primary")), None)
-            if not email and emails_response:
-                # If no primary email, use the first one
-                email = emails_response[0].get("email")
-            return email
-        except requests.RequestException:
-            raise AuthenticationException(
-                error_code=AUTHENTICATION_ERROR_CODES["OIDC_FREE_OAUTH_PROVIDER_ERROR"],
-                error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR: Exception occurred while fetching emails",
-            )
-
     def set_user_data(self):
         user_info_response = self.get_user_response()
-        headers = {
-            "Authorization": f"Bearer {self.token_data.get('access_token')}",
-            "Accept": "application/json",
-        }
 
-        # Get email if not provided in user info
+        # Reject unverified emails — an attacker-controlled provider could otherwise assert
+        # any email to match an existing account (GHSA-7j95-vh8g-f365). Fail closed: treat
+        # an absent email_verified claim the same as email_verified=false.
+        if user_info_response.get("email_verified") is not True:
+            raise AuthenticationException(
+                error_code=AUTHENTICATION_ERROR_CODES["OAUTH_PROVIDER_UNVERIFIED_EMAIL"],
+                error_message="OAUTH_PROVIDER_UNVERIFIED_EMAIL",
+            )
+
         email = user_info_response.get("email")
-        # if not email:
-        #     email = self.__get_email(headers=headers)
+        if not email:
+            raise AuthenticationException(
+                error_code=AUTHENTICATION_ERROR_CODES["OIDC_FREE_OAUTH_PROVIDER_ERROR"],
+                error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR: userinfo response carried no email claim",
+            )
+
+        # "sub" is the only claim OIDC guarantees to be stable and unique per issuer.
+        subject = user_info_response.get("sub")
+        if not subject:
+            raise AuthenticationException(
+                error_code=AUTHENTICATION_ERROR_CODES["OIDC_FREE_OAUTH_PROVIDER_ERROR"],
+                error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR: userinfo response carried no sub claim",
+            )
 
         super().set_user_data(
             {
                 "email": email,
                 "user": {
-                    "provider_id": str(user_info_response.get("sub")),
+                    "provider_id": str(subject),
                     "email": email,
-                    # have to set empty string, to prevent violating non-null constraint
-                    "avatar": user_info_response.get("avatar_url") or "",
-                    "first_name": user_info_response.get("given_name") or user_info_response.get("login"),
+                    "avatar": user_info_response.get("picture") or "",
+                    "first_name": user_info_response.get("given_name") or user_info_response.get("name"),
                     "last_name": user_info_response.get("family_name"),
                     "is_password_autoset": True,
                 },

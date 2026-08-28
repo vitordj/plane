@@ -61,8 +61,7 @@ class GiteaOAuthProvider(OauthAdapter):
         client_id = GITEA_CLIENT_ID
         client_secret = GITEA_CLIENT_SECRET
 
-        server_host = request.get_host() + (":" + request.get_port() if request.get_port() != 80 else "")
-        redirect_uri = f"{'https' if request.is_secure() else 'http'}://{server_host}/auth/gitea/callback/"
+        redirect_uri = f"{'https' if request.is_secure() else 'http'}://{request.get_host()}/auth/gitea/callback/"
         url_params = {
             "client_id": client_id,
             "scope": self.scope,

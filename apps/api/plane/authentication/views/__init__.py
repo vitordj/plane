@@ -24,6 +24,7 @@ from .space.github import GitHubCallbackSpaceEndpoint, GitHubOauthInitiateSpaceE
 from .space.gitlab import GitLabCallbackSpaceEndpoint, GitLabOauthInitiateSpaceEndpoint
 
 from .space.gitea import GiteaCallbackSpaceEndpoint, GiteaOauthInitiateSpaceEndpoint
+from .space.oidc_free import OidcFreeCallbackSpaceEndpoint, OidcFreeOauthInitiateSpaceEndpoint
 
 from .space.google import GoogleCallbackSpaceEndpoint, GoogleOauthInitiateSpaceEndpoint
 
