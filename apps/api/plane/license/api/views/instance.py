@@ -56,6 +56,7 @@ class InstanceEndpoint(BaseAPIView):
             IS_GITLAB_ENABLED,
             IS_GITEA_ENABLED,
             IS_OIDC_FREE_ENABLED,
+            OIDC_FREE_DISPLAY_NAME,
             EMAIL_HOST,
             ENABLE_MAGIC_LINK_LOGIN,
             ENABLE_EMAIL_PASSWORD,
@@ -98,6 +99,10 @@ class InstanceEndpoint(BaseAPIView):
                     "key": "IS_OIDC_FREE_ENABLED",
                     "default": os.environ.get("IS_OIDC_FREE_ENABLED", "0"),
                 },
+                {
+                    "key": "OIDC_FREE_DISPLAY_NAME",
+                    "default": os.environ.get("OIDC_FREE_DISPLAY_NAME", "OIDC"),
+                },
                 {"key": "EMAIL_HOST", "default": os.environ.get("EMAIL_HOST", "")},
                 {
                     "key": "ENABLE_MAGIC_LINK_LOGIN",
@@ -139,6 +144,8 @@ class InstanceEndpoint(BaseAPIView):
         data["is_gitlab_enabled"] = IS_GITLAB_ENABLED == "1"
         data["is_gitea_enabled"] = IS_GITEA_ENABLED == "1"
         data["is_oidc_free_enabled"] = IS_OIDC_FREE_ENABLED == "1"
+        # Lets the sign-in button name the provider members actually see.
+        data["oidc_free_display_name"] = str(OIDC_FREE_DISPLAY_NAME or "OIDC")
         data["is_magic_login_enabled"] = ENABLE_MAGIC_LINK_LOGIN == "1"
         data["is_email_password_enabled"] = ENABLE_EMAIL_PASSWORD == "1"
 

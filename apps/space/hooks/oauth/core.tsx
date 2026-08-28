@@ -83,7 +83,7 @@ export const useCoreOAuthConfig = (oauthActionText: string): TOAuthConfigs => {
     },
     {
       id: "oidc-free",
-      text: `${oauthActionText} with OIDC`,
+      text: `${oauthActionText} with ${config?.oidc_free_display_name || "OIDC"}`,
       icon: <Fingerprint height={18} width={18} />,
       onClick: () => {
         window.location.assign(`${API_BASE_URL}/auth/oidc-free/${next_path ? `?next_path=${next_path}` : ``}`);

@@ -59,14 +59,15 @@ export type TInstanceGiteaAuthenticationConfigurationKeys =
   | "ENABLE_GITEA_SYNC";
 
 export type TInstanceOidcFreeAuthenticationConfigurationKeys =
+  | "OIDC_FREE_DISPLAY_NAME"
+  | "OIDC_FREE_DISCOVERY_URL"
   | "OIDC_FREE_CLIENT_ID"
   | "OIDC_FREE_CLIENT_SECRET"
-  | "OIDC_FREE_HOST"
-  | "OIDC_FREE_SCOPE"
-  | "OIDC_FREE_USERINFO_URL"
+  | "OIDC_FREE_AUTH_URL"
   | "OIDC_FREE_TOKEN_URL"
-  | "OIDC_FREE_CALLBACK_URI"
-  | "OIDC_FREE_AUTH_URI"
+  | "OIDC_FREE_USERINFO_URL"
+  | "OIDC_FREE_SCOPE"
+  | "OIDC_FREE_ALLOW_UNVERIFIED_EMAIL"
   | "ENABLE_OIDC_FREE_SYNC";
 
 export type TInstanceAuthenticationConfigurationKeys =

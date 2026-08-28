@@ -45,14 +45,15 @@ export function InstanceOidcFreeConfigForm(props: Props) {
     formState: { errors, isDirty, isSubmitting },
   } = useForm<OidcFreeConfigFormValues>({
     defaultValues: {
+      OIDC_FREE_DISPLAY_NAME: config["OIDC_FREE_DISPLAY_NAME"],
+      OIDC_FREE_DISCOVERY_URL: config["OIDC_FREE_DISCOVERY_URL"],
       OIDC_FREE_CLIENT_ID: config["OIDC_FREE_CLIENT_ID"],
       OIDC_FREE_CLIENT_SECRET: config["OIDC_FREE_CLIENT_SECRET"],
-      OIDC_FREE_HOST: config["OIDC_FREE_HOST"],
-      OIDC_FREE_SCOPE: config["OIDC_FREE_SCOPE"],
-      OIDC_FREE_USERINFO_URL: config["OIDC_FREE_USERINFO_URL"],
+      OIDC_FREE_AUTH_URL: config["OIDC_FREE_AUTH_URL"],
       OIDC_FREE_TOKEN_URL: config["OIDC_FREE_TOKEN_URL"],
-      OIDC_FREE_CALLBACK_URI: config["OIDC_FREE_CALLBACK_URI"],
-      OIDC_FREE_AUTH_URI: config["OIDC_FREE_AUTH_URI"],
+      OIDC_FREE_USERINFO_URL: config["OIDC_FREE_USERINFO_URL"],
+      OIDC_FREE_SCOPE: config["OIDC_FREE_SCOPE"],
+      OIDC_FREE_ALLOW_UNVERIFIED_EMAIL: config["OIDC_FREE_ALLOW_UNVERIFIED_EMAIL"] || "0",
       ENABLE_OIDC_FREE_SYNC: config["ENABLE_OIDC_FREE_SYNC"] || "0",
     },
   });
@@ -61,13 +62,27 @@ export function InstanceOidcFreeConfigForm(props: Props) {
 
   const OIDC_FREE_FORM_FIELDS: TControllerInputFormField<OidcFreeConfigFormValues>[] = [
     {
-      key: "OIDC_FREE_HOST",
+      key: "OIDC_FREE_DISPLAY_NAME",
       type: "text",
-      label: "Provider host",
-      description: <>The base URL of your identity provider. The paths below are resolved against it.</>,
-      placeholder: "https://sso.example.com",
-      error: Boolean(errors.OIDC_FREE_HOST),
-      required: true,
+      label: "Display name",
+      description: <>What the sign-in button calls your provider. Defaults to OIDC.</>,
+      placeholder: "Azure AD",
+      error: Boolean(errors.OIDC_FREE_DISPLAY_NAME),
+      required: false,
+    },
+    {
+      key: "OIDC_FREE_DISCOVERY_URL",
+      type: "text",
+      label: "Discovery URL",
+      description: (
+        <>
+          Your provider&apos;s issuer or <CodeBlock>{"/.well-known/openid-configuration"}</CodeBlock> URL. Set this and
+          Plane reads the three endpoints below from it, so you can leave them blank.
+        </>
+      ),
+      placeholder: "https://login.microsoftonline.com/<tenant id>/v2.0",
+      error: Boolean(errors.OIDC_FREE_DISCOVERY_URL),
+      required: false,
     },
     {
       key: "OIDC_FREE_CLIENT_ID",
@@ -88,73 +103,77 @@ export function InstanceOidcFreeConfigForm(props: Props) {
       required: true,
     },
     {
+      key: "OIDC_FREE_AUTH_URL",
+      type: "text",
+      label: "Authorization URL",
+      description: <>Where members are sent to sign in. Only needed without a discovery URL.</>,
+      placeholder: "https://sso.example.com/authorize",
+      error: Boolean(errors.OIDC_FREE_AUTH_URL),
+      required: false,
+    },
+    {
+      key: "OIDC_FREE_TOKEN_URL",
+      type: "text",
+      label: "Token URL",
+      description: <>Where Plane exchanges the authorization code for tokens.</>,
+      placeholder: "https://sso.example.com/token",
+      error: Boolean(errors.OIDC_FREE_TOKEN_URL),
+      required: false,
+    },
+    {
+      key: "OIDC_FREE_USERINFO_URL",
+      type: "text",
+      label: "User info URL",
+      description: (
+        <>
+          Where Plane reads the member&apos;s claims. Providers may serve this from a different host than the two above,
+          so give it in full.
+        </>
+      ),
+      placeholder: "https://sso.example.com/userinfo",
+      error: Boolean(errors.OIDC_FREE_USERINFO_URL),
+      required: false,
+    },
+    {
       key: "OIDC_FREE_SCOPE",
       type: "text",
       label: "Scopes",
       description: (
         <>
           Space-separated scopes to request. The <CodeBlock>openid</CodeBlock> scope is required, and Plane needs an
-          email address to identify the user.
+          email address to identify the member.
         </>
       ),
       placeholder: "openid email profile",
       error: Boolean(errors.OIDC_FREE_SCOPE),
-      required: true,
-    },
-    {
-      key: "OIDC_FREE_AUTH_URI",
-      type: "text",
-      label: "Authorization path",
-      description: <>Where members are sent to sign in, relative to the provider host.</>,
-      placeholder: "protocol/openid-connect/auth",
-      error: Boolean(errors.OIDC_FREE_AUTH_URI),
-      required: true,
-    },
-    {
-      key: "OIDC_FREE_TOKEN_URL",
-      type: "text",
-      label: "Token path",
-      description: <>Where Plane exchanges the authorization code for tokens, relative to the provider host.</>,
-      placeholder: "protocol/openid-connect/token",
-      error: Boolean(errors.OIDC_FREE_TOKEN_URL),
-      required: true,
-    },
-    {
-      key: "OIDC_FREE_USERINFO_URL",
-      type: "text",
-      label: "User info path",
-      description: <>Where Plane reads the member&apos;s claims, relative to the provider host.</>,
-      placeholder: "protocol/openid-connect/userinfo",
-      error: Boolean(errors.OIDC_FREE_USERINFO_URL),
-      required: true,
-    },
-    {
-      key: "OIDC_FREE_CALLBACK_URI",
-      type: "text",
-      label: "Callback path",
-      description: (
-        <>
-          The route your provider redirects back to. It has to match the callback URI shown alongside, and be registered
-          with your provider.
-        </>
-      ),
-      placeholder: "auth/oidc-free/callback/",
-      error: Boolean(errors.OIDC_FREE_CALLBACK_URI),
-      required: true,
+      required: false,
     },
   ];
 
-  const OIDC_FREE_FORM_SWITCH_FIELD: TControllerSwitchFormField<OidcFreeConfigFormValues> = {
-    name: "ENABLE_OIDC_FREE_SYNC",
-    label: "OIDC",
-  };
+  const OIDC_FREE_FORM_SWITCH_FIELDS: TControllerSwitchFormField<OidcFreeConfigFormValues>[] = [
+    {
+      name: "ENABLE_OIDC_FREE_SYNC",
+      label: "OIDC",
+    },
+    {
+      name: "OIDC_FREE_ALLOW_UNVERIFIED_EMAIL",
+      label: "OIDC",
+      description:
+        "Accept email addresses your provider does not mark as verified. Only turn this on for a provider that vouches for the addresses it asserts, such as a directory whose members you administer.",
+    },
+  ];
 
   const OIDC_FREE_SERVICE_FIELD: TCopyField[] = [
     {
       key: "Callback_URI",
       label: "Callback URI",
       url: `${originURL}/auth/oidc-free/callback/`,
-      description: <>We will auto-generate this.</>,
+      description: (
+        <>
+          We will auto-generate this. Register it with your provider as an allowed{" "}
+          <CodeBlock darkerShade>redirect URI</CodeBlock>.
+        </>
+      ),
     },
   ];
 
@@ -169,14 +188,17 @@ export function InstanceOidcFreeConfigForm(props: Props) {
         message: "Your OIDC authentication is configured. You should test it now.",
       });
       reset({
+        OIDC_FREE_DISPLAY_NAME: response.find((item) => item.key === "OIDC_FREE_DISPLAY_NAME")?.value,
+        OIDC_FREE_DISCOVERY_URL: response.find((item) => item.key === "OIDC_FREE_DISCOVERY_URL")?.value,
         OIDC_FREE_CLIENT_ID: response.find((item) => item.key === "OIDC_FREE_CLIENT_ID")?.value,
         OIDC_FREE_CLIENT_SECRET: response.find((item) => item.key === "OIDC_FREE_CLIENT_SECRET")?.value,
-        OIDC_FREE_HOST: response.find((item) => item.key === "OIDC_FREE_HOST")?.value,
-        OIDC_FREE_SCOPE: response.find((item) => item.key === "OIDC_FREE_SCOPE")?.value,
-        OIDC_FREE_USERINFO_URL: response.find((item) => item.key === "OIDC_FREE_USERINFO_URL")?.value,
+        OIDC_FREE_AUTH_URL: response.find((item) => item.key === "OIDC_FREE_AUTH_URL")?.value,
         OIDC_FREE_TOKEN_URL: response.find((item) => item.key === "OIDC_FREE_TOKEN_URL")?.value,
-        OIDC_FREE_CALLBACK_URI: response.find((item) => item.key === "OIDC_FREE_CALLBACK_URI")?.value,
-        OIDC_FREE_AUTH_URI: response.find((item) => item.key === "OIDC_FREE_AUTH_URI")?.value,
+        OIDC_FREE_USERINFO_URL: response.find((item) => item.key === "OIDC_FREE_USERINFO_URL")?.value,
+        OIDC_FREE_SCOPE: response.find((item) => item.key === "OIDC_FREE_SCOPE")?.value,
+        OIDC_FREE_ALLOW_UNVERIFIED_EMAIL: response.find((item) => item.key === "OIDC_FREE_ALLOW_UNVERIFIED_EMAIL")
+          ?.value,
+        ENABLE_OIDC_FREE_SYNC: response.find((item) => item.key === "ENABLE_OIDC_FREE_SYNC")?.value,
       });
     } catch (err) {
       console.error(err);
@@ -214,7 +236,9 @@ export function InstanceOidcFreeConfigForm(props: Props) {
                 required={field.required}
               />
             ))}
-            <ControllerSwitch control={control} field={OIDC_FREE_FORM_SWITCH_FIELD} />
+            {OIDC_FREE_FORM_SWITCH_FIELDS.map((field) => (
+              <ControllerSwitch key={field.name} control={control} field={field} />
+            ))}
             <div className="flex flex-col gap-1 pt-4">
               <div className="flex items-center gap-4">
                 <Button

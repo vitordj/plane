@@ -27,16 +27,16 @@ export const OidcFreeConfiguration = observer(function OidcFreeConfiguration(pro
   const { formattedConfig } = useInstance();
   // derived values
   const OidcFreeConfig = formattedConfig?.IS_OIDC_FREE_ENABLED ?? "";
-  const OidcFreeConfigured = [
-    !!formattedConfig?.OIDC_FREE_HOST,
-    !!formattedConfig?.OIDC_FREE_CLIENT_ID,
-    !!formattedConfig?.OIDC_FREE_CLIENT_SECRET,
-    !!formattedConfig?.OIDC_FREE_SCOPE,
-    !!formattedConfig?.OIDC_FREE_AUTH_URI,
-    !!formattedConfig?.OIDC_FREE_TOKEN_URL,
-    !!formattedConfig?.OIDC_FREE_USERINFO_URL,
-    !!formattedConfig?.OIDC_FREE_CALLBACK_URI,
-  ].every(Boolean);
+  // The endpoints can either be discovered or given one by one, so either is enough.
+  const OidcFreeEndpointsResolvable =
+    !!formattedConfig?.OIDC_FREE_DISCOVERY_URL ||
+    [
+      !!formattedConfig?.OIDC_FREE_AUTH_URL,
+      !!formattedConfig?.OIDC_FREE_TOKEN_URL,
+      !!formattedConfig?.OIDC_FREE_USERINFO_URL,
+    ].every(Boolean);
+  const OidcFreeConfigured =
+    !!formattedConfig?.OIDC_FREE_CLIENT_ID && !!formattedConfig?.OIDC_FREE_CLIENT_SECRET && OidcFreeEndpointsResolvable;
 
   return (
     <>
