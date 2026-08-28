@@ -96,10 +96,7 @@ class InstanceEndpoint(BaseAPIView):
                     "key": "IS_OIDC_FREE_ENABLED",
                     "default": os.environ.get("IS_OIDC_FREE_ENABLED", "0"),
                 },
-                {
-                    "key": "EMAIL_HOST",
-                    "default": os.environ.get("EMAIL_HOST", "")
-                },
+                {"key": "EMAIL_HOST", "default": os.environ.get("EMAIL_HOST", "")},
                 {
                     "key": "ENABLE_MAGIC_LINK_LOGIN",
                     "default": os.environ.get("ENABLE_MAGIC_LINK_LOGIN", "1"),

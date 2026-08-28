@@ -47,8 +47,8 @@ from .views import (
     # OIDC Free
     OidcFreeCallbackEndpoint,
     OidcFreeOauthInitiateEndpoint,
-    # OidcFreeCallbackSpaceEndpoint,
-    # OidcFreeOauthInitiateSpaceEndpoint,
+    OidcFreeCallbackSpaceEndpoint,
+    OidcFreeOauthInitiateSpaceEndpoint,
 )
 
 urlpatterns = [
@@ -158,14 +158,14 @@ urlpatterns = [
     ## Oidc Free Oauth
     path("oidc-free/", OidcFreeOauthInitiateEndpoint.as_view(), name="oidc-free-initiate"),
     path("oidc-free/callback/", OidcFreeCallbackEndpoint.as_view(), name="oidc-free-callback"),
-    # path(
-    #     "spaces/oidc-free/",
-    #     OidcFreeOauthInitiateSpaceEndpoint.as_view(),
-    #     name="space-oidc-free-initiate",
-    # ),
-    # path(
-    #     "spaces/oidc-free/callback/",
-    #     OidcFreeCallbackSpaceEndpoint.as_view(),
-    #     name="space-oidc-free-callback",
-    # ),
+    path(
+        "spaces/oidc-free/",
+        OidcFreeOauthInitiateSpaceEndpoint.as_view(),
+        name="space-oidc-free-initiate",
+    ),
+    path(
+        "spaces/oidc-free/callback/",
+        OidcFreeCallbackSpaceEndpoint.as_view(),
+        name="space-oidc-free-callback",
+    ),
 ]
