@@ -17,17 +17,21 @@ type Props<T extends FieldValues = FieldValues> = {
 export type TControllerSwitchFormField<T extends FieldValues = FieldValues> = {
   name: FieldPath<T>;
   label: string;
+  /** Overrides the default sync-toggle wording for switches that mean something else. */
+  description?: string;
 };
 
 export function ControllerSwitch<T extends FieldValues>(props: Props<T>) {
   const {
     control,
-    field: { name, label },
+    field: { name, label, description },
   } = props;
 
   return (
     <div className="flex items-center justify-between gap-1">
-      <h4 className="text-sm text-custom-text-300">Refresh user attributes from {label} during sign in</h4>
+      <h4 className="text-sm text-custom-text-300">
+        {description ?? `Refresh user attributes from ${label} during sign in`}
+      </h4>
       <div className="relative">
         <Controller
           control={control}
