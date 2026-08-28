@@ -66,6 +66,7 @@ export type TInstanceOidcFreeAuthenticationConfigurationKeys =
   | "OIDC_FREE_AUTH_URL"
   | "OIDC_FREE_TOKEN_URL"
   | "OIDC_FREE_USERINFO_URL"
+  | "OIDC_FREE_JWKS_URL"
   | "OIDC_FREE_SCOPE"
   | "OIDC_FREE_ALLOW_UNVERIFIED_EMAIL"
   | "ENABLE_OIDC_FREE_SYNC";

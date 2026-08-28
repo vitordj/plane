@@ -2,9 +2,13 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
+import base64
+import hashlib
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 from urllib.parse import parse_qs, urlparse
 
+import jwt
 import pytest
 import requests
 
@@ -20,6 +24,7 @@ CONFIG_ORDER = [
     "OIDC_FREE_AUTH_URL",
     "OIDC_FREE_TOKEN_URL",
     "OIDC_FREE_USERINFO_URL",
+    "OIDC_FREE_JWKS_URL",
     "OIDC_FREE_SCOPE",
     "OIDC_FREE_ALLOW_UNVERIFIED_EMAIL",
 ]
@@ -31,6 +36,7 @@ DEFAULTS = {
     "OIDC_FREE_AUTH_URL": "https://sso.example.com/authorize",
     "OIDC_FREE_TOKEN_URL": "https://sso.example.com/token",
     "OIDC_FREE_USERINFO_URL": "https://sso.example.com/userinfo",
+    "OIDC_FREE_JWKS_URL": "",
     "OIDC_FREE_SCOPE": "openid email profile",
     "OIDC_FREE_ALLOW_UNVERIFIED_EMAIL": "0",
 }
@@ -41,18 +47,20 @@ ENTRA_DISCOVERY_DOCUMENT = {
     "authorization_endpoint": "https://login.microsoftonline.com/tenant-id/oauth2/v2.0/authorize",
     "token_endpoint": "https://login.microsoftonline.com/tenant-id/oauth2/v2.0/token",
     "userinfo_endpoint": "https://graph.microsoft.com/oidc/userinfo",
+    "jwks_uri": "https://login.microsoftonline.com/tenant-id/discovery/v2.0/keys",
+    "issuer": "https://login.microsoftonline.com/tenant-id/v2.0",
 }
 
 
-def _fake_request(host="plane.example.com", secure=True):
+def _fake_request(host="plane.example.com", secure=True, session=None):
     request = MagicMock()
     request.get_host.return_value = host
     request.is_secure.return_value = secure
-    request.session = {}
+    request.session = {} if session is None else session
     return request
 
 
-def _build(config=None, discovery_document=None, discovery_raises=None):
+def _build(config=None, discovery_document=None, discovery_raises=None, state="state-token", code=None):
     """Construct the provider with its configuration and network calls stubbed."""
     values = {**DEFAULTS, **(config or {})}
 
@@ -70,7 +78,8 @@ def _build(config=None, discovery_document=None, discovery_raises=None):
             return_value=response,
         ) as fetch,
     ):
-        provider = OidcFreeOAuthProvider(request=_fake_request(), state="state-token")
+        request = _fake_request()
+        provider = OidcFreeOAuthProvider(request=request, code=code, state=state)
         return provider, fetch
 
 
@@ -220,3 +229,257 @@ class TestOidcFreeUserData:
         with pytest.raises(AuthenticationException) as exc:
             self._set_user_data(claims)
         assert exc.value.error_code == 5114
+
+
+def _rsa_keypair():
+    """A throwaway RSA key plus the JWK the provider would fetch for it."""
+    from cryptography.hazmat.primitives.asymmetric import rsa
+
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    return private_key, jwt.algorithms.RSAAlgorithm.to_jwk(private_key.public_key(), as_dict=True)
+
+
+@pytest.mark.unit
+class TestOidcFreePkce:
+    """The code is bound to a verifier only this session holds."""
+
+    def test_authorization_request_carries_an_s256_challenge(self):
+        session = {}
+        with (
+            patch.object(oidc_free, "get_configuration_value", return_value=[DEFAULTS[key] for key in CONFIG_ORDER]),
+            patch.object(oidc_free, "cache", MagicMock(get=MagicMock(return_value=None))),
+        ):
+            provider = OidcFreeOAuthProvider(request=_fake_request(session=session), state="state-token")
+
+        params = parse_qs(urlparse(provider.get_auth_url()).query)
+        verifier = session[oidc_free.SESSION_CODE_VERIFIER]
+        expected = (
+            base64.urlsafe_b64encode(hashlib.sha256(verifier.encode("ascii")).digest()).decode("ascii").rstrip("=")
+        )
+        assert params["code_challenge"] == [expected]
+        assert params["code_challenge_method"] == ["S256"]
+        # The challenge is a hash, never the verifier itself.
+        assert verifier not in provider.get_auth_url()
+        assert params["nonce"] == [session[oidc_free.SESSION_NONCE]]
+
+    def test_callback_leg_does_not_mint_new_secrets(self):
+        session = {"oidc_free_code_verifier": "kept", "oidc_free_nonce": "kept-nonce"}
+        with (
+            patch.object(oidc_free, "get_configuration_value", return_value=[DEFAULTS[key] for key in CONFIG_ORDER]),
+            patch.object(oidc_free, "cache", MagicMock(get=MagicMock(return_value=None))),
+        ):
+            OidcFreeOAuthProvider(request=_fake_request(session=session), code="auth-code")
+        assert session["oidc_free_code_verifier"] == "kept"
+
+    def test_verifier_is_sent_once_and_then_dropped(self):
+        session = {oidc_free.SESSION_CODE_VERIFIER: "the-verifier", oidc_free.SESSION_NONCE: "the-nonce"}
+        with (
+            patch.object(oidc_free, "get_configuration_value", return_value=[DEFAULTS[key] for key in CONFIG_ORDER]),
+            patch.object(oidc_free, "cache", MagicMock(get=MagicMock(return_value=None))),
+        ):
+            provider = OidcFreeOAuthProvider(request=_fake_request(session=session), code="auth-code")
+
+        with patch.object(OidcFreeOAuthProvider, "get_user_token", return_value={"access_token": "at"}) as exchange:
+            provider.set_token_data()
+
+        assert exchange.call_args.kwargs["data"]["code_verifier"] == "the-verifier"
+        # Single use: a replay of the same code finds nothing to send.
+        assert oidc_free.SESSION_CODE_VERIFIER not in session
+        assert oidc_free.SESSION_NONCE not in session
+
+
+@pytest.mark.unit
+class TestOidcFreeIdTokenValidation:
+    """With a JWKS URL known, the id_token has to hold up."""
+
+    ISSUER = "https://sso.example.com"
+    CONFIG = {"OIDC_FREE_JWKS_URL": "https://sso.example.com/jwks.json"}
+
+    def _provider(self, session, expected_issuer=None):
+        with (
+            patch.object(
+                oidc_free,
+                "get_configuration_value",
+                return_value=[{**DEFAULTS, **self.CONFIG}[key] for key in CONFIG_ORDER],
+            ),
+            patch.object(oidc_free, "cache", MagicMock(get=MagicMock(return_value=None))),
+        ):
+            provider = OidcFreeOAuthProvider(request=_fake_request(session=session), code="auth-code")
+        provider.expected_issuer = expected_issuer
+        return provider
+
+    def _exchange(self, provider, id_token, jwk, key=None):
+        client = MagicMock()
+        signing_key = key if key is not None else jwt.PyJWK(jwk).key
+        client.get_signing_key_from_jwt.return_value = MagicMock(key=signing_key)
+        with (
+            patch.object(oidc_free, "_jwks_client", return_value=client),
+            patch.object(
+                OidcFreeOAuthProvider, "get_user_token", return_value={"access_token": "at", "id_token": id_token}
+            ),
+        ):
+            provider.set_token_data()
+
+    def test_a_well_formed_id_token_is_accepted(self):
+        private_key, jwk = _rsa_keypair()
+        session = {oidc_free.SESSION_CODE_VERIFIER: "v", oidc_free.SESSION_NONCE: "the-nonce"}
+        provider = self._provider(session, expected_issuer=self.ISSUER)
+        id_token = jwt.encode(
+            {
+                "iss": self.ISSUER,
+                "aud": "plane",
+                "sub": "subject",
+                "nonce": "the-nonce",
+                "iat": datetime.now(tz=timezone.utc),
+                "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=5),
+            },
+            private_key,
+            algorithm="RS256",
+        )
+        self._exchange(provider, id_token, jwk)
+        assert provider.token_data["id_token"] == id_token
+
+    def test_a_token_signed_by_another_key_is_rejected(self):
+        private_key, _ = _rsa_keypair()
+        _, other_jwk = _rsa_keypair()
+        session = {oidc_free.SESSION_NONCE: "the-nonce"}
+        provider = self._provider(session)
+        id_token = jwt.encode(
+            {
+                "aud": "plane",
+                "nonce": "the-nonce",
+                "iat": datetime.now(tz=timezone.utc),
+                "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=5),
+            },
+            private_key,
+            algorithm="RS256",
+        )
+        with pytest.raises(AuthenticationException) as exc:
+            self._exchange(provider, id_token, other_jwk)
+        assert exc.value.error_code == 5114
+
+    def test_a_token_for_another_client_is_rejected(self):
+        private_key, jwk = _rsa_keypair()
+        provider = self._provider({oidc_free.SESSION_NONCE: "the-nonce"})
+        id_token = jwt.encode(
+            {
+                "aud": "someone-else",
+                "nonce": "the-nonce",
+                "iat": datetime.now(tz=timezone.utc),
+                "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=5),
+            },
+            private_key,
+            algorithm="RS256",
+        )
+        with pytest.raises(AuthenticationException) as exc:
+            self._exchange(provider, id_token, jwk)
+        assert exc.value.error_code == 5114
+
+    def test_an_expired_token_is_rejected(self):
+        private_key, jwk = _rsa_keypair()
+        provider = self._provider({oidc_free.SESSION_NONCE: "the-nonce"})
+        id_token = jwt.encode(
+            {
+                "aud": "plane",
+                "nonce": "the-nonce",
+                "iat": datetime.now(tz=timezone.utc) - timedelta(hours=2),
+                "exp": datetime.now(tz=timezone.utc) - timedelta(hours=1),
+            },
+            private_key,
+            algorithm="RS256",
+        )
+        with pytest.raises(AuthenticationException) as exc:
+            self._exchange(provider, id_token, jwk)
+        assert exc.value.error_code == 5114
+
+    def test_a_token_from_another_session_is_rejected(self):
+        """A valid token whose nonce belongs to a different authorization request."""
+        private_key, jwk = _rsa_keypair()
+        provider = self._provider({oidc_free.SESSION_NONCE: "our-nonce"})
+        id_token = jwt.encode(
+            {
+                "aud": "plane",
+                "nonce": "someone-elses-nonce",
+                "iat": datetime.now(tz=timezone.utc),
+                "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=5),
+            },
+            private_key,
+            algorithm="RS256",
+        )
+        with pytest.raises(AuthenticationException) as exc:
+            self._exchange(provider, id_token, jwk)
+        assert exc.value.error_code == 5114
+
+    def test_an_unsigned_token_is_rejected(self):
+        """alg=none must never pass, however well-formed the claims are.
+
+        PyJWT refuses this algorithm on its own, so this guards the behaviour
+        rather than our allowlist: it is what fails if signature verification is
+        ever turned off or the library is swapped. The allowlist itself is
+        covered by the test below.
+        """
+        _, jwk = _rsa_keypair()
+        provider = self._provider({oidc_free.SESSION_NONCE: "the-nonce"})
+        id_token = jwt.encode(
+            {
+                "aud": "plane",
+                "nonce": "the-nonce",
+                "iat": datetime.now(tz=timezone.utc),
+                "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=5),
+            },
+            key="",
+            algorithm="none",
+        )
+        with pytest.raises(AuthenticationException) as exc:
+            self._exchange(provider, id_token, jwk, key="")
+        assert exc.value.error_code == 5114
+
+    def test_symmetric_algorithms_are_not_offered_to_the_decoder(self):
+        """An HMAC alg would let a token be signed with a key we also hold."""
+        private_key, jwk = _rsa_keypair()
+        provider = self._provider({oidc_free.SESSION_NONCE: "the-nonce"})
+        id_token = jwt.encode(
+            {
+                "aud": "plane",
+                "nonce": "the-nonce",
+                "iat": datetime.now(tz=timezone.utc),
+                "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=5),
+            },
+            private_key,
+            algorithm="RS256",
+        )
+        with patch.object(oidc_free.jwt, "decode", wraps=jwt.decode) as decode:
+            self._exchange(provider, id_token, jwk)
+        offered = decode.call_args.kwargs["algorithms"]
+        assert offered, "no algorithm allowlist was passed"
+        assert not [alg for alg in offered if alg.lower() == "none" or alg.startswith("HS")]
+
+    def test_a_missing_id_token_is_rejected(self):
+        provider = self._provider({oidc_free.SESSION_NONCE: "the-nonce"})
+        with patch.object(OidcFreeOAuthProvider, "get_user_token", return_value={"access_token": "at"}):
+            with pytest.raises(AuthenticationException) as exc:
+                provider.set_token_data()
+        assert exc.value.error_code == 5114
+
+    def test_without_a_jwks_url_the_token_is_not_inspected(self):
+        """Manual configuration with no JWKS URL is the documented way out."""
+        provider = self._provider({}, expected_issuer=None)
+        provider.jwks_url = None
+        with patch.object(
+            OidcFreeOAuthProvider, "get_user_token", return_value={"access_token": "at", "id_token": "not-a-jwt"}
+        ):
+            provider.set_token_data()
+        assert provider.token_data["access_token"] == "at"
+
+    def test_discovery_supplies_the_jwks_url_and_issuer(self):
+        provider, _ = _build(
+            config={
+                "OIDC_FREE_DISCOVERY_URL": "https://login.microsoftonline.com/tenant-id/v2.0",
+                "OIDC_FREE_AUTH_URL": "",
+                "OIDC_FREE_TOKEN_URL": "",
+                "OIDC_FREE_USERINFO_URL": "",
+            },
+            discovery_document=ENTRA_DISCOVERY_DOCUMENT,
+        )
+        assert provider.jwks_url == ENTRA_DISCOVERY_DOCUMENT["jwks_uri"]
+        assert provider.expected_issuer == ENTRA_DISCOVERY_DOCUMENT["issuer"]

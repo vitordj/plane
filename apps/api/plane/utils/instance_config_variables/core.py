@@ -212,6 +212,12 @@ oidc_free_config_variables = [
         "is_encrypted": False,
     },
     {
+        "key": "OIDC_FREE_JWKS_URL",
+        "value": os.environ.get("OIDC_FREE_JWKS_URL"),
+        "category": "OIDC_FREE",
+        "is_encrypted": False,
+    },
+    {
         "key": "OIDC_FREE_SCOPE",
         "value": os.environ.get("OIDC_FREE_SCOPE", "openid email profile"),
         "category": "OIDC_FREE",
