@@ -10,8 +10,8 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 // plane internal packages
 import { API_BASE_URL } from "@plane/constants";
-import { Button, getButtonStyling } from "@plane/propel/button";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import { Button } from "@makeplane/propel/components/button";
+import { TOAST_TYPE, setToast } from "@/providers/toast";
 import type { IFormattedInstanceConfiguration, TInstanceOidcFreeAuthenticationConfigurationKeys } from "@plane/types";
 // components
 import { CodeBlock } from "@/components/common/code-block";
@@ -59,15 +59,13 @@ export function InstanceOidcFreeConfigForm(props: Props) {
 
   const originURL = !isEmpty(API_BASE_URL) ? API_BASE_URL : typeof window !== "undefined" ? window.location.origin : "";
 
-  const OIDC_FREE_FORM_FIELDS: TControllerInputFormField[] = [
+  const OIDC_FREE_FORM_FIELDS: TControllerInputFormField<OidcFreeConfigFormValues>[] = [
     {
       key: "OIDC_FREE_HOST",
       type: "text",
-      label: "Oidc Free Host",
-      description: (
-        <>Use the URL of your Oidc Free instance.</>
-      ),
-      placeholder: "https://<your domain>",
+      label: "Provider host",
+      description: <>The base URL of your identity provider. The paths below are resolved against it.</>,
+      placeholder: "https://sso.example.com",
       error: Boolean(errors.OIDC_FREE_HOST),
       required: true,
     },
@@ -75,12 +73,8 @@ export function InstanceOidcFreeConfigForm(props: Props) {
       key: "OIDC_FREE_CLIENT_ID",
       type: "text",
       label: "Client ID",
-      description: (
-        <>
-          blabla
-        </>
-      ),
-      placeholder: "70a44354520df8bd9bcd",
+      description: <>You will get this from the application you registered with your provider.</>,
+      placeholder: "plane",
       error: Boolean(errors.OIDC_FREE_CLIENT_ID),
       required: true,
     },
@@ -88,86 +82,71 @@ export function InstanceOidcFreeConfigForm(props: Props) {
       key: "OIDC_FREE_CLIENT_SECRET",
       type: "password",
       label: "Client secret",
-      description: (
-        <>
-          blabla
-        </>
-      ),
+      description: <>Your client secret is issued alongside the client ID by your provider.</>,
       placeholder: "9b0050f94ec1b744e32ce79ea4ffacd40d4119cb",
       error: Boolean(errors.OIDC_FREE_CLIENT_SECRET),
       required: true,
     },
-
     {
       key: "OIDC_FREE_SCOPE",
       type: "text",
-      label: "",
+      label: "Scopes",
       description: (
         <>
-          blabla
+          Space-separated scopes to request. The <CodeBlock>openid</CodeBlock> scope is required, and Plane needs an
+          email address to identify the user.
         </>
       ),
-      placeholder: "placeholder",
+      placeholder: "openid email profile",
       error: Boolean(errors.OIDC_FREE_SCOPE),
-      required: true
-    },
-    {
-      key: "OIDC_FREE_USERINFO_URL",
-      type: "text",
-      label: "",
-      description: (
-        <>
-          blabla
-        </>
-      ),
-      placeholder: "placeholder",
-      error: Boolean(errors.OIDC_FREE_USERINFO_URL),
-      required: true
-    },
-    {
-      key: "OIDC_FREE_TOKEN_URL",
-      type: "text",
-      label: "",
-      description: (
-        <>
-          blabla
-        </>
-      ),
-      placeholder: "placeholder",
-      error: Boolean(errors.OIDC_FREE_TOKEN_URL),
-      required: true
-    },
-    {
-      key: "OIDC_FREE_CALLBACK_URI",
-      type: "text",
-      label: "",
-      description: (
-        <>
-          blabla
-        </>
-      ),
-      placeholder: "placeholder",
-      error: Boolean(errors.OIDC_FREE_CALLBACK_URI),
-      required: true
+      required: true,
     },
     {
       key: "OIDC_FREE_AUTH_URI",
       type: "text",
-      label: "",
+      label: "Authorization path",
+      description: <>Where members are sent to sign in, relative to the provider host.</>,
+      placeholder: "protocol/openid-connect/auth",
+      error: Boolean(errors.OIDC_FREE_AUTH_URI),
+      required: true,
+    },
+    {
+      key: "OIDC_FREE_TOKEN_URL",
+      type: "text",
+      label: "Token path",
+      description: <>Where Plane exchanges the authorization code for tokens, relative to the provider host.</>,
+      placeholder: "protocol/openid-connect/token",
+      error: Boolean(errors.OIDC_FREE_TOKEN_URL),
+      required: true,
+    },
+    {
+      key: "OIDC_FREE_USERINFO_URL",
+      type: "text",
+      label: "User info path",
+      description: <>Where Plane reads the member&apos;s claims, relative to the provider host.</>,
+      placeholder: "protocol/openid-connect/userinfo",
+      error: Boolean(errors.OIDC_FREE_USERINFO_URL),
+      required: true,
+    },
+    {
+      key: "OIDC_FREE_CALLBACK_URI",
+      type: "text",
+      label: "Callback path",
       description: (
         <>
-          blabla
+          The route your provider redirects back to. It has to match the callback URI shown alongside, and be registered
+          with your provider.
         </>
       ),
-      placeholder: "placeholder",
-      error: Boolean(errors.OIDC_FREE_AUTH_URI),
-      required: true
+      placeholder: "auth/oidc-free/callback/",
+      error: Boolean(errors.OIDC_FREE_CALLBACK_URI),
+      required: true,
     },
   ];
 
   const OIDC_FREE_FORM_SWITCH_FIELD: TControllerSwitchFormField<OidcFreeConfigFormValues> = {
     name: "ENABLE_OIDC_FREE_SYNC",
-    label: "Oidc Free",
+    label: "OIDC",
   };
 
   const OIDC_FREE_SERVICE_FIELD: TCopyField[] = [
@@ -175,11 +154,7 @@ export function InstanceOidcFreeConfigForm(props: Props) {
       key: "Callback_URI",
       label: "Callback URI",
       url: `${originURL}/auth/oidc-free/callback/`,
-      description: (
-        <>
-          We will auto-generate this.
-        </>
-      ),
+      description: <>We will auto-generate this.</>,
     },
   ];
 
@@ -191,7 +166,7 @@ export function InstanceOidcFreeConfigForm(props: Props) {
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: "Done!",
-        message: "Your Oidc Free authentication is configured. You should test it now.",
+        message: "Your OIDC authentication is configured. You should test it now.",
       });
       reset({
         OIDC_FREE_CLIENT_ID: response.find((item) => item.key === "OIDC_FREE_CLIENT_ID")?.value,
@@ -225,7 +200,7 @@ export function InstanceOidcFreeConfigForm(props: Props) {
       <div className="flex flex-col gap-8">
         <div className="grid w-full grid-cols-2 gap-x-12 gap-y-8">
           <div className="col-span-2 flex flex-col gap-y-4 pt-1 md:col-span-1">
-            <div className="pt-2.5 text-18 font-medium">Oidc Free-provided details for Plane</div>
+            <div className="pt-2.5 text-18 font-medium">Provider-provided details for Plane</div>
             {OIDC_FREE_FORM_FIELDS.map((field) => (
               <ControllerInput
                 key={field.key}
@@ -244,22 +219,27 @@ export function InstanceOidcFreeConfigForm(props: Props) {
               <div className="flex items-center gap-4">
                 <Button
                   variant="primary"
-                  size="lg"
+                  size="md"
+                  stretch="auto"
                   onClick={(e) => void handleSubmit(onSubmit)(e)}
                   loading={isSubmitting}
                   disabled={!isDirty}
-                >
-                  {isSubmitting ? "Saving" : "Save changes"}
-                </Button>
-                <Link href="/authentication" className={getButtonStyling("secondary", "lg")} onClick={handleGoBack}>
-                  Go back
-                </Link>
+                  label={isSubmitting ? "Saving" : "Save changes"}
+                />
+                <Button
+                  variant="secondary"
+                  size="md"
+                  stretch="auto"
+                  nativeButton={false}
+                  render={<Link href="/authentication" onClick={handleGoBack} />}
+                  label="Go back"
+                />
               </div>
             </div>
           </div>
           <div className="col-span-2 md:col-span-1">
             <div className="flex flex-col gap-y-4 rounded-lg bg-layer-1 px-6 pt-1.5 pb-4">
-              <div className="pt-2 text-18 font-medium">Plane-provided details for Oidc Free</div>
+              <div className="pt-2 text-18 font-medium">Plane-provided details for your provider</div>
               {OIDC_FREE_SERVICE_FIELD.map((field) => (
                 <CopyField key={field.key} label={field.label} url={field.url} description={field.description} />
               ))}

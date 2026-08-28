@@ -8,13 +8,13 @@ import { useState } from "react";
 import { observer } from "mobx-react";
 import useSWR from "swr";
 // plane internal packages
-import { setPromiseToast } from "@plane/propel/toast";
-import { Loader, ToggleSwitch } from "@plane/ui";
-// assets
-import giteaLogo from "@/app/assets/logos/gitea-logo.svg?url";
+import { Switch } from "@makeplane/propel/components/switch";
+import { Fingerprint } from "lucide-react";
 // components
 import { AuthenticationMethodCard } from "@/components/authentication/authentication-method-card";
 import { PageWrapper } from "@/components/common/page-wrapper";
+import { Skeleton } from "@/components/common/skeleton";
+import { setPromiseToast } from "@/providers/toast";
 // hooks
 import { useInstance } from "@/hooks/store";
 // types
@@ -53,11 +53,10 @@ const InstanceOidcFreeAuthenticationPage = observer(function InstanceOidcFreeAut
     });
 
     await updateConfigPromise
-      .then(() => {
-        setIsSubmitting(false);
-      })
       .catch((err) => {
         console.error(err);
+      })
+      .finally(() => {
         setIsSubmitting(false);
       });
   };
@@ -68,13 +67,13 @@ const InstanceOidcFreeAuthenticationPage = observer(function InstanceOidcFreeAut
     <PageWrapper
       customHeader={
         <AuthenticationMethodCard
-          name="OidcFree"
-          description="Allow members to log in or sign up to plane with any OIDC provider."
-          icon={<img src={giteaLogo} height={24} width={24} alt="Gitea Logo" />}
+          name="OIDC"
+          description="Allow members to log in or sign up to Plane with any OpenID Connect provider."
+          icon={<Fingerprint height={24} width={24} />}
           config={
-            <ToggleSwitch
-              value={isOidcFreeEnabled}
-              onChange={() => {
+            <Switch
+              checked={isOidcFreeEnabled}
+              onCheckedChange={() => {
                 updateConfig("IS_OIDC_FREE_ENABLED", isOidcFreeEnabled ? "0" : "1");
               }}
               size="sm"
@@ -89,17 +88,17 @@ const InstanceOidcFreeAuthenticationPage = observer(function InstanceOidcFreeAut
       {formattedConfig ? (
         <InstanceOidcFreeConfigForm config={formattedConfig} />
       ) : (
-        <Loader className="space-y-8">
-          <Loader.Item height="50px" width="25%" />
-          <Loader.Item height="50px" />
-          <Loader.Item height="50px" />
-          <Loader.Item height="50px" />
-          <Loader.Item height="50px" width="50%" />
-        </Loader>
+        <Skeleton className="space-y-8">
+          <Skeleton.Item height="50px" width="25%" />
+          <Skeleton.Item height="50px" />
+          <Skeleton.Item height="50px" />
+          <Skeleton.Item height="50px" />
+          <Skeleton.Item height="50px" width="50%" />
+        </Skeleton>
       )}
     </PageWrapper>
   );
 });
-export const meta: Route.MetaFunction = () => [{ title: "Oidc Free Authentication - God Mode" }];
+export const meta: Route.MetaFunction = () => [{ title: "OIDC Authentication - God Mode" }];
 
 export default InstanceOidcFreeAuthenticationPage;

@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { KeyRound, Mails } from "lucide-react";
+import { Fingerprint, KeyRound, Mails } from "lucide-react";
 // types
 import type {
   TCoreInstanceAuthenticationModeKeys,
@@ -92,9 +92,9 @@ export const getCoreAuthenticationModesMap: (
   },
   "oidc-free": {
     key: "oidc-free",
-    name: "Oidc Free",
-    description: "Allow members to log in or sign up to plane with any OIDC provider.",
-    icon: <img src={giteaLogo} height={20} width={20} alt="Gitea Logo" />,
+    name: "OIDC",
+    description: "Allow members to log in or sign up to Plane with any OpenID Connect provider.",
+    icon: <Fingerprint className="h-6 w-6 p-0.5 text-tertiary" />,
     config: <OidcFreeConfiguration disabled={disabled} updateConfig={updateConfig} />,
     enabledConfigKey: "IS_OIDC_FREE_ENABLED",
   },

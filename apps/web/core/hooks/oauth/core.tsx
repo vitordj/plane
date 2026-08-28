@@ -7,6 +7,7 @@
 // plane imports
 import { useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
+import { Fingerprint } from "lucide-react";
 import { API_BASE_URL } from "@plane/constants";
 import type { TOAuthConfigs, TOAuthOption } from "@plane/types";
 // assets
@@ -82,8 +83,8 @@ export const useCoreOAuthConfig = (oauthActionText: string): TOAuthConfigs => {
     },
     {
       id: "oidc-free",
-      text: `${oauthActionText} with Oidc Free`,
-      icon: <img src={giteaLogo} height={18} width={18} alt="Gitea Logo" />,
+      text: `${oauthActionText} with OIDC`,
+      icon: <Fingerprint height={18} width={18} />,
       onClick: () => {
         window.location.assign(`${API_BASE_URL}/auth/oidc-free/${next_path ? `?next_path=${next_path}` : ``}`);
       },
