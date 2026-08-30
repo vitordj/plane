@@ -239,6 +239,19 @@ def _rsa_keypair():
     return private_key, jwt.algorithms.RSAAlgorithm.to_jwk(private_key.public_key(), as_dict=True)
 
 
+def _sign(private_key, **claims):
+    """An id_token carrying the standard claims, with the given ones layered on top."""
+    payload = {
+        "aud": "plane",
+        "sub": "subject",
+        "nonce": "the-nonce",
+        "iat": datetime.now(tz=timezone.utc),
+        "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=5),
+        **claims,
+    }
+    return jwt.encode(payload, private_key, algorithm="RS256")
+
+
 @pytest.mark.unit
 class TestOidcFreePkce:
     """The code is bound to a verifier only this session holds."""
@@ -483,3 +496,89 @@ class TestOidcFreeIdTokenValidation:
         )
         assert provider.jwks_url == ENTRA_DISCOVERY_DOCUMENT["jwks_uri"]
         assert provider.expected_issuer == ENTRA_DISCOVERY_DOCUMENT["issuer"]
+
+    def test_a_templated_issuer_is_matched_against_the_tokens_own_tenant(self):
+        """Entra's multi-tenant endpoints declare "{tenantid}", filled in per token."""
+        private_key, jwk = _rsa_keypair()
+        tenant = "9188040d-6c67-4c5b-b112-36a304b66dad"
+        provider = self._provider(
+            {oidc_free.SESSION_NONCE: "the-nonce"},
+            expected_issuer="https://login.microsoftonline.com/{tenantid}/v2.0",
+        )
+        id_token = _sign(
+            private_key,
+            iss=f"https://login.microsoftonline.com/{tenant}/v2.0",
+            tid=tenant,
+        )
+        self._exchange(provider, id_token, jwk)
+        assert provider.token_data["id_token"] == id_token
+
+    def test_a_templated_issuer_rejects_a_tenant_the_token_does_not_claim(self):
+        private_key, jwk = _rsa_keypair()
+        provider = self._provider(
+            {oidc_free.SESSION_NONCE: "the-nonce"},
+            expected_issuer="https://login.microsoftonline.com/{tenantid}/v2.0",
+        )
+        id_token = _sign(
+            private_key,
+            iss="https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304b66dad/v2.0",
+            tid="a-different-tenant",
+        )
+        with pytest.raises(AuthenticationException) as exc:
+            self._exchange(provider, id_token, jwk)
+        assert exc.value.error_code == 5114
+
+    def test_a_templated_issuer_still_pins_everything_around_the_placeholder(self):
+        """The placeholder stands in for one path segment, not for the whole issuer."""
+        private_key, jwk = _rsa_keypair()
+        tenant = "9188040d-6c67-4c5b-b112-36a304b66dad"
+        provider = self._provider(
+            {oidc_free.SESSION_NONCE: "the-nonce"},
+            expected_issuer="https://login.microsoftonline.com/{tenantid}/v2.0",
+        )
+        id_token = _sign(private_key, iss=f"https://login.microsoftonline.evil.com/{tenant}/v2.0", tid=tenant)
+        with pytest.raises(AuthenticationException) as exc:
+            self._exchange(provider, id_token, jwk)
+        assert exc.value.error_code == 5114
+
+
+@pytest.mark.unit
+class TestOidcFreeTokenLifetimes:
+    """The lifetimes a token response carries are seconds, but not always numbers."""
+
+    def _token_data(self, token_response):
+        provider, _ = _build(code="auth-code")
+        # No JWKS URL is configured, so the response is taken as it comes.
+        assert provider.jwks_url is None
+        with patch.object(OidcFreeOAuthProvider, "get_user_token", return_value=token_response):
+            provider.set_token_data()
+        return provider.token_data
+
+    def test_expires_in_sent_as_a_string_is_honoured(self):
+        """ADFS and older Azure endpoints send it as a string, not a number."""
+        before = datetime.now(tz=timezone.utc)
+        token_data = self._token_data({"access_token": "at", "expires_in": "3600"})
+        expires_at = token_data["access_token_expired_at"]
+        assert timedelta(minutes=59) <= expires_at - before <= timedelta(minutes=61)
+
+    def test_expires_in_sent_as_a_number_is_unchanged(self):
+        before = datetime.now(tz=timezone.utc)
+        token_data = self._token_data({"access_token": "at", "expires_in": 3600})
+        assert timedelta(minutes=59) <= token_data["access_token_expired_at"] - before <= timedelta(minutes=61)
+
+    @pytest.mark.parametrize("expires_in", ["", "not-a-number", None, {}])
+    def test_an_unusable_expires_in_leaves_the_lifetime_unset(self, expires_in):
+        """A lifetime we cannot read is worth less than a 500 after redeeming the code."""
+        token_data = self._token_data({"access_token": "at", "expires_in": expires_in})
+        assert token_data["access_token_expired_at"] is None
+        assert token_data["access_token"] == "at"
+
+    @pytest.mark.parametrize("expired_at", ["1780000000", 1780000000])
+    def test_refresh_token_expiry_is_read_as_an_epoch_either_way(self, expired_at):
+        token_data = self._token_data({"access_token": "at", "refresh_token_expired_at": expired_at})
+        assert token_data["refresh_token_expired_at"] == datetime.fromtimestamp(1780000000, tz=timezone.utc)
+
+    @pytest.mark.parametrize("expired_at", ["not-a-number", 10**20])
+    def test_a_refresh_token_expiry_out_of_range_leaves_the_lifetime_unset(self, expired_at):
+        token_data = self._token_data({"access_token": "at", "refresh_token_expired_at": expired_at})
+        assert token_data["refresh_token_expired_at"] is None

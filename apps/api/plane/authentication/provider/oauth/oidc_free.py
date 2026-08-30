@@ -5,6 +5,7 @@
 import base64
 import hashlib
 import os
+import re
 import secrets
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, urlparse
@@ -44,9 +45,40 @@ SESSION_NONCE = "oidc_free_nonce"
 ID_TOKEN_ALGORITHMS = ["RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512"]
 ID_TOKEN_LEEWAY = 60
 
+# Microsoft's multi-tenant endpoints (/common, /organizations, /consumers) serve one
+# discovery document for every tenant, so the issuer it declares is a template —
+# "https://login.microsoftonline.com/{tenantid}/v2.0" — that each id_token fills in with
+# its own tenant. Comparing an issuer like that literally rejects every sign-in, so the
+# placeholders are matched instead: the rest of the issuer still has to be exactly what
+# discovery declared, and a placeholder naming a claim is pinned to that claim's value.
+ISSUER_PLACEHOLDER = re.compile(r"\{([a-zA-Z0-9_]+)\}")
+ISSUER_PLACEHOLDER_CLAIMS = {"tenantid": "tid", "tenant_id": "tid"}
+
 # PyJWKClient caches the key set it fetches, so one client per URL keeps the
 # JWKS out of the critical path of every sign-in.
 _JWKS_CLIENTS = {}
+
+
+def _seconds_or_none(value):
+    """The value as a whole number of seconds, or None when it is not one.
+
+    Providers are free to send the lifetimes in their token response as JSON strings,
+    and several do, so the value is coerced rather than trusted to be a number.
+    """
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _epoch_or_none(seconds):
+    """A UTC datetime for an epoch timestamp, or None when it is out of range."""
+    if not seconds:
+        return None
+    try:
+        return datetime.fromtimestamp(seconds, tz=pytz.utc)
+    except (OverflowError, OSError, ValueError):
+        return None
 
 
 def _jwks_client(jwks_url):
@@ -262,6 +294,12 @@ class OidcFreeOAuthProvider(OauthAdapter):
                 error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR: token response carried no id_token",
             )
 
+        # A templated issuer cannot be compared literally, so the decoder is told to skip
+        # it and __validate_issuer_template checks it against the template below.
+        templated_issuer = bool(self.expected_issuer and ISSUER_PLACEHOLDER.search(self.expected_issuer))
+        verify_issuer = bool(self.expected_issuer) and not templated_issuer
+        required_claims = ["exp", "iat", "aud"] + (["iss"] if self.expected_issuer else [])
+
         try:
             signing_key = _jwks_client(self.jwks_url).get_signing_key_from_jwt(id_token)
             claims = jwt.decode(
@@ -270,9 +308,9 @@ class OidcFreeOAuthProvider(OauthAdapter):
                 algorithms=ID_TOKEN_ALGORITHMS,
                 audience=self.client_id,
                 # The issuer is only checked when discovery told us what it is.
-                issuer=self.expected_issuer,
+                issuer=self.expected_issuer if verify_issuer else None,
                 leeway=ID_TOKEN_LEEWAY,
-                options={"require": ["exp", "iat", "aud"], "verify_iss": bool(self.expected_issuer)},
+                options={"require": required_claims, "verify_iss": verify_issuer},
             )
         except jwt.PyJWTError:
             self.logger.warning("Rejected an oidc-free id_token", exc_info=True)
@@ -281,12 +319,45 @@ class OidcFreeOAuthProvider(OauthAdapter):
                 error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR: the id_token did not validate",
             )
 
+        if templated_issuer:
+            self.__validate_issuer_template(claims)
+
         # Binds this token to the authorization request we started, so one
         # obtained for another session cannot be replayed into this one.
         if expected_nonce and claims.get("nonce") != expected_nonce:
             raise AuthenticationException(
                 error_code=AUTHENTICATION_ERROR_CODES["OIDC_FREE_OAUTH_PROVIDER_ERROR"],
                 error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR: the id_token nonce did not match",
+            )
+
+    def __validate_issuer_template(self, claims):
+        """Check the token's issuer against the templated one discovery declared.
+
+        The template becomes a pattern: its literal parts have to match exactly, and each
+        placeholder matches a single path segment — pinned to the token's own claim where
+        the placeholder names one, which is how Microsoft documents validating a
+        multi-tenant issuer against the tenant the token was signed for.
+        """
+        issuer = claims.get("iss")
+        # split() on one capturing group alternates literal, placeholder, literal, ...
+        pieces = ISSUER_PLACEHOLDER.split(self.expected_issuer)
+        pattern = ""
+        for index, piece in enumerate(pieces):
+            if index % 2 == 0:
+                pattern += re.escape(piece)
+                continue
+            claim = claims.get(ISSUER_PLACEHOLDER_CLAIMS.get(piece.lower(), ""))
+            pattern += re.escape(str(claim)) if claim else "[^/]+"
+
+        if not issuer or not re.fullmatch(pattern, issuer):
+            self.logger.warning(
+                "Rejected an oidc-free id_token: issuer %s does not match %s",
+                issuer,
+                self.expected_issuer,
+            )
+            raise AuthenticationException(
+                error_code=AUTHENTICATION_ERROR_CODES["OIDC_FREE_OAUTH_PROVIDER_ERROR"],
+                error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR: the id_token issuer did not match the provider's",
             )
 
     def set_token_data(self):
@@ -306,20 +377,20 @@ class OidcFreeOAuthProvider(OauthAdapter):
         headers = {"Accept": "application/json"}
         token_response = self.get_user_token(data=data, headers=headers)
         self.__validate_id_token(token_response.get("id_token"), expected_nonce)
+
+        # Both are seconds, and neither is necessarily a number: a provider that sends
+        # them as strings must not take a sign-in down with a TypeError after the code
+        # has already been redeemed.
+        expires_in = _seconds_or_none(token_response.get("expires_in"))
+        refresh_expires_at = _seconds_or_none(token_response.get("refresh_token_expired_at"))
         super().set_token_data(
             {
                 "access_token": token_response.get("access_token"),
                 "refresh_token": token_response.get("refresh_token", None),
                 "access_token_expired_at": (
-                    datetime.now(tz=pytz.utc) + timedelta(seconds=token_response.get("expires_in"))
-                    if token_response.get("expires_in")
-                    else None
+                    datetime.now(tz=pytz.utc) + timedelta(seconds=expires_in) if expires_in else None
                 ),
-                "refresh_token_expired_at": (
-                    datetime.fromtimestamp(token_response.get("refresh_token_expired_at"), tz=pytz.utc)
-                    if token_response.get("refresh_token_expired_at")
-                    else None
-                ),
+                "refresh_token_expired_at": _epoch_or_none(refresh_expires_at),
                 "id_token": token_response.get("id_token", ""),
             }
         )
