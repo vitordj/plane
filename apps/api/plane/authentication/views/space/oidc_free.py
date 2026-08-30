@@ -4,10 +4,10 @@
 
 # Python imports
 import uuid
-from urllib.parse import urlencode
 
 # Django import
 from django.http import HttpResponseRedirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 
 # Module imports
@@ -19,7 +19,7 @@ from plane.authentication.adapter.error import (
     AUTHENTICATION_ERROR_CODES,
     AuthenticationException,
 )
-from plane.utils.path_validator import validate_next_path
+from plane.utils.path_validator import get_safe_redirect_url, validate_next_path, get_allowed_hosts
 
 
 class OidcFreeOauthInitiateSpaceEndpoint(View):
@@ -28,7 +28,7 @@ class OidcFreeOauthInitiateSpaceEndpoint(View):
         request.session["host"] = base_host(request=request, is_space=True)
         next_path = request.GET.get("next_path")
         if next_path:
-            request.session["next_path"] = str(validate_next_path(next_path))
+            request.session["next_path"] = str(next_path)
 
         # Check instance configuration
         instance = Instance.objects.first()
@@ -38,9 +38,9 @@ class OidcFreeOauthInitiateSpaceEndpoint(View):
                 error_message="INSTANCE_NOT_CONFIGURED",
             )
             params = exc.get_error_dict()
-            if next_path:
-                params["next_path"] = str(validate_next_path(next_path))
-            url = f"{base_host(request=request, is_space=True)}?{urlencode(params)}"
+            url = get_safe_redirect_url(
+                base_url=base_host(request=request, is_space=True), next_path=next_path, params=params
+            )
             return HttpResponseRedirect(url)
 
         try:
@@ -51,9 +51,9 @@ class OidcFreeOauthInitiateSpaceEndpoint(View):
             return HttpResponseRedirect(auth_url)
         except AuthenticationException as e:
             params = e.get_error_dict()
-            if next_path:
-                params["next_path"] = str(validate_next_path(next_path))
-            url = f"{base_host(request=request, is_space=True)}?{urlencode(params)}"
+            url = get_safe_redirect_url(
+                base_url=base_host(request=request, is_space=True), next_path=next_path, params=params
+            )
             return HttpResponseRedirect(url)
 
 
@@ -69,9 +69,9 @@ class OidcFreeCallbackSpaceEndpoint(View):
                 error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR",
             )
             params = exc.get_error_dict()
-            if next_path:
-                params["next_path"] = str(validate_next_path(next_path))
-            url = f"{base_host(request=request, is_space=True)}?{urlencode(params)}"
+            url = get_safe_redirect_url(
+                base_url=base_host(request=request, is_space=True), next_path=next_path, params=params
+            )
             return HttpResponseRedirect(url)
 
         if not code:
@@ -80,9 +80,9 @@ class OidcFreeCallbackSpaceEndpoint(View):
                 error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR",
             )
             params = exc.get_error_dict()
-            if next_path:
-                params["next_path"] = str(validate_next_path(next_path))
-            url = f"{base_host(request=request, is_space=True)}?{urlencode(params)}"
+            url = get_safe_redirect_url(
+                base_url=base_host(request=request, is_space=True), next_path=next_path, params=params
+            )
             return HttpResponseRedirect(url)
 
         try:
@@ -91,13 +91,16 @@ class OidcFreeCallbackSpaceEndpoint(View):
             # Login the user and record his device info
             user_login(request=request, user=user, is_space=True)
             # redirect to referer path
-            url = (
-                f"{base_host(request=request, is_space=True)}{str(validate_next_path(next_path)) if next_path else ''}"
-            )
-            return HttpResponseRedirect(url)
+            next_path = validate_next_path(next_path=next_path)
+
+            url = f"{base_host(request=request, is_space=True).rstrip('/')}{next_path}"
+            if url_has_allowed_host_and_scheme(url, allowed_hosts=get_allowed_hosts()):
+                return HttpResponseRedirect(url)
+            else:
+                return HttpResponseRedirect(base_host(request=request, is_space=True))
         except AuthenticationException as e:
             params = e.get_error_dict()
-            if next_path:
-                params["next_path"] = str(validate_next_path(next_path))
-            url = f"{base_host(request=request, is_space=True)}?{urlencode(params)}"
+            url = get_safe_redirect_url(
+                base_url=base_host(request=request, is_space=True), next_path=next_path, params=params
+            )
             return HttpResponseRedirect(url)
