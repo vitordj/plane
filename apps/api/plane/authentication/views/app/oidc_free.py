@@ -3,7 +3,6 @@
 # See the LICENSE file for details.
 
 import uuid
-from urllib.parse import urlencode, urljoin
 
 # Django import
 from django.http import HttpResponseRedirect
@@ -20,7 +19,7 @@ from plane.authentication.adapter.error import (
     AuthenticationException,
     AUTHENTICATION_ERROR_CODES,
 )
-from plane.utils.path_validator import validate_next_path
+from plane.utils.path_validator import get_safe_redirect_url
 
 
 class OidcFreeOauthInitiateEndpoint(View):
@@ -29,7 +28,7 @@ class OidcFreeOauthInitiateEndpoint(View):
         request.session["host"] = base_host(request=request, is_app=True)
         next_path = request.GET.get("next_path")
         if next_path:
-            request.session["next_path"] = str(validate_next_path(next_path))
+            request.session["next_path"] = str(next_path)
 
         # Check instance configuration
         instance = Instance.objects.first()
@@ -39,10 +38,11 @@ class OidcFreeOauthInitiateEndpoint(View):
                 error_message="INSTANCE_NOT_CONFIGURED",
             )
             params = exc.get_error_dict()
-            if next_path:
-                params["next_path"] = str(validate_next_path(next_path))
-            url = urljoin(base_host(request=request, is_app=True), "?" + urlencode(params))
+            url = get_safe_redirect_url(
+                base_url=base_host(request=request, is_app=True), next_path=next_path, params=params
+            )
             return HttpResponseRedirect(url)
+
         try:
             state = uuid.uuid4().hex
             provider = OidcFreeOAuthProvider(request=request, state=state)
@@ -51,9 +51,9 @@ class OidcFreeOauthInitiateEndpoint(View):
             return HttpResponseRedirect(auth_url)
         except AuthenticationException as e:
             params = e.get_error_dict()
-            if next_path:
-                params["next_path"] = str(validate_next_path(next_path))
-            url = urljoin(base_host(request=request, is_app=True), "?" + urlencode(params))
+            url = get_safe_redirect_url(
+                base_url=base_host(request=request, is_app=True), next_path=next_path, params=params
+            )
             return HttpResponseRedirect(url)
 
 
@@ -62,11 +62,6 @@ class OidcFreeCallbackEndpoint(View):
         code = request.GET.get("code")
         state = request.GET.get("state")
         next_path = request.session.get("next_path")
-        # Derived from the request rather than read back from the session, as the sibling
-        # providers do: a callback reached without one — an expired session, a stale link
-        # out of the browser's history — would otherwise redirect to a relative URL, which
-        # resolves back to this endpoint and loops until the browser gives up.
-        host = base_host(request=request, is_app=True)
 
         if state != request.session.get("state", ""):
             exc = AuthenticationException(
@@ -74,9 +69,9 @@ class OidcFreeCallbackEndpoint(View):
                 error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR",
             )
             params = exc.get_error_dict()
-            if next_path:
-                params["next_path"] = str(next_path)
-            url = urljoin(host, "?" + urlencode(params))
+            url = get_safe_redirect_url(
+                base_url=base_host(request=request, is_app=True), next_path=next_path, params=params
+            )
             return HttpResponseRedirect(url)
 
         if not code:
@@ -85,9 +80,9 @@ class OidcFreeCallbackEndpoint(View):
                 error_message="OIDC_FREE_OAUTH_PROVIDER_ERROR",
             )
             params = exc.get_error_dict()
-            if next_path:
-                params["next_path"] = str(validate_next_path(next_path))
-            url = urljoin(host, "?" + urlencode(params))
+            url = get_safe_redirect_url(
+                base_url=base_host(request=request, is_app=True), next_path=next_path, params=params
+            )
             return HttpResponseRedirect(url)
 
         try:
@@ -97,15 +92,15 @@ class OidcFreeCallbackEndpoint(View):
             user_login(request=request, user=user, is_app=True)
             # Get the redirection path
             if next_path:
-                path = str(validate_next_path(next_path))
+                path = next_path
             else:
                 path = get_redirection_path(user=user)
             # redirect to referer path
-            url = urljoin(host, path)
+            url = get_safe_redirect_url(base_url=base_host(request=request, is_app=True), next_path=path, params={})
             return HttpResponseRedirect(url)
         except AuthenticationException as e:
             params = e.get_error_dict()
-            if next_path:
-                params["next_path"] = str(validate_next_path(next_path))
-            url = urljoin(host, "?" + urlencode(params))
+            url = get_safe_redirect_url(
+                base_url=base_host(request=request, is_app=True), next_path=next_path, params=params
+            )
             return HttpResponseRedirect(url)
