@@ -128,8 +128,11 @@ class OidcFreeOAuthProvider(OauthAdapter):
         than authorize and token — so each endpoint is taken as the absolute
         URL the document declares.
         """
+        # The trailing slash comes off first: it would otherwise hide a suffix that is
+        # already there and earn the URL a second copy of it.
+        discovery_url = discovery_url.rstrip("/")
         if not discovery_url.endswith(DISCOVERY_SUFFIX):
-            discovery_url = discovery_url.rstrip("/") + DISCOVERY_SUFFIX
+            discovery_url += DISCOVERY_SUFFIX
         cls.__validate_endpoint(discovery_url)
 
         cache_key = f"oidc_free:discovery:{discovery_url}"

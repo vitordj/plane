@@ -122,6 +122,27 @@ class TestOidcFreeEndpointResolution:
         )
         assert fetch.call_args.args[0] == "https://sso.example.com/realms/plane/.well-known/openid-configuration"
 
+    @pytest.mark.parametrize(
+        "configured",
+        [
+            "https://sso.example.com/realms/plane/",
+            "https://sso.example.com/realms/plane/.well-known/openid-configuration",
+            "https://sso.example.com/realms/plane/.well-known/openid-configuration/",
+        ],
+    )
+    def test_the_suffix_is_added_once_however_the_url_is_pasted(self, configured):
+        """A trailing slash used to hide the suffix and earn the URL a second copy."""
+        _, fetch = _build(
+            config={
+                "OIDC_FREE_DISCOVERY_URL": configured,
+                "OIDC_FREE_AUTH_URL": "",
+                "OIDC_FREE_TOKEN_URL": "",
+                "OIDC_FREE_USERINFO_URL": "",
+            },
+            discovery_document=ENTRA_DISCOVERY_DOCUMENT,
+        )
+        assert fetch.call_args.args[0] == "https://sso.example.com/realms/plane/.well-known/openid-configuration"
+
     def test_explicit_url_overrides_the_discovered_one(self):
         provider, _ = _build(
             config={
