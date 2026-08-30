@@ -569,7 +569,19 @@ if ENABLE_DRF_SPECTACULAR:
     INSTALLED_APPS.append("drf_spectacular")
     from .openapi import SPECTACULAR_SETTINGS  # noqa: F401
 
+# Behind a reverse proxy, the request Django sees is the one the proxy made, so the
+# original host, port and scheme only survive in the headers it forwards.
 USE_X_FORWARDED_HOST = int(os.environ.get("USE_X_FORWARDED_HOST", 0)) == 1
 USE_X_FORWARDED_PORT = int(os.environ.get("USE_X_FORWARDED_PORT", 0)) == 1
-if os.environ.get("SECURE_PROXY_SSL_HEADER", 0):
-    SECURE_PROXY_SSL_HEADER = (os.environ.get("SECURE_PROXY_SSL_HEADER", 0), "https")
+
+# Django looks this header up in request.META, whose keys are upper-cased, underscored
+# and HTTP_-prefixed, so the name a proxy actually sends — "X-Forwarded-Proto" — would
+# never match and is normalised to that form here. Getting it wrong is quiet and costly:
+# is_secure() stays False behind a proxy that terminates TLS, and the redirect_uri the
+# OAuth providers build then comes out as http://, which identity providers reject.
+_proxy_ssl_header = os.environ.get("SECURE_PROXY_SSL_HEADER", "").strip()
+if _proxy_ssl_header:
+    _proxy_ssl_header = _proxy_ssl_header.upper().replace("-", "_")
+    if not _proxy_ssl_header.startswith("HTTP_"):
+        _proxy_ssl_header = f"HTTP_{_proxy_ssl_header}"
+    SECURE_PROXY_SSL_HEADER = (_proxy_ssl_header, "https")
