@@ -43,8 +43,8 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
     let cancelled = false;
     const loadResponsibleUnit = async () => {
       try {
-        const response = await store.service.getIssueOrganizationalUnit(workspaceSlug, projectId, issueId);
-        if (!cancelled) setSelectedUnitId(response.organizational_unit?.id ?? null);
+        const unit = await store.fetchIssueUnit(workspaceSlug, projectId, issueId);
+        if (!cancelled) setSelectedUnitId(unit?.id ?? null);
       } catch {
         if (!cancelled) setSelectedUnitId(null);
       }
@@ -72,7 +72,7 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
     const previous = selectedUnitId;
     setSelectedUnitId(unitId);
     try {
-      await store.service.setIssueOrganizationalUnit(workspaceSlug, projectId, issueId, unitId);
+      await store.setIssueUnit(workspaceSlug, projectId, issueId, unitId);
     } catch {
       setSelectedUnitId(previous);
       setToast({ type: TOAST_TYPE.ERROR, title: "Area unchanged", message: "Try again in a moment." });

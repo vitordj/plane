@@ -79,6 +79,14 @@ export interface IOrganizationalUnitStore {
     issueId: string,
     options?: { unitId?: string; mode?: TOrganizationalUnitAssignMode }
   ) => Promise<{ assigned: { user_id: string; open_issues: number } | null; reason: string }>;
+  fetchIssueUnit: (workspaceSlug: string, projectId: string, issueId: string) => Promise<IOrganizationalUnit | null>;
+  setIssueUnit: (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    unitId: string
+  ) => Promise<IOrganizationalUnit>;
+  clearIssueUnit: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
 }
 
 /**
@@ -276,4 +284,17 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
     issueId: string,
     options?: { unitId?: string; mode?: TOrganizationalUnitAssignMode }
   ) => this.service.assignFromOrganizationalUnit(workspaceSlug, projectId, issueId, options);
+
+  fetchIssueUnit = async (workspaceSlug: string, projectId: string, issueId: string) => {
+    const response = await this.service.getIssueOrganizationalUnit(workspaceSlug, projectId, issueId);
+    return response.organizational_unit ?? null;
+  };
+
+  setIssueUnit = async (workspaceSlug: string, projectId: string, issueId: string, unitId: string) => {
+    const response = await this.service.setIssueOrganizationalUnit(workspaceSlug, projectId, issueId, unitId);
+    return response.organizational_unit;
+  };
+
+  clearIssueUnit = async (workspaceSlug: string, projectId: string, issueId: string) =>
+    this.service.clearIssueOrganizationalUnit(workspaceSlug, projectId, issueId);
 }
