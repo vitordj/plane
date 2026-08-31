@@ -484,6 +484,12 @@
         "heading": "스크립트",
         "new_script": "새 스크립트",
         "description": "커스텀 스크립트와 자동화 규칙으로 워크플로우를 자동화하세요."
+      },
+      "organizational_units": {
+        "title": "영역",
+        "heading": "영역",
+        "description": "사람들을 영역으로 묶고 각 영역에 해당 프로젝트 접근 권한을 한 번에 부여합니다.",
+        "add": "새 영역"
       }
     },
     "empty_state": {

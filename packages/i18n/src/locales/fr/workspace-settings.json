@@ -484,6 +484,12 @@
         "heading": "Scripts",
         "new_script": "Nouveau script",
         "description": "Automatisez vos flux de travail avec des scripts personnalisés et des règles d’automatisation."
+      },
+      "organizational_units": {
+        "title": "Domaines",
+        "heading": "Domaines",
+        "description": "Regroupez les personnes en domaines et donnez à chaque domaine l'accès à ses projets en une seule étape.",
+        "add": "Nouveau domaine"
       }
     },
     "empty_state": {

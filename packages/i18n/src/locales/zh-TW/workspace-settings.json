@@ -484,6 +484,12 @@
         "heading": "指令碼",
         "new_script": "新指令碼",
         "description": "使用自訂指令碼和自動化規則，自動化您的工作流程。"
+      },
+      "organizational_units": {
+        "title": "區域",
+        "heading": "區域",
+        "description": "將成員分組到區域，並一步為每個區域授予其專案的存取權限。",
+        "add": "新增區域"
       }
     },
     "empty_state": {

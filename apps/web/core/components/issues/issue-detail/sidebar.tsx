@@ -124,6 +124,7 @@ export const IssueDetailsSidebar = observer(function IssueDetailsSidebar(props: 
                 projectId={projectId?.toString() ?? ""}
                 issueId={issueId}
                 disabled={!isEditable}
+                onAssigned={() => issueOperations.fetch(workspaceSlug, projectId?.toString() ?? "", issueId)}
               />
             </SidebarPropertyListItem>
 

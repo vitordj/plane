@@ -484,6 +484,12 @@
         "heading": "Script",
         "new_script": "Script mới",
         "description": "Tự động hóa quy trình làm việc của bạn với các script và quy tắc tự động hóa tùy chỉnh."
+      },
+      "organizational_units": {
+        "title": "Khu vực",
+        "heading": "Khu vực",
+        "description": "Nhóm mọi người vào các khu vực và cấp cho mỗi khu vực quyền truy cập vào các dự án của nó trong một bước.",
+        "add": "Khu vực mới"
       }
     },
     "empty_state": {

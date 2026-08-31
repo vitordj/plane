@@ -484,6 +484,12 @@
         "heading": "Skripte",
         "new_script": "Neues Skript",
         "description": "Automatisieren Sie Ihre Workflows mit benutzerdefinierten Skripten und Automatisierungsregeln."
+      },
+      "organizational_units": {
+        "title": "Bereiche",
+        "heading": "Bereiche",
+        "description": "Personen in Bereiche gruppieren und jedem Bereich in einem Schritt Zugriff auf seine Projekte geben.",
+        "add": "Neuer Bereich"
       }
     },
     "empty_state": {

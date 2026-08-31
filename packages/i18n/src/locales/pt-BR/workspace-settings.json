@@ -264,7 +264,7 @@
       "organizational_units": {
         "title": "Áreas",
         "heading": "Áreas",
-        "description": "Agrupe pessoas em áreas e dê a cada área acesso aos seus projetos de uma só vez.",
+        "description": "Agrupe pessoas em áreas e dê a cada área acesso aos seus projetos em uma única etapa.",
         "add": "Nova área"
       },
       "projects": {

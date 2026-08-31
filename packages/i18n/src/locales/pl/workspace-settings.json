@@ -484,6 +484,12 @@
         "heading": "Skrypty",
         "new_script": "Nowy skrypt",
         "description": "Automatyzuj swoje przepływy pracy za pomocą niestandardowych skryptów i reguł automatyzacji."
+      },
+      "organizational_units": {
+        "title": "Obszary",
+        "heading": "Obszary",
+        "description": "Grupowanie osób w obszary i przyznawanie każdemu obszarowi dostępu do jego projektów w jednym kroku.",
+        "add": "Nowy obszar"
       }
     },
     "empty_state": {

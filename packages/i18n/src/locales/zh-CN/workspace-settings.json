@@ -484,6 +484,12 @@
         "heading": "脚本",
         "new_script": "新建脚本",
         "description": "使用自定义脚本和自动化规则自动化您的工作流程。"
+      },
+      "organizational_units": {
+        "title": "区域",
+        "heading": "区域",
+        "description": "将成员分组到区域，并一步为每个区域授予其项目的访问权限。",
+        "add": "新建区域"
       }
     },
     "empty_state": {

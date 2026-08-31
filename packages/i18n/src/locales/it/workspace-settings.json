@@ -484,6 +484,12 @@
         "heading": "Script",
         "new_script": "Nuovo script",
         "description": "Automatizza i tuoi flussi di lavoro con script personalizzati e regole di automazione."
+      },
+      "organizational_units": {
+        "title": "Aree",
+        "heading": "Aree",
+        "description": "Raggruppi le persone in aree e conceda a ogni area l'accesso ai suoi progetti in un solo passaggio.",
+        "add": "Nuova area"
       }
     },
     "empty_state": {

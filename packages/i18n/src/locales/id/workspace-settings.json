@@ -484,6 +484,12 @@
         "heading": "Skrip",
         "new_script": "Skrip Baru",
         "description": "Otomatisasi alur kerja Anda dengan skrip kustom dan aturan otomatisasi."
+      },
+      "organizational_units": {
+        "title": "Area",
+        "heading": "Area",
+        "description": "Kelompokkan orang ke dalam area dan beri setiap area akses ke proyeknya dalam satu langkah.",
+        "add": "Area baru"
       }
     },
     "empty_state": {

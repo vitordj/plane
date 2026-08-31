@@ -484,6 +484,12 @@
         "heading": "Script-uri",
         "new_script": "Script nou",
         "description": "Automatizează fluxurile tale de lucru cu scripturi personalizate și reguli de automatizare."
+      },
+      "organizational_units": {
+        "title": "Zone",
+        "heading": "Zone",
+        "description": "Grupați persoanele în zone și acordați fiecărei zone acces la proiectele sale într-un singur pas.",
+        "add": "Zonă nouă"
       }
     },
     "empty_state": {

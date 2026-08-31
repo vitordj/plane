@@ -116,7 +116,7 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
   const selectedUnit = selectedUnitId ? store.getUnitById(selectedUnitId) : undefined;
 
   return (
-    <div className="flex w-full items-center gap-1">
+    <div className="flex w-full min-w-0 items-center gap-1">
       <CustomSearchSelect
         value={selectedUnitId}
         options={options}
@@ -124,12 +124,13 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
         disabled={disabled}
         label={selectedUnit?.name ?? "None"}
         maxHeight="md"
-        className="group w-full grow"
+        className="group min-w-0 flex-1"
         buttonClassName={`text-body-xs-regular justify-between ${selectedUnit ? "" : "text-placeholder"}`}
         noResultsMessage="No areas match"
       />
       {selectedUnitId && !disabled && (
         <Button
+          className="shrink-0"
           variant="ghost"
           size="sm"
           onClick={handleAutoAssign}

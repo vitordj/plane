@@ -484,6 +484,12 @@
         "heading": "Skripty",
         "new_script": "Nový skript",
         "description": "Automatizujte své pracovní postupy pomocí vlastních skriptů a pravidel automatizace."
+      },
+      "organizational_units": {
+        "title": "Oblasti",
+        "heading": "Oblasti",
+        "description": "Seskupte lidi do oblastí a dejte každé oblasti přístup k jejím projektům v jednom kroku.",
+        "add": "Nová oblast"
       }
     },
     "empty_state": {

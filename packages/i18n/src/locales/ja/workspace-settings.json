@@ -484,6 +484,12 @@
         "heading": "スクリプト",
         "new_script": "新しいスクリプト",
         "description": "カスタムスクリプトと自動化ルールでワークフローを自動化します。"
+      },
+      "organizational_units": {
+        "title": "エリア",
+        "heading": "エリア",
+        "description": "メンバーをエリアにまとめ、各エリアにプロジェクトへのアクセス権を一度に付与します。",
+        "add": "新しいエリア"
       }
     },
     "empty_state": {

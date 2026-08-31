@@ -484,6 +484,12 @@
         "heading": "Komut Dosyaları",
         "new_script": "Yeni Komut Dosyası",
         "description": "İş akışlarınızı özel komut dosyaları ve otomasyon kurallarıyla otomatikleştirin."
+      },
+      "organizational_units": {
+        "title": "Alanlar",
+        "heading": "Alanlar",
+        "description": "Kişileri alanlar halinde gruplayın ve her alana projelerine tek adımda erişim verin.",
+        "add": "Yeni alan"
       }
     },
     "empty_state": {
