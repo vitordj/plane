@@ -27,12 +27,18 @@ from plane.app.serializers import (
     OrganizationalUnitSerializer,
 )
 from plane.app.services.orca import (
+    MODE_APPEND,
+    MODE_FILL_EMPTY,
+    assign_from_unit,
     plan_access,
     reconcile_membership,
     reconcile_unit,
     reconcile_unit_project,
+    workload_snapshot,
 )
 from plane.db.models import (
+    Issue,
+    IssueOrganizationalUnit,
     OrganizationalUnit,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
@@ -366,3 +372,113 @@ class UserOrganizationalUnitsEndpoint(BaseAPIView):
             for membership in memberships
         ]
         return Response(payload, status=status.HTTP_200_OK)
+
+
+class IssueOrganizationalUnitEndpoint(BaseAPIView):
+    """
+    Set, read, or clear the organizational unit responsible for a work item.
+
+    @description The responsible unit is a sidecar link, not a column on
+    ``Issue``. Assignment stays a separate, explicit action so marking a unit
+    responsible never silently changes who is assigned.
+    """
+
+    @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
+    def get(self, request, slug, project_id, issue_id):
+        link = IssueOrganizationalUnit.objects.filter(
+            issue_id=issue_id, project_id=project_id, workspace__slug=slug
+        ).first()
+        if link is None:
+            return Response({"organizational_unit": None}, status=status.HTTP_200_OK)
+        return Response(
+            {"organizational_unit": OrganizationalUnitSerializer(link.organizational_unit).data},
+            status=status.HTTP_200_OK,
+        )
+
+    @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
+    def post(self, request, slug, project_id, issue_id):
+        issue = Issue.objects.filter(pk=issue_id, project_id=project_id, workspace__slug=slug).first()
+        if issue is None:
+            return Response({"error": "Work item not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        unit = OrganizationalUnit.objects.filter(
+            pk=request.data.get("organizational_unit_id"), workspace_id=issue.workspace_id
+        ).first()
+        if unit is None:
+            return Response(
+                {"error": "Organizational unit not found in this workspace"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        link, _ = IssueOrganizationalUnit.objects.get_or_create(
+            issue=issue,
+            defaults={
+                "organizational_unit": unit,
+                "project_id": issue.project_id,
+                "workspace_id": issue.workspace_id,
+            },
+        )
+        if link.organizational_unit_id != unit.id:
+            link.organizational_unit = unit
+            link.save()
+
+        return Response(
+            {"organizational_unit": OrganizationalUnitSerializer(unit).data},
+            status=status.HTTP_200_OK,
+        )
+
+    @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
+    def delete(self, request, slug, project_id, issue_id):
+        IssueOrganizationalUnit.objects.filter(issue_id=issue_id, project_id=project_id, workspace__slug=slug).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class IssueOrganizationalUnitAssignEndpoint(BaseAPIView):
+    """
+    Assign a work item to the least-loaded member of its responsible unit.
+
+    @description Manual trigger only in v1. By default it assigns only when
+    nobody is assigned yet; ``mode=append`` adds a unit member alongside the
+    current assignees. Existing assignees are never replaced.
+    """
+
+    @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
+    def post(self, request, slug, project_id, issue_id):
+        issue = Issue.objects.filter(pk=issue_id, project_id=project_id, workspace__slug=slug).first()
+        if issue is None:
+            return Response({"error": "Work item not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        unit_id = request.data.get("organizational_unit_id")
+        if unit_id:
+            unit = OrganizationalUnit.objects.filter(pk=unit_id, workspace_id=issue.workspace_id).first()
+        else:
+            link = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
+            unit = link.organizational_unit if link else None
+
+        if unit is None:
+            return Response(
+                {"error": "No organizational unit is responsible for this work item"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        mode = request.data.get("mode", MODE_FILL_EMPTY)
+        if mode not in (MODE_FILL_EMPTY, MODE_APPEND):
+            return Response({"error": "Invalid mode"}, status=status.HTTP_400_BAD_REQUEST)
+
+        chosen, reason = assign_from_unit(issue, unit, mode=mode)
+        if chosen is None:
+            return Response({"assigned": None, "reason": reason}, status=status.HTTP_200_OK)
+        return Response({"assigned": chosen.as_dict(), "reason": reason}, status=status.HTTP_200_OK)
+
+
+class OrganizationalUnitWorkloadEndpoint(BaseAPIView):
+    """Open-work count per unit member, across the unit's own projects."""
+
+    use_read_replica = True
+
+    @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
+    def get(self, request, slug, unit_id):
+        unit = OrganizationalUnit.objects.filter(workspace__slug=slug, pk=unit_id).first()
+        if unit is None:
+            return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(workload_snapshot(unit), status=status.HTTP_200_OK)

@@ -15,7 +15,10 @@ from plane.app.views import (
     OrganizationalUnitMemberViewSet,
     OrganizationalUnitProjectViewSet,
     OrganizationalUnitEffectiveAccessEndpoint,
+    OrganizationalUnitWorkloadEndpoint,
     UserOrganizationalUnitsEndpoint,
+    IssueOrganizationalUnitEndpoint,
+    IssueOrganizationalUnitAssignEndpoint,
 )
 
 urlpatterns = [
@@ -111,5 +114,21 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/effective-access/",
         OrganizationalUnitEffectiveAccessEndpoint.as_view(),
         name="organizational-unit-effective-access",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/workload/",
+        OrganizationalUnitWorkloadEndpoint.as_view(),
+        name="organizational-unit-workload",
+    ),
+    # Work item ownership by organizational unit, and unit-based assignment.
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/",
+        IssueOrganizationalUnitEndpoint.as_view(),
+        name="issue-organizational-unit",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit-assign/",
+        IssueOrganizationalUnitAssignEndpoint.as_view(),
+        name="issue-organizational-unit-assign",
     ),
 ]

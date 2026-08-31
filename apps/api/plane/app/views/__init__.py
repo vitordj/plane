@@ -255,7 +255,10 @@ from .organizational_unit import (
     OrganizationalUnitMemberViewSet,
     OrganizationalUnitProjectViewSet,
     OrganizationalUnitEffectiveAccessEndpoint,
+    OrganizationalUnitWorkloadEndpoint,
     UserOrganizationalUnitsEndpoint,
+    IssueOrganizationalUnitEndpoint,
+    IssueOrganizationalUnitAssignEndpoint,
 )
 
 

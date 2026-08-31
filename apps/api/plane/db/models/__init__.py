@@ -61,6 +61,7 @@ from .project import (
 )
 from .project_custom_settings import ProjectCustomSettings
 from .organizational_unit import (
+    IssueOrganizationalUnit,
     OrganizationalProjectAccessState,
     OrganizationalUnit,
     OrganizationalUnitGrant,

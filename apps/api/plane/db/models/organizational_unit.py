@@ -339,3 +339,65 @@ class OrganizationalProjectAccessState(BaseModel):
 
     def __str__(self):
         return f"{self.workspace_member_id} @ {self.project_id} (applied={self.last_applied_role})"
+
+
+class IssueOrganizationalUnit(BaseModel):
+    """
+    Sidecar linking a work item to the organizational unit responsible for it.
+
+    Per FORK.md the core ``Issue`` model gains no column: the responsible unit
+    lives here. Plane still requires an assignee to be a person who is an
+    active project member, so this link marks a unit as *responsible*, and the
+    assignment engine turns that into a real assignee.
+
+    Attributes:
+        issue (Issue): The work item.
+        organizational_unit (OrganizationalUnit): The responsible unit.
+        project (Project): Denormalized from the issue for cheap querying.
+        workspace (Workspace): Denormalized for cheap querying.
+    """
+
+    issue = models.OneToOneField(
+        "db.Issue",
+        on_delete=models.CASCADE,
+        related_name="organizational_unit_link",
+    )
+    organizational_unit = models.ForeignKey(
+        OrganizationalUnit,
+        on_delete=models.CASCADE,
+        related_name="issue_links",
+    )
+    project = models.ForeignKey(
+        "db.Project",
+        on_delete=models.CASCADE,
+        related_name="issue_organizational_units",
+    )
+    workspace = models.ForeignKey(
+        "db.Workspace",
+        on_delete=models.CASCADE,
+        related_name="issue_organizational_units",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["issue"],
+                condition=Q(deleted_at__isnull=True),
+                name="issue_org_unit_unique_issue_when_deleted_at_null",
+            )
+        ]
+        verbose_name = "Issue Organizational Unit"
+        verbose_name_plural = "Issue Organizational Units"
+        db_table = "issue_organizational_units"
+        ordering = ("-created_at",)
+
+    def save(self, *args, **kwargs):
+        # Keep the responsible unit and the work item inside one workspace.
+        if self.issue.workspace_id != self.organizational_unit.workspace_id:
+            raise ValidationError("Issue and organizational unit belong to different workspaces")
+        self.project_id = self.issue.project_id
+        self.workspace_id = self.issue.workspace_id
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.issue_id} -> {self.organizational_unit_id}"
