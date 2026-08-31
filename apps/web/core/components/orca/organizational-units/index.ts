@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+export * from "./issue-unit-property";
 export * from "./unit-detail";
 export * from "./unit-form-modal";
 export * from "./unit-list";

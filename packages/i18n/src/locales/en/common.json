@@ -297,6 +297,7 @@
   "members": "Members",
   "assignee": "Assignee",
   "assignees": "Assignees",
+  "area": "Area",
   "subscriber": "{count, plural, one{# Subscriber} other{# Subscribers}}",
   "you": "You",
   "labels": "Labels",

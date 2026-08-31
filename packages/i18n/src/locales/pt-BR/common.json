@@ -297,6 +297,7 @@
   "members": "Membros",
   "assignee": "Responsável",
   "assignees": "Responsáveis",
+  "area": "Área",
   "subscriber": "{count, plural, one{# Inscrito} other{# Inscritos}}",
   "you": "Você",
   "labels": "Etiquetas",
