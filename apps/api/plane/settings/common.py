@@ -562,6 +562,12 @@ SCRIPT_CAPABLE_MIME_TYPES: frozenset[str] = frozenset(
 # Seed directory path
 SEED_DIR = os.path.join(BASE_DIR, "seeds")
 
+# Orca organizational layer (see FORK.md): feature toggle and reconciliation
+# fan-out threshold. Mutations affecting up to ORCA_ORG_SYNC_MAX_EDGES
+# (members x projects) reconcile synchronously; wider ones go to Celery.
+ORCA_ORG_UNITS_ENABLED = os.environ.get("ORCA_ORG_UNITS_ENABLED", "1") == "1"
+ORCA_ORG_SYNC_MAX_EDGES = int(os.environ.get("ORCA_ORG_SYNC_MAX_EDGES", 100))
+
 ENABLE_DRF_SPECTACULAR = os.environ.get("ENABLE_DRF_SPECTACULAR", "0") == "1"
 
 if ENABLE_DRF_SPECTACULAR:
