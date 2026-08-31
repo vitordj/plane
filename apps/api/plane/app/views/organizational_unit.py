@@ -100,8 +100,13 @@ class OrganizationalUnitViewSet(BaseViewSet):
 
         serializer = OrganizationalUnitSerializer(data={**request.data, "slug": unit_slug})
         if serializer.is_valid():
-            serializer.save(workspace=workspace)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            unit = serializer.save(workspace=workspace)
+            # Re-read through the annotated queryset so the created resource
+            # carries member_count and project_count like every other read
+            # does. Without this the client gets a unit whose counts are
+            # undefined and renders them as blanks.
+            created = self.get_queryset().filter(pk=unit.pk).first()
+            return Response(OrganizationalUnitSerializer(created).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @allow_permission([ROLE.ADMIN], level="WORKSPACE")
@@ -132,7 +137,8 @@ class OrganizationalUnitViewSet(BaseViewSet):
                 serializer.save()
                 # Deactivating a unit withdraws the access it sourced.
                 reconcile_unit(unit)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            updated = self.get_queryset().filter(pk=unit.pk).first()
+            return Response(OrganizationalUnitSerializer(updated).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @allow_permission([ROLE.ADMIN], level="WORKSPACE")

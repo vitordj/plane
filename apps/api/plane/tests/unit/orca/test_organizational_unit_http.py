@@ -798,3 +798,35 @@ class TestDeletionPreservesAudit:
         response = admin_client.post(units_url(workspace_with_members.slug), {"name": "Compliance"}, format="json")
 
         assert response.status_code == 201
+
+
+@pytest.mark.unit
+class TestUnitPayloadShape:
+    """
+    Every response that returns a unit must carry the same fields.
+
+    A create that omits the annotated counts hands the UI a unit whose
+    ``member_count`` is undefined, which renders as a blank where a number
+    belongs — caught by driving the real screen, not by any service-level test.
+    """
+
+    def test_a_created_unit_carries_its_counts(self, admin_client, workspace_with_members):
+        response = admin_client.post(units_url(workspace_with_members.slug), {"name": "Engineering"}, format="json")
+
+        assert response.status_code == 201
+        assert response.data["member_count"] == 0
+        assert response.data["project_count"] == 0
+
+    def test_an_updated_unit_carries_its_counts(
+        self, admin_client, workspace_with_members, unit, project, link_project, add_member, plain_user
+    ):
+        link_project(unit, project)
+        add_member(unit, plain_user)
+
+        response = admin_client.patch(
+            unit_url(workspace_with_members.slug, unit.id), {"name": "Compliance & Risk"}, format="json"
+        )
+
+        assert response.status_code == 200
+        assert response.data["member_count"] == 1
+        assert response.data["project_count"] == 1
