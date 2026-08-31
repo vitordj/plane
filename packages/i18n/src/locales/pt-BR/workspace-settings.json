@@ -261,6 +261,12 @@
         "description": "Os Estados de projeto são um recurso exclusivo do Plane para acompanhar o progresso de todos os seus projetos por qualquer propriedade do projeto.",
         "go_to_settings": "Ir para as configurações"
       },
+      "organizational_units": {
+        "title": "Áreas",
+        "heading": "Áreas",
+        "description": "Agrupe pessoas em áreas e dê a cada área acesso aos seus projetos de uma só vez.",
+        "add": "Nova área"
+      },
       "projects": {
         "title": "Projetos",
         "description": "Gerencie estados de projetos, ative etiquetas de projetos e outras configurações.",

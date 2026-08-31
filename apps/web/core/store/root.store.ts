@@ -68,6 +68,8 @@ import type { ICustomProjectStateStore } from "./project/custom-project-state.st
 import { CustomProjectStateStore } from "./project/custom-project-state.store";
 import type { ICustomProjectLabelStore } from "./project/custom-project-label.store";
 import { CustomProjectLabelStore } from "./project/custom-project-label.store";
+import type { IOrganizationalUnitStore } from "./orca/organizational-unit.store";
+import { OrganizationalUnitStore } from "./orca/organizational-unit.store";
 import type { IThemeStore } from "./theme.store";
 import { ThemeStore } from "./theme.store";
 import type { IUserStore } from "./user";
@@ -108,6 +110,7 @@ export class CoreRootStore {
   powerK: IPowerKStore;
   customProjectState: ICustomProjectStateStore;
   customProjectLabel: ICustomProjectLabelStore;
+  organizationalUnit: IOrganizationalUnitStore;
   timelineStore: ITimelineStore;
 
   constructor() {
@@ -142,6 +145,7 @@ export class CoreRootStore {
     this.powerK = new PowerKStore();
     this.customProjectState = new CustomProjectStateStore(this);
     this.customProjectLabel = new CustomProjectLabelStore(this);
+    this.organizationalUnit = new OrganizationalUnitStore(this);
     this.timelineStore = new TimeLineStore(this);
   }
 
@@ -178,6 +182,7 @@ export class CoreRootStore {
     this.powerK = new PowerKStore();
     this.customProjectState = new CustomProjectStateStore(this);
     this.customProjectLabel = new CustomProjectLabelStore(this);
+    this.organizationalUnit = new OrganizationalUnitStore(this);
     this.timelineStore = new TimeLineStore(this);
   }
 }
