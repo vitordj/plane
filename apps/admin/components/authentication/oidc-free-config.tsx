@@ -9,10 +9,10 @@ import Link from "next/link";
 // icons
 import { Settings2 } from "lucide-react";
 // plane internal packages
-import { AnchorButton } from "@makeplane/propel/components/anchor-button";
-import { Button } from "@makeplane/propel/components/button";
-import { Switch } from "@makeplane/propel/components/switch";
+import { getButtonStyling } from "@plane/propel/button";
 import type { TInstanceAuthenticationMethodKeys } from "@plane/types";
+import { ToggleSwitch } from "@plane/ui";
+import { cn } from "@plane/utils";
 // hooks
 import { useInstance } from "@/hooks/store";
 
@@ -42,16 +42,12 @@ export const OidcFreeConfiguration = observer(function OidcFreeConfiguration(pro
     <>
       {OidcFreeConfigured ? (
         <div className="flex items-center gap-4">
-          <AnchorButton
-            variant="primary"
-            size="sm"
-            nativeButton={false}
-            render={<Link href="/authentication/oidc-free" />}
-            label="Edit"
-          />
-          <Switch
-            checked={Boolean(parseInt(OidcFreeConfig))}
-            onCheckedChange={() => {
+          <Link href="/authentication/oidc-free" className={cn(getButtonStyling("link", "base"), "font-medium")}>
+            Edit
+          </Link>
+          <ToggleSwitch
+            value={Boolean(parseInt(OidcFreeConfig))}
+            onChange={() => {
               updateConfig("IS_OIDC_FREE_ENABLED", parseInt(OidcFreeConfig) ? "0" : "1");
             }}
             size="sm"
@@ -59,15 +55,10 @@ export const OidcFreeConfiguration = observer(function OidcFreeConfiguration(pro
           />
         </div>
       ) : (
-        <Button
-          variant="secondary"
-          size="sm"
-          stretch="auto"
-          nativeButton={false}
-          render={<Link href="/authentication/oidc-free" />}
-          icon={<Settings2 className="h-4 w-4 p-0.5 text-tertiary" />}
-          label="Configure"
-        />
+        <Link href="/authentication/oidc-free" className={cn(getButtonStyling("secondary", "base"), "text-tertiary")}>
+          <Settings2 className="h-4 w-4 p-0.5 text-tertiary" />
+          Configure
+        </Link>
       )}
     </>
   );

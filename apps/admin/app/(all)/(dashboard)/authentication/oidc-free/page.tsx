@@ -8,13 +8,13 @@ import { useState } from "react";
 import { observer } from "mobx-react";
 import useSWR from "swr";
 // plane internal packages
-import { Switch } from "@makeplane/propel/components/switch";
+import { setPromiseToast } from "@plane/propel/toast";
+import { Loader, ToggleSwitch } from "@plane/ui";
+// icons
 import { Fingerprint } from "lucide-react";
 // components
 import { AuthenticationMethodCard } from "@/components/authentication/authentication-method-card";
 import { PageWrapper } from "@/components/common/page-wrapper";
-import { Skeleton } from "@/components/common/skeleton";
-import { setPromiseToast } from "@/providers/toast";
 // hooks
 import { useInstance } from "@/hooks/store";
 // types
@@ -71,9 +71,9 @@ const InstanceOidcFreeAuthenticationPage = observer(function InstanceOidcFreeAut
           description="Allow members to log in or sign up to Plane with any OpenID Connect provider."
           icon={<Fingerprint height={24} width={24} />}
           config={
-            <Switch
-              checked={isOidcFreeEnabled}
-              onCheckedChange={() => {
+            <ToggleSwitch
+              value={isOidcFreeEnabled}
+              onChange={() => {
                 updateConfig("IS_OIDC_FREE_ENABLED", isOidcFreeEnabled ? "0" : "1");
               }}
               size="sm"
@@ -88,13 +88,13 @@ const InstanceOidcFreeAuthenticationPage = observer(function InstanceOidcFreeAut
       {formattedConfig ? (
         <InstanceOidcFreeConfigForm config={formattedConfig} />
       ) : (
-        <Skeleton className="space-y-8">
-          <Skeleton.Item height="50px" width="25%" />
-          <Skeleton.Item height="50px" />
-          <Skeleton.Item height="50px" />
-          <Skeleton.Item height="50px" />
-          <Skeleton.Item height="50px" width="50%" />
-        </Skeleton>
+        <Loader className="space-y-8">
+          <Loader.Item height="50px" width="25%" />
+          <Loader.Item height="50px" />
+          <Loader.Item height="50px" />
+          <Loader.Item height="50px" />
+          <Loader.Item height="50px" width="50%" />
+        </Loader>
       )}
     </PageWrapper>
   );

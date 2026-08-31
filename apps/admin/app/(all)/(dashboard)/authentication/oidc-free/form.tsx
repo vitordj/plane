@@ -10,8 +10,8 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 // plane internal packages
 import { API_BASE_URL } from "@plane/constants";
-import { Button } from "@makeplane/propel/components/button";
-import { TOAST_TYPE, setToast } from "@/providers/toast";
+import { Button, getButtonStyling } from "@plane/propel/button";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IFormattedInstanceConfiguration, TInstanceOidcFreeAuthenticationConfigurationKeys } from "@plane/types";
 // components
 import { CodeBlock } from "@/components/common/code-block";
@@ -61,7 +61,7 @@ export function InstanceOidcFreeConfigForm(props: Props) {
 
   const originURL = !isEmpty(API_BASE_URL) ? API_BASE_URL : typeof window !== "undefined" ? window.location.origin : "";
 
-  const OIDC_FREE_FORM_FIELDS: TControllerInputFormField<OidcFreeConfigFormValues>[] = [
+  const OIDC_FREE_FORM_FIELDS: TControllerInputFormField[] = [
     {
       key: "OIDC_FREE_DISPLAY_NAME",
       type: "text",
@@ -259,21 +259,16 @@ export function InstanceOidcFreeConfigForm(props: Props) {
               <div className="flex items-center gap-4">
                 <Button
                   variant="primary"
-                  size="md"
-                  stretch="auto"
+                  size="lg"
                   onClick={(e) => void handleSubmit(onSubmit)(e)}
                   loading={isSubmitting}
                   disabled={!isDirty}
-                  label={isSubmitting ? "Saving" : "Save changes"}
-                />
-                <Button
-                  variant="secondary"
-                  size="md"
-                  stretch="auto"
-                  nativeButton={false}
-                  render={<Link href="/authentication" onClick={handleGoBack} />}
-                  label="Go back"
-                />
+                >
+                  {isSubmitting ? "Saving" : "Save changes"}
+                </Button>
+                <Link href="/authentication" className={getButtonStyling("secondary", "lg")} onClick={handleGoBack}>
+                  Go back
+                </Link>
               </div>
             </div>
           </div>
