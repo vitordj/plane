@@ -145,7 +145,7 @@ export const ProjectFeaturesList = observer(function ProjectFeaturesList(props: 
                     {featureItem.icon}
                     {featureItem.title}
                     {featureItem.isPro && (
-                      <Tooltip tooltipContent="Available on plan paid" theme="dark">
+                      <Tooltip tooltipContent="Available on plan paid">
                         <UpgradeBadge className="rounded-sm" />
                       </Tooltip>
                     )}
