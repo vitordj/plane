@@ -12,6 +12,7 @@ at once, so v1 keeps it centralized. Unit leads have read access only.
 """
 
 # Django imports
+from django.db import transaction
 from django.db.models import Count, Q
 from django.utils.text import slugify
 
@@ -46,8 +47,12 @@ from plane.db.models import (
     Workspace,
     WorkspaceMember,
 )
+from plane.db.models.organizational_unit import OrganizationalUnitMemberRole
 
 from .base import BaseAPIView, BaseViewSet
+
+# Native project roles a unit may hand out, mirroring ``ROLE_CHOICES``.
+VALID_PROJECT_ROLES = {ROLE.GUEST.value, ROLE.MEMBER.value, ROLE.ADMIN.value}
 
 
 class OrganizationalUnitViewSet(BaseViewSet):
@@ -105,11 +110,28 @@ class OrganizationalUnitViewSet(BaseViewSet):
         if unit is None:
             return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        # Checked up front rather than left to the unique constraint: an
+        # IntegrityError would abort the surrounding transaction, so the clean
+        # 409 has to come before the write is attempted.
+        new_slug = request.data.get("slug")
+        if (
+            new_slug
+            and new_slug != unit.slug
+            and OrganizationalUnit.objects.filter(workspace_id=unit.workspace_id, slug=new_slug)
+            .exclude(pk=unit.pk)
+            .exists()
+        ):
+            return Response(
+                {"error": "An organizational unit with this slug already exists"},
+                status=status.HTTP_409_CONFLICT,
+            )
+
         serializer = OrganizationalUnitSerializer(unit, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
-            # Deactivating a unit withdraws the access it sourced.
-            reconcile_unit(unit)
+            with transaction.atomic():
+                serializer.save()
+                # Deactivating a unit withdraws the access it sourced.
+                reconcile_unit(unit)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -120,11 +142,14 @@ class OrganizationalUnitViewSet(BaseViewSet):
             return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
 
         # Withdraw inherited access before the unit disappears, so the ledger
-        # can still tell which project access it was responsible for.
-        unit.is_active = False
-        unit.save()
-        reconcile_unit(unit, force_sync=True)
-        unit.delete()
+        # can still tell which project access it was responsible for. All three
+        # steps share one transaction: a half-applied delete would leave the
+        # unit gone and the inherited ProjectMember rows orphaned.
+        with transaction.atomic():
+            unit.is_active = False
+            unit.save()
+            reconcile_unit(unit, force_sync=True)
+            unit.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -168,18 +193,19 @@ class OrganizationalUnitMemberViewSet(BaseViewSet):
             )
 
         created = []
-        for workspace_member in workspace_members:
-            membership, _ = OrganizationalUnitMembership.objects.get_or_create(
-                organizational_unit=unit,
-                workspace_member=workspace_member,
-                defaults={"workspace_id": unit.workspace_id, "role": role},
-            )
-            if not membership.is_active:
-                membership.is_active = True
-                membership.save()
-            created.append(membership)
+        with transaction.atomic():
+            for workspace_member in workspace_members:
+                membership, _ = OrganizationalUnitMembership.objects.get_or_create(
+                    organizational_unit=unit,
+                    workspace_member=workspace_member,
+                    defaults={"workspace_id": unit.workspace_id, "role": role},
+                )
+                if not membership.is_active:
+                    membership.is_active = True
+                    membership.save()
+                created.append(membership)
 
-        reconcile_unit(unit)
+            reconcile_unit(unit)
         serializer = OrganizationalUnitMembershipSerializer(created, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -191,10 +217,30 @@ class OrganizationalUnitMemberViewSet(BaseViewSet):
         if membership is None:
             return Response({"error": "Membership not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        # A unit has at most one active lead, enforced by a partial unique
+        # index. Rejecting the second lead here keeps it a validation error
+        # instead of an IntegrityError that would poison the transaction.
+        if (
+            request.data.get("role") == OrganizationalUnitMemberRole.LEAD
+            and membership.role != OrganizationalUnitMemberRole.LEAD
+            and OrganizationalUnitMembership.objects.filter(
+                organizational_unit_id=unit_id,
+                role=OrganizationalUnitMemberRole.LEAD,
+                is_active=True,
+            )
+            .exclude(pk=membership.pk)
+            .exists()
+        ):
+            return Response(
+                {"error": "This organizational unit already has an active lead"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = OrganizationalUnitMembershipSerializer(membership, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
-            reconcile_membership(membership)
+            with transaction.atomic():
+                serializer.save()
+                reconcile_membership(membership)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -207,11 +253,13 @@ class OrganizationalUnitMemberViewSet(BaseViewSet):
             return Response({"error": "Membership not found"}, status=status.HTTP_404_NOT_FOUND)
 
         # Deactivate then reconcile synchronously: the reconciler must observe
-        # the membership row while deciding what access to withdraw.
-        membership.is_active = False
-        membership.save()
-        reconcile_membership(membership, force_sync=True)
-        membership.delete()
+        # the membership row while deciding what access to withdraw. One
+        # transaction, so a failure never strands the withdrawn access.
+        with transaction.atomic():
+            membership.is_active = False
+            membership.save()
+            reconcile_membership(membership, force_sync=True)
+            membership.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -237,10 +285,16 @@ class OrganizationalUnitProjectViewSet(BaseViewSet):
             return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
 
         project_id = request.data.get("project_id")
-        default_role = request.data.get("default_role", 15)
         if not project_id:
             return Response({"error": "Project is required"}, status=status.HTTP_400_BAD_REQUEST)
-        if int(default_role) not in [5, 15, 20]:
+
+        # The role arrives as raw JSON, so a non-numeric value has to be a
+        # validation error rather than an uncaught cast.
+        try:
+            default_role = int(request.data.get("default_role", ROLE.MEMBER.value))
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid role"}, status=status.HTTP_400_BAD_REQUEST)
+        if default_role not in VALID_PROJECT_ROLES:
             return Response({"error": "Invalid role"}, status=status.HTTP_400_BAD_REQUEST)
 
         project = Project.objects.filter(pk=project_id, workspace_id=unit.workspace_id).first()
@@ -250,16 +304,17 @@ class OrganizationalUnitProjectViewSet(BaseViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        unit_project, created = OrganizationalUnitProject.objects.get_or_create(
-            organizational_unit=unit,
-            project=project,
-            defaults={"workspace_id": unit.workspace_id, "default_role": default_role},
-        )
-        if not created and unit_project.default_role != int(default_role):
-            unit_project.default_role = default_role
-            unit_project.save()
+        with transaction.atomic():
+            unit_project, created = OrganizationalUnitProject.objects.get_or_create(
+                organizational_unit=unit,
+                project=project,
+                defaults={"workspace_id": unit.workspace_id, "default_role": default_role},
+            )
+            if not created and unit_project.default_role != default_role:
+                unit_project.default_role = default_role
+                unit_project.save()
 
-        reconcile_unit_project(unit_project)
+            reconcile_unit_project(unit_project)
         serializer = OrganizationalUnitProjectSerializer(unit_project)
         return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
@@ -273,8 +328,9 @@ class OrganizationalUnitProjectViewSet(BaseViewSet):
 
         serializer = OrganizationalUnitProjectSerializer(unit_project, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
-            reconcile_unit_project(unit_project)
+            with transaction.atomic():
+                serializer.save()
+                reconcile_unit_project(unit_project)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -293,13 +349,15 @@ class OrganizationalUnitProjectViewSet(BaseViewSet):
                 "workspace_member_id", flat=True
             )
         )
-        unit_project.delete()
 
-        # Unlinking removes the source, so reconcile the affected pairs after
-        # the link is gone.
+        # Unlinking removes the source, so the reconcile has to run after the
+        # link is gone — but inside the same transaction, so a failure cannot
+        # leave the link deleted and the access untouched.
         from plane.app.services.orca import reconcile_access
 
-        reconcile_access(workspace_id, member_ids or None, [project_id])
+        with transaction.atomic():
+            unit_project.delete()
+            reconcile_access(workspace_id, member_ids or None, [project_id])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
