@@ -323,6 +323,15 @@
       "description": "Vytvárajte a prispôsobujte rôzne typy pracovných položiek s jedinečnými vlastnosťami"
     },
     "features": {
+      "title": "Funkcie",
+      "description": "Nastavte funkcie povolené pre tento projekt.",
+      "toast": {
+        "loading": "Aktualizácia funkcie {feature}...",
+        "success_title": "Funkcia bola aktualizovaná",
+        "success": "Funkcia {feature} bola úspešne aktualizovaná",
+        "error_title": "Chyba",
+        "error": "Funkciu {feature} sa nepodarilo aktualizovať"
+      },
       "cycles": {
         "title": "Cykly",
         "short_title": "Cykly",

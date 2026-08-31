@@ -261,6 +261,12 @@
         "description": "專案狀態是 Plane 獨有的功能，可依任何專案屬性追蹤所有專案的進度。",
         "go_to_settings": "前往設定"
       },
+      "project_labels": {
+        "title": "專案標籤",
+        "heading": "專案標籤",
+        "description": "建立和管理工作區層級的專案標籤，用於分類以及看板和清單檢視中的分組。",
+        "go_to_settings": "前往設定"
+      },
       "projects": {
         "title": "專案",
         "description": "管理專案狀態、啟用專案標籤及其他設定。",

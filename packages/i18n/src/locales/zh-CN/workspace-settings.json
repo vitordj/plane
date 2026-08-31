@@ -261,6 +261,12 @@
         "description": "项目状态是 Plane 独有的功能，用于按任何项目属性跟踪您所有项目的进度。",
         "go_to_settings": "前往设置"
       },
+      "project_labels": {
+        "title": "项目标签",
+        "heading": "项目标签",
+        "description": "创建和管理工作区级别的项目标签，用于分类以及看板和列表视图中的分组。",
+        "go_to_settings": "前往设置"
+      },
       "projects": {
         "title": "项目",
         "description": "管理项目状态、启用项目标签及其他配置。",

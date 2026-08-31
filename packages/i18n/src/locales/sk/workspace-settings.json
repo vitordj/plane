@@ -261,6 +261,12 @@
         "description": "Stavy projektov sú funkcia exkluzívna pre Plane na sledovanie priebehu všetkých vašich projektov podľa ľubovoľnej vlastnosti projektu.",
         "go_to_settings": "Prejsť na nastavenia"
       },
+      "project_labels": {
+        "title": "Štítky projektov",
+        "heading": "Štítky projektov",
+        "description": "Vytvárajte a spravujte štítky projektov na úrovni pracovného priestoru na kategorizáciu a zoskupovanie v zobrazeniach tabule a zoznamu.",
+        "go_to_settings": "Prejsť na nastavenia"
+      },
       "projects": {
         "title": "Projekty",
         "description": "Spravujte stavy projektov, povoľte štítky projektov a ďalšie konfigurácie.",

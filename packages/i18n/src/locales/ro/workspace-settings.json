@@ -261,6 +261,12 @@
         "description": "Stările proiectelor sunt o funcție exclusivă Plane pentru urmărirea progresului tuturor proiectelor tale după orice proprietate a proiectului.",
         "go_to_settings": "Mergi la setări"
       },
+      "project_labels": {
+        "title": "Etichete de proiect",
+        "heading": "Etichete de proiect",
+        "description": "Creează și gestionează etichete de proiect la nivel de spațiu de lucru pentru categorizare și grupare în vizualizările tablou și listă.",
+        "go_to_settings": "Mergi la setări"
+      },
       "projects": {
         "title": "Proiecte",
         "description": "Gestionează stările proiectelor, activează etichetele proiectelor și alte configurări.",

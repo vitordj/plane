@@ -261,6 +261,12 @@
         "description": "Les États de projet sont une fonctionnalité exclusive à Plane pour suivre la progression de tous vos projets par n’importe quelle propriété de projet.",
         "go_to_settings": "Aller aux paramètres"
       },
+      "project_labels": {
+        "title": "Étiquettes de projet",
+        "heading": "Étiquettes de projet",
+        "description": "Créez et gérez des étiquettes de projet au niveau de l’espace de travail pour la catégorisation et le regroupement dans les vues tableau et liste.",
+        "go_to_settings": "Aller aux paramètres"
+      },
       "projects": {
         "title": "Projets",
         "description": "Gérer les états des projets, activer les étiquettes de projets et autres configurations.",

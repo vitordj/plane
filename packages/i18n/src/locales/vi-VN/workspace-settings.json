@@ -261,6 +261,12 @@
         "description": "Trạng thái Dự án là tính năng chỉ có trong Plane để theo dõi tiến độ của tất cả các dự án của bạn theo bất kỳ thuộc tính dự án nào.",
         "go_to_settings": "Đi đến cài đặt"
       },
+      "project_labels": {
+        "title": "Nhãn dự án",
+        "heading": "Nhãn dự án",
+        "description": "Tạo và quản lý nhãn dự án ở cấp không gian làm việc để phân loại và nhóm trong chế độ xem bảng và danh sách.",
+        "go_to_settings": "Đi đến cài đặt"
+      },
       "projects": {
         "title": "Dự án",
         "description": "Quản lý trạng thái dự án, bật nhãn dự án và các cấu hình khác.",

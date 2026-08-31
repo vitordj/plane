@@ -323,6 +323,15 @@
       "description": "独自のプロパティを持つさまざまな種類の作業項目を作成・カスタマイズします"
     },
     "features": {
+      "title": "機能",
+      "description": "このプロジェクトで有効な機能を設定します。",
+      "toast": {
+        "loading": "{feature}を更新中...",
+        "success_title": "機能を更新しました",
+        "success": "{feature}を正常に更新しました",
+        "error_title": "エラー",
+        "error": "{feature}の更新に失敗しました"
+      },
       "cycles": {
         "title": "サイクル",
         "short_title": "サイクル",

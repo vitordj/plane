@@ -323,6 +323,15 @@
       "description": "Erstellen und passen Sie verschiedene Typen von Arbeitselementen mit einzigartigen Eigenschaften an"
     },
     "features": {
+      "title": "Funktionen",
+      "description": "Konfigurieren Sie die für dieses Projekt aktivierten Funktionen.",
+      "toast": {
+        "loading": "Funktion {feature} wird aktualisiert...",
+        "success_title": "Funktion aktualisiert",
+        "success": "Funktion {feature} wurde erfolgreich aktualisiert",
+        "error_title": "Fehler",
+        "error": "Funktion {feature} konnte nicht aktualisiert werden"
+      },
       "cycles": {
         "title": "Zyklen",
         "short_title": "Zyklen",

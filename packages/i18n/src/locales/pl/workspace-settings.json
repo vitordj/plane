@@ -261,6 +261,12 @@
         "description": "Stany projektów to funkcja Plane służąca do śledzenia postępu wszystkich projektów według dowolnej właściwości projektu.",
         "go_to_settings": "Przejdź do ustawień"
       },
+      "project_labels": {
+        "title": "Etykiety projektów",
+        "heading": "Etykiety projektów",
+        "description": "Twórz etykiety projektów na poziomie przestrzeni roboczej i zarządzaj nimi, aby kategoryzować i grupować projekty w widokach tablicy i listy.",
+        "go_to_settings": "Przejdź do ustawień"
+      },
       "projects": {
         "title": "Projekty",
         "description": "Zarządzaj stanami projektów, włączaj etykiety projektów i inne konfiguracje.",

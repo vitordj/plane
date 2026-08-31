@@ -261,6 +261,12 @@
         "description": "Gli stati dei progetti sono una funzionalità esclusiva di Plane per tracciare i progressi di tutti i tuoi progetti in base a qualsiasi proprietà del progetto.",
         "go_to_settings": "Vai alle impostazioni"
       },
+      "project_labels": {
+        "title": "Etichette di progetto",
+        "heading": "Etichette di progetto",
+        "description": "Crea e gestisci le etichette di progetto a livello di spazio di lavoro per la categorizzazione e il raggruppamento nelle viste bacheca ed elenco.",
+        "go_to_settings": "Vai alle impostazioni"
+      },
       "projects": {
         "title": "Progetti",
         "description": "Gestisci gli stati dei progetti, abilita le etichette dei progetti e altre configurazioni.",

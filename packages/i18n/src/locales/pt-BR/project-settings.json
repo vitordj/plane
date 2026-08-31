@@ -323,6 +323,15 @@
       "description": "Crie e personalize diferentes tipos de itens de trabalho com propriedades únicas"
     },
     "features": {
+      "title": "Recursos",
+      "description": "Configure os recursos habilitados para este projeto.",
+      "toast": {
+        "loading": "Atualizando {feature}...",
+        "success_title": "Recurso atualizado",
+        "success": "Recurso {feature} atualizado com sucesso",
+        "error_title": "Erro",
+        "error": "Falha ao atualizar {feature}"
+      },
       "cycles": {
         "title": "Ciclos",
         "short_title": "Ciclos",
