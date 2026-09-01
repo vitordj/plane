@@ -21,6 +21,10 @@ group arriving from Entra therefore grants nothing until somebody links it to
 projects, which is the intended safe default.
 """
 
+# Python imports
+import re
+import uuid
+
 # Django imports
 from django.db import transaction
 from django.db.models import Q
@@ -94,6 +98,32 @@ def members_of(unit):
 class SCIMGroupMixin:
     """Lookup and member-set helpers shared by the two group endpoints."""
 
+    def assert_binding_is_free(self, unit):
+        """
+        Refuse a binding another unit already holds.
+
+        @description ``external_id`` is unique per workspace so that a group
+        resolves to exactly one unit. Catching the clash here turns what would
+        be an IntegrityError and a 500 into the ``uniqueness`` conflict RFC 7644
+        defines — and 500s are what make Entra retry a doomed call forever.
+
+        @param unit: The unit about to be saved.
+        @raises SCIMError: 409 when another unit already mirrors that group.
+        """
+        if not unit.external_id:
+            return
+        clash = (
+            OrganizationalUnit.objects.filter(workspace_id=self.workspace.id, external_id=unit.external_id)
+            .exclude(pk=unit.pk)
+            .exists()
+        )
+        if clash:
+            raise SCIMError(
+                f"Group {unit.external_id} is already provisioned",
+                status.HTTP_409_CONFLICT,
+                scim_type="uniqueness",
+            )
+
     def get_unit(self, unit_id):
         """Fetch a directory-bound unit, or 404 in SCIM shape."""
         unit = OrganizationalUnit.objects.filter(workspace_id=self.workspace.id, pk=unit_id).first()
@@ -156,8 +186,6 @@ class SCIMGroupMixin:
 
 def _looks_like_uuid(value: str) -> bool:
     """Cheap guard so a directory id never reaches the ORM as a bad UUID."""
-    import uuid
-
     try:
         uuid.UUID(str(value))
         return True
@@ -314,6 +342,7 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
                 unit.slug = unique_unit_slug(self.workspace.id, display_name, exclude_id=unit.id)
             if payload.get("externalId"):
                 unit.external_id = str(payload["externalId"]).strip()
+            self.assert_binding_is_free(unit)
             unit.directory_synced_at = timezone.now()
             unit.save()
 
@@ -348,6 +377,7 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
             for operation in operations:
                 if isinstance(operation, dict):
                     self.apply_operation(unit, operation)
+            self.assert_binding_is_free(unit)
             unit.directory_synced_at = timezone.now()
             unit.save()
             result = project_unit(unit)
@@ -436,7 +466,5 @@ def _member_from_path(raw_path: str):
     @param raw_path: The raw ``path`` of the operation.
     @returns: A single-item list with the id, or an empty list.
     """
-    import re
-
     match = re.search(r'members\[\s*value\s+eq\s+"([^"]+)"\s*\]', raw_path, re.IGNORECASE)
     return [match.group(1)] if match else []

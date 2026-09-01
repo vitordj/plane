@@ -16,6 +16,7 @@ import pytest
 from plane.app.services.orca import (
     project_unit,
     project_workspace,
+    reconcile_unit,
     resolve_identity,
     unresolved_identities,
 )
@@ -125,6 +126,11 @@ class TestProjection:
         """The core promise: a sync only takes back what the sync gave."""
         link_project(bound_unit, project)
         add_member(bound_unit, plain_user)  # sync_source defaults to manual
+        # The fixture writes the membership straight to the database, so the
+        # access it implies has to be materialized before a sync can be asked
+        # to leave it alone.
+        reconcile_unit(bound_unit, force_sync=True)
+        assert ProjectMember.objects.filter(project=project, member=plain_user, is_active=True).exists()
 
         result = project_unit(bound_unit)
 

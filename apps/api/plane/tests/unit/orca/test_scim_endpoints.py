@@ -292,6 +292,28 @@ class TestScimUsers:
         assert not OrganizationalDirectoryGroupMembership.objects.filter(identity_id=identity.id).exists()
         assert not ProjectMember.objects.filter(project=project, member=plain_user, is_active=True).exists()
 
+    def test_renaming_a_user_onto_an_existing_one_is_a_conflict_not_a_crash(
+        self, scim_client, workspace_with_members, directory_connection, make_identity
+    ):
+        """
+        A 500 here would make Entra retry the same doomed call forever; the
+        uniqueness conflict is the answer it knows how to quarantine.
+        """
+        make_identity("taken@plane.so")
+        identity = make_identity("plain@plane.so")
+
+        response = scim_client.patch(
+            scim_user_url(workspace_with_members.slug, identity.id),
+            {
+                "schemas": [SCHEMA_PATCH_OP],
+                "Operations": [{"op": "replace", "path": "userName", "value": "taken@plane.so"}],
+            },
+            format="json",
+        )
+
+        assert response.status_code == 409
+        assert response.json()["scimType"] == "uniqueness"
+
     def test_a_user_from_another_workspace_is_not_found(
         self, scim_client, workspace_with_members, directory_connection, other_workspace
     ):
@@ -497,6 +519,21 @@ class TestScimGroups:
         assert OrganizationalUnit.objects.filter(pk=bound_unit.pk).exists()
         assert ProjectMember.objects.filter(project=project, member=second_user, is_active=True).exists()
         assert not ProjectMember.objects.filter(project=project, member=plain_user, is_active=True).exists()
+
+    def test_rebinding_a_group_onto_a_taken_binding_is_a_conflict_not_a_crash(
+        self, scim_client, workspace_with_members, directory_connection, bound_unit, second_unit
+    ):
+        response = scim_client.patch(
+            scim_group_url(workspace_with_members.slug, second_unit.id),
+            {
+                "schemas": [SCHEMA_PATCH_OP],
+                "Operations": [{"op": "replace", "path": "externalId", "value": bound_unit.external_id}],
+            },
+            format="json",
+        )
+
+        assert response.status_code == 409
+        assert response.json()["scimType"] == "uniqueness"
 
     def test_a_group_from_another_workspace_is_not_found(
         self, scim_client, workspace_with_members, directory_connection, foreign_unit

@@ -125,6 +125,32 @@ class SCIMUserListEndpoint(SCIMBaseView):
 class SCIMUserDetailEndpoint(SCIMBaseView):
     """Read, replace, patch and deprovision one directory identity."""
 
+    def assert_user_name_is_free(self, identity):
+        """
+        Refuse a rename that would collide with another mirrored identity.
+
+        @description ``userName`` is unique per workspace, so without this the
+        collision surfaces as an IntegrityError and a 500 — which Entra retries
+        forever. A ``uniqueness`` conflict is the answer RFC 7644 defines, and
+        the one that makes the provisioning log readable.
+
+        @param identity: The identity about to be saved.
+        @raises SCIMError: 409 when another identity already holds the name.
+        """
+        clash = (
+            OrganizationalDirectoryIdentity.objects.filter(
+                workspace_id=self.workspace.id, user_name__iexact=identity.user_name
+            )
+            .exclude(pk=identity.pk)
+            .exists()
+        )
+        if clash:
+            raise SCIMError(
+                f"User {identity.user_name} already exists",
+                status.HTTP_409_CONFLICT,
+                scim_type="uniqueness",
+            )
+
     def get_identity(self, identity_id):
         """Fetch an identity inside the authenticated workspace, or 404 in SCIM shape."""
         identity = OrganizationalDirectoryIdentity.objects.filter(
@@ -160,6 +186,7 @@ class SCIMUserDetailEndpoint(SCIMBaseView):
         with transaction.atomic():
             for key, value in fields.items():
                 setattr(identity, key, value)
+            self.assert_user_name_is_free(identity)
             identity.last_seen_at = timezone.now()
             identity.save()
             resolve_identity(identity)
@@ -192,6 +219,9 @@ class SCIMUserDetailEndpoint(SCIMBaseView):
             for operation in operations:
                 if isinstance(operation, dict):
                     self.apply_operation(identity, operation)
+            if not identity.user_name:
+                raise SCIMError("userName cannot be cleared", status.HTTP_400_BAD_REQUEST, scim_type="invalidValue")
+            self.assert_user_name_is_free(identity)
             identity.last_seen_at = timezone.now()
             identity.save()
             resolve_identity(identity)
