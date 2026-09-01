@@ -45,10 +45,14 @@ AUTHENTICATION_ERROR_CODES = {
     "GITHUB_USER_NOT_IN_ORG": 5122,
     "GITLAB_NOT_CONFIGURED": 5111,
     "GITEA_NOT_CONFIGURED": 5112,
+    # Orca: Microsoft Entra ID sign-in (see FORK.md). Numbered above the
+    # upstream block so an upstream provider added later cannot collide.
+    "ENTRA_NOT_CONFIGURED": 5113,
     "GOOGLE_OAUTH_PROVIDER_ERROR": 5115,
     "GITHUB_OAUTH_PROVIDER_ERROR": 5120,
     "GITLAB_OAUTH_PROVIDER_ERROR": 5121,
     "GITEA_OAUTH_PROVIDER_ERROR": 5123,
+    "ENTRA_OAUTH_PROVIDER_ERROR": 5126,
     "OAUTH_PROVIDER_UNVERIFIED_EMAIL": 5124,
     # Reset Password
     "INVALID_PASSWORD_TOKEN": 5125,
