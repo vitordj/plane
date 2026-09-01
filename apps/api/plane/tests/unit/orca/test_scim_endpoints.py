@@ -13,7 +13,7 @@ exercise the exact payload shapes Entra emits rather than idealized ones.
 
 import pytest
 
-from plane.app.services.orca import project_unit, resolve_identity
+from plane.app.services.orca import project_unit, reconcile_unit, resolve_identity
 from plane.db.models import (
     DirectorySyncSource,
     OrganizationalDirectoryGroupMembership,
@@ -510,6 +510,12 @@ class TestScimGroups:
         put_in_group(bound_unit, identity)
         resolve_identity(identity)
         project_unit(bound_unit)
+        # The fixture writes the manual membership straight to the database
+        # (the API would reconcile it), so materialize both people's access
+        # before asking the directory to take its half away.
+        reconcile_unit(bound_unit, force_sync=True)
+        assert ProjectMember.objects.filter(project=project, member=second_user, is_active=True).exists()
+        assert ProjectMember.objects.filter(project=project, member=plain_user, is_active=True).exists()
 
         response = scim_client.delete(scim_group_url(workspace_with_members.slug, bound_unit.id))
 
