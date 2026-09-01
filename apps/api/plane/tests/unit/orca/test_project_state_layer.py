@@ -263,19 +263,24 @@ class TestWorkspaceStateCrud:
             == status.HTTP_403_FORBIDDEN
         )
 
-    def test_a_member_can_write(self, member_client, workspace_with_members):
+    def test_a_member_can_read_but_not_write(self, member_client, workspace_with_members):
         """
-        As with the label layer: ``WorkSpaceAdminPermission`` admits Admin *and*
-        Member, so a member can change the workspace's canonical states — which
-        propagate into every opted-in project. Pinned, not endorsed.
+        As with the label layer, but the blast radius is larger: workspace
+        states propagate into every opted-in project, and deleting one moves
+        that project's work items onto the default state before dropping it.
+        ``WorkSpaceAdminPermission`` admits Members despite its name, so writes
+        here now use ``WorkspaceAdminOnlyPermission``. Reads are unchanged.
         """
+        assert member_client.get(states_url(workspace_with_members.slug)).status_code == status.HTTP_200_OK
+
         response = member_client.post(
             states_url(workspace_with_members.slug),
             {"name": "Blocked", "group": "started", "color": "#FF0000"},
             format="json",
         )
 
-        assert response.status_code == status.HTTP_201_CREATED, response.data
+        assert response.status_code == status.HTTP_403_FORBIDDEN, response.data
+        assert not ProjectState.objects.filter(workspace=workspace_with_members, name="Blocked").exists()
 
 
 # --- propagation into the projects that opted in -----------------------------

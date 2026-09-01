@@ -71,6 +71,35 @@ class WorkSpaceAdminPermission(BasePermission):
         ).exists()
 
 
+class WorkspaceAdminOnlyPermission(BasePermission):
+    """
+    Grant access only to workspace Admins.
+
+    Deliberately separate from ``WorkSpaceAdminPermission``, which despite its
+    name also admits Members (``role__in=[Admin, Member]``). Widening that
+    class would change behavior everywhere it is used across Plane, so this
+    stricter rule is applied per-view instead.
+
+    It exists for workspace-wide configuration that replicates into projects:
+    a workspace label or project state is not a local edit — saving one
+    propagates to every subscribed project, and deleting a state moves that
+    project's work items onto the default state before dropping it. Writes of
+    that blast radius are an Admin decision. Reads stay on the broader rule,
+    so views select this class for unsafe methods only.
+    """
+
+    def has_permission(self, request, view):
+        if request.user.is_anonymous:
+            return False
+
+        return WorkspaceMember.objects.filter(
+            member=request.user,
+            workspace__slug=view.workspace_slug,
+            role=Admin,
+            is_active=True,
+        ).exists()
+
+
 class WorkspaceEntityPermission(BasePermission):
     def has_permission(self, request, view):
         if request.user.is_anonymous:
