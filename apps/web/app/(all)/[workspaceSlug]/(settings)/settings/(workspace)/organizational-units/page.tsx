@@ -15,6 +15,7 @@ import { Loader } from "@plane/ui";
 // components
 import { PageHead } from "@/components/core/page-title";
 import {
+  DirectorySyncPanel,
   OrganizationalUnitDetail,
   OrganizationalUnitFormModal,
   OrganizationalUnitList,
@@ -92,6 +93,11 @@ const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
                 />
               )
             )}
+
+            {/* Directory provisioning sits below the list on purpose: areas
+                work perfectly well without it, and the section is only
+                actionable for workspace admins. */}
+            {workspaceSlug && <DirectorySyncPanel workspaceSlug={workspaceSlug.toString()} />}
           </>
         )}
       </div>

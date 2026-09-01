@@ -37,6 +37,11 @@ export interface IOrganizationalUnit {
   workspace: string;
   member_count: number;
   project_count: number;
+  /** Whether the unit was created by hand or pushed by the directory. */
+  sync_source: TDirectorySyncSource;
+  /** The directory group this unit mirrors; empty when it is not bound. */
+  external_id: string;
+  directory_synced_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -47,6 +52,8 @@ export interface IOrganizationalUnitMembership {
   workspace_member: string;
   role: TOrganizationalUnitMemberRole;
   is_active: boolean;
+  /** Whether the directory added this person, or an admin did. */
+  sync_source: TDirectorySyncSource;
   member_id: string;
   display_name: string;
   email: string;
@@ -96,4 +103,68 @@ export interface IUserOrganizationalUnit {
   organizational_unit: IOrganizationalUnit;
   role: TOrganizationalUnitMemberRole;
   projects: IOrganizationalUnitProject[];
+}
+
+/**
+ * Directory (SCIM) provisioning. An Entra group binds to a unit and supplies
+ * its members; what the unit grants stays a Plane decision. See
+ * docs/entra-directory-sync.md.
+ */
+
+/** Where a unit or a membership came from. */
+export type TDirectorySyncSource = "manual" | "scim";
+
+/** Whether a directory identity could be matched to a workspace member. */
+export type TDirectoryIdentityState = "linked" | "unresolved";
+
+/** Counters from one projection pass, shown after a sync or a resync. */
+export interface IDirectorySyncSummary {
+  memberships_created?: number;
+  memberships_reactivated?: number;
+  memberships_deactivated?: number;
+  identities_linked?: number;
+  identities_unresolved?: number;
+  unresolved_user_names?: string[];
+}
+
+export interface IDirectoryConnection {
+  id: string;
+  provider: string;
+  is_enabled: boolean;
+  tenant_id: string;
+  /** Whether a pushed group with no bound unit may create one. */
+  auto_create_units: boolean;
+  /** Whether the directory may withdraw the memberships it created. */
+  deprovision_removes_membership: boolean;
+  /** First characters of the installed token; the token itself is never returned. */
+  token_prefix: string;
+  token_issued_at: string | null;
+  token_last_used_at: string | null;
+  last_sync_at: string | null;
+  last_sync_summary: IDirectorySyncSummary;
+  has_token: boolean;
+  /** Tenant URL to paste into the Entra provisioning form. */
+  scim_base_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Returned only by the token endpoint, and only once. */
+export interface IDirectoryConnectionWithToken extends IDirectoryConnection {
+  token: string;
+}
+
+export interface IDirectoryIdentity {
+  id: string;
+  external_id: string;
+  user_name: string;
+  email: string;
+  display_name: string;
+  /** The directory's own view of the person, not Plane's. */
+  is_active: boolean;
+  state: TDirectoryIdentityState;
+  workspace_member: string | null;
+  workspace_member_display_name: string | null;
+  last_seen_at: string | null;
+  created_at: string;
 }

@@ -67,7 +67,16 @@ export const OrganizationalUnitList = observer(function OrganizationalUnitList(p
               className="focus-visible:ring-custom-primary-100 flex min-w-0 flex-1 flex-col items-start rounded text-left outline-none focus-visible:ring-2"
               onClick={() => onSelect(unit)}
             >
-              <span className="text-sm text-custom-text-100 truncate font-medium">{unit.name}</span>
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="text-sm text-custom-text-100 truncate font-medium">{unit.name}</span>
+                {/* Bound areas are worth flagging: their membership is owned
+                    upstream, so editing it here is undone on the next sync. */}
+                {unit.external_id && (
+                  <span className="text-custom-text-400 bg-layer-1 shrink-0 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide">
+                    Synced
+                  </span>
+                )}
+              </span>
               <span className="text-xs text-custom-text-300">
                 {unit.member_count} {unit.member_count === 1 ? "person" : "people"} · {unit.project_count}{" "}
                 {unit.project_count === 1 ? "project" : "projects"}
@@ -92,7 +101,11 @@ export const OrganizationalUnitList = observer(function OrganizationalUnitList(p
           handleSubmit={handleDelete}
           isSubmitting={isDeleting}
           title={`Delete ${unitToDelete.name}?`}
-          content={`Everyone in this area loses the project access it granted them. Access granted by another area, or set by hand on a project, is kept.`}
+          content={
+            unitToDelete.external_id
+              ? `Everyone in this area loses the project access it granted them. This area is synced from your directory, so the next sync will create it again — remove the group in the directory instead if you want it gone for good.`
+              : `Everyone in this area loses the project access it granted them. Access granted by another area, or set by hand on a project, is kept.`
+          }
           variant="danger"
           primaryButtonText={{ loading: "Deleting...", default: "Delete area" }}
         />

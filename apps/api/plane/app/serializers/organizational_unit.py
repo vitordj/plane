@@ -37,10 +37,23 @@ class OrganizationalUnitSerializer(BaseSerializer):
             "workspace",
             "member_count",
             "project_count",
+            "sync_source",
+            "external_id",
+            "directory_synced_at",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["workspace", "created_at", "updated_at"]
+        # The directory binding is written by the SCIM endpoints, never by the
+        # settings UI: letting an admin retype an external id by hand would let
+        # them silently steal another group's binding.
+        read_only_fields = [
+            "workspace",
+            "sync_source",
+            "external_id",
+            "directory_synced_at",
+            "created_at",
+            "updated_at",
+        ]
 
 
 class OrganizationalUnitMembershipSerializer(BaseSerializer):
@@ -60,6 +73,7 @@ class OrganizationalUnitMembershipSerializer(BaseSerializer):
             "workspace_member",
             "role",
             "is_active",
+            "sync_source",
             "member_id",
             "display_name",
             "email",
@@ -67,7 +81,7 @@ class OrganizationalUnitMembershipSerializer(BaseSerializer):
             "workspace_role",
             "created_at",
         ]
-        read_only_fields = ["organizational_unit", "created_at"]
+        read_only_fields = ["organizational_unit", "sync_source", "created_at"]
 
 
 class OrganizationalUnitProjectSerializer(BaseSerializer):
