@@ -357,10 +357,18 @@ class IssueOrganizationalUnit(BaseModel):
         workspace (Workspace): Denormalized for cheap querying.
     """
 
-    issue = models.OneToOneField(
+    # Deliberately a ForeignKey and not a OneToOneField. A OneToOneField is a
+    # ForeignKey(unique=True), and that unique index covers every row in the
+    # table — soft-deleted ones included. Since clearing the responsible unit
+    # is a soft delete (``deleted_at`` set, row kept for history), a
+    # OneToOneField makes set -> clear -> set fail on a unique violation
+    # against the row the user already cleared. The partial constraint below
+    # is the real rule: at most one *live* link per work item, with the
+    # cleared ones preserved as history.
+    issue = models.ForeignKey(
         "db.Issue",
         on_delete=models.CASCADE,
-        related_name="organizational_unit_link",
+        related_name="organizational_unit_links",
     )
     organizational_unit = models.ForeignKey(
         OrganizationalUnit,
