@@ -211,10 +211,85 @@ jobs:
           pnpm check:format
           pnpm check:lint
 
+      # Turbo builds the workspace packages first (check:types dependsOn ^build),
+      # so this catches type errors the format and lint passes cannot see.
+      - name: Run Type Checks
+        run: pnpm check:types
+
+  # ---------------------------------------------------------------------------
+  # Backend tests. The Orca organizational layer materializes native
+  # ProjectMember rows, so its tests assert against real rows in a real
+  # PostgreSQL database — partial unique indexes and soft-delete behavior do not
+  # reproduce on SQLite or against mocks.
+  # ---------------------------------------------------------------------------
+  api_tests:
+    name: API Tests (pytest)
+    needs: changes
+    if: ${{ needs.changes.outputs.api == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: plane
+          POSTGRES_PASSWORD: plane
+          POSTGRES_DB: plane_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://plane:plane@localhost:5432/plane_test
+      SECRET_KEY: stage-ci-secret-key-not-used-outside-tests
+      DJANGO_SETTINGS_MODULE: plane.settings.test
+      # Project creation reads these; without them the serializer raises and
+      # every test that creates a project fails with an opaque 500.
+      APP_BASE_URL: http://localhost:3000
+      WEB_URL: http://localhost:3000
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Build Dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpq-dev
+
+      - name: Install Python Dependencies
+        working-directory: ./apps/api
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/test.txt
+
+      # Scoped to the Orca suite: it is the fork's own surface and is verified
+      # green against this configuration. The upstream contract and smoke
+      # suites reach for services this job does not stand up (object storage
+      # among them), so widening the path is a separate change that has to
+      # provision them first — not something to switch on untested here, where
+      # a pre-existing failure would block every build.
+      - name: Run Orca Tests
+        working-directory: ./apps/api
+        run: pytest plane/tests/unit/orca/ -q
+
   build-push:
     name: Build & Push ${{ matrix.service }}
-    needs: [ci, changes]
-    if: ${{ needs.changes.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
+    needs: [ci, api_tests, changes]
+    # `ci` and `api_tests` are each scoped to the paths they cover, so either
+    # may legitimately be skipped — a web-only change skips api_tests, and a
+    # config-only change skips ci. A skipped dependency would normally skip
+    # this job too, which would stop the build for exactly those changes, so
+    # the gate is on `failure` rather than on completion.
+    if: >-
+      ${{ !cancelled()
+          && !contains(needs.*.result, 'failure')
+          && (needs.changes.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
