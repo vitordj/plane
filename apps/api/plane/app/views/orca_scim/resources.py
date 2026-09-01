@@ -20,8 +20,6 @@ every later call; ``externalId`` carries the directory's own identifier.
 from urllib.parse import quote
 
 # Module imports
-from plane.db.models import DirectoryIdentityState
-
 from .base import SCHEMA_GROUP, SCHEMA_USER
 
 
@@ -226,17 +224,3 @@ def coerce_boolean(value, default=True) -> bool:
     if isinstance(value, str):
         return value.strip().lower() in ("true", "1", "yes")
     return bool(value)
-
-
-def identity_display(identity) -> str:
-    """Short label used in unresolved reports and group member entries."""
-    return identity.display_name or identity.user_name
-
-
-def is_linked(identity) -> bool:
-    """Whether an identity currently resolves to an active workspace member."""
-    return (
-        identity.state == DirectoryIdentityState.LINKED
-        and identity.workspace_member_id is not None
-        and identity.workspace_member.is_active
-    )

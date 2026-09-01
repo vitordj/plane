@@ -136,10 +136,14 @@ class SCIMGroupMixin:
         Resolve SCIM member ``value`` entries to mirrored identities.
 
         @description Entra addresses members by the id Plane returned when it
-        created the user, so a value that resolves to nothing means the two
-        sides are out of step — Entra is replaying an id from before a reset.
-        Ignoring it keeps the rest of the group operation working; the missing
-        person shows up in the unresolved report instead of failing the sync.
+        created the user, so a value matching nothing means the two sides are
+        out of step — Entra is replaying an id from before the mirror was
+        reset. Such a value is skipped rather than failing the operation, so
+        one stale reference cannot block the rest of a group change; Entra
+        re-pushes the user on its next cycle and the member lands then.
+
+        The directory's own ``externalId`` is accepted alongside Plane's id,
+        because a group can legitimately be provisioned before its members are.
 
         @param values: The ``value`` fields of the SCIM member entries.
         @returns: The identities that exist in this workspace.
