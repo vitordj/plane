@@ -9,6 +9,8 @@ from rest_framework import serializers
 
 # Module imports
 from plane.db.models import (
+    OrganizationalDirectoryConnection,
+    OrganizationalDirectoryIdentity,
     OrganizationalUnit,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
@@ -86,3 +88,73 @@ class OrganizationalUnitProjectSerializer(BaseSerializer):
             "created_at",
         ]
         read_only_fields = ["organizational_unit", "created_at"]
+
+
+class OrganizationalDirectoryConnectionSerializer(BaseSerializer):
+    """
+    Read-only-ish view of a workspace's directory connection.
+
+    The bearer token is never serialized — only whether one exists and the
+    short prefix, so the settings screen can show which credential is
+    installed without ever being able to reveal it.
+    """
+
+    has_token = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrganizationalDirectoryConnection
+        fields = [
+            "id",
+            "provider",
+            "is_enabled",
+            "tenant_id",
+            "auto_create_units",
+            "deprovision_removes_membership",
+            "token_prefix",
+            "token_issued_at",
+            "token_last_used_at",
+            "last_sync_at",
+            "last_sync_summary",
+            "has_token",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "provider",
+            "token_prefix",
+            "token_issued_at",
+            "token_last_used_at",
+            "last_sync_at",
+            "last_sync_summary",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_has_token(self, obj) -> bool:
+        """@returns: Whether a SCIM bearer token is currently installed."""
+        return bool(obj.token_hash)
+
+
+class OrganizationalDirectoryIdentitySerializer(BaseSerializer):
+    """A mirrored directory identity, as the unresolved report shows it."""
+
+    workspace_member_display_name = serializers.CharField(
+        source="workspace_member.member.display_name", read_only=True, default=None
+    )
+
+    class Meta:
+        model = OrganizationalDirectoryIdentity
+        fields = [
+            "id",
+            "external_id",
+            "user_name",
+            "email",
+            "display_name",
+            "is_active",
+            "state",
+            "workspace_member",
+            "workspace_member_display_name",
+            "last_seen_at",
+            "created_at",
+        ]
+        read_only_fields = fields

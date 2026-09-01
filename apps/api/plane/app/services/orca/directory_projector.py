@@ -39,6 +39,7 @@ from django.utils import timezone
 from plane.db.models import (
     DirectoryIdentityState,
     DirectorySyncSource,
+    OrganizationalDirectoryConnection,
     OrganizationalDirectoryGroupMembership,
     OrganizationalDirectoryIdentity,
     OrganizationalUnit,
@@ -177,6 +178,24 @@ def _unresolved_for_unit(unit: OrganizationalUnit) -> list:
     )
 
 
+def directory_withdraws_membership(workspace_id) -> bool:
+    """
+    Whether the directory is allowed to withdraw the memberships it created.
+
+    @description Some rollouts want provisioning to be purely additive while
+    the directory data is still being cleaned up — a half-populated group
+    should not strip people of access on its first sync. Turning
+    ``deprovision_removes_membership`` off makes the projector add only; the
+    memberships it already created stay until an admin removes them or the
+    setting is turned back on.
+
+    @param workspace_id: The workspace being projected.
+    @returns: ``True`` when withdrawal is allowed (the default).
+    """
+    connection = OrganizationalDirectoryConnection.objects.filter(workspace_id=workspace_id).first()
+    return True if connection is None else connection.deprovision_removes_membership
+
+
 @transaction.atomic
 def project_unit(unit: OrganizationalUnit, reconcile: bool = True) -> ProjectionResult:
     """
@@ -225,16 +244,18 @@ def project_unit(unit: OrganizationalUnit, reconcile: bool = True) -> Projection
             result.memberships_reactivated += 1
             touched_member_ids.add(workspace_member_id)
 
-    # Subtractive pass: withdraw only what this layer put there.
-    for workspace_member_id, membership in existing.items():
-        if workspace_member_id in desired:
-            continue
-        if membership.sync_source != DirectorySyncSource.SCIM or not membership.is_active:
-            continue
-        membership.is_active = False
-        membership.save(update_fields=["is_active", "updated_at"])
-        result.memberships_deactivated += 1
-        touched_member_ids.add(workspace_member_id)
+    # Subtractive pass: withdraw only what this layer put there, and only
+    # when the workspace allows the directory to take access away at all.
+    if directory_withdraws_membership(unit.workspace_id):
+        for workspace_member_id, membership in existing.items():
+            if workspace_member_id in desired:
+                continue
+            if membership.sync_source != DirectorySyncSource.SCIM or not membership.is_active:
+                continue
+            membership.is_active = False
+            membership.save(update_fields=["is_active", "updated_at"])
+            result.memberships_deactivated += 1
+            touched_member_ids.add(workspace_member_id)
 
     unresolved = _unresolved_for_unit(unit)
     result.identities_unresolved = len(unresolved)
