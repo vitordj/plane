@@ -19,9 +19,18 @@ from plane.app.views import (
     UserOrganizationalUnitsEndpoint,
     IssueOrganizationalUnitEndpoint,
     IssueOrganizationalUnitAssignEndpoint,
+    OrcaConfigEndpoint,
 )
 
 urlpatterns = [
+    # Which Orca features this instance has switched on. Not gated by the
+    # organizational-units flag: the UI asks this endpoint whether to render
+    # the layer at all, so the switch must not be able to hide it.
+    path(
+        "orca/workspaces/<str:slug>/config/",
+        OrcaConfigEndpoint.as_view(),
+        name="orca-config",
+    ),
     # Workspace Project State Settings
     path(
         "orca/workspaces/<str:slug>/project-states/settings/",

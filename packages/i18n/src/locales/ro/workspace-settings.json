@@ -495,7 +495,8 @@
         "title": "Zone",
         "heading": "Zone",
         "description": "Grupați persoanele în zone și acordați fiecărei zone acces la proiectele sale într-un singur pas.",
-        "add": "Zonă nouă"
+        "add": "Zonă nouă",
+        "disabled": "Zonele sunt dezactivate în această instanță. Un administrator le poate activa setând ORCA_ORG_UNITS_ENABLED=1."
       }
     },
     "empty_state": {

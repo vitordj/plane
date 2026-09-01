@@ -495,7 +495,8 @@
         "title": "Aree",
         "heading": "Aree",
         "description": "Raggruppi le persone in aree e conceda a ogni area l'accesso ai suoi progetti in un solo passaggio.",
-        "add": "Nuova area"
+        "add": "Nuova area",
+        "disabled": "Le aree sono disattivate in questa istanza. Un amministratore può attivarle impostando ORCA_ORG_UNITS_ENABLED=1."
       }
     },
     "empty_state": {

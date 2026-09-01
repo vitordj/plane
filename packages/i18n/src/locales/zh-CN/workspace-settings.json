@@ -495,7 +495,8 @@
         "title": "区域",
         "heading": "区域",
         "description": "将成员分组到区域，并一步为每个区域授予其项目的访问权限。",
-        "add": "新建区域"
+        "add": "新建区域",
+        "disabled": "本实例已关闭区域功能。管理员可以通过设置 ORCA_ORG_UNITS_ENABLED=1 来启用。"
       }
     },
     "empty_state": {

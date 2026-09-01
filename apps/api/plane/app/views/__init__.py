@@ -259,6 +259,7 @@ from .organizational_unit import (
     UserOrganizationalUnitsEndpoint,
     IssueOrganizationalUnitEndpoint,
     IssueOrganizationalUnitAssignEndpoint,
+    OrcaConfigEndpoint,
 )
 
 

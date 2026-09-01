@@ -495,7 +495,8 @@
         "title": "Obszary",
         "heading": "Obszary",
         "description": "Grupowanie osób w obszary i przyznawanie każdemu obszarowi dostępu do jego projektów w jednym kroku.",
-        "add": "Nowy obszar"
+        "add": "Nowy obszar",
+        "disabled": "Obszary są wyłączone w tej instancji. Administrator może je włączyć, ustawiając ORCA_ORG_UNITS_ENABLED=1."
       }
     },
     "empty_state": {

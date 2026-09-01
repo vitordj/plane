@@ -495,7 +495,8 @@
         "title": "영역",
         "heading": "영역",
         "description": "사람들을 영역으로 묶고 각 영역에 해당 프로젝트 접근 권한을 한 번에 부여합니다.",
-        "add": "새 영역"
+        "add": "새 영역",
+        "disabled": "이 인스턴스에서는 영역이 비활성화되어 있습니다. 관리자가 ORCA_ORG_UNITS_ENABLED=1을 설정하면 사용할 수 있습니다."
       }
     },
     "empty_state": {

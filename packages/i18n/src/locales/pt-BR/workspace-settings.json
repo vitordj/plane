@@ -271,7 +271,8 @@
         "title": "Áreas",
         "heading": "Áreas",
         "description": "Agrupe pessoas em áreas e dê a cada área acesso aos seus projetos em uma única etapa.",
-        "add": "Nova área"
+        "add": "Nova área",
+        "disabled": "As áreas estão desativadas nesta instância. Um administrador pode ativá-las definindo ORCA_ORG_UNITS_ENABLED=1."
       },
       "projects": {
         "title": "Projetos",

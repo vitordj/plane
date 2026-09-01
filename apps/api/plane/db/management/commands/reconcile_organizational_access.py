@@ -6,6 +6,7 @@
 from typing import Any
 
 # Django imports
+from django.conf import settings
 from django.core.management import BaseCommand, CommandError
 
 # Module imports
@@ -27,6 +28,14 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         slug = options["workspace"]
         apply_changes = options["apply"]
+
+        # The API refuses every organizational route while the layer is off, so
+        # the command must refuse too. Otherwise the one entry point left open
+        # would be the one that writes ProjectMember rows in bulk.
+        if not getattr(settings, "ORCA_ORG_UNITS_ENABLED", True):
+            raise CommandError(
+                "The organizational layer is disabled (ORCA_ORG_UNITS_ENABLED=0); refusing to reconcile access."
+            )
 
         workspace = Workspace.objects.filter(slug=slug).first()
         if workspace is None:

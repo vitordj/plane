@@ -495,7 +495,8 @@
         "title": "Area",
         "heading": "Area",
         "description": "Kelompokkan orang ke dalam area dan beri setiap area akses ke proyeknya dalam satu langkah.",
-        "add": "Area baru"
+        "add": "Area baru",
+        "disabled": "Area dinonaktifkan di instans ini. Administrator dapat mengaktifkannya dengan mengatur ORCA_ORG_UNITS_ENABLED=1."
       }
     },
     "empty_state": {

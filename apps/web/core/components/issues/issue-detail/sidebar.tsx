@@ -33,6 +33,7 @@ import { StateDropdown } from "@/components/dropdowns/state/dropdown";
 // hooks
 import { useProjectEstimates } from "@/hooks/store/estimates";
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 import { useMember } from "@/hooks/store/use-member";
 import { useProject } from "@/hooks/store/use-project";
 import { useProjectState } from "@/hooks/store/use-project-state";
@@ -64,6 +65,9 @@ export const IssueDetailsSidebar = observer(function IssueDetailsSidebar(props: 
   } = useIssueDetail();
   const { getUserDetails } = useMember();
   const { getStateById } = useProjectState();
+  // Hidden when ORCA_ORG_UNITS_ENABLED=0: the routes behind this control all
+  // answer 404, so showing it would offer an action that cannot succeed.
+  const { isEnabled: areOrganizationalUnitsEnabled } = useOrganizationalUnit();
   const issue = getIssueById(issueId);
   if (!issue) return <></>;
 
@@ -118,15 +122,17 @@ export const IssueDetailsSidebar = observer(function IssueDetailsSidebar(props: 
               />
             </SidebarPropertyListItem>
 
-            <SidebarPropertyListItem icon={Network} label={t("common.area")}>
-              <IssueOrganizationalUnitProperty
-                workspaceSlug={workspaceSlug}
-                projectId={projectId?.toString() ?? ""}
-                issueId={issueId}
-                disabled={!isEditable}
-                onAssigned={() => issueOperations.fetch(workspaceSlug, projectId?.toString() ?? "", issueId)}
-              />
-            </SidebarPropertyListItem>
+            {areOrganizationalUnitsEnabled && (
+              <SidebarPropertyListItem icon={Network} label={t("common.area")}>
+                <IssueOrganizationalUnitProperty
+                  workspaceSlug={workspaceSlug}
+                  projectId={projectId?.toString() ?? ""}
+                  issueId={issueId}
+                  disabled={!isEditable}
+                  onAssigned={() => issueOperations.fetch(workspaceSlug, projectId?.toString() ?? "", issueId)}
+                />
+              </SidebarPropertyListItem>
+            )}
 
             <SidebarPropertyListItem icon={PriorityPropertyIcon} label={t("common.priority")}>
               <PriorityDropdown

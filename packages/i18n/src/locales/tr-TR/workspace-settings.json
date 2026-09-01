@@ -495,7 +495,8 @@
         "title": "Alanlar",
         "heading": "Alanlar",
         "description": "Kişileri alanlar halinde gruplayın ve her alana projelerine tek adımda erişim verin.",
-        "add": "Yeni alan"
+        "add": "Yeni alan",
+        "disabled": "Alanlar bu örnekte kapalıdır. Bir yönetici ORCA_ORG_UNITS_ENABLED=1 ayarını yaparak alanları etkinleştirebilir."
       }
     },
     "empty_state": {

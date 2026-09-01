@@ -271,7 +271,8 @@
         "title": "Areas",
         "heading": "Areas",
         "description": "Group people into areas and give each area access to its projects in one step.",
-        "add": "New area"
+        "add": "New area",
+        "disabled": "Areas are turned off on this instance. An administrator can enable them by setting ORCA_ORG_UNITS_ENABLED=1."
       },
       "projects": {
         "title": "Projects",

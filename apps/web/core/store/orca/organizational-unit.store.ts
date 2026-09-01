@@ -26,14 +26,18 @@ export interface IOrganizationalUnitStore {
   workloadMap: Record<string, IOrganizationalUnitWorkload[]>;
   myUnits: IUserOrganizationalUnit[] | null;
   loader: boolean;
+  /** `null` until the config endpoint answers; see `isEnabled`. */
+  featureEnabled: boolean | null;
   // computed
   units: IOrganizationalUnit[];
+  isEnabled: boolean;
   // helpers
   getUnitById: (unitId: string) => IOrganizationalUnit | undefined;
   getMembersByUnitId: (unitId: string) => IOrganizationalUnitMembership[];
   getProjectsByUnitId: (unitId: string) => IOrganizationalUnitProject[];
   getWorkloadByUnitId: (unitId: string) => IOrganizationalUnitWorkload[];
   // actions
+  fetchConfig: (workspaceSlug: string) => Promise<boolean>;
   fetchUnits: (workspaceSlug: string) => Promise<IOrganizationalUnit[]>;
   createUnit: (workspaceSlug: string, data: Partial<IOrganizationalUnit>) => Promise<IOrganizationalUnit>;
   updateUnit: (
@@ -102,6 +106,7 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
   workloadMap: Record<string, IOrganizationalUnitWorkload[]> = {};
   myUnits: IUserOrganizationalUnit[] | null = null;
   loader = false;
+  featureEnabled: boolean | null = null;
 
   rootStore: CoreRootStore;
   service: OrganizationalUnitService;
@@ -114,7 +119,10 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       workloadMap: observable,
       myUnits: observable,
       loader: observable.ref,
+      featureEnabled: observable.ref,
       units: computed,
+      isEnabled: computed,
+      fetchConfig: action,
       fetchUnits: action,
       createUnit: action,
       updateUnit: action,
@@ -140,6 +148,36 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
   get units(): IOrganizationalUnit[] {
     return Object.values(this.unitMap).toSorted((a, b) => a.name.localeCompare(b.name));
   }
+
+  /**
+   * @description Whether to render the organizational layer at all. Optimistic
+   * while `featureEnabled` is still `null`: the layer is on by default, so
+   * assuming "off" before the config lands would make the UI flicker the
+   * section away on every load. A disabled instance answers 404 on every
+   * organizational route anyway, so a brief optimistic render cannot leak
+   * anything.
+   */
+  get isEnabled(): boolean {
+    return this.featureEnabled !== false;
+  }
+
+  fetchConfig = async (workspaceSlug: string) => {
+    try {
+      const response = await this.service.getOrcaConfig(workspaceSlug);
+      const enabled = response?.organizational_units_enabled ?? true;
+      runInAction(() => {
+        this.featureEnabled = enabled;
+      });
+      return enabled;
+    } catch {
+      // An unreachable config endpoint says nothing about the feature, so keep
+      // the default rather than hiding a layer that may well be on.
+      runInAction(() => {
+        this.featureEnabled = true;
+      });
+      return true;
+    }
+  };
 
   getUnitById = (unitId: string) => this.unitMap[unitId];
 

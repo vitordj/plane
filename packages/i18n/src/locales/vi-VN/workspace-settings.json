@@ -495,7 +495,8 @@
         "title": "Khu vực",
         "heading": "Khu vực",
         "description": "Nhóm mọi người vào các khu vực và cấp cho mỗi khu vực quyền truy cập vào các dự án của nó trong một bước.",
-        "add": "Khu vực mới"
+        "add": "Khu vực mới",
+        "disabled": "Khu vực đã bị tắt trên phiên bản này. Quản trị viên có thể bật bằng cách đặt ORCA_ORG_UNITS_ENABLED=1."
       }
     },
     "empty_state": {

@@ -42,6 +42,11 @@ const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
   useEffect(() => {
     if (!workspaceSlug) return;
     setIsLoading(true);
+    // Ask whether the layer is switched on before listing: with
+    // ORCA_ORG_UNITS_ENABLED=0 the list endpoint answers 404, and the page
+    // should say the feature is off rather than render an empty area list as
+    // if the workspace simply had none.
+    store.fetchConfig(workspaceSlug.toString());
     store.fetchUnits(workspaceSlug.toString()).finally(() => setIsLoading(false));
   }, [workspaceSlug, store]);
 
@@ -54,6 +59,25 @@ const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
   );
 
   const selectedUnit = selectedUnitId ? store.getUnitById(selectedUnitId) : undefined;
+
+  // Reachable by typing the URL even though the nav entry is hidden.
+  if (!store.isEnabled) {
+    return (
+      <SettingsContentWrapper header={<OrganizationalUnitsWorkspaceSettingsHeader />}>
+        <PageHead title={title} />
+        <div className="flex max-w-4xl flex-col gap-2 p-6">
+          <h3 className="text-xl text-custom-text-100 font-medium">{heading}</h3>
+          <p className="text-sm text-custom-text-300">
+            {translate(
+              t,
+              "workspace_settings.settings.organizational_units.disabled",
+              "Areas are turned off on this instance. An administrator can enable them by setting ORCA_ORG_UNITS_ENABLED=1."
+            )}
+          </p>
+        </div>
+      </SettingsContentWrapper>
+    );
+  }
 
   return (
     <SettingsContentWrapper header={<OrganizationalUnitsWorkspaceSettingsHeader />}>

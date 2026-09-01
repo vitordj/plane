@@ -495,7 +495,8 @@
         "title": "區域",
         "heading": "區域",
         "description": "將成員分組到區域，並一步為每個區域授予其專案的存取權限。",
-        "add": "新增區域"
+        "add": "新增區域",
+        "disabled": "本執行個體已關閉區域功能。管理員可以透過設定 ORCA_ORG_UNITS_ENABLED=1 來啟用。"
       }
     },
     "empty_state": {

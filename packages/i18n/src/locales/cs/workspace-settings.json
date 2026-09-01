@@ -495,7 +495,8 @@
         "title": "Oblasti",
         "heading": "Oblasti",
         "description": "Seskupte lidi do oblastí a dejte každé oblasti přístup k jejím projektům v jednom kroku.",
-        "add": "Nová oblast"
+        "add": "Nová oblast",
+        "disabled": "Oblasti jsou v této instanci vypnuté. Správce je může zapnout nastavením ORCA_ORG_UNITS_ENABLED=1."
       }
     },
     "empty_state": {

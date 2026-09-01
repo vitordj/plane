@@ -495,7 +495,8 @@
         "title": "Domaines",
         "heading": "Domaines",
         "description": "Regroupez les personnes en domaines et donnez à chaque domaine l'accès à ses projets en une seule étape.",
-        "add": "Nouveau domaine"
+        "add": "Nouveau domaine",
+        "disabled": "Les domaines sont désactivés sur cette instance. Un administrateur peut les activer en définissant ORCA_ORG_UNITS_ENABLED=1."
       }
     },
     "empty_state": {

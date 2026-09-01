@@ -495,7 +495,8 @@
         "title": "Bereiche",
         "heading": "Bereiche",
         "description": "Personen in Bereiche gruppieren und jedem Bereich in einem Schritt Zugriff auf seine Projekte geben.",
-        "add": "Neuer Bereich"
+        "add": "Neuer Bereich",
+        "disabled": "Bereiche sind in dieser Instanz deaktiviert. Ein Administrator kann sie durch Setzen von ORCA_ORG_UNITS_ENABLED=1 aktivieren."
       }
     },
     "empty_state": {
