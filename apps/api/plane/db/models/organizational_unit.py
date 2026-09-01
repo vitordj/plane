@@ -19,6 +19,39 @@ class OrganizationalUnitMemberRole(models.TextChoices):
     MEMBER = "member", "Member"
 
 
+class DirectorySyncSource(models.TextChoices):
+    """
+    Where a row in the organizational layer came from.
+
+    @description The layer's governing invariant is that manual decisions win
+    over automated ones. Recording the origin of every unit and membership is
+    what lets an external directory add and remove its own rows without ever
+    touching a unit or a membership a human created by hand.
+
+    Kept provider-neutral on purpose: ``SCIM`` covers any IdP that provisions
+    through the SCIM endpoints (Microsoft Entra ID today), and a future
+    pull-based sync would add its own value here rather than a second column.
+    """
+
+    MANUAL = "manual", "Manual"
+    SCIM = "scim", "SCIM"
+
+
+class DirectoryIdentityState(models.TextChoices):
+    """
+    Whether a directory identity could be matched to a workspace member.
+
+    @description A unit never invites anyone (see
+    ``OrganizationalUnitMembership``), so an identity the directory pushes for
+    somebody who is not yet an active workspace member is not an error: it is
+    parked as ``UNRESOLVED`` and reported, and it links itself the moment that
+    person becomes a member of the workspace.
+    """
+
+    LINKED = "linked", "Linked"
+    UNRESOLVED = "unresolved", "Unresolved"
+
+
 class OrganizationalUnit(BaseModel):
     """
     Relational sidecar table representing an organizational unit (an "area",
@@ -36,6 +69,11 @@ class OrganizationalUnit(BaseModel):
         description (str): Optional free-form description.
         logo_props (dict): UI logo/icon properties, mirroring core models.
         is_active (bool): Inactive units are ignored by the reconciler.
+        sync_source (str): ``manual`` or ``scim`` — who created the unit.
+        external_id (str): Identifier of the directory group this unit mirrors
+            (the SCIM ``externalId``, which for Entra is the group objectId).
+            Empty for units that are not bound to a directory group.
+        directory_synced_at (datetime): Last time the directory wrote to it.
     """
 
     workspace = models.ForeignKey(
@@ -48,6 +86,16 @@ class OrganizationalUnit(BaseModel):
     description = models.TextField(blank=True, default="")
     logo_props = models.JSONField(default=dict)
     is_active = models.BooleanField(default=True)
+    # Directory binding. A unit may mirror one directory group; the binding is
+    # what lets SCIM address the unit by the IdP's own identifier instead of
+    # ours. An admin can also pre-create a unit and bind it by setting this.
+    sync_source = models.CharField(
+        max_length=10,
+        choices=DirectorySyncSource.choices,
+        default=DirectorySyncSource.MANUAL,
+    )
+    external_id = models.CharField(max_length=255, blank=True, default="", db_index=True)
+    directory_synced_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ["workspace", "slug", "deleted_at"]
@@ -56,7 +104,15 @@ class OrganizationalUnit(BaseModel):
                 fields=["workspace", "slug"],
                 condition=Q(deleted_at__isnull=True),
                 name="org_unit_unique_workspace_slug_when_deleted_at_null",
-            )
+            ),
+            # Two units may not mirror the same directory group: the SCIM
+            # Group endpoint resolves a group to exactly one unit. Empty
+            # external ids are excluded so unbound units stay unconstrained.
+            models.UniqueConstraint(
+                fields=["workspace", "external_id"],
+                condition=Q(deleted_at__isnull=True) & ~Q(external_id=""),
+                name="org_unit_unique_workspace_external_id_when_bound",
+            ),
         ]
         verbose_name = "Organizational Unit"
         verbose_name_plural = "Organizational Units"
@@ -82,6 +138,11 @@ class OrganizationalUnitMembership(BaseModel):
         workspace (Workspace): Denormalized from the unit for cheap querying.
         role (str): ``lead`` or ``member``. A unit has at most one active lead.
         is_active (bool): Inactive memberships stop granting project access.
+        sync_source (str): ``manual`` or ``scim``. The directory only ever
+            deactivates memberships it created itself — a membership an admin
+            added by hand survives the person leaving the directory group,
+            mirroring the "manual access always wins" rule the reconciler
+            applies one layer down at the ``ProjectMember`` level.
     """
 
     organizational_unit = models.ForeignKey(
@@ -105,6 +166,11 @@ class OrganizationalUnitMembership(BaseModel):
         default=OrganizationalUnitMemberRole.MEMBER,
     )
     is_active = models.BooleanField(default=True)
+    sync_source = models.CharField(
+        max_length=10,
+        choices=DirectorySyncSource.choices,
+        default=DirectorySyncSource.MANUAL,
+    )
 
     class Meta:
         unique_together = ["organizational_unit", "workspace_member", "deleted_at"]
