@@ -30,14 +30,14 @@ Workspace
               ProjectMember               (native, unchanged)
 ```
 
-| Table | Purpose |
-| --- | --- |
-| `organizational_units` | A unit inside a workspace: name, slug, description, `is_active`. |
-| `organizational_unit_memberships` | Person ↔ unit. FK to `WorkspaceMember`, role `lead` or `member`, at most one active lead per unit. |
-| `organizational_unit_projects` | Unit ↔ project, with the `default_role` inherited on that project. |
-| `organizational_unit_grants` | One row per (membership, unit-project) pair that sources access. Revoked rows are kept for audit. |
-| `organizational_project_access_states` | Aggregate per (person, project): `baseline_role`, `last_applied_role`, `created_by_org_layer`. |
-| `issue_organizational_units` | The unit responsible for a work item. |
+| Table                                  | Purpose                                                                                            |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `organizational_units`                 | A unit inside a workspace: name, slug, description, `is_active`.                                   |
+| `organizational_unit_memberships`      | Person ↔ unit. FK to `WorkspaceMember`, role `lead` or `member`, at most one active lead per unit. |
+| `organizational_unit_projects`         | Unit ↔ project, with the `default_role` inherited on that project.                                 |
+| `organizational_unit_grants`           | One row per (membership, unit-project) pair that sources access. Revoked rows are kept for audit.  |
+| `organizational_project_access_states` | Aggregate per (person, project): `baseline_role`, `last_applied_role`, `created_by_org_layer`.     |
+| `issue_organizational_units`           | The unit responsible for a work item.                                                              |
 
 Roles are Plane's native ones throughout: `Admin = 20`, `Member = 15`,
 `Guest = 5`.
@@ -52,11 +52,20 @@ member API applies).
 
 Two invariants make the layer safe to run repeatedly:
 
-**Manual access always wins.** The reconciler raises a role freely, but lowers
-or withdraws only when the current `ProjectMember.role` still equals
-`last_applied_role` — the role this layer last wrote. If an admin promoted
-someone by hand, the current value is not ours, so the layer relinquishes its
-claim and leaves the access alone.
+**The inherited role is a floor, and manual access above it wins.** The two
+directions are deliberately not symmetric.
+
+_Lowering or withdrawing_ happens only when the current `ProjectMember.role`
+still equals `last_applied_role` — the role this layer last wrote. If an admin
+promoted someone by hand, the current value is not ours, so the layer
+relinquishes its claim and leaves the access alone.
+
+_Raising_ happens freely, because the inherited role is a **floor**. Demoting
+someone by hand below what their unit grants does not stick: the next
+reconcile puts them back, since the unit still says they belong. To actually
+reduce someone's access, remove them from the unit or change the unit-project
+link — the reconciler is not something to override row by row. Manual
+promotions _above_ the floor are untouched.
 
 **Provenance is explicit.** Grants record every source, so removing one unit
 never removes access that another unit — or a manual grant recorded as
@@ -65,15 +74,19 @@ person to the weaker unit's role rather than removing them.
 
 Worked example:
 
-| Step | State |
-| --- | --- |
-| Lucas has manual Guest on Onboarding | `baseline_role = 5` |
-| Lucas joins Compliance (Onboarding → Member) | role becomes 15, `last_applied_role = 15` |
-| Lucas leaves Compliance | role restored to 5, `last_applied_role = None` |
+| Step                                         | State                                          |
+| -------------------------------------------- | ---------------------------------------------- |
+| Lucas has manual Guest on Onboarding         | `baseline_role = 5`                            |
+| Lucas joins Compliance (Onboarding → Member) | role becomes 15, `last_applied_role = 15`      |
+| Lucas leaves Compliance                      | role restored to 5, `last_applied_role = None` |
 
 If instead someone had promoted Lucas to Admin by hand, leaving Compliance
 would leave him at Admin: current role (20) ≠ last applied (15), so the layer
 does not touch it.
+
+If someone had instead demoted Lucas to Guest by hand _while_ he was still in
+Compliance, the next reconcile would put him back at Member. That is the floor
+at work, not a bug — Compliance still grants Member on Onboarding.
 
 **The unit lead governs the unit, not its projects.** A lead inherits the same
 `default_role` as everyone else. Project Admin is only ever granted explicitly
@@ -107,19 +120,19 @@ All routes live under `/api/orca/`, matching the namespace the fork's existing
 project-state and project-label endpoints use. Mutations require workspace
 Admin; reads are open to workspace members.
 
-| Method | Path (under `/api/orca/workspaces/<slug>/`) |
-| --- | --- |
-| `GET` `POST` | `organizational-units/` |
-| `GET` `PATCH` `DELETE` | `organizational-units/<id>/` |
-| `GET` `POST` | `organizational-units/<id>/members/` |
-| `PATCH` `DELETE` | `organizational-units/<id>/members/<membership_id>/` |
-| `GET` `POST` | `organizational-units/<id>/projects/` |
-| `PATCH` `DELETE` | `organizational-units/<id>/projects/<link_id>/` |
-| `GET` | `organizational-units/<id>/effective-access/` |
-| `GET` | `organizational-units/<id>/workload/` |
-| `GET` | `organizational-units/me/` |
-| `GET` `POST` `DELETE` | `projects/<project_id>/issues/<issue_id>/organizational-unit/` |
-| `POST` | `projects/<project_id>/issues/<issue_id>/organizational-unit-assign/` |
+| Method                 | Path (under `/api/orca/workspaces/<slug>/`)                           |
+| ---------------------- | --------------------------------------------------------------------- |
+| `GET` `POST`           | `organizational-units/`                                               |
+| `GET` `PATCH` `DELETE` | `organizational-units/<id>/`                                          |
+| `GET` `POST`           | `organizational-units/<id>/members/`                                  |
+| `PATCH` `DELETE`       | `organizational-units/<id>/members/<membership_id>/`                  |
+| `GET` `POST`           | `organizational-units/<id>/projects/`                                 |
+| `PATCH` `DELETE`       | `organizational-units/<id>/projects/<link_id>/`                       |
+| `GET`                  | `organizational-units/<id>/effective-access/`                         |
+| `GET`                  | `organizational-units/<id>/workload/`                                 |
+| `GET`                  | `organizational-units/me/`                                            |
+| `GET` `POST` `DELETE`  | `projects/<project_id>/issues/<issue_id>/organizational-unit/`        |
+| `POST`                 | `projects/<project_id>/issues/<issue_id>/organizational-unit-assign/` |
 
 `effective-access/` is strictly read-only: it runs the same resolver the
 reconciler uses and reports current state, desired state and provenance
@@ -142,10 +155,10 @@ ones. Triggering is manual in v1.
 
 ## Settings
 
-| Setting | Default | Effect |
-| --- | --- | --- |
-| `ORCA_ORG_UNITS_ENABLED` | `1` | Feature toggle for the layer. |
-| `ORCA_ORG_SYNC_MAX_EDGES` | `100` | Fan-out threshold for inline vs. Celery reconciliation. |
+| Setting                   | Default | Effect                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ORCA_ORG_UNITS_ENABLED`  | `1`     | Kill switch. Set to `0` and every `/api/orca/` organizational-unit route answers 404, the reconcile management command refuses to run, and the UI hides the layer. Existing inherited `ProjectMember` rows are left exactly as they are — the switch stops the layer acting, it does not withdraw access it already granted. Re-enable and reconcile to resume. |
+| `ORCA_ORG_SYNC_MAX_EDGES` | `100`   | Fan-out threshold for inline vs. Celery reconciliation.                                                                                                                                                                                                                                                                                                         |
 
 ## Tests
 
@@ -156,6 +169,14 @@ pytest plane/tests/unit/orca/
 
 They cover joining and leaving units, the strongest-role resolution across two
 units, manual access surviving removal, manual promotions never being
-reverted, workspace-role capping, idempotency, the read-only guarantee of
-`plan_access`, cross-workspace rejection, and the assignment engine's ranking
-and no-replacement rules.
+reverted, manual demotions below the inherited floor being restored,
+workspace-role capping, idempotency, the read-only guarantee of `plan_access`,
+cross-workspace rejection, and the assignment engine's ranking and
+no-replacement rules.
+
+They also cover the hardening invariants: that the reconciliation task is
+registered on worker startup, that a responsible unit can be set, cleared and
+set again, that `workspace_member` and `project` cannot be re-pointed by
+PATCH, that role and lead rules are validated when adding members, that
+workspace label and state writes are Admin-only, and that the kill switch
+closes the API.

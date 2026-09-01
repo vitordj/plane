@@ -11,11 +11,24 @@ rest of Plane keeps authorizing project access exactly as it does today.
 
 Two invariants govern every write, per FORK.md and the fork's access policy:
 
-1. **Manual access always wins.** The reconciler only lowers or removes access
-   when the current ``ProjectMember.role`` still equals the role it last wrote
-   (``OrganizationalProjectAccessState.last_applied_role``). Any drift — an
-   admin promoting or demoting someone by hand — makes the pair manual, and
-   the layer withdraws its claim instead of overwriting it.
+1. **The inherited role is a floor, and manual access above it always wins.**
+   Two halves, and they are not symmetric:
+
+   *Downwards*, the layer only lowers or removes access when the current
+   ``ProjectMember.role`` still equals the role it last wrote
+   (``OrganizationalProjectAccessState.last_applied_role``). Drift there means
+   someone changed the role by hand, so the layer withdraws its claim instead
+   of overwriting it, and any manual ``baseline_role`` it recorded is restored
+   rather than dropped.
+
+   *Upwards*, the inherited role is a floor and is re-applied. A member of a
+   unit that grants Member on a project is a Member of that project: an admin
+   who demotes them to Guest by hand is put back at the next reconcile,
+   because the unit still says they belong. That is deliberate — the way to
+   take the access away is to remove the person from the unit or change the
+   unit-project link, not to fight the reconciler by hand. Manual promotions
+   *above* the floor are untouched, since the target is
+   ``max(inherited_role, baseline_role)``.
 2. **Provenance is explicit.** ``OrganizationalUnitGrant`` records every
    (membership, unit-project) pair that sources access, so removing one unit
    never removes access another unit (or a manual grant) still justifies.
@@ -193,9 +206,11 @@ def _decide(
     Decide what should happen to one (member, project) pair.
 
     @description Pure decision function shared by the planner and the writer,
-    so a dry-run and a real run can never disagree. It encodes the two access
-    rules: raise freely, but lower or withdraw only when the current role is
-    still the one this layer last applied.
+    so a dry-run and a real run can never disagree. It encodes the asymmetry
+    described in the module docstring: the inherited role is a floor, so the
+    layer raises to it freely — re-reverting a manual demotion below it — but
+    lowers or withdraws only when the current role is still the one this layer
+    last applied.
 
     @param current_member: The native ``ProjectMember`` row, if any.
     @param state: The aggregate state row, if the layer has acted before.
@@ -220,8 +235,11 @@ def _decide(
             return ACTION_RESTORE_BASELINE, baseline
         return ACTION_DEACTIVATE, None
 
-    # A unit sources access. Manual baseline access is never lost, so the
-    # target is the strongest of the two.
+    # A unit sources access. The inherited role is a floor and a manual
+    # promotion above it is never lost, so the target is the stronger of the
+    # two. A manual demotion *below* the floor is deliberately undone: the
+    # unit still says this person belongs, and the way to withdraw that is to
+    # change the unit, not the ProjectMember row.
     target = max(inherited_role, baseline or 0)
 
     if current_member is None:
