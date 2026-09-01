@@ -541,6 +541,39 @@ class TestScimGroups:
         assert response.status_code == 409
         assert response.json()["scimType"] == "uniqueness"
 
+    def test_a_withdrawn_member_disappears_from_the_area_roster(
+        self,
+        scim_client,
+        workspace_with_members,
+        directory_connection,
+        bound_unit,
+        make_identity,
+        put_in_group,
+        admin_client,
+    ):
+        """
+        A withdrawal deactivates the membership rather than deleting it, so the
+        provenance survives for audit. The roster must not show those people —
+        it would report someone as being in an area they were removed from.
+        """
+        identity = make_identity("plain@plane.so")
+        put_in_group(bound_unit, identity)
+        resolve_identity(identity)
+        project_unit(bound_unit)
+        roster = f"/api/orca/workspaces/{workspace_with_members.slug}/organizational-units/{bound_unit.id}/members/"
+        assert len(admin_client.get(roster).data) == 1
+
+        scim_client.patch(
+            scim_group_url(workspace_with_members.slug, bound_unit.id),
+            {
+                "schemas": [SCHEMA_PATCH_OP],
+                "Operations": [{"op": "remove", "path": f'members[value eq "{identity.id}"]'}],
+            },
+            format="json",
+        )
+
+        assert admin_client.get(roster).data == []
+
     def test_a_group_from_another_workspace_is_not_found(
         self, scim_client, workspace_with_members, directory_connection, foreign_unit
     ):
