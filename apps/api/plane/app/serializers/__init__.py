@@ -150,6 +150,7 @@ from .project_label import (
 from .organizational_unit import (
     OrganizationalUnitSerializer,
     OrganizationalUnitMembershipSerializer,
+    OrganizationalUnitMembershipCreateSerializer,
     OrganizationalUnitProjectSerializer,
 )
 

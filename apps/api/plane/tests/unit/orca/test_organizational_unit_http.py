@@ -304,7 +304,14 @@ class TestOrganizationalUnitMembers:
             format="json",
         )
 
-        assert response.status_code == 400
+        # `workspace_member` is read-only, so DRF drops the field instead of
+        # validating it: the PATCH succeeds and changes nothing. The move this
+        # guards against is now impossible by construction rather than
+        # rejected after the fact — what matters, and what is asserted below,
+        # is that the membership still points at the same person. Moving a
+        # membership to someone else takes DELETE + POST, which withdraws the
+        # old access before granting the new.
+        assert response.status_code == 200
         membership.refresh_from_db()
         assert membership.workspace_member.member_id == plain_user.id
 
@@ -560,7 +567,10 @@ class TestOrganizationalUnitProjects:
             format="json",
         )
 
-        assert response.status_code == 400
+        # Same as the membership case above: `project` is read-only, so the
+        # field is dropped rather than rejected. The link cannot be re-pointed
+        # at all now, which is what the assertion below pins.
+        assert response.status_code == 200
         unit_project.refresh_from_db()
         assert unit_project.project_id == project.id
 

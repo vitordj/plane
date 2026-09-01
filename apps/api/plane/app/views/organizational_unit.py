@@ -23,6 +23,7 @@ from rest_framework.response import Response
 # Module imports
 from plane.app.permissions.base import ROLE, allow_permission
 from plane.app.serializers import (
+    OrganizationalUnitMembershipCreateSerializer,
     OrganizationalUnitMembershipSerializer,
     OrganizationalUnitProjectSerializer,
     OrganizationalUnitSerializer,
@@ -183,16 +184,24 @@ class OrganizationalUnitMemberViewSet(BaseViewSet):
         if unit is None:
             return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        member_ids = request.data.get("workspace_member_ids") or []
-        role = request.data.get("role", "member")
-        if not member_ids:
-            return Response({"error": "At least one workspace member is required"}, status=status.HTTP_400_BAD_REQUEST)
+        # Validated before anything is written: `role` never reaches the model
+        # through a serializer on this path, and a second active lead would
+        # otherwise abort the transaction with an IntegrityError from the
+        # single-lead partial index instead of returning a 400.
+        payload = OrganizationalUnitMembershipCreateSerializer(
+            data=request.data, context={"organizational_unit": unit}
+        )
+        if not payload.is_valid():
+            return Response(payload.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        member_ids = payload.validated_data["workspace_member_ids"]
+        role = payload.validated_data["role"]
 
         # v1 grants access to existing workspace members only; units never invite.
         workspace_members = list(
             WorkspaceMember.objects.filter(id__in=member_ids, workspace_id=unit.workspace_id, is_active=True)
         )
-        if len(workspace_members) != len(set(member_ids)):
+        if len(workspace_members) != len(member_ids):
             return Response(
                 {"error": "All members must be active members of this workspace"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -201,14 +210,27 @@ class OrganizationalUnitMemberViewSet(BaseViewSet):
         created = []
         with transaction.atomic():
             for workspace_member in workspace_members:
-                membership, _ = OrganizationalUnitMembership.objects.get_or_create(
+                membership, was_created = OrganizationalUnitMembership.objects.get_or_create(
                     organizational_unit=unit,
                     workspace_member=workspace_member,
                     defaults={"workspace_id": unit.workspace_id, "role": role},
                 )
-                if not membership.is_active:
-                    membership.is_active = True
-                    membership.save()
+                if not was_created:
+                    changed = False
+                    if not membership.is_active:
+                        # Reactivation restores the role the membership was
+                        # stored with rather than overwriting it; the validator
+                        # has already rejected the case where reviving a stored
+                        # lead would produce a second active one.
+                        membership.is_active = True
+                        changed = True
+                    if role == OrganizationalUnitMemberRole.LEAD and membership.role != role:
+                        # An explicit lead request is unambiguous, and the
+                        # validator has ruled out a conflicting active lead.
+                        membership.role = role
+                        changed = True
+                    if changed:
+                        membership.save()
                 created.append(membership)
 
             reconcile_unit(unit)
