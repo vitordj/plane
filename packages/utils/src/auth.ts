@@ -228,6 +228,34 @@ const errorCodeMessages: {
     title: `GitLab OAuth provider error`,
     message: () => `GitLab OAuth provider error. Please try again.`,
   },
+  [EAuthErrorCodes.GITEA_NOT_CONFIGURED]: {
+    title: `Gitea not configured`,
+    message: () => `Gitea not configured. Please contact your administrator.`,
+  },
+  [EAuthErrorCodes.AZUREAD_NOT_CONFIGURED]: {
+    title: `Microsoft Entra ID not configured`,
+    message: () => `Microsoft Entra ID not configured. Please contact your administrator.`,
+  },
+  [EAuthErrorCodes.GITEA_OAUTH_PROVIDER_ERROR]: {
+    title: `Gitea OAuth provider error`,
+    message: () => `Gitea OAuth provider error. Please try again.`,
+  },
+  [EAuthErrorCodes.OAUTH_PROVIDER_UNVERIFIED_EMAIL]: {
+    title: `Email not verified`,
+    message: () => `Your email is not verified with the provider. Verify it and try again.`,
+  },
+  [EAuthErrorCodes.AZUREAD_OAUTH_PROVIDER_ERROR]: {
+    title: `Microsoft Entra ID error`,
+    message: () => `Microsoft Entra ID sign-in failed. Please try again.`,
+  },
+  [EAuthErrorCodes.AZUREAD_TENANT_MISMATCH]: {
+    title: `Account outside this directory`,
+    message: () => `That Microsoft account belongs to another directory. Use your work account for this organization.`,
+  },
+  [EAuthErrorCodes.AZUREAD_NO_EMAIL]: {
+    title: `No email on the Microsoft account`,
+    message: () => `That Microsoft account has no email address in the directory. Please contact your administrator.`,
+  },
   // Reset Password
   [EAuthErrorCodes.INVALID_PASSWORD_TOKEN]: {
     title: `Invalid password token`,
@@ -340,6 +368,13 @@ export const authErrorHandler = (errorCode: EAuthErrorCodes, email?: string): TA
     EAuthErrorCodes.GOOGLE_OAUTH_PROVIDER_ERROR,
     EAuthErrorCodes.GITHUB_OAUTH_PROVIDER_ERROR,
     EAuthErrorCodes.GITLAB_OAUTH_PROVIDER_ERROR,
+    EAuthErrorCodes.GITEA_NOT_CONFIGURED,
+    EAuthErrorCodes.AZUREAD_NOT_CONFIGURED,
+    EAuthErrorCodes.GITEA_OAUTH_PROVIDER_ERROR,
+    EAuthErrorCodes.OAUTH_PROVIDER_UNVERIFIED_EMAIL,
+    EAuthErrorCodes.AZUREAD_OAUTH_PROVIDER_ERROR,
+    EAuthErrorCodes.AZUREAD_TENANT_MISMATCH,
+    EAuthErrorCodes.AZUREAD_NO_EMAIL,
     EAuthErrorCodes.INVALID_PASSWORD_TOKEN,
     EAuthErrorCodes.EXPIRED_PASSWORD_TOKEN,
     EAuthErrorCodes.INCORRECT_OLD_PASSWORD,

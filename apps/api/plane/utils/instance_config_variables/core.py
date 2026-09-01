@@ -162,6 +162,39 @@ gitea_config_variables = [
     },
 ]
 
+azuread_config_variables = [
+    {
+        "key": "IS_AZUREAD_ENABLED",
+        "value": os.environ.get("IS_AZUREAD_ENABLED", "0"),
+        "category": "AZUREAD",
+        "is_encrypted": False,
+    },
+    {
+        "key": "AZUREAD_TENANT_ID",
+        "value": os.environ.get("AZUREAD_TENANT_ID"),
+        "category": "AZUREAD",
+        "is_encrypted": False,
+    },
+    {
+        "key": "AZUREAD_CLIENT_ID",
+        "value": os.environ.get("AZUREAD_CLIENT_ID"),
+        "category": "AZUREAD",
+        "is_encrypted": False,
+    },
+    {
+        "key": "AZUREAD_CLIENT_SECRET",
+        "value": os.environ.get("AZUREAD_CLIENT_SECRET"),
+        "category": "AZUREAD",
+        "is_encrypted": True,
+    },
+    {
+        "key": "ENABLE_AZUREAD_SYNC",
+        "value": os.environ.get("ENABLE_AZUREAD_SYNC", "0"),
+        "category": "AZUREAD",
+        "is_encrypted": False,
+    },
+]
+
 smtp_config_variables = [
     {
         "key": "ENABLE_SMTP",
@@ -257,6 +290,7 @@ core_config_variables = [
     *github_config_variables,
     *gitlab_config_variables,
     *gitea_config_variables,
+    *azuread_config_variables,
     *smtp_config_variables,
     *llm_config_variables,
     *unsplash_config_variables,

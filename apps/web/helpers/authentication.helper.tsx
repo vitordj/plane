@@ -76,9 +76,16 @@ export enum EAuthenticationErrorCodes {
   GOOGLE_NOT_CONFIGURED = "5105",
   GITHUB_NOT_CONFIGURED = "5110",
   GITLAB_NOT_CONFIGURED = "5111",
+  GITEA_NOT_CONFIGURED = "5112",
+  AZUREAD_NOT_CONFIGURED = "5113",
   GOOGLE_OAUTH_PROVIDER_ERROR = "5115",
   GITHUB_OAUTH_PROVIDER_ERROR = "5120",
   GITLAB_OAUTH_PROVIDER_ERROR = "5121",
+  GITEA_OAUTH_PROVIDER_ERROR = "5123",
+  OAUTH_PROVIDER_UNVERIFIED_EMAIL = "5124",
+  AZUREAD_OAUTH_PROVIDER_ERROR = "5126",
+  AZUREAD_TENANT_MISMATCH = "5127",
+  AZUREAD_NO_EMAIL = "5128",
   // Reset Password
   INVALID_PASSWORD_TOKEN = "5125",
   EXPIRED_PASSWORD_TOKEN = "5130",
@@ -287,6 +294,34 @@ const errorCodeMessages: {
     title: `GitLab OAuth provider error`,
     message: () => `GitLab OAuth provider error. Please try again.`,
   },
+  [EAuthenticationErrorCodes.GITEA_NOT_CONFIGURED]: {
+    title: `Gitea not configured`,
+    message: () => `Gitea not configured. Please contact your administrator.`,
+  },
+  [EAuthenticationErrorCodes.AZUREAD_NOT_CONFIGURED]: {
+    title: `Microsoft Entra ID not configured`,
+    message: () => `Microsoft Entra ID not configured. Please contact your administrator.`,
+  },
+  [EAuthenticationErrorCodes.GITEA_OAUTH_PROVIDER_ERROR]: {
+    title: `Gitea OAuth provider error`,
+    message: () => `Gitea OAuth provider error. Please try again.`,
+  },
+  [EAuthenticationErrorCodes.OAUTH_PROVIDER_UNVERIFIED_EMAIL]: {
+    title: `Email not verified`,
+    message: () => `Your email is not verified with the provider. Verify it and try again.`,
+  },
+  [EAuthenticationErrorCodes.AZUREAD_OAUTH_PROVIDER_ERROR]: {
+    title: `Microsoft Entra ID error`,
+    message: () => `Microsoft Entra ID sign-in failed. Please try again.`,
+  },
+  [EAuthenticationErrorCodes.AZUREAD_TENANT_MISMATCH]: {
+    title: `Account outside this directory`,
+    message: () => `That Microsoft account belongs to another directory. Use your work account for this organization.`,
+  },
+  [EAuthenticationErrorCodes.AZUREAD_NO_EMAIL]: {
+    title: `No email on the Microsoft account`,
+    message: () => `That Microsoft account has no email address in the directory. Please contact your administrator.`,
+  },
 
   // Reset Password
   [EAuthenticationErrorCodes.INVALID_PASSWORD_TOKEN]: {
@@ -414,6 +449,13 @@ export const authErrorHandler = (errorCode: EAuthenticationErrorCodes, email?: s
     EAuthenticationErrorCodes.GOOGLE_OAUTH_PROVIDER_ERROR,
     EAuthenticationErrorCodes.GITHUB_OAUTH_PROVIDER_ERROR,
     EAuthenticationErrorCodes.GITLAB_OAUTH_PROVIDER_ERROR,
+    EAuthenticationErrorCodes.GITEA_NOT_CONFIGURED,
+    EAuthenticationErrorCodes.AZUREAD_NOT_CONFIGURED,
+    EAuthenticationErrorCodes.GITEA_OAUTH_PROVIDER_ERROR,
+    EAuthenticationErrorCodes.OAUTH_PROVIDER_UNVERIFIED_EMAIL,
+    EAuthenticationErrorCodes.AZUREAD_OAUTH_PROVIDER_ERROR,
+    EAuthenticationErrorCodes.AZUREAD_TENANT_MISMATCH,
+    EAuthenticationErrorCodes.AZUREAD_NO_EMAIL,
     EAuthenticationErrorCodes.INVALID_PASSWORD_TOKEN,
     EAuthenticationErrorCodes.EXPIRED_PASSWORD_TOKEN,
     EAuthenticationErrorCodes.INCORRECT_OLD_PASSWORD,

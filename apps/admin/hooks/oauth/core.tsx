@@ -17,7 +17,9 @@ import githubLightModeImage from "@/app/assets/logos/github-black.png?url";
 import githubDarkModeImage from "@/app/assets/logos/github-white.png?url";
 import gitlabLogo from "@/app/assets/logos/gitlab-logo.svg?url";
 import googleLogo from "@/app/assets/logos/google-logo.svg?url";
+import microsoftLogo from "@/app/assets/logos/microsoft-logo.svg?url";
 // components
+import { AzureADConfiguration } from "@/components/authentication/azuread-config";
 import { EmailCodesConfiguration } from "@/components/authentication/email-config-switch";
 import { GiteaConfiguration } from "@/components/authentication/gitea-config";
 import { GithubConfiguration } from "@/components/authentication/github-config";
@@ -88,5 +90,13 @@ export const getCoreAuthenticationModesMap: (
     icon: <img src={giteaLogo} height={20} width={20} alt="Gitea Logo" />,
     config: <GiteaConfiguration disabled={disabled} updateConfig={updateConfig} />,
     enabledConfigKey: "IS_GITEA_ENABLED",
+  },
+  azuread: {
+    key: "azuread",
+    name: "Microsoft Entra ID",
+    description: "Allow members to log in or sign up for Plane with their Microsoft work accounts.",
+    icon: <img src={microsoftLogo} height={20} width={20} alt="Microsoft Logo" />,
+    config: <AzureADConfiguration disabled={disabled} updateConfig={updateConfig} />,
+    enabledConfigKey: "IS_AZUREAD_ENABLED",
   },
 });

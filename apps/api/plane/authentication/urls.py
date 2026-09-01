@@ -44,6 +44,10 @@ from .views import (
     GiteaOauthInitiateEndpoint,
     GiteaCallbackSpaceEndpoint,
     GiteaOauthInitiateSpaceEndpoint,
+    AzureADCallbackEndpoint,
+    AzureADOauthInitiateEndpoint,
+    AzureADCallbackSpaceEndpoint,
+    AzureADOauthInitiateSpaceEndpoint,
 )
 
 urlpatterns = [
@@ -149,5 +153,18 @@ urlpatterns = [
         "spaces/gitea/callback/",
         GiteaCallbackSpaceEndpoint.as_view(),
         name="space-gitea-callback",
+    ),
+    ## Microsoft Entra ID (Azure AD) Oauth
+    path("azuread/", AzureADOauthInitiateEndpoint.as_view(), name="azuread-initiate"),
+    path("azuread/callback/", AzureADCallbackEndpoint.as_view(), name="azuread-callback"),
+    path(
+        "spaces/azuread/",
+        AzureADOauthInitiateSpaceEndpoint.as_view(),
+        name="space-azuread-initiate",
+    ),
+    path(
+        "spaces/azuread/callback/",
+        AzureADCallbackSpaceEndpoint.as_view(),
+        name="space-azuread-callback",
     ),
 ]
