@@ -323,6 +323,15 @@
       "description": "Creează și personalizează diferite tipuri de activități cu proprietăți unice"
     },
     "features": {
+      "title": "Funcționalități",
+      "description": "Configurează funcționalitățile activate pentru acest proiect.",
+      "toast": {
+        "loading": "Se actualizează {feature}...",
+        "success_title": "Funcționalitate actualizată",
+        "success": "Funcționalitatea {feature} a fost actualizată cu succes",
+        "error_title": "Eroare",
+        "error": "Actualizarea {feature} a eșuat"
+      },
       "cycles": {
         "title": "Cicluri",
         "short_title": "Cicluri",

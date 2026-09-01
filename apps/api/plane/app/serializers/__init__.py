@@ -147,5 +147,10 @@ from .project_label import (
     ProjectLabelPropertySerializer,
     ProjectProjectLabelSerializer,
 )
+from .organizational_unit import (
+    OrganizationalUnitSerializer,
+    OrganizationalUnitMembershipSerializer,
+    OrganizationalUnitProjectSerializer,
+)
 
 

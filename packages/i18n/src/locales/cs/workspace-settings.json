@@ -261,6 +261,12 @@
         "description": "Stavy projektů jsou funkce výhradně Plane pro sledování pokroku všech vašich projektů podle libovolné vlastnosti projektu.",
         "go_to_settings": "Přejít do nastavení"
       },
+      "project_labels": {
+        "title": "Štítky projektů",
+        "heading": "Štítky projektů",
+        "description": "Vytvářejte a spravujte štítky projektů na úrovni pracovního prostoru pro kategorizaci a seskupování v nástěnce a seznamu.",
+        "go_to_settings": "Přejít do nastavení"
+      },
       "projects": {
         "title": "Projekty",
         "description": "Správa stavů projektů, povolení štítků projektů a další konfigurace.",
@@ -484,6 +490,12 @@
         "heading": "Skripty",
         "new_script": "Nový skript",
         "description": "Automatizujte své pracovní postupy pomocí vlastních skriptů a pravidel automatizace."
+      },
+      "organizational_units": {
+        "title": "Oblasti",
+        "heading": "Oblasti",
+        "description": "Seskupte lidi do oblastí a dejte každé oblasti přístup k jejím projektům v jednom kroku.",
+        "add": "Nová oblast"
       }
     },
     "empty_state": {

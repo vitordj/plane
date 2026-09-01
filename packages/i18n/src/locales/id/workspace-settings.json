@@ -261,6 +261,12 @@
         "description": "Status Proyek adalah fitur khusus Plane untuk melacak kemajuan semua proyek Anda berdasarkan properti proyek apa pun.",
         "go_to_settings": "Pergi ke pengaturan"
       },
+      "project_labels": {
+        "title": "Label proyek",
+        "heading": "Label proyek",
+        "description": "Buat dan kelola label proyek di tingkat ruang kerja untuk kategorisasi dan pengelompokan pada tampilan papan dan daftar.",
+        "go_to_settings": "Pergi ke pengaturan"
+      },
       "projects": {
         "title": "Proyek",
         "description": "Kelola status proyek, aktifkan label proyek, dan konfigurasi lainnya.",
@@ -484,6 +490,12 @@
         "heading": "Skrip",
         "new_script": "Skrip Baru",
         "description": "Otomatisasi alur kerja Anda dengan skrip kustom dan aturan otomatisasi."
+      },
+      "organizational_units": {
+        "title": "Area",
+        "heading": "Area",
+        "description": "Kelompokkan orang ke dalam area dan beri setiap area akses ke proyeknya dalam satu langkah.",
+        "add": "Area baru"
       }
     },
     "empty_state": {

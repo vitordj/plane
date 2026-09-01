@@ -323,6 +323,15 @@
       "description": "Crea e personalizza diversi tipi di elementi di lavoro con proprietà uniche"
     },
     "features": {
+      "title": "Funzionalità",
+      "description": "Configura le funzionalità abilitate per questo progetto.",
+      "toast": {
+        "loading": "Aggiornamento di {feature}...",
+        "success_title": "Funzionalità aggiornata",
+        "success": "Funzionalità {feature} aggiornata con successo",
+        "error_title": "Errore",
+        "error": "Aggiornamento di {feature} non riuscito"
+      },
       "cycles": {
         "title": "Cicli",
         "short_title": "Cicli",

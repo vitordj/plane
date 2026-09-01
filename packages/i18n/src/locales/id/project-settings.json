@@ -323,6 +323,15 @@
       "description": "Buat dan sesuaikan berbagai tipe item kerja dengan properti unik"
     },
     "features": {
+      "title": "Fitur",
+      "description": "Konfigurasikan fitur yang diaktifkan untuk proyek ini.",
+      "toast": {
+        "loading": "Memperbarui {feature}...",
+        "success_title": "Fitur diperbarui",
+        "success": "{feature} berhasil diperbarui",
+        "error_title": "Kesalahan",
+        "error": "Gagal memperbarui {feature}"
+      },
       "cycles": {
         "title": "Siklus",
         "short_title": "Siklus",

@@ -323,6 +323,15 @@
       "description": "Tạo và tùy chỉnh các loại mục công việc khác nhau với các thuộc tính riêng"
     },
     "features": {
+      "title": "Tính năng",
+      "description": "Cấu hình các tính năng được bật cho dự án này.",
+      "toast": {
+        "loading": "Đang cập nhật {feature}...",
+        "success_title": "Đã cập nhật tính năng",
+        "success": "Đã cập nhật {feature} thành công",
+        "error_title": "Lỗi",
+        "error": "Không thể cập nhật {feature}"
+      },
       "cycles": {
         "title": "Chu kỳ",
         "short_title": "Chu kỳ",

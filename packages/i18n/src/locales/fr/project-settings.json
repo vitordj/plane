@@ -323,6 +323,15 @@
       "description": "Créez et personnalisez différents types d’éléments de travail avec des propriétés uniques"
     },
     "features": {
+      "title": "Fonctionnalités",
+      "description": "Configurez les fonctionnalités activées pour ce projet.",
+      "toast": {
+        "loading": "Mise à jour de {feature}...",
+        "success_title": "Fonctionnalité mise à jour",
+        "success": "Fonctionnalité {feature} mise à jour avec succès",
+        "error_title": "Erreur",
+        "error": "Échec de la mise à jour de {feature}"
+      },
       "cycles": {
         "title": "Cycles",
         "short_title": "Cycles",

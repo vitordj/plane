@@ -261,6 +261,12 @@
         "description": "Los Estados de proyecto son una función exclusiva de Plane para rastrear el progreso de todos tus proyectos por cualquier propiedad del proyecto.",
         "go_to_settings": "Ir a configuración"
       },
+      "project_labels": {
+        "title": "Etiquetas de proyecto",
+        "heading": "Etiquetas de proyecto",
+        "description": "Crea y gestiona etiquetas de proyecto a nivel del espacio de trabajo para categorizar y agrupar en las vistas de tablero y lista.",
+        "go_to_settings": "Ir a configuración"
+      },
       "projects": {
         "title": "Proyectos",
         "description": "Administrar estados de proyectos, habilitar etiquetas de proyectos y otras configuraciones.",
@@ -484,6 +490,12 @@
         "heading": "Scripts",
         "new_script": "Nuevo script",
         "description": "Automatiza tus flujos de trabajo con scripts personalizados y reglas de automatización."
+      },
+      "organizational_units": {
+        "title": "Áreas",
+        "heading": "Áreas",
+        "description": "Agrupe a las personas en áreas y dé a cada área acceso a sus proyectos en un solo paso.",
+        "add": "Nueva área"
       }
     },
     "empty_state": {

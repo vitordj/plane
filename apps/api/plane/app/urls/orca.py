@@ -11,6 +11,14 @@ from plane.app.views import (
     WorkspaceProjectLabelViewSet,
     ProjectLabelPropertyEndpoint,
     ProjectProjectLabelEndpoint,
+    OrganizationalUnitViewSet,
+    OrganizationalUnitMemberViewSet,
+    OrganizationalUnitProjectViewSet,
+    OrganizationalUnitEffectiveAccessEndpoint,
+    OrganizationalUnitWorkloadEndpoint,
+    UserOrganizationalUnitsEndpoint,
+    IssueOrganizationalUnitEndpoint,
+    IssueOrganizationalUnitAssignEndpoint,
 )
 
 urlpatterns = [
@@ -65,5 +73,62 @@ urlpatterns = [
         ProjectLabelPropertyEndpoint.as_view(),
         name="project-project-label-property",
     ),
+    # Organizational units — the fork's organizational layer (see FORK.md).
+    # Mutations are workspace-admin only; reads are open to workspace members.
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/me/",
+        UserOrganizationalUnitsEndpoint.as_view(),
+        name="user-organizational-units",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/",
+        OrganizationalUnitViewSet.as_view({"get": "list", "post": "create"}),
+        name="organizational-units",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:pk>/",
+        OrganizationalUnitViewSet.as_view({"get": "retrieve", "patch": "partial_update", "delete": "destroy"}),
+        name="organizational-unit",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/members/",
+        OrganizationalUnitMemberViewSet.as_view({"get": "list", "post": "create"}),
+        name="organizational-unit-members",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/members/<uuid:pk>/",
+        OrganizationalUnitMemberViewSet.as_view({"patch": "partial_update", "delete": "destroy"}),
+        name="organizational-unit-member",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/projects/",
+        OrganizationalUnitProjectViewSet.as_view({"get": "list", "post": "create"}),
+        name="organizational-unit-projects",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/projects/<uuid:pk>/",
+        OrganizationalUnitProjectViewSet.as_view({"patch": "partial_update", "delete": "destroy"}),
+        name="organizational-unit-project",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/effective-access/",
+        OrganizationalUnitEffectiveAccessEndpoint.as_view(),
+        name="organizational-unit-effective-access",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/workload/",
+        OrganizationalUnitWorkloadEndpoint.as_view(),
+        name="organizational-unit-workload",
+    ),
+    # Work item ownership by organizational unit, and unit-based assignment.
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/",
+        IssueOrganizationalUnitEndpoint.as_view(),
+        name="issue-organizational-unit",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit-assign/",
+        IssueOrganizationalUnitAssignEndpoint.as_view(),
+        name="issue-organizational-unit-assign",
+    ),
 ]
-

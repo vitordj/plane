@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 
 # Django imports
+from django.db import transaction
 from django.utils import timezone
 
 # Third Party imports
@@ -24,6 +25,10 @@ from plane.db.models import (
     IssueLabel,
     IssueAssignee,
     IssueSubscriber,
+    Label,
+    Cycle,
+    Module,
+    ProjectMember,
     State,
     CycleIssue,
     ModuleIssue,
@@ -41,9 +46,14 @@ class BulkIssueOperationsEndpoint(BaseAPIView):
         ProjectEntityPermission,
     ]
 
+    @transaction.atomic
     def post(self, request, slug, project_id):
         """
         Processes a bulk operation request for a set of issue IDs in a project.
+
+        The whole batch is one transaction: the date checks below run per work
+        item inside the loop, so a work item rejected halfway through would
+        otherwise leave the ones before it already written.
         """
         issue_ids = request.data.get("issue_ids", [])
         if not len(issue_ids):
@@ -167,6 +177,7 @@ class BulkIssueOperationsEndpoint(BaseAPIView):
                             start_date_val, "%Y-%m-%d"
                         ).date()
                     ):
+                        transaction.set_rollback(True)
                         return Response(
                             {
                                 "error_code": 4101,
@@ -204,6 +215,7 @@ class BulkIssueOperationsEndpoint(BaseAPIView):
                             target_date_val, "%Y-%m-%d"
                         ).date()
                     ):
+                        transaction.set_rollback(True)
                         return Response(
                             {
                                 "error_code": 4102,
@@ -231,19 +243,31 @@ class BulkIssueOperationsEndpoint(BaseAPIView):
             # Cycles
             if "cycle_id" in properties:
                 cycle_id = properties.get("cycle_id")
-                # Delete existing CycleIssue for the issue
-                CycleIssue.objects.filter(issue=issue, project_id=project_id).delete()
-                if cycle_id:
-                    CycleIssue.objects.create(
-                        issue=issue,
-                        cycle_id=cycle_id,
-                        project_id=project_id,
-                        workspace_id=workspace_id,
-                    )
+                # A cycle from another project is not a cycle this work item can join,
+                # so the whole change is skipped rather than clearing what is there.
+                if cycle_id and not Cycle.objects.filter(pk=cycle_id, project_id=project_id).exists():
+                    cycle_id = False
+                if cycle_id is not False:
+                    # Delete existing CycleIssue for the issue
+                    CycleIssue.objects.filter(issue=issue, project_id=project_id).delete()
+                    if cycle_id:
+                        CycleIssue.objects.create(
+                            issue=issue,
+                            cycle_id=cycle_id,
+                            project_id=project_id,
+                            workspace_id=workspace_id,
+                        )
 
             # Modules
             if "module_ids" in properties:
                 module_ids = properties.get("module_ids", [])
+                # Drop any module outside this project, as IssueSerializer.validate does for labels
+                module_ids = [
+                    str(m_id)
+                    for m_id in Module.objects.filter(project_id=project_id, id__in=module_ids).values_list(
+                        "id", flat=True
+                    )
+                ]
                 ModuleIssue.objects.filter(
                     issue=issue,
                     project_id=project_id,
@@ -271,6 +295,13 @@ class BulkIssueOperationsEndpoint(BaseAPIView):
             # Labels
             if "label_ids" in properties:
                 label_ids = properties.get("label_ids", [])
+                # Only this project's labels, the same rule IssueSerializer.validate applies
+                label_ids = [
+                    str(l_id)
+                    for l_id in Label.objects.filter(project_id=project_id, id__in=label_ids).values_list(
+                        "id", flat=True
+                    )
+                ]
                 IssueLabel.objects.filter(
                     issue=issue,
                     project_id=project_id,
@@ -318,6 +349,17 @@ class BulkIssueOperationsEndpoint(BaseAPIView):
             # Assignees
             if "assignee_ids" in properties:
                 assignee_ids = properties.get("assignee_ids", [])
+                # An assignee has to be an active member of the project, the same rule
+                # IssueSerializer.validate applies — guests and non-members are dropped
+                assignee_ids = [
+                    str(a_id)
+                    for a_id in ProjectMember.objects.filter(
+                        project_id=project_id,
+                        role__gte=15,
+                        is_active=True,
+                        member_id__in=assignee_ids,
+                    ).values_list("member_id", flat=True)
+                ]
                 IssueAssignee.objects.filter(
                     issue=issue,
                     project_id=project_id,

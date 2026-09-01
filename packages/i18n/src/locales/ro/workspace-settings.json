@@ -261,6 +261,12 @@
         "description": "Stările proiectelor sunt o funcție exclusivă Plane pentru urmărirea progresului tuturor proiectelor tale după orice proprietate a proiectului.",
         "go_to_settings": "Mergi la setări"
       },
+      "project_labels": {
+        "title": "Etichete de proiect",
+        "heading": "Etichete de proiect",
+        "description": "Creează și gestionează etichete de proiect la nivel de spațiu de lucru pentru categorizare și grupare în vizualizările tablou și listă.",
+        "go_to_settings": "Mergi la setări"
+      },
       "projects": {
         "title": "Proiecte",
         "description": "Gestionează stările proiectelor, activează etichetele proiectelor și alte configurări.",
@@ -484,6 +490,12 @@
         "heading": "Script-uri",
         "new_script": "Script nou",
         "description": "Automatizează fluxurile tale de lucru cu scripturi personalizate și reguli de automatizare."
+      },
+      "organizational_units": {
+        "title": "Zone",
+        "heading": "Zone",
+        "description": "Grupați persoanele în zone și acordați fiecărei zone acces la proiectele sale într-un singur pas.",
+        "add": "Zonă nouă"
       }
     },
     "empty_state": {

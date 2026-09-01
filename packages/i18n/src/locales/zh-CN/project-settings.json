@@ -323,6 +323,15 @@
       "description": "创建和自定义具有独特属性的不同类型工作项"
     },
     "features": {
+      "title": "功能",
+      "description": "配置为此项目启用的功能。",
+      "toast": {
+        "loading": "正在更新{feature}...",
+        "success_title": "功能已更新",
+        "success": "{feature}更新成功",
+        "error_title": "错误",
+        "error": "无法更新{feature}"
+      },
       "cycles": {
         "title": "周期",
         "short_title": "周期",

@@ -5,6 +5,7 @@
  */
 
 import { observer } from "mobx-react";
+import { Network } from "lucide-react";
 // i18n
 import { useTranslation } from "@plane/i18n";
 // ui
@@ -38,6 +39,7 @@ import { useProjectState } from "@/hooks/store/use-project-state";
 // components
 import { IssueParentSelectRoot } from "@/components/issues/parent-select-root";
 import { SidebarPropertyListItem } from "@/components/common/layout/sidebar/property-list-item";
+import { IssueOrganizationalUnitProperty } from "@/components/orca/organizational-units";
 import { IssueCycleSelect } from "./cycle-select";
 import { IssueLabel } from "./label";
 import { IssueModuleSelect } from "./module-select";
@@ -113,6 +115,16 @@ export const IssueDetailsSidebar = observer(function IssueDetailsSidebar(props: 
                 hideIcon={issue.assignee_ids?.length === 0}
                 dropdownArrow
                 dropdownArrowClassName="h-3.5 w-3.5 hidden group-hover:inline"
+              />
+            </SidebarPropertyListItem>
+
+            <SidebarPropertyListItem icon={Network} label={t("common.area")}>
+              <IssueOrganizationalUnitProperty
+                workspaceSlug={workspaceSlug}
+                projectId={projectId?.toString() ?? ""}
+                issueId={issueId}
+                disabled={!isEditable}
+                onAssigned={() => issueOperations.fetch(workspaceSlug, projectId?.toString() ?? "", issueId)}
               />
             </SidebarPropertyListItem>
 

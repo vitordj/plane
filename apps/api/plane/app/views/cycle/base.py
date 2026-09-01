@@ -157,7 +157,8 @@ class CycleViewSet(BaseViewSet):
                         Q(project__custom_settings__cycle_auto_complete=True) & Q(end_date__lt=current_time_in_utc),
                         then=Value("COMPLETED"),
                     ),
-                    # 2. If auto-complete is disabled, a cycle is COMPLETED only if manually ended (marked completed in view_props).
+                    # 2. If auto-complete is disabled, a cycle is COMPLETED only if manually ended
+                    # (marked completed in view_props).
                     When(
                         ~Q(project__custom_settings__cycle_auto_complete=True) & Q(view_props__completed=True),
                         then=Value("COMPLETED"),
@@ -166,7 +167,8 @@ class CycleViewSet(BaseViewSet):
                     When(start_date__gt=current_time_in_utc, then=Value("UPCOMING")),
                     # 4. CURRENT if start_date has passed (and it didn't match COMPLETED above).
                     # A cycle with start_date set and no end_date is CURRENT.
-                    # Additionally, if auto-complete is disabled, cycles remain CURRENT even after their end_date passes (unless manually completed).
+                    # Additionally, if auto-complete is disabled, cycles remain CURRENT even after
+                    # their end_date passes (unless manually completed).
                     When(
                         Q(start_date__lte=current_time_in_utc) & (
                             Q(end_date__isnull=True) |
@@ -374,7 +376,10 @@ class CycleViewSet(BaseViewSet):
         if serializer.is_valid():
             serializer.save()
 
-            # ORCA CUSTOM FEATURE: Move unstarted issues in cycle to In Progress if requested
+            # ORCA CUSTOM FEATURE: Move unstarted issues in cycle to In Progress if requested.
+            # Scoped exactly like the cycle's own issue counts above: `issue_objects` drops
+            # archived, draft and triage work, and the `deleted_at` filter drops work that was
+            # removed from the cycle. Anything wider would rewrite states the cycle does not own.
             if request.data.get("set_in_progress", False):
                 in_progress_state = (
                     State.objects.filter(project_id=project_id, group="started")
@@ -382,13 +387,15 @@ class CycleViewSet(BaseViewSet):
                     .first()
                 )
                 if in_progress_state:
-                    Issue.objects.filter(
+                    Issue.issue_objects.filter(
                         issue_cycle__cycle_id=pk,
+                        issue_cycle__deleted_at__isnull=True,
                         project_id=project_id,
                         state__group__in=["backlog", "unstarted"],
                     ).update(state_id=in_progress_state.id)
 
-            # ORCA CUSTOM FEATURE: Move incomplete issues in cycle to Completed if requested
+            # ORCA CUSTOM FEATURE: Move incomplete issues in cycle to Completed if requested.
+            # Same scoping as set_in_progress above, for the same reason.
             if request.data.get("mark_completed", False):
                 completed_state = (
                     State.objects.filter(project_id=project_id, group="completed")
@@ -396,8 +403,9 @@ class CycleViewSet(BaseViewSet):
                     .first()
                 )
                 if completed_state:
-                    Issue.objects.filter(
+                    Issue.issue_objects.filter(
                         issue_cycle__cycle_id=pk,
+                        issue_cycle__deleted_at__isnull=True,
                         project_id=project_id,
                     ).exclude(
                         state__group__in=["completed", "cancelled"]

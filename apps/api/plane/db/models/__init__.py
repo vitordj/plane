@@ -60,6 +60,15 @@ from .project import (
     ProjectUserProperty,
 )
 from .project_custom_settings import ProjectCustomSettings
+from .organizational_unit import (
+    IssueOrganizationalUnit,
+    OrganizationalProjectAccessState,
+    OrganizationalUnit,
+    OrganizationalUnitGrant,
+    OrganizationalUnitMemberRole,
+    OrganizationalUnitMembership,
+    OrganizationalUnitProject,
+)
 from .session import Session
 from .social_connection import SocialLoginConnection
 from .state import State, StateGroup, DEFAULT_STATES

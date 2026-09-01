@@ -290,6 +290,10 @@ export const coreRoutes: RouteConfigEntry[] = [
             ":workspaceSlug/settings/project-labels",
             "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/project-labels/page.tsx"
           ),
+          route(
+            ":workspaceSlug/settings/organizational-units",
+            "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/organizational-units/page.tsx"
+          ),
         ]),
 
         // --------------------------------------------------------------------

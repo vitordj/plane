@@ -261,6 +261,12 @@
         "description": "Proje Durumları, herhangi bir proje özelliğine göre tüm projelerinizin ilerlemesini takip etmek için Plane'e özgü bir özelliktir.",
         "go_to_settings": "Ayarlara git"
       },
+      "project_labels": {
+        "title": "Proje etiketleri",
+        "heading": "Proje etiketleri",
+        "description": "Kategorilendirme ve pano/liste gruplaması için çalışma alanı düzeyinde proje etiketleri oluşturun ve yönetin.",
+        "go_to_settings": "Ayarlara git"
+      },
       "projects": {
         "title": "Projeler",
         "description": "Proje durumlarını yönetin, proje etiketlerini etkinleştirin ve diğer yapılandırmaları düzenleyin.",
@@ -484,6 +490,12 @@
         "heading": "Komut Dosyaları",
         "new_script": "Yeni Komut Dosyası",
         "description": "İş akışlarınızı özel komut dosyaları ve otomasyon kurallarıyla otomatikleştirin."
+      },
+      "organizational_units": {
+        "title": "Alanlar",
+        "heading": "Alanlar",
+        "description": "Kişileri alanlar halinde gruplayın ve her alana projelerine tek adımda erişim verin.",
+        "add": "Yeni alan"
       }
     },
     "empty_state": {

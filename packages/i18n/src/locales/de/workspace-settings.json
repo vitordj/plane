@@ -261,6 +261,12 @@
         "description": "Projektstatus ist eine Plane-exklusive Funktion zur Verfolgung des Fortschritts aller Ihrer Projekte nach beliebiger Projekteigenschaft.",
         "go_to_settings": "Zu den Einstellungen"
       },
+      "project_labels": {
+        "title": "Projekt-Labels",
+        "heading": "Projekt-Labels",
+        "description": "Erstellen und verwalten Sie Projekt-Labels auf Arbeitsbereichsebene für die Kategorisierung und die Gruppierung in Board- und Listenansichten.",
+        "go_to_settings": "Zu den Einstellungen"
+      },
       "projects": {
         "title": "Projekte",
         "description": "Projektstatus verwalten, Projektlabels aktivieren und weitere Konfiguration.",
@@ -484,6 +490,12 @@
         "heading": "Skripte",
         "new_script": "Neues Skript",
         "description": "Automatisieren Sie Ihre Workflows mit benutzerdefinierten Skripten und Automatisierungsregeln."
+      },
+      "organizational_units": {
+        "title": "Bereiche",
+        "heading": "Bereiche",
+        "description": "Personen in Bereiche gruppieren und jedem Bereich in einem Schritt Zugriff auf seine Projekte geben.",
+        "add": "Neuer Bereich"
       }
     },
     "empty_state": {

@@ -13,7 +13,15 @@
 #   • Deploy: Triggers Coolify stage deployment, polls state until completion,
 #     and outputs step summaries or issues cancellations.
 #
-# What you need in GitHub Secrets:
+# Deployment is opt-in:
+#   The Coolify deploy job only runs when the repository (or "stage"
+#   environment) variable COOLIFY_DEPLOY_ENABLED is set to the string "true".
+#   Leave it unset and the whole workflow still runs — lint, build and push to
+#   GHCR — while the deploy job is skipped instead of failing on absent
+#   credentials. The deploy code below is kept intact so turning the variable
+#   on is the only step needed to resume deploying.
+#
+# What you need in GitHub Secrets (only when COOLIFY_DEPLOY_ENABLED is "true"):
 #   • COOLIFY_DEPLOY_URL - Full stage deploy URL with uuid parameter.
 #   • COOLIFY_API_TOKEN  - Authorization bearer token for your Coolify API.
 #
@@ -284,7 +292,7 @@ jobs:
   deploy:
     name: Deploy to Stage (Coolify)
     needs: [build-push, changes]
-    if: ${{ always() && (needs.build-push.result == 'success' || needs.build-push.result == 'skipped') && (needs.changes.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch') && !failure() && !cancelled() }}
+    if: ${{ always() && vars.COOLIFY_DEPLOY_ENABLED == 'true' && github.event_name != 'pull_request' && (needs.build-push.result == 'success' || needs.build-push.result == 'skipped') && (needs.changes.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch') && !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     environment: stage
     steps:

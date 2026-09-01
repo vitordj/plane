@@ -267,6 +267,12 @@
         "description": "Create and manage workspace-level project labels for categorization and board/list grouping.",
         "go_to_settings": "Go to settings"
       },
+      "organizational_units": {
+        "title": "Areas",
+        "heading": "Areas",
+        "description": "Group people into areas and give each area access to its projects in one step.",
+        "add": "New area"
+      },
       "projects": {
         "title": "Projects",
         "description": "Manage project states, and enable project labels, and other configuration.",
