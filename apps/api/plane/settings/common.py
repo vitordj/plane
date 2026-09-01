@@ -348,6 +348,11 @@ CELERY_IMPORTS = (
     # issue version tasks
     "plane.bgtasks.issue_version_sync",
     "plane.bgtasks.issue_description_version_sync",
+    # orca organizational layer
+    # Celery's autodiscovery only picks up modules named ``tasks``, so this
+    # module has to be imported explicitly or the worker answers a queued
+    # reconciliation with "Received unregistered task".
+    "plane.bgtasks.organizational_unit_task",
 )
 
 FILE_SIZE_LIMIT = int(os.environ.get("FILE_SIZE_LIMIT", 5242880))
