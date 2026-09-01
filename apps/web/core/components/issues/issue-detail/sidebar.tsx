@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useEffect } from "react";
 import { observer } from "mobx-react";
 import { Network } from "lucide-react";
 // i18n
@@ -66,8 +67,16 @@ export const IssueDetailsSidebar = observer(function IssueDetailsSidebar(props: 
   const { getUserDetails } = useMember();
   const { getStateById } = useProjectState();
   // Hidden when ORCA_ORG_UNITS_ENABLED=0: the routes behind this control all
-  // answer 404, so showing it would offer an action that cannot succeed.
-  const { isEnabled: areOrganizationalUnitsEnabled } = useOrganizationalUnit();
+  // answer 404, so showing it would offer an action that cannot succeed. The
+  // config has to be fetched here as well — a user can open a work item without
+  // ever visiting workspace settings, and `isEnabled` is optimistic until the
+  // answer lands.
+  const { isEnabled: areOrganizationalUnitsEnabled, fetchConfig } = useOrganizationalUnit();
+
+  useEffect(() => {
+    if (workspaceSlug) fetchConfig(workspaceSlug);
+  }, [workspaceSlug, fetchConfig]);
+
   const issue = getIssueById(issueId);
   if (!issue) return <></>;
 
