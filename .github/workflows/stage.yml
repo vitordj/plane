@@ -241,8 +241,22 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      # plane/__init__.py imports plane.celery, which calls redis_instance() at
+      # module scope — so importing anything from plane needs REDIS_URL to be a
+      # parseable URL before a single test is collected. Valkey, matching
+      # docker-compose-test.yml.
+      redis:
+        image: valkey/valkey:7.2.11-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "valkey-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DATABASE_URL: postgres://plane:plane@localhost:5432/plane_test
+      REDIS_URL: redis://localhost:6379/
       SECRET_KEY: stage-ci-secret-key-not-used-outside-tests
       DJANGO_SETTINGS_MODULE: plane.settings.test
       # Project creation reads these; without them the serializer raises and
