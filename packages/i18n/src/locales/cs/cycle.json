@@ -77,7 +77,9 @@
         "not_transferred": "Pracovní položky nepřeneseny",
         "not_loaded": "Cyklus se nepodařilo načíst"
       },
-      "search_placeholder": "Hledat cyklus"
+      "search_placeholder": "Hledat cyklus",
+      "notice": "Dokončený cyklus zůstává upravitelný, dokud není archivován. Nedokončené pracovní položky lze přesunout do jiného cyklu.",
+      "action": "Přesunout nedokončené položky"
     },
     "drop_archived_error": "Pracovní položku nelze přesunout do archivovaného cyklu"
   },

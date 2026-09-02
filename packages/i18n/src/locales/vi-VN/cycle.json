@@ -77,7 +77,9 @@
         "not_transferred": "Chưa chuyển các mục công việc",
         "not_loaded": "Không tải được chu kỳ"
       },
-      "search_placeholder": "Tìm chu kỳ"
+      "search_placeholder": "Tìm chu kỳ",
+      "notice": "Chu kỳ đã hoàn thành vẫn chỉnh sửa được cho đến khi được lưu trữ. Các mục công việc chưa xong có thể chuyển sang chu kỳ khác.",
+      "action": "Chuyển các mục chưa xong"
     },
     "drop_archived_error": "Không thể chuyển mục công việc vào chu kỳ đã lưu trữ"
   },

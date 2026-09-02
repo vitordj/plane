@@ -77,7 +77,9 @@
         "not_transferred": "Item kerja tidak dipindahkan",
         "not_loaded": "Tidak dapat memuat siklus"
       },
-      "search_placeholder": "Cari siklus"
+      "search_placeholder": "Cari siklus",
+      "notice": "Siklus yang selesai tetap dapat diubah sampai diarsipkan. Item kerja yang belum selesai dapat dipindahkan ke siklus lain.",
+      "action": "Pindahkan item yang belum selesai"
     },
     "drop_archived_error": "Item kerja tidak dapat dipindahkan ke siklus yang diarsipkan"
   },

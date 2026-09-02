@@ -77,7 +77,9 @@
         "not_transferred": "作業項目は移されていません",
         "not_loaded": "サイクルを読み込めませんでした"
       },
-      "search_placeholder": "サイクルを検索"
+      "search_placeholder": "サイクルを検索",
+      "notice": "完了したサイクルは、アーカイブされるまで編集できます。未完了の作業項目は別のサイクルに移せます。",
+      "action": "未完了の作業項目を移す"
     },
     "drop_archived_error": "作業項目はアーカイブ済みのサイクルには移動できません"
   },

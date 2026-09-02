@@ -77,7 +77,9 @@
         "not_transferred": "未转移工作项",
         "not_loaded": "无法加载周期"
       },
-      "search_placeholder": "搜索周期"
+      "search_placeholder": "搜索周期",
+      "notice": "已完成的周期在归档前仍可编辑。未完成的工作项可以转移到其他周期。",
+      "action": "转移未完成的工作项"
     },
     "drop_archived_error": "工作项无法移入已归档的周期"
   },

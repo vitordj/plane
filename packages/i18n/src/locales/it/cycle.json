@@ -77,7 +77,9 @@
         "not_transferred": "Elementi di lavoro non trasferiti",
         "not_loaded": "Impossibile caricare il ciclo"
       },
-      "search_placeholder": "Cerca un ciclo"
+      "search_placeholder": "Cerca un ciclo",
+      "notice": "Un ciclo completato resta modificabile finché non viene archiviato. Gli elementi di lavoro non conclusi possono essere spostati in un altro ciclo.",
+      "action": "Trasferire gli elementi non conclusi"
     },
     "drop_archived_error": "Un elemento di lavoro non può essere spostato in un ciclo archiviato"
   },

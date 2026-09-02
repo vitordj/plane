@@ -77,7 +77,9 @@
         "not_transferred": "İş öğeleri aktarılmadı",
         "not_loaded": "Döngü yüklenemedi"
       },
-      "search_placeholder": "Döngü ara"
+      "search_placeholder": "Döngü ara",
+      "notice": "Tamamlanmış bir döngü, arşivlenene kadar düzenlenebilir kalır. Bitmemiş iş öğeleri başka bir döngüye taşınabilir.",
+      "action": "Bitmemiş iş öğelerini taşı"
     },
     "drop_archived_error": "Bir iş öğesi arşivlenmiş bir döngüye taşınamaz"
   },

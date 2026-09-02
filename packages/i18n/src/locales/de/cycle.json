@@ -77,7 +77,9 @@
         "not_transferred": "Arbeitselemente nicht übertragen",
         "not_loaded": "Zyklus konnte nicht geladen werden"
       },
-      "search_placeholder": "Zyklus suchen"
+      "search_placeholder": "Zyklus suchen",
+      "notice": "Ein abgeschlossener Zyklus bleibt bearbeitbar, bis er archiviert wird. Offene Arbeitselemente lassen sich in einen anderen Zyklus verschieben.",
+      "action": "Offene Arbeitselemente übertragen"
     },
     "drop_archived_error": "Ein Arbeitselement lässt sich nicht in einen archivierten Zyklus verschieben"
   },

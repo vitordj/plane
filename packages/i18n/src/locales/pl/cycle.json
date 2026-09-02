@@ -77,7 +77,9 @@
         "not_transferred": "Elementy pracy nie zostały przeniesione",
         "not_loaded": "Nie udało się wczytać cyklu"
       },
-      "search_placeholder": "Szukaj cyklu"
+      "search_placeholder": "Szukaj cyklu",
+      "notice": "Ukończony cykl pozostaje edytowalny, dopóki nie zostanie zarchiwizowany. Nieukończone elementy pracy można przenieść do innego cyklu.",
+      "action": "Przenieś nieukończone elementy"
     },
     "drop_archived_error": "Elementu pracy nie można przenieść do zarchiwizowanego cyklu"
   },
