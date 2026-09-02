@@ -281,6 +281,65 @@
         "nobody": "Nenhum membro desta área tem acesso a este projeto.",
         "not_assigned": "Não atribuído"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property} (misto)",
+      "subscribe_selected": "Assinar as notificações dos itens selecionados",
+      "mute_selected": "Silenciar as notificações dos itens selecionados",
+      "archive_selected": "Arquivar os itens selecionados",
+      "archive_unavailable": "Só é possível arquivar itens de trabalho concluídos ou cancelados",
+      "delete_selected": "Excluir os itens selecionados",
+      "try_again": "Tente novamente em instantes.",
+      "toast": {
+        "updated_title": "Atualizado",
+        "not_updated": "Não atualizado",
+        "updated": "{count, plural, one {# item de trabalho atualizado} many {# itens de trabalho atualizados} other {# itens de trabalho atualizados}}"
+      },
+      "archive_modal": {
+        "title": "Arquivar itens de trabalho",
+        "loading": "Arquivando",
+        "toast": {
+          "archived_title": "Arquivado",
+          "not_archived": "Não arquivado",
+          "archived": "{count, plural, one {# item de trabalho arquivado} many {# itens de trabalho arquivados} other {# itens de trabalho arquivados}}"
+        },
+        "content": "{count, plural, one {Arquivar # item de trabalho? Você o encontrará nos arquivos do projeto e poderá restaurá-lo depois.} many {Arquivar # itens de trabalho? Você os encontrará nos arquivos do projeto e poderá restaurá-los depois.} other {Arquivar # itens de trabalho? Você os encontrará nos arquivos do projeto e poderá restaurá-los depois.}}",
+        "confirm": "{count, plural, one {Arquivar # item} many {Arquivar # itens} other {Arquivar # itens}}"
+      },
+      "delete_modal": {
+        "title": "Excluir itens de trabalho",
+        "loading": "Excluindo",
+        "toast": {
+          "deleted_title": "Excluído",
+          "not_deleted": "Não excluído",
+          "deleted": "{count, plural, one {# item de trabalho excluído} many {# itens de trabalho excluídos} other {# itens de trabalho excluídos}}"
+        },
+        "content": "{count, plural, one {Excluir # item de trabalho? Esta ação não pode ser desfeita.} many {Excluir # itens de trabalho? Esta ação não pode ser desfeita.} other {Excluir # itens de trabalho? Esta ação não pode ser desfeita.}}",
+        "confirm": "{count, plural, one {Excluir # item} many {Excluir # itens} other {Excluir # itens}}"
+      },
+      "selected": "{count, plural, one {# selecionado} many {# selecionados} other {# selecionados}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "Ação indisponível",
+      "unavailable_message": "Esta ação não está disponível aqui.",
+      "remove_from_cycle": "Remover do ciclo",
+      "remove_from_module": "Remover do módulo",
+      "try_again": "Tente novamente em instantes.",
+      "toast": {
+        "link_copied": "Link copiado",
+        "link_copied_message": "O link do item de trabalho está na sua área de transferência.",
+        "title_copied": "Título copiado",
+        "title_copied_message": "O título do item de trabalho está na sua área de transferência.",
+        "description_copied": "Descrição copiada",
+        "description_copied_message": "A descrição do item de trabalho está na sua área de transferência.",
+        "details_copied": "Título e descrição copiados",
+        "details_copied_message": "O título e a descrição do item de trabalho estão na sua área de transferência.",
+        "no_description": "Sem descrição",
+        "no_description_message": "Este item de trabalho não tem descrição.",
+        "restored": "Restaurado",
+        "restored_message": "Você encontrará o item de trabalho entre os do projeto.",
+        "not_restored": "Não restaurado"
+      }
     }
   },
   "sub_work_item": {

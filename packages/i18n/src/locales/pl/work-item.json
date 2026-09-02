@@ -281,6 +281,65 @@
         "nobody": "Żaden członek tego obszaru nie ma dostępu do tego projektu.",
         "not_assigned": "Nie przypisano"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property} (mieszane)",
+      "subscribe_selected": "Subskrybuj powiadomienia o wybranych elementach",
+      "mute_selected": "Wycisz powiadomienia o wybranych elementach",
+      "archive_selected": "Zarchiwizuj wybrane elementy",
+      "archive_unavailable": "Zarchiwizować można tylko ukończone lub anulowane elementy pracy",
+      "delete_selected": "Usuń wybrane elementy",
+      "try_again": "Spróbuj ponownie za chwilę.",
+      "toast": {
+        "updated_title": "Zaktualizowano",
+        "not_updated": "Nie zaktualizowano",
+        "updated": "{count, plural, one {Zaktualizowano # element pracy} few {Zaktualizowano # elementy pracy} many {Zaktualizowano # elementów pracy} other {Zaktualizowano # elementu pracy}}"
+      },
+      "archive_modal": {
+        "title": "Zarchiwizuj elementy pracy",
+        "loading": "Archiwizowanie",
+        "toast": {
+          "archived_title": "Zarchiwizowano",
+          "not_archived": "Nie zarchiwizowano",
+          "archived": "{count, plural, one {Zarchiwizowano # element pracy} few {Zarchiwizowano # elementy pracy} many {Zarchiwizowano # elementów pracy} other {Zarchiwizowano # elementu pracy}}"
+        },
+        "content": "{count, plural, one {Zarchiwizować # element pracy? Znajdziesz go w archiwum projektu i możesz go później przywrócić.} few {Zarchiwizować # elementy pracy? Znajdziesz je w archiwum projektu i możesz je później przywrócić.} many {Zarchiwizować # elementów pracy? Znajdziesz je w archiwum projektu i możesz je później przywrócić.} other {Zarchiwizować # elementu pracy? Znajdziesz je w archiwum projektu i możesz je później przywrócić.}}",
+        "confirm": "{count, plural, one {Zarchiwizuj # element} few {Zarchiwizuj # elementy} many {Zarchiwizuj # elementów} other {Zarchiwizuj # elementu}}"
+      },
+      "delete_modal": {
+        "title": "Usuń elementy pracy",
+        "loading": "Usuwanie",
+        "toast": {
+          "deleted_title": "Usunięto",
+          "not_deleted": "Nie usunięto",
+          "deleted": "{count, plural, one {Usunięto # element pracy} few {Usunięto # elementy pracy} many {Usunięto # elementów pracy} other {Usunięto # elementu pracy}}"
+        },
+        "content": "{count, plural, one {Usunąć # element pracy? Tej operacji nie można cofnąć.} few {Usunąć # elementy pracy? Tej operacji nie można cofnąć.} many {Usunąć # elementów pracy? Tej operacji nie można cofnąć.} other {Usunąć # elementu pracy? Tej operacji nie można cofnąć.}}",
+        "confirm": "{count, plural, one {Usuń # element} few {Usuń # elementy} many {Usuń # elementów} other {Usuń # elementu}}"
+      },
+      "selected": "{count, plural, one {Zaznaczono #} few {Zaznaczono #} many {Zaznaczono #} other {Zaznaczono #}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "Akcja niedostępna",
+      "unavailable_message": "Ta akcja nie jest tutaj dostępna.",
+      "remove_from_cycle": "Usuń z cyklu",
+      "remove_from_module": "Usuń z modułu",
+      "try_again": "Spróbuj ponownie za chwilę.",
+      "toast": {
+        "link_copied": "Skopiowano link",
+        "link_copied_message": "Link do elementu pracy jest w schowku.",
+        "title_copied": "Skopiowano tytuł",
+        "title_copied_message": "Tytuł elementu pracy jest w schowku.",
+        "description_copied": "Skopiowano opis",
+        "description_copied_message": "Opis elementu pracy jest w schowku.",
+        "details_copied": "Skopiowano tytuł i opis",
+        "details_copied_message": "Tytuł i opis elementu pracy są w schowku.",
+        "no_description": "Brak opisu",
+        "no_description_message": "Ten element pracy nie ma opisu.",
+        "restored": "Przywrócono",
+        "restored_message": "Element pracy znajdziesz wśród elementów pracy projektu.",
+        "not_restored": "Nie przywrócono"
+      }
     }
   },
   "sub_work_item": {

@@ -281,6 +281,65 @@
         "nobody": "Không có thành viên nào trong khu vực này có quyền truy cập vào dự án này.",
         "not_assigned": "Chưa giao"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property} (hỗn hợp)",
+      "subscribe_selected": "Đăng ký nhận thông báo cho các mục đã chọn",
+      "mute_selected": "Tắt thông báo cho các mục đã chọn",
+      "archive_selected": "Lưu trữ các mục đã chọn",
+      "archive_unavailable": "Chỉ có thể lưu trữ các mục công việc đã hoàn thành hoặc đã hủy",
+      "delete_selected": "Xóa các mục đã chọn",
+      "try_again": "Vui lòng thử lại sau giây lát.",
+      "toast": {
+        "updated_title": "Đã cập nhật",
+        "not_updated": "Chưa cập nhật",
+        "updated": "{count, plural, one {Đã cập nhật # mục công việc} other {Đã cập nhật # mục công việc}}"
+      },
+      "archive_modal": {
+        "title": "Lưu trữ mục công việc",
+        "loading": "Đang lưu trữ",
+        "toast": {
+          "archived_title": "Đã lưu trữ",
+          "not_archived": "Chưa lưu trữ",
+          "archived": "{count, plural, one {Đã lưu trữ # mục công việc} other {Đã lưu trữ # mục công việc}}"
+        },
+        "content": "{count, plural, one {Lưu trữ # mục công việc? Bạn sẽ tìm thấy chúng trong kho lưu trữ của dự án và có thể khôi phục sau.} other {Lưu trữ # mục công việc? Bạn sẽ tìm thấy chúng trong kho lưu trữ của dự án và có thể khôi phục sau.}}",
+        "confirm": "{count, plural, one {Lưu trữ # mục} other {Lưu trữ # mục}}"
+      },
+      "delete_modal": {
+        "title": "Xóa mục công việc",
+        "loading": "Đang xóa",
+        "toast": {
+          "deleted_title": "Đã xóa",
+          "not_deleted": "Chưa xóa",
+          "deleted": "{count, plural, one {Đã xóa # mục công việc} other {Đã xóa # mục công việc}}"
+        },
+        "content": "{count, plural, one {Xóa # mục công việc? Không thể hoàn tác.} other {Xóa # mục công việc? Không thể hoàn tác.}}",
+        "confirm": "{count, plural, one {Xóa # mục} other {Xóa # mục}}"
+      },
+      "selected": "{count, plural, one {Đã chọn #} other {Đã chọn #}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "Thao tác không khả dụng",
+      "unavailable_message": "Thao tác này không khả dụng ở đây.",
+      "remove_from_cycle": "Gỡ khỏi chu kỳ",
+      "remove_from_module": "Gỡ khỏi mô-đun",
+      "try_again": "Vui lòng thử lại sau giây lát.",
+      "toast": {
+        "link_copied": "Đã sao chép liên kết",
+        "link_copied_message": "Liên kết của mục công việc đã có trong khay nhớ tạm.",
+        "title_copied": "Đã sao chép tiêu đề",
+        "title_copied_message": "Tiêu đề của mục công việc đã có trong khay nhớ tạm.",
+        "description_copied": "Đã sao chép mô tả",
+        "description_copied_message": "Mô tả của mục công việc đã có trong khay nhớ tạm.",
+        "details_copied": "Đã sao chép tiêu đề và mô tả",
+        "details_copied_message": "Tiêu đề và mô tả của mục công việc đã có trong khay nhớ tạm.",
+        "no_description": "Không có mô tả",
+        "no_description_message": "Mục công việc này không có mô tả.",
+        "restored": "Đã khôi phục",
+        "restored_message": "Bạn sẽ tìm thấy mục công việc trong các mục công việc của dự án.",
+        "not_restored": "Chưa khôi phục"
+      }
     }
   },
   "sub_work_item": {

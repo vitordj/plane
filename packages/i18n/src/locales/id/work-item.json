@@ -281,6 +281,65 @@
         "nobody": "Tidak ada anggota area ini yang memiliki akses ke proyek ini.",
         "not_assigned": "Tidak ditugaskan"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property} (campuran)",
+      "subscribe_selected": "Berlangganan notifikasi untuk item yang dipilih",
+      "mute_selected": "Bisukan notifikasi untuk item yang dipilih",
+      "archive_selected": "Arsipkan item yang dipilih",
+      "archive_unavailable": "Hanya item kerja yang selesai atau dibatalkan yang dapat diarsipkan",
+      "delete_selected": "Hapus item yang dipilih",
+      "try_again": "Coba lagi sebentar lagi.",
+      "toast": {
+        "updated_title": "Diperbarui",
+        "not_updated": "Tidak diperbarui",
+        "updated": "{count, plural, one {# item kerja diperbarui} other {# item kerja diperbarui}}"
+      },
+      "archive_modal": {
+        "title": "Arsipkan item kerja",
+        "loading": "Mengarsipkan",
+        "toast": {
+          "archived_title": "Diarsipkan",
+          "not_archived": "Tidak diarsipkan",
+          "archived": "{count, plural, one {# item kerja diarsipkan} other {# item kerja diarsipkan}}"
+        },
+        "content": "{count, plural, one {Arsipkan # item kerja? Anda akan menemukannya di arsip proyek dan dapat memulihkannya nanti.} other {Arsipkan # item kerja? Anda akan menemukannya di arsip proyek dan dapat memulihkannya nanti.}}",
+        "confirm": "{count, plural, one {Arsipkan # item} other {Arsipkan # item}}"
+      },
+      "delete_modal": {
+        "title": "Hapus item kerja",
+        "loading": "Menghapus",
+        "toast": {
+          "deleted_title": "Dihapus",
+          "not_deleted": "Tidak dihapus",
+          "deleted": "{count, plural, one {# item kerja dihapus} other {# item kerja dihapus}}"
+        },
+        "content": "{count, plural, one {Hapus # item kerja? Tindakan ini tidak dapat dibatalkan.} other {Hapus # item kerja? Tindakan ini tidak dapat dibatalkan.}}",
+        "confirm": "{count, plural, one {Hapus # item} other {Hapus # item}}"
+      },
+      "selected": "{count, plural, one {# dipilih} other {# dipilih}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "Tindakan tidak tersedia",
+      "unavailable_message": "Tindakan ini tidak tersedia di sini.",
+      "remove_from_cycle": "Keluarkan dari siklus",
+      "remove_from_module": "Keluarkan dari modul",
+      "try_again": "Coba lagi sebentar lagi.",
+      "toast": {
+        "link_copied": "Tautan disalin",
+        "link_copied_message": "Tautan item kerja ada di papan klip Anda.",
+        "title_copied": "Judul disalin",
+        "title_copied_message": "Judul item kerja ada di papan klip Anda.",
+        "description_copied": "Deskripsi disalin",
+        "description_copied_message": "Deskripsi item kerja ada di papan klip Anda.",
+        "details_copied": "Judul dan deskripsi disalin",
+        "details_copied_message": "Judul dan deskripsi item kerja ada di papan klip Anda.",
+        "no_description": "Tanpa deskripsi",
+        "no_description_message": "Item kerja ini tidak memiliki deskripsi.",
+        "restored": "Dipulihkan",
+        "restored_message": "Anda akan menemukan item kerja ini di antara item kerja proyek.",
+        "not_restored": "Tidak dipulihkan"
+      }
     }
   },
   "sub_work_item": {

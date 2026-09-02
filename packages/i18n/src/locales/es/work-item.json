@@ -281,6 +281,65 @@
         "nobody": "Ningún miembro de esta área tiene acceso a este proyecto.",
         "not_assigned": "No asignado"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property} (mixto)",
+      "subscribe_selected": "Suscribirse a las notificaciones de los elementos seleccionados",
+      "mute_selected": "Silenciar las notificaciones de los elementos seleccionados",
+      "archive_selected": "Archivar los elementos seleccionados",
+      "archive_unavailable": "Solo se pueden archivar los elementos de trabajo completados o cancelados",
+      "delete_selected": "Eliminar los elementos seleccionados",
+      "try_again": "Inténtalo de nuevo en un momento.",
+      "toast": {
+        "updated_title": "Actualizado",
+        "not_updated": "No se actualizó",
+        "updated": "{count, plural, one {# elemento de trabajo actualizado} other {# elementos de trabajo actualizados}}"
+      },
+      "archive_modal": {
+        "title": "Archivar elementos de trabajo",
+        "loading": "Archivando",
+        "toast": {
+          "archived_title": "Archivado",
+          "not_archived": "No se archivó",
+          "archived": "{count, plural, one {# elemento de trabajo archivado} other {# elementos de trabajo archivados}}"
+        },
+        "content": "{count, plural, one {¿Archivar # elemento de trabajo? Lo encontrarás en los archivos del proyecto y podrás restaurarlo más adelante.} other {¿Archivar # elementos de trabajo? Los encontrarás en los archivos del proyecto y podrás restaurarlos más adelante.}}",
+        "confirm": "{count, plural, one {Archivar # elemento} other {Archivar # elementos}}"
+      },
+      "delete_modal": {
+        "title": "Eliminar elementos de trabajo",
+        "loading": "Eliminando",
+        "toast": {
+          "deleted_title": "Eliminado",
+          "not_deleted": "No se eliminó",
+          "deleted": "{count, plural, one {# elemento de trabajo eliminado} other {# elementos de trabajo eliminados}}"
+        },
+        "content": "{count, plural, one {¿Eliminar # elemento de trabajo? Esta acción no se puede deshacer.} other {¿Eliminar # elementos de trabajo? Esta acción no se puede deshacer.}}",
+        "confirm": "{count, plural, one {Eliminar # elemento} other {Eliminar # elementos}}"
+      },
+      "selected": "{count, plural, one {# seleccionado} other {# seleccionados}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "Acción no disponible",
+      "unavailable_message": "Esta acción no está disponible aquí.",
+      "remove_from_cycle": "Quitar del ciclo",
+      "remove_from_module": "Quitar del módulo",
+      "try_again": "Inténtalo de nuevo en un momento.",
+      "toast": {
+        "link_copied": "Enlace copiado",
+        "link_copied_message": "El enlace del elemento de trabajo está en tu portapapeles.",
+        "title_copied": "Título copiado",
+        "title_copied_message": "El título del elemento de trabajo está en tu portapapeles.",
+        "description_copied": "Descripción copiada",
+        "description_copied_message": "La descripción del elemento de trabajo está en tu portapapeles.",
+        "details_copied": "Título y descripción copiados",
+        "details_copied_message": "El título y la descripción del elemento de trabajo están en tu portapapeles.",
+        "no_description": "Sin descripción",
+        "no_description_message": "Este elemento de trabajo no tiene descripción.",
+        "restored": "Restaurado",
+        "restored_message": "Encontrarás el elemento de trabajo entre los del proyecto.",
+        "not_restored": "No se restauró"
+      }
     }
   },
   "sub_work_item": {

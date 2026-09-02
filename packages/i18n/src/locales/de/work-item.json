@@ -281,6 +281,65 @@
         "nobody": "Kein Mitglied dieses Bereichs hat Zugriff auf dieses Projekt.",
         "not_assigned": "Nicht zugewiesen"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property} (gemischt)",
+      "subscribe_selected": "Benachrichtigungen für die ausgewählten Elemente abonnieren",
+      "mute_selected": "Benachrichtigungen für die ausgewählten Elemente stummschalten",
+      "archive_selected": "Ausgewählte Elemente archivieren",
+      "archive_unavailable": "Nur abgeschlossene oder abgebrochene Arbeitselemente lassen sich archivieren",
+      "delete_selected": "Ausgewählte Elemente löschen",
+      "try_again": "Bitte gleich noch einmal versuchen.",
+      "toast": {
+        "updated_title": "Aktualisiert",
+        "not_updated": "Nicht aktualisiert",
+        "updated": "{count, plural, one {# Arbeitselement aktualisiert} other {# Arbeitselemente aktualisiert}}"
+      },
+      "archive_modal": {
+        "title": "Arbeitselemente archivieren",
+        "loading": "Wird archiviert",
+        "toast": {
+          "archived_title": "Archiviert",
+          "not_archived": "Nicht archiviert",
+          "archived": "{count, plural, one {# Arbeitselement archiviert} other {# Arbeitselemente archiviert}}"
+        },
+        "content": "{count, plural, one {# Arbeitselement archivieren? Sie finden es im Projektarchiv und können es später wiederherstellen.} other {# Arbeitselemente archivieren? Sie finden sie im Projektarchiv und können sie später wiederherstellen.}}",
+        "confirm": "{count, plural, one {# Element archivieren} other {# Elemente archivieren}}"
+      },
+      "delete_modal": {
+        "title": "Arbeitselemente löschen",
+        "loading": "Wird gelöscht",
+        "toast": {
+          "deleted_title": "Gelöscht",
+          "not_deleted": "Nicht gelöscht",
+          "deleted": "{count, plural, one {# Arbeitselement gelöscht} other {# Arbeitselemente gelöscht}}"
+        },
+        "content": "{count, plural, one {# Arbeitselement löschen? Das lässt sich nicht rückgängig machen.} other {# Arbeitselemente löschen? Das lässt sich nicht rückgängig machen.}}",
+        "confirm": "{count, plural, one {# Element löschen} other {# Elemente löschen}}"
+      },
+      "selected": "{count, plural, one {# ausgewählt} other {# ausgewählt}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "Aktion nicht verfügbar",
+      "unavailable_message": "Diese Aktion ist hier nicht verfügbar.",
+      "remove_from_cycle": "Aus dem Zyklus entfernen",
+      "remove_from_module": "Aus dem Modul entfernen",
+      "try_again": "Bitte gleich noch einmal versuchen.",
+      "toast": {
+        "link_copied": "Link kopiert",
+        "link_copied_message": "Der Link zum Arbeitselement liegt in der Zwischenablage.",
+        "title_copied": "Titel kopiert",
+        "title_copied_message": "Der Titel des Arbeitselements liegt in der Zwischenablage.",
+        "description_copied": "Beschreibung kopiert",
+        "description_copied_message": "Die Beschreibung des Arbeitselements liegt in der Zwischenablage.",
+        "details_copied": "Titel und Beschreibung kopiert",
+        "details_copied_message": "Titel und Beschreibung des Arbeitselements liegen in der Zwischenablage.",
+        "no_description": "Keine Beschreibung",
+        "no_description_message": "Dieses Arbeitselement hat keine Beschreibung.",
+        "restored": "Wiederhergestellt",
+        "restored_message": "Das Arbeitselement finden Sie bei den Arbeitselementen des Projekts.",
+        "not_restored": "Nicht wiederhergestellt"
+      }
     }
   },
   "sub_work_item": {
