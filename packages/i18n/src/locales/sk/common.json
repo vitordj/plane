@@ -73,6 +73,7 @@
   "select_or_customize_your_interface_color_scheme": "Vyberte alebo prispôsobte farebnú schému rozhrania.",
   "timezone_setting": "Aktuálne nastavenie časového pásma.",
   "language_setting": "Zvoľte jazyk používaný v používateľskom rozhraní.",
+  "language_organization_default": "Predvolený jazyk vašej organizácie je {language}.",
   "settings_moved_to_preferences": "Nastavenia časového pásma a jazyka boli presunuté do predvolieb.",
   "go_to_preferences": "Prejsť na predvoľby",
   "select_the_cursor_motion_style_that_feels_right_for_you": "Vyberte štýl pohybu kurzora, ktorý vám vyhovuje.",

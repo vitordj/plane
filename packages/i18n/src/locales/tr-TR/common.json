@@ -73,6 +73,7 @@
   "select_or_customize_your_interface_color_scheme": "Arayüz renk şemanızı seçin veya özelleştirin.",
   "timezone_setting": "Geçerli saat dilimi ayarı.",
   "language_setting": "Kullanıcı arayüzünde kullanılan dili seçin.",
+  "language_organization_default": "Kuruluşunuzun varsayılan dili {language}.",
   "settings_moved_to_preferences": "Saat Dilimi ve Dil ayarları tercihlere taşındı.",
   "go_to_preferences": "Tercihlere git",
   "select_the_cursor_motion_style_that_feels_right_for_you": "Size uygun imleç hareket stilini seçin.",

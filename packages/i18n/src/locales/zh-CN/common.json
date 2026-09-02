@@ -73,6 +73,7 @@
   "select_or_customize_your_interface_color_scheme": "选择或自定义您的界面配色方案。",
   "timezone_setting": "当前时区设置。",
   "language_setting": "选择用户界面使用的语言。",
+  "language_organization_default": "您所在组织的默认语言为“{language}”。",
   "settings_moved_to_preferences": "时区和语言设置已移至偏好设置。",
   "go_to_preferences": "前往偏好设置",
   "select_the_cursor_motion_style_that_feels_right_for_you": "选择适合您的光标移动样式。",

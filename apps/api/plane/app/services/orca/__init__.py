@@ -19,6 +19,13 @@ from .directory_projector import (
     resolve_identity,
     unresolved_identities,
 )
+from .language import (
+    DEFAULT_LANGUAGE_KEY,
+    FALLBACK_LANGUAGE,
+    SUPPORTED_LANGUAGES,
+    get_default_language,
+    normalize_language,
+)
 from .org_unit_reconciler import (
     AccessChange,
     cap_role_to_workspace_role,
@@ -33,13 +40,18 @@ from .org_unit_reconciler import (
 __all__ = [
     "AccessChange",
     "AssignmentCandidate",
+    "DEFAULT_LANGUAGE_KEY",
+    "FALLBACK_LANGUAGE",
     "MODE_APPEND",
     "MODE_FILL_EMPTY",
     "ProjectionResult",
+    "SUPPORTED_LANGUAGES",
     "assign_from_unit",
     "candidates_for",
     "cap_role_to_workspace_role",
+    "get_default_language",
     "match_workspace_member",
+    "normalize_language",
     "plan_access",
     "project_identity",
     "project_unit",

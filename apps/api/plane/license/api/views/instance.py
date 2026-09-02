@@ -14,6 +14,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 # Module imports
+from plane.app.services.orca.language import DEFAULT_LANGUAGE_KEY, normalize_language
 from plane.app.views import BaseAPIView
 from plane.db.models import Workspace
 from plane.license.api.permissions import InstanceAdminPermission
@@ -64,6 +65,7 @@ class InstanceEndpoint(BaseAPIView):
             POSTHOG_HOST,
             UNSPLASH_ACCESS_KEY,
             LLM_API_KEY,
+            DEFAULT_LANGUAGE,
         ) = get_configuration_value(
             [
                 {
@@ -127,6 +129,13 @@ class InstanceEndpoint(BaseAPIView):
                     "key": "LLM_API_KEY",
                     "default": os.environ.get("LLM_API_KEY", ""),
                 },
+                # Orca (fork): the instance's default interface language.
+                # Batched into this existing read rather than queried
+                # separately — this endpoint is on the boot path of every app.
+                {
+                    "key": DEFAULT_LANGUAGE_KEY,
+                    "default": os.environ.get(DEFAULT_LANGUAGE_KEY, "en"),
+                },
             ]
         )
 
@@ -168,6 +177,13 @@ class InstanceEndpoint(BaseAPIView):
         data["admin_base_url"] = settings.ADMIN_BASE_URL
         data["space_base_url"] = settings.SPACE_BASE_URL
         data["app_base_url"] = settings.APP_BASE_URL
+
+        # Orca (fork): the language the interface falls back to when the
+        # viewer has not chosen one — including before sign-in, where there is
+        # no profile to read a preference from. Normalized here so a typo in
+        # the setting reaches the clients as "en" rather than as a code
+        # i18next silently ignores.
+        data["default_language"] = normalize_language(DEFAULT_LANGUAGE)
 
         data["instance_changelog_url"] = settings.INSTANCE_CHANGELOG_URL
         data["is_self_managed"] = settings.IS_SELF_MANAGED

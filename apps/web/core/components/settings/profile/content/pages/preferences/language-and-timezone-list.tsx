@@ -14,6 +14,7 @@ import { TimezoneSelect } from "@/components/global";
 import { StartOfWeekPreference } from "@/components/profile/start-of-week-preference";
 import { SettingsControlItem } from "@/components/settings/control-item";
 // hooks
+import { useInstance } from "@/hooks/store/use-instance";
 import { useUser, useUserProfile } from "@/hooks/store/user";
 
 export const ProfileSettingsLanguageAndTimezonePreferencesList = observer(
@@ -25,6 +26,7 @@ export const ProfileSettingsLanguageAndTimezonePreferencesList = observer(
       userProfile: { data: profile },
     } = useUser();
     const { updateUserProfile } = useUserProfile();
+    const { config } = useInstance();
     // translation
     const { t } = useTranslation();
 
@@ -68,6 +70,15 @@ export const ProfileSettingsLanguageAndTimezonePreferencesList = observer(
       return selectedLanguage.label;
     };
 
+    // Orca (fork): name the organization's default, but only when the person is
+    // not already on it — telling somebody the default is the language they are
+    // reading in is noise. Also skipped when the instance has not answered yet.
+    const organizationDefault = config?.default_language;
+    const organizationDefaultHint =
+      organizationDefault && organizationDefault !== profile?.language
+        ? t("language_organization_default", { language: getLanguageLabel(organizationDefault) })
+        : undefined;
+
     return (
       <div className="flex flex-col gap-y-1">
         <SettingsControlItem
@@ -77,7 +88,9 @@ export const ProfileSettingsLanguageAndTimezonePreferencesList = observer(
         />
         <SettingsControlItem
           title={t("language")}
-          description={t("language_setting")}
+          description={
+            organizationDefaultHint ? `${t("language_setting")} ${organizationDefaultHint}` : t("language_setting")
+          }
           control={
             <CustomSelect
               value={profile?.language}

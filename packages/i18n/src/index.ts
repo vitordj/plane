@@ -17,7 +17,7 @@ export type { TTranslationKeys } from "./types";
 export type { TNamespace } from "./constants/namespaces";
 
 // Utilities
-export { setLanguage } from "./core/set-language";
+export { applyDefaultLanguage, clearLanguagePreference, setLanguage } from "./core/set-language";
 
 // Constants
 export { FALLBACK_LANGUAGE, SUPPORTED_LANGUAGES, LANGUAGE_STORAGE_KEY } from "./constants/language";

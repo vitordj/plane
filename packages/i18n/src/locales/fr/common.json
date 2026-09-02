@@ -73,6 +73,7 @@
   "select_or_customize_your_interface_color_scheme": "Sélectionnez ou personnalisez votre palette de couleurs de l’interface.",
   "timezone_setting": "Paramètre de fuseau horaire actuel.",
   "language_setting": "Choisissez la langue utilisée dans l’interface utilisateur.",
+  "language_organization_default": "La langue par défaut de votre organisation est {language}.",
   "settings_moved_to_preferences": "Les paramètres de fuseau horaire et de langue ont été déplacés dans les préférences.",
   "go_to_preferences": "Aller aux préférences",
   "select_the_cursor_motion_style_that_feels_right_for_you": "Sélectionnez le style de mouvement du curseur qui vous convient le mieux.",

@@ -73,6 +73,7 @@
   "select_or_customize_your_interface_color_scheme": "インターフェースのカラースキームを選択またはカスタマイズします。",
   "timezone_setting": "現在のタイムゾーン設定。",
   "language_setting": "ユーザーインターフェースで使用する言語を選択します。",
+  "language_organization_default": "組織の既定の言語は「{language}」です。",
   "settings_moved_to_preferences": "タイムゾーンと言語の設定は環境設定に移動しました。",
   "go_to_preferences": "環境設定へ移動",
   "select_the_cursor_motion_style_that_feels_right_for_you": "自分に合ったカーソル移動スタイルを選択してください。",
