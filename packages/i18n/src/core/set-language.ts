@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { coerceToString } from "./coerce-to-string";
 import { initPromise, i18nInstance } from "./instance";
 import { LANGUAGE_STORAGE_KEY } from "../constants/language";
 import type { TLanguage } from "../types";
@@ -116,6 +117,9 @@ export async function clearLanguagePreference(fallback: TLanguage): Promise<void
  * @param params ICU values.
  */
 export function translate(key: string, params?: Record<string, unknown>): string {
-  const value = i18nInstance.t(key, params);
-  return typeof value === "string" ? value : key;
+  // Two calls rather than one with an optional argument: under
+  // exactOptionalPropertyTypes, `undefined` in the second position resolves to
+  // i18next's `defaultValue: string` overload and fails to compile. Same shape
+  // as useTranslation, which hit this first.
+  return coerceToString(key, params === undefined ? i18nInstance.t(key) : i18nInstance.t(key, params));
 }
