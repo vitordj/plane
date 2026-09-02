@@ -151,7 +151,16 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
               <div className="flex min-w-0 items-center gap-2">
                 <Avatar name={membership.display_name} src={membership.avatar_url} size="md" />
                 <div className="min-w-0">
-                  <p className="text-sm text-custom-text-100 truncate">{membership.display_name}</p>
+                  <p className="flex min-w-0 items-center gap-2 text-sm text-custom-text-100">
+                    <span className="truncate">{membership.display_name}</span>
+                    {/* Removing a directory-added person here is undone by the
+                        next sync; the badge is the warning before the click. */}
+                    {membership.sync_source === "scim" && (
+                      <span className="text-custom-text-400 bg-layer-1 shrink-0 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide">
+                        Directory
+                      </span>
+                    )}
+                  </p>
                   <p className="text-xs text-custom-text-300 truncate">{membership.email}</p>
                 </div>
               </div>
@@ -184,6 +193,11 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
 
       <p className="text-xs text-custom-text-300">
         Leading an area governs the area itself. Project admin is granted separately, on the project.
+      </p>
+      <p className="text-xs text-custom-text-400">
+        People marked <span className="uppercase">Directory</span> come from your identity provider. Removing them here
+        lasts only until the next sync — take them out of the group upstream instead. People you add by hand are never
+        removed by a sync.
       </p>
     </div>
   );

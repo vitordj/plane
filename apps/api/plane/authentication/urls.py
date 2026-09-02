@@ -42,8 +42,12 @@ from .views import (
     SignOutAuthSpaceEndpoint,
     GiteaCallbackEndpoint,
     GiteaOauthInitiateEndpoint,
+    EntraCallbackEndpoint,
+    EntraOauthInitiateEndpoint,
     GiteaCallbackSpaceEndpoint,
     GiteaOauthInitiateSpaceEndpoint,
+    EntraCallbackSpaceEndpoint,
+    EntraOauthInitiateSpaceEndpoint,
 )
 
 urlpatterns = [
@@ -149,5 +153,18 @@ urlpatterns = [
         "spaces/gitea/callback/",
         GiteaCallbackSpaceEndpoint.as_view(),
         name="space-gitea-callback",
+    ),
+    ## Microsoft Entra ID Oauth (fork addition, see FORK.md)
+    path("entra/", EntraOauthInitiateEndpoint.as_view(), name="entra-initiate"),
+    path("entra/callback/", EntraCallbackEndpoint.as_view(), name="entra-callback"),
+    path(
+        "spaces/entra/",
+        EntraOauthInitiateSpaceEndpoint.as_view(),
+        name="space-entra-initiate",
+    ),
+    path(
+        "spaces/entra/callback/",
+        EntraCallbackSpaceEndpoint.as_view(),
+        name="space-entra-callback",
     ),
 ]

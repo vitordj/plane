@@ -39,6 +39,11 @@ Workspace
 | `organizational_project_access_states` | Aggregate per (person, project): `baseline_role`, `last_applied_role`, `created_by_org_layer`.     |
 | `issue_organizational_units`           | The unit responsible for a work item.                                                              |
 
+Units and memberships also record **where they came from** — `manual` or
+`scim`. Nothing in this document depends on it, but it is what lets an external
+directory add and remove its own rows without ever touching one a human
+created. See [Directory sync](#directory-sync).
+
 Roles are Plane's native ones throughout: `Admin = 20`, `Member = 15`,
 `Guest = 5`.
 
@@ -131,6 +136,10 @@ Admin; reads are open to workspace members.
 | `GET`                  | `organizational-units/<id>/effective-access/`                         |
 | `GET`                  | `organizational-units/<id>/workload/`                                 |
 | `GET`                  | `organizational-units/me/`                                            |
+| `GET` `PATCH`          | `directory/`                                                          |
+| `POST` `DELETE`        | `directory/token/`                                                    |
+| `POST`                 | `directory/resync/`                                                   |
+| `GET`                  | `directory/unresolved/`                                               |
 | `GET` `POST` `DELETE`  | `projects/<project_id>/issues/<issue_id>/organizational-unit/`        |
 | `POST`                 | `projects/<project_id>/issues/<issue_id>/organizational-unit-assign/` |
 
@@ -153,6 +162,23 @@ Existing assignees are never replaced. The default mode assigns only when
 nobody holds the item; `mode=append` adds a unit member alongside the current
 ones. Triggering is manual in v1.
 
+## Directory sync
+
+Microsoft Entra ID can supply unit membership over SCIM 2.0, so onboarding
+someone into an area becomes a directory change rather than a Plane one. Two
+rules keep it safe to point at a workspace already in use:
+
+- the sync only withdraws memberships it created itself, so a person an admin
+  added by hand survives a group change upstream — the same shape as the
+  "manual access always wins" rule above, one layer up;
+- a unit still never invites anyone. People the directory pushes who are not
+  workspace members are recorded and reported, and become members of their
+  units by themselves once they join.
+
+What a unit *grants* — its projects and their inherited roles — stays a Plane
+decision that no SCIM call can reach. Setup, endpoints and troubleshooting are
+in [entra-directory-sync.md](./entra-directory-sync.md).
+
 ## Settings
 
 | Setting                   | Default | Effect                                                                                                                                                                                                                                                                                                                                                          |
@@ -160,12 +186,19 @@ ones. Triggering is manual in v1.
 | `ORCA_ORG_UNITS_ENABLED`  | `1`     | Kill switch. Set to `0` and every `/api/orca/` organizational-unit route answers 404, the reconcile management command refuses to run, and the UI hides the layer. Existing inherited `ProjectMember` rows are left exactly as they are — the switch stops the layer acting, it does not withdraw access it already granted. Re-enable and reconcile to resume. |
 | `ORCA_ORG_SYNC_MAX_EDGES` | `100`   | Fan-out threshold for inline vs. Celery reconciliation.                                                                                                                                                                                                                                                                                                         |
 
+Directory provisioning is configured per workspace, not per instance — a
+workspace admin issues the SCIM token from **Workspace settings → Areas**.
+
 ## Tests
 
 ```bash
 cd apps/api
 pytest plane/tests/unit/orca/
 ```
+
+The directory layer has its own files —
+`test_scim_endpoints.py`, `test_directory_projector.py`,
+`test_directory_admin_api.py` and `test_entra_provider.py`.
 
 They cover joining and leaving units, the strongest-role resolution across two
 units, manual access surviving removal, manual promotions never being

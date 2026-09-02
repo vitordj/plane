@@ -11,6 +11,7 @@ import { API_BASE_URL } from "@plane/constants";
 import type { TOAuthConfigs, TOAuthOption } from "@plane/types";
 // assets
 import giteaLogo from "@/app/assets/logos/gitea-logo.svg?url";
+import microsoftLogo from "@/app/assets/logos/microsoft-logo.svg?url";
 import githubLightLogo from "@/app/assets/logos/github-black.png?url";
 import githubDarkLogo from "@/app/assets/logos/github-dark.svg?url";
 import gitlabLogo from "@/app/assets/logos/gitlab-logo.svg?url";
@@ -33,7 +34,8 @@ export const useCoreOAuthConfig = (oauthActionText: string): TOAuthConfigs => {
       (config?.is_google_enabled ||
         config?.is_github_enabled ||
         config?.is_gitlab_enabled ||
-        config?.is_gitea_enabled)) ||
+        config?.is_gitea_enabled ||
+        config?.is_entra_enabled)) ||
     false;
   const oAuthOptions: TOAuthOption[] = [
     {
@@ -78,6 +80,18 @@ export const useCoreOAuthConfig = (oauthActionText: string): TOAuthConfigs => {
         window.location.assign(`${API_BASE_URL}/auth/gitea/${next_path ? `?next_path=${next_path}` : ``}`);
       },
       enabled: config?.is_gitea_enabled,
+    },
+    {
+      // Microsoft Entra ID, added by the fork (see FORK.md). Labelled
+      // "Microsoft" rather than "Entra ID" because that is the brand people
+      // recognise on a sign-in button.
+      id: "entra",
+      text: `${oauthActionText} with Microsoft`,
+      icon: <img src={microsoftLogo} height={18} width={18} alt="Microsoft Logo" />,
+      onClick: () => {
+        window.location.assign(`${API_BASE_URL}/auth/entra/${next_path ? `?next_path=${next_path}` : ``}`);
+      },
+      enabled: config?.is_entra_enabled,
     },
   ];
 

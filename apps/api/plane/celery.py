@@ -92,6 +92,14 @@ app.conf.beat_schedule = {
         "task": "plane.bgtasks.exporter_expired_task.delete_old_s3_link",
         "schedule": crontab(hour=3, minute=45),  # UTC 03:45
     },
+    # Orca: turn directory identities that were parked as unresolved into real
+    # unit memberships once those people become workspace members. Hourly is a
+    # deliberate compromise — SCIM already delivers directory changes within
+    # minutes, so this only covers the Plane-side event nothing notifies us of.
+    "check-every-hour-to-resolve-directory-identities": {
+        "task": "plane.bgtasks.organizational_directory_task.resolve_directory_identities",
+        "schedule": crontab(minute=20),  # Every hour at :20
+    },
 }
 
 

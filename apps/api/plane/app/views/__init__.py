@@ -261,5 +261,20 @@ from .organizational_unit import (
     IssueOrganizationalUnitAssignEndpoint,
     OrcaConfigEndpoint,
 )
+from .organizational_directory import (
+    OrganizationalDirectoryConnectionEndpoint,
+    OrganizationalDirectoryResyncEndpoint,
+    OrganizationalDirectoryTokenEndpoint,
+    OrganizationalDirectoryUnresolvedEndpoint,
+)
+from .orca_scim import (
+    SCIMGroupDetailEndpoint,
+    SCIMGroupListEndpoint,
+    SCIMResourceTypesEndpoint,
+    SCIMSchemasEndpoint,
+    SCIMServiceProviderConfigEndpoint,
+    SCIMUserDetailEndpoint,
+    SCIMUserListEndpoint,
+)
 
 

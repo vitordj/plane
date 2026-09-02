@@ -219,9 +219,16 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
     def list(self, request, slug, unit_id):
+        # Only active memberships: a directory sync withdraws access by
+        # deactivating the row rather than deleting it, so that the provenance
+        # survives for audit and re-adding somebody is a flag flip. Listing
+        # those rows would show people who have left the area as if they were
+        # still in it — and would disagree with ``member_count``, which has
+        # always counted active memberships only.
         memberships = OrganizationalUnitMembership.objects.filter(
             organizational_unit_id=unit_id,
             organizational_unit__workspace__slug=slug,
+            is_active=True,
         ).select_related("workspace_member", "workspace_member__member")
         serializer = OrganizationalUnitMembershipSerializer(memberships, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
