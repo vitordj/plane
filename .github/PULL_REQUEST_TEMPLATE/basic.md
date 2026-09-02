@@ -24,6 +24,7 @@
 
 - [ ] Staging environment build and deployment verified.
 - [ ] Local linting and formatting checked (`pnpm check`).
+- [ ] User-facing strings go through `t()` and exist in every locale (`pnpm check:sync`).
 
 ### References
 
