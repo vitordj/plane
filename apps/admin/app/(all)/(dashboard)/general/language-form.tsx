@@ -79,7 +79,9 @@ export const DefaultLanguageForm = observer(function DefaultLanguageForm(props: 
           different one for themselves in their profile preferences, and their choice is never overwritten.
         </div>
       </div>
-      <div className="grid-col grid w-full grid-cols-1 items-center justify-between gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div
+        className="grid-col grid w-full grid-cols-1 items-center justify-between gap-8 md:grid-cols-2 lg:grid-cols-3"
+      >
         <div className="flex flex-col gap-1">
           <h4 className="text-13 text-tertiary">Language</h4>
           <CustomSelect
