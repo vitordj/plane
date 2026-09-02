@@ -12,6 +12,7 @@ from django.utils import timezone
 # Module imports
 from plane.app.services.orca.language import (
     SUPPORTED_LANGUAGES,
+    follower_profiles,
     get_default_language,
     normalize_language,
 )
@@ -20,8 +21,9 @@ from plane.db.models import Profile
 
 class Command(BaseCommand):
     help = (
-        "Move profiles still on the stock English default onto the instance's "
-        "default language. Previews by default; pass --apply to write."
+        "Move everyone who follows the organization's language onto it. "
+        "People who picked their own language are never touched. "
+        "Previews by default; pass --apply to write."
     )
 
     def add_arguments(self, parser):
@@ -29,10 +31,7 @@ class Command(BaseCommand):
             "--language",
             type=str,
             default=None,
-            help=(
-                "Language code to apply. Defaults to the instance's "
-                "DEFAULT_LANGUAGE configuration."
-            ),
+            help=("Language code to apply. Defaults to the instance's DEFAULT_LANGUAGE configuration."),
         )
         parser.add_argument(
             "--apply",
@@ -54,50 +53,40 @@ class Command(BaseCommand):
             language = normalize_language(requested)
             if language != requested:
                 raise CommandError(
-                    f"'{requested}' is not a supported language. "
-                    f"Supported: {', '.join(sorted(SUPPORTED_LANGUAGES))}"
+                    f"'{requested}' is not a supported language. Supported: {', '.join(sorted(SUPPORTED_LANGUAGES))}"
                 )
 
-        # The stock value every profile is born with. Profiles still holding it
-        # are the ones nobody has expressed a preference for — as far as the
-        # schema can tell. See the caveat below.
-        stock_default = Profile._meta.get_field("language").get_default()
-
-        if language == stock_default:
-            self.stdout.write(
-                self.style.WARNING(
-                    f"The default language is already '{language}'; nothing to change."
-                )
-            )
-            return
-
-        candidates = Profile.objects.filter(language=stock_default)
+        # Who counts as a follower: nobody who has picked a language of their
+        # own. On a population that predates the sidecar that means nobody who
+        # has moved off the language they would be reading in anyway — the one
+        # every profile is born in, or the one the organization currently
+        # declares. See follower_profiles for the full rule.
+        followers = follower_profiles(
+            Profile._meta.get_field("language").get_default(),
+            get_default_language(),
+        )
+        candidates = followers.exclude(language=language)
         count = candidates.count()
+        chosen = Profile.objects.count() - followers.count()
 
         if not count:
-            self.stdout.write(self.style.SUCCESS(f"No profiles are still on '{stock_default}'."))
+            self.stdout.write(self.style.SUCCESS(f"Everyone who follows the organization is already on '{language}'."))
+            if chosen:
+                self.stdout.write(f"{chosen} profile(s) have a language of their own and were not considered.")
             return
 
         if not apply_changes:
-            self.stdout.write(
-                f"Would move {count} profile(s) from '{stock_default}' to '{language}'."
-            )
+            self.stdout.write(f"Would move {count} profile(s) to '{language}'.")
+            if chosen:
+                self.stdout.write(f"{chosen} profile(s) picked their own language and would be left alone.")
             self.stdout.write("Re-run with --apply to write these changes.")
             return
 
-        # queryset.update() on purpose: it skips the post_save receiver (which
-        # only acts on creation anyway) and writes one statement instead of N.
-        # updated_at is auto_now, which update() bypasses, so it is set here
-        # rather than left stale.
+        # queryset.update() on purpose: it skips the receiver that records a
+        # personal choice — this write is the opposite of one — and writes a
+        # single statement instead of N. updated_at is auto_now, which update()
+        # bypasses, so it is set here rather than left stale.
         updated = candidates.update(language=language, updated_at=timezone.now())
-        self.stdout.write(
-            self.style.SUCCESS(f"Moved {updated} profile(s) from '{stock_default}' to '{language}'.")
-        )
-        self.stdout.write(
-            self.style.WARNING(
-                "Caveat: Profile.language cannot distinguish somebody who chose "
-                f"'{stock_default}' from somebody who never opened the setting. "
-                "Anyone in the first group has just been switched and will need "
-                "to set their language again."
-            )
-        )
+        self.stdout.write(self.style.SUCCESS(f"Moved {updated} profile(s) to '{language}'."))
+        if chosen:
+            self.stdout.write(f"{chosen} profile(s) picked their own language and were left alone.")

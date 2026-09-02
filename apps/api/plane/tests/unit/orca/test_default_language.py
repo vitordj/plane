@@ -183,12 +183,25 @@ class TestInstanceEndpointCarriesTheDefault:
 
 @pytest.mark.django_db
 class TestApplyDefaultLanguageCommand:
-    """The one-off rollout for a population that predates the setting."""
+    """The one-off rollout for a population that predates the setting.
+
+    Changing DEFAULT_LANGUAGE in god-mode now moves followers by itself (see
+    test_language_preference.py), so what is left for this command is the
+    population it cannot reach: an instance that took its default from the
+    environment, where no configuration row was ever saved and everybody is
+    still sitting on the language they were born in. Every test here sets the
+    configuration up front and then puts the profiles where that instance would
+    have left them.
+    """
 
     def make_profile(self, email, language=None):
         user = User.objects.create(email=email, username=email.split("@")[0])
-        kwargs = {"language": language} if language else {}
-        return Profile.objects.create(user=user, **kwargs)
+        profile = Profile.objects.create(user=user)
+        # update() rather than save(): it skips the receivers, which is exactly
+        # what an instance configured through the environment looks like.
+        Profile.objects.filter(pk=profile.pk).update(language=language or FALLBACK_LANGUAGE)
+        profile.refresh_from_db()
+        return profile
 
     def run(self, *args):
         out = StringIO()
@@ -196,8 +209,8 @@ class TestApplyDefaultLanguageCommand:
         return out.getvalue()
 
     def test_dry_run_reports_without_writing(self, set_default_language):
-        profile = self.make_profile("stock@plane.so")
         set_default_language("pt-BR")
+        profile = self.make_profile("stock@plane.so")
 
         output = self.run()
 
@@ -206,8 +219,8 @@ class TestApplyDefaultLanguageCommand:
         assert profile.language == FALLBACK_LANGUAGE
 
     def test_apply_moves_profiles_still_on_the_stock_default(self, set_default_language):
-        profile = self.make_profile("stock@plane.so")
         set_default_language("pt-BR")
+        profile = self.make_profile("stock@plane.so")
 
         self.run("--apply")
 
@@ -215,8 +228,8 @@ class TestApplyDefaultLanguageCommand:
         assert profile.language == "pt-BR"
 
     def test_apply_leaves_a_chosen_language_alone(self, set_default_language):
-        chosen = self.make_profile("chose@plane.so", language="ja")
         set_default_language("pt-BR")
+        chosen = self.make_profile("chose@plane.so", language="ja")
 
         self.run("--apply")
 
@@ -224,8 +237,8 @@ class TestApplyDefaultLanguageCommand:
         assert chosen.language == "ja"
 
     def test_language_flag_overrides_the_configuration(self, set_default_language):
-        profile = self.make_profile("stock@plane.so")
         set_default_language("pt-BR")
+        profile = self.make_profile("stock@plane.so")
 
         self.run("--apply", "--language", "de")
 
@@ -265,14 +278,12 @@ class TestSupportedLanguagesDoNotDrift:
         return set(re.findall(r'value:\s*"([^"]+)"', match.group(1)))
 
     def test_matches_the_i18n_package(self):
-        assert self.read_ts_codes(
-            "packages/i18n/src/constants/language.ts", "SUPPORTED_LANGUAGES"
-        ) == set(SUPPORTED_LANGUAGES)
-
-    def test_matches_the_constants_package(self):
-        assert self.read_ts_codes("packages/constants/src/language.ts", "LANGUAGE_CHOICES") == set(
+        assert self.read_ts_codes("packages/i18n/src/constants/language.ts", "SUPPORTED_LANGUAGES") == set(
             SUPPORTED_LANGUAGES
         )
+
+    def test_matches_the_constants_package(self):
+        assert self.read_ts_codes("packages/constants/src/language.ts", "LANGUAGE_CHOICES") == set(SUPPORTED_LANGUAGES)
 
     def test_matches_the_locale_directories(self):
         locales_dir = REPO_ROOT / "packages/i18n/src/locales"
@@ -308,10 +319,7 @@ class TestSupportedLanguagesDoNotDrift:
             if not path.exists():
                 pytest.skip(f"{relative_path} not in this checkout")
             source = path.read_text(encoding="utf-8")
-            return dict(
-                (value, label)
-                for label, value in _re.findall(r'label: "([^"]+)", value: "([^"]+)"', source)
-            )
+            return dict((value, label) for label, value in _re.findall(r'label: "([^"]+)", value: "([^"]+)"', source))
 
         assert labels("packages/i18n/src/constants/language.ts") == labels("packages/constants/src/language.ts")
 

@@ -22,7 +22,11 @@ lives in ``InstanceConfiguration`` alongside the other instance settings.
 # Python imports
 import os
 
+# Django imports
+from django.db.models import Q
+
 # Module imports
+from plane.db.models import Profile
 from plane.license.utils.instance_value import get_configuration_value
 
 # The interface languages the catalogue actually ships. Mirrors
@@ -98,3 +102,33 @@ def get_default_language():
         ]
     )
     return normalize_language(configured)
+
+
+def follower_profiles(*current_languages):
+    """The profiles whose language is the organization's rather than their own.
+
+    @description Somebody follows the organization when they have never picked
+        a language of their own. ``Profile.language`` cannot say that by itself
+        — English is both the field's birth value and a language people
+        genuinely choose — so two signals are combined here.
+
+        The sidecar row is definitive when it exists: ``False`` means this
+        person chose, and nothing but them changes their language again;
+        ``True`` means they handed the choice back and should move with the
+        organization whatever they are reading right now.
+
+        Where there is no row, the language stands in for one. A follower
+        reads in whatever the organization last said — so a profile sitting on
+        something else was moved there by the person, and that is a choice even
+        though nothing recorded it as one. This is what makes the feature safe
+        to switch on for an organization that is already running.
+    @param current_languages: The language, or languages, a follower could
+        currently be reading in. The receiver passes the default being
+        replaced; the rollout command passes both the field's birth value and
+        the configured default, since an instance that took its default from
+        the environment never ran the receiver at all.
+    @returns: An unevaluated ``Profile`` queryset. Nothing is written here.
+    """
+    return Profile.objects.filter(
+        Q(language__in=current_languages) | Q(user__orca_language_preference__follows_organization_default=True)
+    ).exclude(user__orca_language_preference__follows_organization_default=False)

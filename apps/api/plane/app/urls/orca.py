@@ -24,6 +24,7 @@ from plane.app.views import (
     OrganizationalDirectoryResyncEndpoint,
     OrganizationalDirectoryTokenEndpoint,
     OrganizationalDirectoryUnresolvedEndpoint,
+    UserLanguagePreferenceEndpoint,
     SCIMGroupDetailEndpoint,
     SCIMGroupListEndpoint,
     SCIMResourceTypesEndpoint,
@@ -172,6 +173,13 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/directory/unresolved/",
         OrganizationalDirectoryUnresolvedEndpoint.as_view(),
         name="organizational-directory-unresolved",
+    ),
+    # The signed-in person's own language preference: whether they follow the
+    # organization's default, and the way back to following it.
+    path(
+        "orca/users/me/language-preference/",
+        UserLanguagePreferenceEndpoint.as_view(),
+        name="orca-user-language-preference",
     ),
     # SCIM 2.0 provisioning service. The paths are spelled exactly as RFC 7644
     # defines them — capitalized and without a trailing slash — because Entra
