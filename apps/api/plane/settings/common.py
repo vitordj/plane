@@ -135,12 +135,20 @@ MIDDLEWARE = [
 ]
 
 # Rest Framework settings
+# SCIM provisioning throttle rate (DRF SimpleRateThrottle format). Sized for
+# batch provisioning: Entra sends one request per user and per membership
+# change, so a first sync of a few hundred people is a few hundred requests in
+# a row. Keyed per workspace — see plane/throttles/scim.py. Defined above
+# REST_FRAMEWORK because the throttle-rates table below reads it.
+SCIM_RATE_LIMIT = os.environ.get("SCIM_RATE_LIMIT", "600/minute")
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.SessionAuthentication",),
     "DEFAULT_THROTTLE_CLASSES": ("rest_framework.throttling.AnonRateThrottle",),
     "DEFAULT_THROTTLE_RATES": {
         "anon": "30/minute",
         "asset_id": "5/minute",
+        "scim": SCIM_RATE_LIMIT,
     },
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),

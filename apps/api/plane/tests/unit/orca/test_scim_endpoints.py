@@ -14,6 +14,7 @@ exercise the exact payload shapes Entra emits rather than idealized ones.
 import pytest
 
 from plane.app.services.orca import project_unit, reconcile_unit, resolve_identity
+from plane.throttles.scim import SCIMRateThrottle
 from plane.db.models import (
     DirectorySyncSource,
     OrganizationalDirectoryGroupMembership,
@@ -631,3 +632,44 @@ class TestFeatureFlagClosesProvisioning:
         )
 
         assert response.status_code == 404
+
+
+@pytest.mark.unit
+class TestBatchProvisioningIsNotThrottled:
+    """
+    Entra provisions in batches — one request per user, one per membership
+    change — so a first sync of a few hundred people is a few hundred requests
+    in a row. The SCIM views are anonymous to DRF (the caller holds a bearer
+    token, not a session), so before they carried their own throttle the
+    project-wide ``anon`` limit of 30/minute applied: the sync got 30 requests
+    in and the rest came back 429, Entra retried into the same wall, and the
+    connection read as broken.
+    """
+
+    def test_a_batch_well_past_the_anon_limit_is_served(
+        self, scim_client, workspace_with_members, directory_connection
+    ):
+        codes = {scim_client.get(scim_users_url(workspace_with_members.slug)).status_code for _ in range(100)}
+
+        assert codes == {200}
+
+    def test_the_limit_is_per_workspace_not_per_caller(
+        self, settings, scim_client, workspace_with_members, other_workspace, directory_connection
+    ):
+        # All of Microsoft's provisioning traffic arrives from their own
+        # address ranges, so an IP-keyed limit would let one tenant's sync
+        # throttle another's. Exhaust one workspace deliberately and check the
+        # other is untouched.
+        settings.REST_FRAMEWORK = {**settings.REST_FRAMEWORK, "DEFAULT_THROTTLE_RATES": {"scim": "2/minute"}}
+        SCIMRateThrottle.rate = "2/minute"
+        try:
+            first = [scim_client.get(scim_users_url(workspace_with_members.slug)).status_code for _ in range(4)]
+            # The other workspace has no connection, so its token is refused —
+            # but with 401, the authentication answer, not 429 from a counter
+            # the first workspace filled.
+            other = scim_client.get(scim_users_url(other_workspace.slug)).status_code
+        finally:
+            SCIMRateThrottle.rate = None
+
+        assert 429 in first
+        assert other == 401

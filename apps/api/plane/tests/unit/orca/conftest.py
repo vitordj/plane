@@ -11,6 +11,7 @@ nothing that matters.
 """
 
 import pytest
+from django.core.cache import cache
 from rest_framework.test import APIClient
 
 from plane.db.models import (
@@ -33,6 +34,24 @@ from plane.db.models import (
 ROLE_ADMIN = 20
 ROLE_MEMBER = 15
 ROLE_GUEST = 5
+
+
+@pytest.fixture(autouse=True)
+def clear_throttle_history():
+    """
+    Give every test an empty rate-limit counter.
+
+    @description DRF keeps throttle history in the Django cache, which is
+    Redis here and therefore shared across the whole session. The SCIM views
+    are anonymous to DRF and keyed per workspace, and the ordinary views fall
+    under the project's 30/minute ``anon`` limit, so without this a test's
+    verdict depends on how many requests the tests before it happened to make
+    inside the same minute — the suite passes on a slow machine and fails on a
+    fast one. Clearing between tests makes each one answer for its own calls.
+    """
+    cache.clear()
+    yield
+    cache.clear()
 
 
 @pytest.fixture(autouse=True)

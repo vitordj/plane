@@ -261,6 +261,17 @@ Set through God Mode rather than the environment:
 | `ENTRA_CLIENT_SECRET` | Stored encrypted                                            |
 | `ENABLE_ENTRA_SYNC`   | Whether sign-in refreshes the Plane profile from Entra      |
 
+And one environment variable, for the provisioning endpoints:
+
+| Variable          | Default      | Notes                                                                                                                                                                                                        |
+| ----------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SCIM_RATE_LIMIT` | `600/minute` | Per workspace, DRF rate format. Entra provisions one request per user and per membership change, so a first sync of a few hundred people is a few hundred requests in a row. Raise it for a large directory. |
+
+Keyed per workspace rather than per caller: all of Microsoft's provisioning
+traffic arrives from their own address ranges, so an IP-keyed limit would have
+one workspace's sync throttle another's. If Entra reports `429` responses
+during a large first sync, this is the number to raise.
+
 ### Tables
 
 All sidecars, per [FORK.md](../FORK.md) — no core table is touched.

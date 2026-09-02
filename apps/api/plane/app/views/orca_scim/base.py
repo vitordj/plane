@@ -37,6 +37,7 @@ from rest_framework.views import APIView
 
 # Module imports
 from plane.db.models import OrganizationalDirectoryConnection, Workspace, hash_directory_token
+from plane.throttles.scim import SCIMRateThrottle
 from plane.app.views.organizational_unit import organizational_units_enabled
 
 SCIM_CONTENT_TYPE = "application/scim+json"
@@ -223,6 +224,11 @@ class SCIMBaseView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
+    # Not the project-wide AnonRateThrottle: these calls are anonymous to DRF
+    # (the caller is Microsoft's provisioning service, holding a bearer token
+    # rather than a session), and its 30/minute would throttle a real first
+    # sync into failure. See plane/throttles/scim.py.
+    throttle_classes = [SCIMRateThrottle]
     renderer_classes = [SCIMRenderer, JSONRenderer]
     parser_classes = [SCIMParser, JSONParser]
 
