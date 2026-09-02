@@ -179,10 +179,10 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
     <div className="flex flex-col gap-6 border-t border-subtle pt-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h4 className="text-base font-medium text-custom-text-100">Directory sync</h4>
+          <h4 className="text-base text-custom-text-100 font-medium">Directory sync</h4>
           <p className="text-sm text-custom-text-300">
-            Let Microsoft Entra ID keep area membership up to date. Entra decides who belongs to an area; which
-            projects an area grants, and at which role, stays set here.
+            Let Microsoft Entra ID keep area membership up to date. Entra decides who belongs to an area; which projects
+            an area grants, and at which role, stays set here.
           </p>
         </div>
         <ToggleSwitch
@@ -199,17 +199,17 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
       </div>
 
       {!connection.has_token && (
-        <div className="flex items-start gap-2 rounded-md bg-layer-1 p-3 text-sm text-custom-text-300">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
+        <div className="text-sm text-custom-text-300 flex items-start gap-2 rounded-md bg-layer-1 p-3">
+          <AlertTriangle className="text-amber-500 mt-0.5 size-4 shrink-0" />
           <span>Issue a token before switching provisioning on — Entra cannot authenticate without one.</span>
         </div>
       )}
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-custom-text-200">Tenant URL</span>
+          <span className="text-sm text-custom-text-200 font-medium">Tenant URL</span>
           <div className="flex items-center gap-2">
-            <code className="flex-1 truncate rounded-md bg-layer-1 px-3 py-2 text-xs text-custom-text-200">
+            <code className="text-xs text-custom-text-200 flex-1 truncate rounded-md bg-layer-1 px-3 py-2">
               {connection.scim_base_url}
             </code>
             <Button
@@ -227,10 +227,10 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-custom-text-200">Secret token</span>
+          <span className="text-sm text-custom-text-200 font-medium">Secret token</span>
           {issuedToken ? (
             <div className="flex items-center gap-2">
-              <code className="flex-1 truncate rounded-md bg-layer-1 px-3 py-2 text-xs text-custom-text-200">
+              <code className="text-xs text-custom-text-200 flex-1 truncate rounded-md bg-layer-1 px-3 py-2">
                 {issuedToken}
               </code>
               <Button
@@ -272,7 +272,7 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
       <div className="flex flex-col gap-3 rounded-md bg-layer-1 p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-custom-text-200">Last sync</span>
+            <span className="text-sm text-custom-text-200 font-medium">Last sync</span>
             <span className="text-xs text-custom-text-400">{formatTimestamp(connection.last_sync_at)}</span>
           </div>
           <Button
@@ -285,7 +285,7 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
             Resync now
           </Button>
         </div>
-        <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-custom-text-300">
+        <div className="text-xs text-custom-text-300 flex flex-wrap gap-x-6 gap-y-1">
           <span>{lastSync.memberships_created ?? 0} added</span>
           <span>{lastSync.memberships_reactivated ?? 0} restored</span>
           <span>{lastSync.memberships_deactivated ?? 0} withdrawn</span>
@@ -297,24 +297,24 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
       </div>
 
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-custom-text-200">
+        <span className="text-sm text-custom-text-200 font-medium">
           Pushed by the directory, not in this workspace ({unresolved.length})
         </span>
         {unresolved.length === 0 ? (
-          <div className="flex items-center gap-2 text-sm text-custom-text-300">
-            <Check className="size-4 text-green-500" />
+          <div className="text-sm text-custom-text-300 flex items-center gap-2">
+            <Check className="text-green-500 size-4" />
             Everyone the directory sent is an active member of this workspace.
           </div>
         ) : (
           <>
             <ul className="flex flex-col divide-y divide-subtle rounded-md bg-layer-1">
               {unresolved.map((identity) => (
-                <li key={identity.id} className="flex items-center justify-between gap-4 px-3 py-2 text-sm">
+                <li key={identity.id} className="text-sm flex items-center justify-between gap-4 px-3 py-2">
                   <div className="flex min-w-0 flex-col">
-                    <span className="truncate text-custom-text-200">{identity.display_name || identity.user_name}</span>
-                    <span className="truncate text-xs text-custom-text-400">{identity.user_name}</span>
+                    <span className="text-custom-text-200 truncate">{identity.display_name || identity.user_name}</span>
+                    <span className="text-xs text-custom-text-400 truncate">{identity.user_name}</span>
                   </div>
-                  <span className="shrink-0 text-xs text-custom-text-400">
+                  <span className="text-xs text-custom-text-400 shrink-0">
                     {identity.is_active ? "Not a workspace member" : "Inactive in the directory"}
                   </span>
                 </li>
@@ -329,7 +329,7 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
       </div>
 
       <div className="flex flex-col gap-3">
-        <label className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4">
           <span className="flex flex-col">
             <span className="text-sm text-custom-text-200">Create areas for new groups</span>
             <span className="text-xs text-custom-text-400">
@@ -347,8 +347,8 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
             size="sm"
             disabled={isBusy}
           />
-        </label>
-        <label className="flex items-start justify-between gap-4">
+        </div>
+        <div className="flex items-start justify-between gap-4">
           <span className="flex flex-col">
             <span className="text-sm text-custom-text-200">Let the directory remove people</span>
             <span className="text-xs text-custom-text-400">
@@ -366,7 +366,7 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
             size="sm"
             disabled={isBusy}
           />
-        </label>
+        </div>
       </div>
     </div>
   );

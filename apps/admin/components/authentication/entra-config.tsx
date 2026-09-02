@@ -40,9 +40,8 @@ export const EntraConfiguration = observer(function EntraConfiguration(props: Pr
           <ToggleSwitch
             value={Boolean(parseInt(EntraConfig))}
             onChange={() => {
-              Boolean(parseInt(EntraConfig)) === true
-                ? updateConfig("IS_ENTRA_ENABLED", "0")
-                : updateConfig("IS_ENTRA_ENABLED", "1");
+              const newEnableEntraConfig = Boolean(parseInt(EntraConfig)) === true ? "0" : "1";
+              updateConfig("IS_ENTRA_ENABLED", newEnableEntraConfig);
             }}
             size="sm"
             disabled={disabled}

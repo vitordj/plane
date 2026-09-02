@@ -72,7 +72,7 @@ export const OrganizationalUnitList = observer(function OrganizationalUnitList(p
                 {/* Bound areas are worth flagging: their membership is owned
                     upstream, so editing it here is undone on the next sync. */}
                 {unit.external_id && (
-                  <span className="text-custom-text-400 bg-layer-1 shrink-0 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide">
+                  <span className="text-custom-text-400 shrink-0 rounded bg-layer-1 px-1.5 py-0.5 text-[10px] tracking-wide uppercase">
                     Synced
                   </span>
                 )}

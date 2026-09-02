@@ -2,10 +2,10 @@
 
 Two independent integrations, either of which can be turned on alone:
 
-| | What it decides | Where it is configured |
-| --- | --- | --- |
-| **Sign-in (SSO)** | Who may log in to Plane | God Mode → Authentication → Microsoft Entra ID |
-| **Directory sync (SCIM)** | Who belongs to which [area](./organizational-units.md) | Workspace settings → Areas → Directory sync |
+|                           | What it decides                                        | Where it is configured                         |
+| ------------------------- | ------------------------------------------------------ | ---------------------------------------------- |
+| **Sign-in (SSO)**         | Who may log in to Plane                                | God Mode → Authentication → Microsoft Entra ID |
+| **Directory sync (SCIM)** | Who belongs to which [area](./organizational-units.md) | Workspace settings → Areas → Directory sync    |
 
 They meet only at the email address: a person who signs in with their corporate
 account lands in the areas their Entra groups put them in, because both sides
@@ -43,7 +43,7 @@ assert an arbitrary email can therefore take over an existing account — the
 class of issue behind [GHSA-7j95-vh8g-f365](https://github.com/makeplane/plane/security/advisories/GHSA-7j95-vh8g-f365),
 which is why the Google and Gitea providers refuse unverified addresses.
 
-Microsoft guarantees that a signed-in user belongs to *some* tenant, not to
+Microsoft guarantees that a signed-in user belongs to _some_ tenant, not to
 yours. Pointing this provider at the multi-tenant `common` or `organizations`
 authority would let anyone create their own free Azure tenant, put a user in it
 whose `mail` is `ceo@yourcompany.com`, and sign in as them. So:
@@ -132,10 +132,10 @@ applications → New application → Create your own application** (non-gallery)
 
 ### The switches
 
-| Setting | Default | What off means |
-| --- | --- | --- |
-| **Create areas for new groups** | On | The directory may only fill areas you created and named to match. Use this when you want to curate which groups become areas. |
-| **Let the directory remove people** | On | Sync becomes additive only — useful while directory data is still being cleaned up, so a half-populated group cannot strip people of access on its first run. Manually added people are protected either way. |
+| Setting                             | Default | What off means                                                                                                                                                                                                |
+| ----------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Create areas for new groups**     | On      | The directory may only fill areas you created and named to match. Use this when you want to curate which groups become areas.                                                                                 |
+| **Let the directory remove people** | On      | Sync becomes additive only — useful while directory data is still being cleaned up, so a half-populated group cannot strip people of access on its first run. Manually added people are protected either way. |
 
 ### Rotating and revoking
 
@@ -146,14 +146,14 @@ as they are, simply frozen.
 
 ### Day-to-day behaviour
 
-| What happens in Entra | What happens in Plane |
-| --- | --- |
-| Person added to a provisioned group | Joins the area, gains its project access |
-| Person removed from the group | Leaves the area, loses the access the area granted — unless an admin added them by hand, or another area still grants it |
-| Person deprovisioned (`active: false`) | Same as being removed, from every area |
-| Group renamed | Area renamed |
-| Group deleted or unassigned | Area is **unbound, not deleted** — it keeps its projects and its manual members; only directory-granted memberships are withdrawn |
-| Person not in the workspace | Nothing. They appear in the unresolved report |
+| What happens in Entra                  | What happens in Plane                                                                                                             |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Person added to a provisioned group    | Joins the area, gains its project access                                                                                          |
+| Person removed from the group          | Leaves the area, loses the access the area granted — unless an admin added them by hand, or another area still grants it          |
+| Person deprovisioned (`active: false`) | Same as being removed, from every area                                                                                            |
+| Group renamed                          | Area renamed                                                                                                                      |
+| Group deleted or unassigned            | Area is **unbound, not deleted** — it keeps its projects and its manual members; only directory-granted memberships are withdrawn |
+| Person not in the workspace            | Nothing. They appear in the unresolved report                                                                                     |
 
 Deleting a synced area in Plane is temporary: the next cycle recreates it.
 Remove the group in Entra instead.
@@ -217,11 +217,11 @@ that person joins the workspace — the one event SCIM cannot tell us about.
 
 Base: `/api/orca/scim/v2/workspaces/<slug>/`
 
-| Resource | Methods |
-| --- | --- |
-| `ServiceProviderConfig`, `ResourceTypes`, `Schemas` | `GET` |
-| `Users`, `Users/<id>` | `GET` `POST` `PUT` `PATCH` `DELETE` |
-| `Groups`, `Groups/<id>` | `GET` `POST` `PUT` `PATCH` `DELETE` |
+| Resource                                            | Methods                             |
+| --------------------------------------------------- | ----------------------------------- |
+| `ServiceProviderConfig`, `ResourceTypes`, `Schemas` | `GET`                               |
+| `Users`, `Users/<id>`                               | `GET` `POST` `PUT` `PATCH` `DELETE` |
+| `Groups`, `Groups/<id>`                             | `GET` `POST` `PUT` `PATCH` `DELETE` |
 
 Filtering supports the single `attribute eq "value"` term Entra emits, on
 `userName`, `externalId`, `id` and `emails` for users and on `displayName`,
@@ -234,34 +234,34 @@ the wrong resources rather than fewer. Pagination is SCIM's 1-based
 
 Workspace admin only, under `/api/orca/workspaces/<slug>/`:
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` `PATCH` | `directory/` | Read and configure the connection |
-| `POST` `DELETE` | `directory/token/` | Issue (returns the token once) and revoke |
-| `POST` | `directory/resync/` | Replay the mirror; calls nothing external |
-| `GET` | `directory/unresolved/` | The identities that granted nothing |
+| Method          | Path                    | Purpose                                   |
+| --------------- | ----------------------- | ----------------------------------------- |
+| `GET` `PATCH`   | `directory/`            | Read and configure the connection         |
+| `POST` `DELETE` | `directory/token/`      | Issue (returns the token once) and revoke |
+| `POST`          | `directory/resync/`     | Replay the mirror; calls nothing external |
+| `GET`           | `directory/unresolved/` | The identities that granted nothing       |
 
 ### Instance configuration keys
 
 Set through God Mode rather than the environment:
 
-| Key | Notes |
-| --- | --- |
-| `IS_ENTRA_ENABLED` | `1` shows the sign-in button |
-| `ENTRA_TENANT_ID` | Required; `common`/`organizations`/`consumers` are rejected |
-| `ENTRA_CLIENT_ID` | Application (client) ID |
-| `ENTRA_CLIENT_SECRET` | Stored encrypted |
-| `ENABLE_ENTRA_SYNC` | Whether sign-in refreshes the Plane profile from Entra |
+| Key                   | Notes                                                       |
+| --------------------- | ----------------------------------------------------------- |
+| `IS_ENTRA_ENABLED`    | `1` shows the sign-in button                                |
+| `ENTRA_TENANT_ID`     | Required; `common`/`organizations`/`consumers` are rejected |
+| `ENTRA_CLIENT_ID`     | Application (client) ID                                     |
+| `ENTRA_CLIENT_SECRET` | Stored encrypted                                            |
+| `ENABLE_ENTRA_SYNC`   | Whether sign-in refreshes the Plane profile from Entra      |
 
 ### Tables
 
 All sidecars, per [FORK.md](../FORK.md) — no core table is touched.
 
-| Table | Purpose |
-| --- | --- |
-| `organizational_directory_connections` | Per-workspace config and the token digest |
-| `organizational_directory_identities` | One SCIM `User` as pushed, plus the workspace member it resolves to |
-| `organizational_directory_group_memberships` | The directory's assertion that an identity is in a group |
+| Table                                        | Purpose                                                             |
+| -------------------------------------------- | ------------------------------------------------------------------- |
+| `organizational_directory_connections`       | Per-workspace config and the token digest                           |
+| `organizational_directory_identities`        | One SCIM `User` as pushed, plus the workspace member it resolves to |
+| `organizational_directory_group_memberships` | The directory's assertion that an identity is in a group            |
 
 The mirror is kept separate from `organizational_unit_memberships` on purpose:
 it holds every member of a group, resolvable or not, so a person who leaves and

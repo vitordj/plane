@@ -52,14 +52,13 @@ const InstanceEntraAuthenticationPage = observer(function InstanceEntraAuthentic
       },
     });
 
-    await updateConfigPromise
-      .then(() => {
-        setIsSubmitting(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setIsSubmitting(false);
-      });
+    try {
+      await updateConfigPromise;
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isEntraEnabled = enableEntraConfig === "1";

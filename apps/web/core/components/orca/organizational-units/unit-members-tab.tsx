@@ -151,12 +151,12 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
               <div className="flex min-w-0 items-center gap-2">
                 <Avatar name={membership.display_name} src={membership.avatar_url} size="md" />
                 <div className="min-w-0">
-                  <p className="flex min-w-0 items-center gap-2 text-sm text-custom-text-100">
+                  <p className="text-sm text-custom-text-100 flex min-w-0 items-center gap-2">
                     <span className="truncate">{membership.display_name}</span>
                     {/* Removing a directory-added person here is undone by the
                         next sync; the badge is the warning before the click. */}
                     {membership.sync_source === "scim" && (
-                      <span className="text-custom-text-400 bg-layer-1 shrink-0 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide">
+                      <span className="text-custom-text-400 shrink-0 rounded bg-layer-1 px-1.5 py-0.5 text-[10px] tracking-wide uppercase">
                         Directory
                       </span>
                     )}

@@ -108,9 +108,9 @@ export function InstanceEntraConfigForm(props: Props) {
       label: "Client secret",
       description: (
         <>
-          Create this under <CodeBlock darkerShade>Certificates &amp; secrets</CodeBlock> in your app registration,
-          and copy the secret <span className="font-medium">Value</span> — not the Secret ID. Entra shows it only
-          once, and it expires on the date you chose.
+          Create this under <CodeBlock darkerShade>Certificates &amp; secrets</CodeBlock> in your app registration, and
+          copy the secret <span className="font-medium">Value</span> — not the Secret ID. Entra shows it only once, and
+          it expires on the date you chose.
         </>
       ),
       placeholder: "abc8Q~xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -127,10 +127,9 @@ export function InstanceEntraConfigForm(props: Props) {
       description: (
         <>
           We will auto-generate this. In your app registration, add it under{" "}
-          <CodeBlock darkerShade>Authentication</CodeBlock> as a platform of type{" "}
-          <CodeBlock darkerShade>Web</CodeBlock>. Also grant the delegated Microsoft Graph permission{" "}
-          <CodeBlock darkerShade>User.Read</CodeBlock>, which is what lets Plane read the signed-in
-          person&apos;s name and email.
+          <CodeBlock darkerShade>Authentication</CodeBlock> as a platform of type <CodeBlock darkerShade>Web</CodeBlock>
+          . Also grant the delegated Microsoft Graph permission <CodeBlock darkerShade>User.Read</CodeBlock>, which is
+          what lets Plane read the signed-in person&apos;s name and email.
         </>
       ),
     },
