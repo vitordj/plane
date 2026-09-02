@@ -664,6 +664,24 @@
             "not_resynced_title": "Yeniden senkronize edilmedi",
             "not_resynced": "Yeniden senkronizasyon tamamlanamadı."
           }
+        },
+        "errors": {
+          "unit_not_found": "Bu alan artık yok.",
+          "name_required": "Bir alanın adı olmalı.",
+          "slug_taken": "Bu adı taşıyan bir alan zaten var.",
+          "members_not_in_workspace": "Eklediğiniz herkes bu çalışma alanının etkin üyesi olmalı.",
+          "membership_not_found": "Bu kişi artık bu alanda değil.",
+          "lead_already_set": "Bu alanın zaten bir lideri var.",
+          "unit_not_in_workspace": "Bu alan bu çalışma alanına ait değil.",
+          "project_required": "Bağlanacak bir proje seçin.",
+          "invalid_role": "Bir alan bu rolü veremez.",
+          "project_not_in_workspace": "Bu proje bu çalışma alanına ait değil.",
+          "link_not_found": "Bu proje artık bu alana bağlı değil.",
+          "work_item_not_found": "Bu iş öğesi artık yok.",
+          "work_item_has_no_unit": "Bu iş öğesinden sorumlu bir alan yok.",
+          "invalid_assignment_mode": "Bu bir atama modu değil.",
+          "directory_workspace_not_found": "Bu çalışma alanı artık yok.",
+          "directory_token_required": "Dizin sağlamayı açmadan önce bir SCIM belirteci oluşturun."
         }
       }
     },

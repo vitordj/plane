@@ -440,6 +440,24 @@
             "not_resynced_title": "Não ressincronizado",
             "not_resynced": "Não foi possível concluir a ressincronização."
           }
+        },
+        "errors": {
+          "unit_not_found": "Essa área não existe mais.",
+          "name_required": "Uma área precisa de um nome.",
+          "slug_taken": "Já existe uma área com esse nome.",
+          "members_not_in_workspace": "Cada pessoa adicionada precisa ser membro ativo deste espaço de trabalho.",
+          "membership_not_found": "Essa pessoa não está mais nesta área.",
+          "lead_already_set": "Esta área já tem um responsável.",
+          "unit_not_in_workspace": "Essa área não pertence a este espaço de trabalho.",
+          "project_required": "Escolha um projeto para vincular.",
+          "invalid_role": "Uma área não pode conceder esse papel.",
+          "project_not_in_workspace": "Esse projeto não pertence a este espaço de trabalho.",
+          "link_not_found": "Esse projeto não está mais vinculado a esta área.",
+          "work_item_not_found": "Esse item de trabalho não existe mais.",
+          "work_item_has_no_unit": "Nenhuma área é responsável por este item de trabalho.",
+          "invalid_assignment_mode": "Esse não é um modo de atribuição.",
+          "directory_workspace_not_found": "Esse espaço de trabalho não existe mais.",
+          "directory_token_required": "Emita um token SCIM antes de ativar o provisionamento por diretório."
         }
       },
       "projects": {

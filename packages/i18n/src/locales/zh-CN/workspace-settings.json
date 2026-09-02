@@ -664,6 +664,24 @@
             "not_resynced_title": "未重新同步",
             "not_resynced": "无法完成重新同步。"
           }
+        },
+        "errors": {
+          "unit_not_found": "该区域已不存在。",
+          "name_required": "区域需要一个名称。",
+          "slug_taken": "已有同名的区域。",
+          "members_not_in_workspace": "添加的每个人都必须是本工作区的有效成员。",
+          "membership_not_found": "此人已不在该区域中。",
+          "lead_already_set": "该区域已有负责人。",
+          "unit_not_in_workspace": "该区域不属于本工作区。",
+          "project_required": "请选择要关联的项目。",
+          "invalid_role": "区域无法授予该角色。",
+          "project_not_in_workspace": "该项目不属于本工作区。",
+          "link_not_found": "该项目已不再关联到此区域。",
+          "work_item_not_found": "该工作项已不存在。",
+          "work_item_has_no_unit": "没有区域负责此工作项。",
+          "invalid_assignment_mode": "这不是一种分配模式。",
+          "directory_workspace_not_found": "该工作区已不存在。",
+          "directory_token_required": "请先签发 SCIM 令牌，再开启目录预配。"
         }
       }
     },

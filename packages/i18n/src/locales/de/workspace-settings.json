@@ -664,6 +664,24 @@
             "not_resynced_title": "Nicht erneut synchronisiert",
             "not_resynced": "Die erneute Synchronisierung konnte nicht abgeschlossen werden."
           }
+        },
+        "errors": {
+          "unit_not_found": "Diesen Bereich gibt es nicht mehr.",
+          "name_required": "Ein Bereich braucht einen Namen.",
+          "slug_taken": "Ein Bereich mit diesem Namen existiert bereits.",
+          "members_not_in_workspace": "Jede hinzugefügte Person muss aktives Mitglied dieses Arbeitsbereichs sein.",
+          "membership_not_found": "Diese Person ist nicht mehr in diesem Bereich.",
+          "lead_already_set": "Dieser Bereich hat bereits eine Leitung.",
+          "unit_not_in_workspace": "Dieser Bereich gehört nicht zu diesem Arbeitsbereich.",
+          "project_required": "Ein Projekt zum Verknüpfen auswählen.",
+          "invalid_role": "Diese Rolle kann ein Bereich nicht vergeben.",
+          "project_not_in_workspace": "Dieses Projekt gehört nicht zu diesem Arbeitsbereich.",
+          "link_not_found": "Dieses Projekt ist nicht mehr mit diesem Bereich verknüpft.",
+          "work_item_not_found": "Dieses Arbeitselement gibt es nicht mehr.",
+          "work_item_has_no_unit": "Kein Bereich ist für dieses Arbeitselement zuständig.",
+          "invalid_assignment_mode": "Das ist kein Zuweisungsmodus.",
+          "directory_workspace_not_found": "Diesen Arbeitsbereich gibt es nicht mehr.",
+          "directory_token_required": "Erst ein SCIM-Token ausstellen, dann die Verzeichnisbereitstellung einschalten."
         }
       }
     },

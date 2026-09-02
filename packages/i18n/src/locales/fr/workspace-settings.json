@@ -664,6 +664,24 @@
             "not_resynced_title": "Non resynchronisé",
             "not_resynced": "La resynchronisation n’a pas pu être effectuée."
           }
+        },
+        "errors": {
+          "unit_not_found": "Cette zone n’existe plus.",
+          "name_required": "Une zone doit avoir un nom.",
+          "slug_taken": "Une zone porte déjà ce nom.",
+          "members_not_in_workspace": "Chaque personne ajoutée doit être un membre actif de cet espace de travail.",
+          "membership_not_found": "Cette personne n’est plus dans cette zone.",
+          "lead_already_set": "Cette zone a déjà un responsable.",
+          "unit_not_in_workspace": "Cette zone n’appartient pas à cet espace de travail.",
+          "project_required": "Choisissez un projet à lier.",
+          "invalid_role": "Une zone ne peut pas accorder ce rôle.",
+          "project_not_in_workspace": "Ce projet n’appartient pas à cet espace de travail.",
+          "link_not_found": "Ce projet n’est plus lié à cette zone.",
+          "work_item_not_found": "Cet élément de travail n’existe plus.",
+          "work_item_has_no_unit": "Aucune zone n’est responsable de cet élément de travail.",
+          "invalid_assignment_mode": "Ce n’est pas un mode d’attribution.",
+          "directory_workspace_not_found": "Cet espace de travail n’existe plus.",
+          "directory_token_required": "Émettez un jeton SCIM avant d’activer le provisionnement par annuaire."
         }
       }
     },

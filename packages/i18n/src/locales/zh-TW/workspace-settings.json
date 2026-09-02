@@ -664,6 +664,24 @@
             "not_resynced_title": "未重新同步",
             "not_resynced": "無法完成重新同步。"
           }
+        },
+        "errors": {
+          "unit_not_found": "該區域已不存在。",
+          "name_required": "區域需要一個名稱。",
+          "slug_taken": "已有同名的區域。",
+          "members_not_in_workspace": "加入的每個人都必須是本工作區的有效成員。",
+          "membership_not_found": "此人已不在該區域中。",
+          "lead_already_set": "該區域已有負責人。",
+          "unit_not_in_workspace": "該區域不屬於本工作區。",
+          "project_required": "請選擇要關聯的專案。",
+          "invalid_role": "區域無法授予該角色。",
+          "project_not_in_workspace": "該專案不屬於本工作區。",
+          "link_not_found": "該專案已不再關聯到此區域。",
+          "work_item_not_found": "該工作事項已不存在。",
+          "work_item_has_no_unit": "沒有區域負責此工作事項。",
+          "invalid_assignment_mode": "這不是一種指派模式。",
+          "directory_workspace_not_found": "該工作區已不存在。",
+          "directory_token_required": "請先簽發 SCIM 權杖，再開啟目錄佈建。"
         }
       }
     },

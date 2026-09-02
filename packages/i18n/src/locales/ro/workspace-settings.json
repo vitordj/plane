@@ -664,6 +664,24 @@
             "not_resynced_title": "Nu s-a resincronizat",
             "not_resynced": "Resincronizarea nu a putut fi finalizată."
           }
+        },
+        "errors": {
+          "unit_not_found": "Această zonă nu mai există.",
+          "name_required": "O zonă are nevoie de un nume.",
+          "slug_taken": "Există deja o zonă cu acest nume.",
+          "members_not_in_workspace": "Fiecare persoană adăugată trebuie să fie membru activ al acestui spațiu de lucru.",
+          "membership_not_found": "Această persoană nu mai este în această zonă.",
+          "lead_already_set": "Această zonă are deja un responsabil.",
+          "unit_not_in_workspace": "Această zonă nu aparține acestui spațiu de lucru.",
+          "project_required": "Alegeți un proiect de asociat.",
+          "invalid_role": "O zonă nu poate acorda acest rol.",
+          "project_not_in_workspace": "Acest proiect nu aparține acestui spațiu de lucru.",
+          "link_not_found": "Acest proiect nu mai este asociat acestei zone.",
+          "work_item_not_found": "Această activitate nu mai există.",
+          "work_item_has_no_unit": "Nicio zonă nu răspunde de această activitate.",
+          "invalid_assignment_mode": "Acesta nu este un mod de atribuire.",
+          "directory_workspace_not_found": "Acest spațiu de lucru nu mai există.",
+          "directory_token_required": "Emiteți un token SCIM înainte de a activa provizionarea din director."
         }
       }
     },

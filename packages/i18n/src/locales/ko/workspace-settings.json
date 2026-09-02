@@ -664,6 +664,24 @@
             "not_resynced_title": "다시 동기화되지 않았습니다",
             "not_resynced": "다시 동기화를 완료할 수 없습니다."
           }
+        },
+        "errors": {
+          "unit_not_found": "해당 영역이 더 이상 없습니다.",
+          "name_required": "영역에는 이름이 필요합니다.",
+          "slug_taken": "이 이름의 영역이 이미 있습니다.",
+          "members_not_in_workspace": "추가하는 사람은 모두 이 작업 공간의 활성 구성원이어야 합니다.",
+          "membership_not_found": "그 사람은 더 이상 이 영역에 없습니다.",
+          "lead_already_set": "이 영역에는 이미 리드가 있습니다.",
+          "unit_not_in_workspace": "해당 영역은 이 작업 공간에 속하지 않습니다.",
+          "project_required": "연결할 프로젝트를 선택하십시오.",
+          "invalid_role": "영역은 그 역할을 부여할 수 없습니다.",
+          "project_not_in_workspace": "해당 프로젝트는 이 작업 공간에 속하지 않습니다.",
+          "link_not_found": "해당 프로젝트는 더 이상 이 영역에 연결되어 있지 않습니다.",
+          "work_item_not_found": "해당 작업 항목이 더 이상 없습니다.",
+          "work_item_has_no_unit": "이 작업 항목을 담당하는 영역이 없습니다.",
+          "invalid_assignment_mode": "그것은 배정 모드가 아닙니다.",
+          "directory_workspace_not_found": "해당 작업 공간이 더 이상 없습니다.",
+          "directory_token_required": "디렉터리 프로비저닝을 켜기 전에 SCIM 토큰을 발급하십시오."
         }
       }
     },

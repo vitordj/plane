@@ -51,6 +51,7 @@ from plane.db.models import (
     WorkspaceMember,
 )
 from plane.db.models.organizational_unit import OrganizationalUnitMemberRole
+from plane.utils.orca_error_codes import orca_error, orca_not_found
 
 from .base import BaseAPIView, BaseViewSet
 
@@ -130,7 +131,7 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
     def retrieve(self, request, slug, pk):
         unit = self.get_queryset().filter(pk=pk).first()
         if unit is None:
-            return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_UNIT_NOT_FOUND")
         return Response(OrganizationalUnitSerializer(unit).data, status=status.HTTP_200_OK)
 
     @allow_permission([ROLE.ADMIN], level="WORKSPACE")
@@ -138,14 +139,11 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
         workspace = Workspace.objects.get(slug=slug)
         name = request.data.get("name")
         if not name:
-            return Response({"error": "Name is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return orca_error("ORG_UNIT_NAME_REQUIRED")
 
         unit_slug = request.data.get("slug") or slugify(name)
         if OrganizationalUnit.objects.filter(workspace=workspace, slug=unit_slug).exists():
-            return Response(
-                {"error": "An organizational unit with this slug already exists"},
-                status=status.HTTP_409_CONFLICT,
-            )
+            return orca_error("ORG_UNIT_SLUG_TAKEN", status.HTTP_409_CONFLICT)
 
         serializer = OrganizationalUnitSerializer(data={**request.data, "slug": unit_slug})
         if serializer.is_valid():
@@ -162,7 +160,7 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
     def partial_update(self, request, slug, pk):
         unit = OrganizationalUnit.objects.filter(workspace__slug=slug, pk=pk).first()
         if unit is None:
-            return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_UNIT_NOT_FOUND")
 
         # Checked up front rather than left to the unique constraint: an
         # IntegrityError would abort the surrounding transaction, so the clean
@@ -175,10 +173,7 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
             .exclude(pk=unit.pk)
             .exists()
         ):
-            return Response(
-                {"error": "An organizational unit with this slug already exists"},
-                status=status.HTTP_409_CONFLICT,
-            )
+            return orca_error("ORG_UNIT_SLUG_TAKEN", status.HTTP_409_CONFLICT)
 
         serializer = OrganizationalUnitSerializer(unit, data=request.data, partial=True)
         if serializer.is_valid():
@@ -194,7 +189,7 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
     def destroy(self, request, slug, pk):
         unit = OrganizationalUnit.objects.filter(workspace__slug=slug, pk=pk).first()
         if unit is None:
-            return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_UNIT_NOT_FOUND")
 
         # Withdraw inherited access before the unit disappears, so the ledger
         # can still tell which project access it was responsible for. All three
@@ -237,7 +232,7 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
     def create(self, request, slug, unit_id):
         unit = self.get_unit(slug, unit_id)
         if unit is None:
-            return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_UNIT_NOT_FOUND")
 
         # Validated before anything is written: `role` never reaches the model
         # through a serializer on this path, and a second active lead would
@@ -257,10 +252,7 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
             WorkspaceMember.objects.filter(id__in=member_ids, workspace_id=unit.workspace_id, is_active=True)
         )
         if len(workspace_members) != len(member_ids):
-            return Response(
-                {"error": "All members must be active members of this workspace"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return orca_error("ORG_UNIT_MEMBERS_NOT_IN_WORKSPACE")
 
         created = []
         with transaction.atomic():
@@ -298,7 +290,7 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
             pk=pk, organizational_unit_id=unit_id, organizational_unit__workspace__slug=slug
         ).first()
         if membership is None:
-            return Response({"error": "Membership not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_UNIT_MEMBERSHIP_NOT_FOUND")
 
         # A unit has at most one active lead, enforced by a partial unique
         # index. Rejecting the second lead here keeps it a validation error
@@ -314,10 +306,7 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
             .exclude(pk=membership.pk)
             .exists()
         ):
-            return Response(
-                {"error": "This organizational unit already has an active lead"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return orca_error("ORG_UNIT_LEAD_ALREADY_SET")
 
         serializer = OrganizationalUnitMembershipSerializer(membership, data=request.data, partial=True)
         if serializer.is_valid():
@@ -333,7 +322,7 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
             pk=pk, organizational_unit_id=unit_id, organizational_unit__workspace__slug=slug
         ).first()
         if membership is None:
-            return Response({"error": "Membership not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_UNIT_MEMBERSHIP_NOT_FOUND")
 
         # Deactivate then reconcile synchronously: the reconciler must observe
         # the membership row while deciding what access to withdraw. One
@@ -365,27 +354,24 @@ class OrganizationalUnitProjectViewSet(OrganizationalUnitFeatureMixin, BaseViewS
     def create(self, request, slug, unit_id):
         unit = OrganizationalUnit.objects.filter(workspace__slug=slug, pk=unit_id).first()
         if unit is None:
-            return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_UNIT_NOT_FOUND")
 
         project_id = request.data.get("project_id")
         if not project_id:
-            return Response({"error": "Project is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return orca_error("ORG_UNIT_PROJECT_REQUIRED")
 
         # The role arrives as raw JSON, so a non-numeric value has to be a
         # validation error rather than an uncaught cast.
         try:
             default_role = int(request.data.get("default_role", ROLE.MEMBER.value))
         except (TypeError, ValueError):
-            return Response({"error": "Invalid role"}, status=status.HTTP_400_BAD_REQUEST)
+            return orca_error("ORG_UNIT_INVALID_ROLE")
         if default_role not in VALID_PROJECT_ROLES:
-            return Response({"error": "Invalid role"}, status=status.HTTP_400_BAD_REQUEST)
+            return orca_error("ORG_UNIT_INVALID_ROLE")
 
         project = Project.objects.filter(pk=project_id, workspace_id=unit.workspace_id).first()
         if project is None:
-            return Response(
-                {"error": "Project not found in this workspace"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return orca_error("ORG_UNIT_PROJECT_NOT_IN_WORKSPACE")
 
         with transaction.atomic():
             unit_project, created = OrganizationalUnitProject.objects.get_or_create(
@@ -407,7 +393,7 @@ class OrganizationalUnitProjectViewSet(OrganizationalUnitFeatureMixin, BaseViewS
             pk=pk, organizational_unit_id=unit_id, organizational_unit__workspace__slug=slug
         ).first()
         if unit_project is None:
-            return Response({"error": "Linked project not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_UNIT_LINK_NOT_FOUND")
 
         serializer = OrganizationalUnitProjectSerializer(unit_project, data=request.data, partial=True)
         if serializer.is_valid():
@@ -423,7 +409,7 @@ class OrganizationalUnitProjectViewSet(OrganizationalUnitFeatureMixin, BaseViewS
             pk=pk, organizational_unit_id=unit_id, organizational_unit__workspace__slug=slug
         ).first()
         if unit_project is None:
-            return Response({"error": "Linked project not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_UNIT_LINK_NOT_FOUND")
 
         project_id = unit_project.project_id
         workspace_id = unit_project.workspace_id
@@ -459,7 +445,7 @@ class OrganizationalUnitEffectiveAccessEndpoint(OrganizationalUnitFeatureMixin, 
     def get(self, request, slug, unit_id):
         unit = OrganizationalUnit.objects.filter(workspace__slug=slug, pk=unit_id).first()
         if unit is None:
-            return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_UNIT_NOT_FOUND")
 
         member_ids = list(
             OrganizationalUnitMembership.objects.filter(organizational_unit_id=unit.id).values_list(
@@ -540,16 +526,13 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
     def post(self, request, slug, project_id, issue_id):
         issue = Issue.objects.filter(pk=issue_id, project_id=project_id, workspace__slug=slug).first()
         if issue is None:
-            return Response({"error": "Work item not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_WORK_ITEM_NOT_FOUND")
 
         unit = OrganizationalUnit.objects.filter(
             pk=request.data.get("organizational_unit_id"), workspace_id=issue.workspace_id
         ).first()
         if unit is None:
-            return Response(
-                {"error": "Organizational unit not found in this workspace"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return orca_error("ORG_UNIT_NOT_IN_WORKSPACE")
 
         link, _ = IssueOrganizationalUnit.objects.get_or_create(
             issue=issue,
@@ -587,7 +570,7 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
     def post(self, request, slug, project_id, issue_id):
         issue = Issue.objects.filter(pk=issue_id, project_id=project_id, workspace__slug=slug).first()
         if issue is None:
-            return Response({"error": "Work item not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_WORK_ITEM_NOT_FOUND")
 
         unit_id = request.data.get("organizational_unit_id")
         if unit_id:
@@ -597,14 +580,11 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
             unit = link.organizational_unit if link else None
 
         if unit is None:
-            return Response(
-                {"error": "No organizational unit is responsible for this work item"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return orca_error("ORG_WORK_ITEM_HAS_NO_UNIT")
 
         mode = request.data.get("mode", MODE_FILL_EMPTY)
         if mode not in (MODE_FILL_EMPTY, MODE_APPEND):
-            return Response({"error": "Invalid mode"}, status=status.HTTP_400_BAD_REQUEST)
+            return orca_error("ORG_INVALID_ASSIGNMENT_MODE")
 
         chosen, reason = assign_from_unit(issue, unit, mode=mode)
         if chosen is None:
@@ -621,5 +601,5 @@ class OrganizationalUnitWorkloadEndpoint(OrganizationalUnitFeatureMixin, BaseAPI
     def get(self, request, slug, unit_id):
         unit = OrganizationalUnit.objects.filter(workspace__slug=slug, pk=unit_id).first()
         if unit is None:
-            return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_UNIT_NOT_FOUND")
         return Response(workload_snapshot(unit), status=status.HTTP_200_OK)

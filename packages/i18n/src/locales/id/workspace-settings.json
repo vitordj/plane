@@ -664,6 +664,24 @@
             "not_resynced_title": "Tidak disinkronkan ulang",
             "not_resynced": "Sinkronisasi ulang tidak dapat diselesaikan."
           }
+        },
+        "errors": {
+          "unit_not_found": "Area itu sudah tidak ada.",
+          "name_required": "Area memerlukan nama.",
+          "slug_taken": "Sudah ada area dengan nama ini.",
+          "members_not_in_workspace": "Setiap orang yang Anda tambahkan harus menjadi anggota aktif ruang kerja ini.",
+          "membership_not_found": "Orang itu sudah tidak ada di area ini.",
+          "lead_already_set": "Area ini sudah memiliki pemimpin.",
+          "unit_not_in_workspace": "Area itu bukan bagian dari ruang kerja ini.",
+          "project_required": "Pilih proyek untuk ditautkan.",
+          "invalid_role": "Area tidak dapat memberikan peran itu.",
+          "project_not_in_workspace": "Proyek itu bukan bagian dari ruang kerja ini.",
+          "link_not_found": "Proyek itu sudah tidak tertaut ke area ini.",
+          "work_item_not_found": "Item kerja itu sudah tidak ada.",
+          "work_item_has_no_unit": "Tidak ada area yang bertanggung jawab atas item kerja ini.",
+          "invalid_assignment_mode": "Itu bukan mode penugasan.",
+          "directory_workspace_not_found": "Ruang kerja itu sudah tidak ada.",
+          "directory_token_required": "Terbitkan token SCIM sebelum mengaktifkan penyediaan dari direktori."
         }
       }
     },

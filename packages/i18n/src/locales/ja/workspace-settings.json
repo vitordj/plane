@@ -664,6 +664,24 @@
             "not_resynced_title": "再同期できませんでした",
             "not_resynced": "再同期を完了できませんでした。"
           }
+        },
+        "errors": {
+          "unit_not_found": "そのエリアは存在しません。",
+          "name_required": "エリアには名前が必要です。",
+          "slug_taken": "この名前のエリアはすでにあります。",
+          "members_not_in_workspace": "追加できるのは、このワークスペースの有効なメンバーだけです。",
+          "membership_not_found": "その方はこのエリアにはいません。",
+          "lead_already_set": "このエリアにはすでにリードがいます。",
+          "unit_not_in_workspace": "そのエリアはこのワークスペースのものではありません。",
+          "project_required": "紐付けるプロジェクトを選んでください。",
+          "invalid_role": "エリアはそのロールを付与できません。",
+          "project_not_in_workspace": "そのプロジェクトはこのワークスペースのものではありません。",
+          "link_not_found": "そのプロジェクトはこのエリアに紐付いていません。",
+          "work_item_not_found": "その作業項目は存在しません。",
+          "work_item_has_no_unit": "この作業項目を担当するエリアがありません。",
+          "invalid_assignment_mode": "それは割り当てモードではありません。",
+          "directory_workspace_not_found": "そのワークスペースは存在しません。",
+          "directory_token_required": "ディレクトリからのプロビジョニングを有効にする前に、SCIM トークンを発行してください。"
         }
       }
     },

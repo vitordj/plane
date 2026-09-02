@@ -664,6 +664,24 @@
             "not_resynced_title": "Nesynchronizováno",
             "not_resynced": "Opětovnou synchronizaci se nepodařilo dokončit."
           }
+        },
+        "errors": {
+          "unit_not_found": "Tato oblast už neexistuje.",
+          "name_required": "Oblast potřebuje název.",
+          "slug_taken": "Oblast s tímto názvem už existuje.",
+          "members_not_in_workspace": "Každý přidaný člověk musí být aktivním členem tohoto pracovního prostoru.",
+          "membership_not_found": "Tento člověk už v této oblasti není.",
+          "lead_already_set": "Tato oblast už má vedoucího.",
+          "unit_not_in_workspace": "Tato oblast do tohoto pracovního prostoru nepatří.",
+          "project_required": "Vyberte projekt, který chcete připojit.",
+          "invalid_role": "Tuto roli oblast udělit nemůže.",
+          "project_not_in_workspace": "Tento projekt do tohoto pracovního prostoru nepatří.",
+          "link_not_found": "Tento projekt už není k této oblasti připojen.",
+          "work_item_not_found": "Tato pracovní položka už neexistuje.",
+          "work_item_has_no_unit": "Za tuto pracovní položku neodpovídá žádná oblast.",
+          "invalid_assignment_mode": "To není režim přidělování.",
+          "directory_workspace_not_found": "Tento pracovní prostor už neexistuje.",
+          "directory_token_required": "Před zapnutím provisioningu z adresáře vydejte token SCIM."
         }
       }
     },
