@@ -61,6 +61,8 @@ from .project import (
 )
 from .project_custom_settings import ProjectCustomSettings
 from .organizational_unit import (
+    DirectoryIdentityState,
+    DirectorySyncSource,
     IssueOrganizationalUnit,
     OrganizationalProjectAccessState,
     OrganizationalUnit,
@@ -68,6 +70,13 @@ from .organizational_unit import (
     OrganizationalUnitMemberRole,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
+)
+from .organizational_directory import (
+    OrganizationalDirectoryConnection,
+    OrganizationalDirectoryGroupMembership,
+    OrganizationalDirectoryIdentity,
+    generate_directory_token,
+    hash_directory_token,
 )
 from .session import Session
 from .social_connection import SocialLoginConnection

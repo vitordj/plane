@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useEffect } from "react";
 import { observer } from "mobx-react";
 import { usePathname } from "next/navigation";
 import { useParams } from "react-router";
@@ -19,6 +20,7 @@ import { joinUrlPath } from "@plane/utils";
 // components
 import { SettingsSidebarItem } from "@/components/settings/sidebar/item";
 // hooks
+import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 import { useUserPermissions } from "@/hooks/store/user";
 // local imports
 import { WORKSPACE_SETTINGS_ICONS } from "./item-icon";
@@ -29,15 +31,24 @@ export const WorkspaceSettingsSidebarItemCategories = observer(function Workspac
   const pathname = usePathname();
   // store hooks
   const { allowPermissions } = useUserPermissions();
+  // ORCA_ORG_UNITS_ENABLED=0 makes every organizational route answer 404, so
+  // the settings entry has to disappear with it rather than lead to an error.
+  const { isEnabled: areOrganizationalUnitsEnabled, fetchConfig } = useOrganizationalUnit();
   // translation
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (workspaceSlug) fetchConfig(workspaceSlug.toString());
+  }, [workspaceSlug, fetchConfig]);
 
   return (
     <div className="mt-3 flex flex-col divide-y divide-subtle px-3">
       {WORKSPACE_SETTINGS_CATEGORIES.map((category) => {
         const categoryItems = GROUPED_WORKSPACE_SETTINGS[category];
-        const accessibleItems = categoryItems.filter((item) =>
-          allowPermissions(item.access, EUserPermissionsLevel.WORKSPACE, workspaceSlug)
+        const accessibleItems = categoryItems.filter(
+          (item) =>
+            allowPermissions(item.access, EUserPermissionsLevel.WORKSPACE, workspaceSlug) &&
+            (item.key !== "organizational-units" || areOrganizationalUnitsEnabled)
         );
 
         if (accessibleItems.length === 0) return null;

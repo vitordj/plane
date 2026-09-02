@@ -135,12 +135,20 @@ MIDDLEWARE = [
 ]
 
 # Rest Framework settings
+# SCIM provisioning throttle rate (DRF SimpleRateThrottle format). Sized for
+# batch provisioning: Entra sends one request per user and per membership
+# change, so a first sync of a few hundred people is a few hundred requests in
+# a row. Keyed per workspace — see plane/throttles/scim.py. Defined above
+# REST_FRAMEWORK because the throttle-rates table below reads it.
+SCIM_RATE_LIMIT = os.environ.get("SCIM_RATE_LIMIT", "600/minute")
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.SessionAuthentication",),
     "DEFAULT_THROTTLE_CLASSES": ("rest_framework.throttling.AnonRateThrottle",),
     "DEFAULT_THROTTLE_RATES": {
         "anon": "30/minute",
         "asset_id": "5/minute",
+        "scim": SCIM_RATE_LIMIT,
     },
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
@@ -348,6 +356,14 @@ CELERY_IMPORTS = (
     # issue version tasks
     "plane.bgtasks.issue_version_sync",
     "plane.bgtasks.issue_description_version_sync",
+    # orca organizational layer
+    # Celery's autodiscovery only picks up modules named ``tasks``, so this
+    # module has to be imported explicitly or the worker answers a queued
+    # reconciliation with "Received unregistered task".
+    "plane.bgtasks.organizational_unit_task",
+    # The hourly beat entry in plane/celery.py names this module's task; the
+    # worker can only run it if it imported the module at startup.
+    "plane.bgtasks.organizational_directory_task",
 )
 
 FILE_SIZE_LIMIT = int(os.environ.get("FILE_SIZE_LIMIT", 5242880))

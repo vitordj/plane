@@ -266,6 +266,21 @@
       "click_to_downvote": "Kliknite pre hlasovanie dole",
       "click_to_view_upvotes": "Kliknite pre zobrazenie hlasov hore",
       "click_to_view_downvotes": "Kliknite pre zobrazenie hlasov dole"
+    },
+    "organizational_unit": {
+      "no_match": "Žiadne zodpovedajúce oblasti",
+      "assign": "Priradiť",
+      "assign_tooltip": "Priradiť členovi oblasti s najmenším počtom otvorených pracovných položiek",
+      "toast": {
+        "area_unchanged": "Oblasť bez zmeny",
+        "assigned_title": "Priradené",
+        "assigned": "Priradené členovi oblasti s najmenším počtom otvorených pracovných položiek.",
+        "already_assigned_title": "Už priradené",
+        "already_assigned": "Táto pracovná položka už má priradenú osobu.",
+        "nobody_title": "Nikto nie je k dispozícii",
+        "nobody": "Žiadny člen tejto oblasti nemá prístup k tomuto projektu.",
+        "not_assigned": "Nepriradené"
+      }
     }
   },
   "sub_work_item": {

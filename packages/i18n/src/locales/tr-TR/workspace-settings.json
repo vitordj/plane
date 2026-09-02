@@ -495,7 +495,141 @@
         "title": "Alanlar",
         "heading": "Alanlar",
         "description": "Kişileri alanlar halinde gruplayın ve her alana projelerine tek adımda erişim verin.",
-        "add": "Yeni alan"
+        "add": "Yeni alan",
+        "disabled": "Alanlar bu örnekte kapalıdır. Bir yönetici ORCA_ORG_UNITS_ENABLED=1 ayarını yaparak alanları etkinleştirebilir.",
+        "try_again": "Kısa bir süre sonra yeniden deneyin.",
+        "toast": {
+          "saved": "Kaydedildi",
+          "not_saved": "Kaydedilmedi",
+          "role_unchanged": "Rol değişmedi"
+        },
+        "list": {
+          "empty_title": "Henüz alan yok.",
+          "empty_description": "Bir alan, birlikte çalışan kişileri — Uyum, Satış, Arka ofis — bir arada gruplar ve onlara alanın projelerine tek adımda erişim verir.",
+          "synced_badge": "Senkronize",
+          "counts": "{members, plural, one {# kişi} other {# kişi}} · {projects, plural, one {# proje} other {# proje}}",
+          "delete_aria": "{name} alanını sil",
+          "delete_title": "{name} silinsin mi?",
+          "delete_content": "Bu alandaki herkes, alanın kendilerine verdiği proje erişimini kaybeder. Başka bir alanın verdiği veya bir projede elle ayarlanan erişim korunur.",
+          "delete_content_synced": "Bu alandaki herkes, alanın kendilerine verdiği proje erişimini kaybeder. Bu alan dizininizden senkronize edilir; bu nedenle bir sonraki senkronizasyon alanı yeniden oluşturur. Kalıcı olarak kaldırmak istiyorsanız bunun yerine grubu dizinden silin.",
+          "delete_loading": "Siliniyor...",
+          "delete_confirm": "Alanı sil",
+          "toast": {
+            "deleted_title": "Alan silindi",
+            "deleted_message": "{name} alanının verdiği proje erişimi geri alındı. Başka yerden verilen erişim korunur.",
+            "not_deleted": "Silinmedi"
+          }
+        },
+        "form": {
+          "edit_title": "Alanı düzenle",
+          "name_placeholder": "Uyum",
+          "description_placeholder": "Bu alanın sorumlu olduğu işler",
+          "create": "Alan oluştur",
+          "toast": {
+            "updated": "{name} güncellendi.",
+            "created_title": "Oluşturuldu",
+            "created": "{name} kullanıma hazır.",
+            "name_taken": "Bu ada sahip bir alan zaten var. Farklı bir ad seçin."
+          }
+        },
+        "detail": {
+          "tab_people": "Kişiler",
+          "back_aria": "Tüm alanlara dön"
+        },
+        "members": {
+          "select_person": "Bir kişi seçin",
+          "no_addable": "Bu çalışma alanındaki herkes zaten bu alanda",
+          "add": "Alana ekle",
+          "empty": "Bu alanda henüz kimse yok. Projelerine erişim vermek için kişiler ekleyin.",
+          "directory_badge": "Dizin",
+          "remove_aria": "{name} adlı kişiyi bu alandan kaldır",
+          "lead_note": "Bir alana liderlik etmek yalnızca alanın kendisini yönetmeyi sağlar. Proje yöneticiliği ayrıca, projede verilir.",
+          "directory_note": "{badge} olarak işaretlenen kişiler kimlik sağlayıcınızdan gelir. Buradan kaldırmak yalnızca bir sonraki senkronizasyona kadar geçerlidir; bunun yerine onları kaynaktaki gruptan çıkarın. Elle eklediğiniz kişiler senkronizasyonla hiçbir zaman kaldırılmaz.",
+          "toast": {
+            "added_title": "Üye eklendi",
+            "added": "Artık bu alanın projelerine erişebilir.",
+            "not_added": "Eklenmedi",
+            "one_lead": "Bir alanın aynı anda yalnızca bir lideri olabilir.",
+            "removed_title": "Üye kaldırıldı",
+            "removed": "{name}, bu alan dışında verilen proje erişimini korur.",
+            "not_removed": "Kaldırılmadı"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Proje ayarlarını ve üyelerini değiştirebilir",
+          "role_member_hint": "İş öğeleri oluşturabilir ve düzenleyebilir",
+          "role_guest_hint": "Sınırlı erişim",
+          "select_project": "Bir proje seçin",
+          "no_linkable": "Her proje zaten bu alana bağlı",
+          "link": "Proje bağla",
+          "empty": "Henüz bağlı proje yok. Bu alanın üyelerine erişim vermek için bir proje bağlayın.",
+          "unlink_aria": "{name} projesinin bu alanla bağlantısını kaldır",
+          "role_note": "Bir kişinin rolü, alanlarının verdiği en yüksek roldür ve çalışma alanı rolüyle sınırlıdır. Bir projede elle ayarlanan roller burada hiçbir zaman düşürülmez.",
+          "toast": {
+            "linked_title": "Proje bağlandı",
+            "linked": "Artık bu alandaki herkes projeye erişebilir.",
+            "not_linked": "Bağlanmadı",
+            "unlinked_title": "Proje bağlantısı kaldırıldı",
+            "unlinked": "{name} projesine bu alan dışında verilen erişim korunur.",
+            "not_unlinked": "Bağlantı kaldırılmadı"
+          }
+        },
+        "directory_sync": {
+          "heading": "Dizin senkronizasyonu",
+          "description": "Alan üyeliğini Microsoft Entra ID'nin güncel tutmasına izin verin. Bir alana kimin ait olduğuna Entra karar verir; alanın hangi projelere hangi rolle erişim verdiği burada ayarlanmaya devam eder.",
+          "never": "Hiç",
+          "copy": "Kopyala",
+          "provisioning_on": "Sağlama açık.",
+          "provisioning_off": "Sağlama kapalı.",
+          "no_token_warning": "Sağlamayı açmadan önce bir token oluşturun; Entra token olmadan kimlik doğrulaması yapamaz.",
+          "tenant_url": "Kiracı URL'si",
+          "tenant_url_hint": "Bunu Entra kurumsal uygulamasında Sağlama → Yönetici Kimlik Bilgileri bölümüne yapıştırın.",
+          "secret_token": "Gizli token",
+          "token_installed": "{prefix}… ile başlayan bir token yüklü. Son kullanım: {last_used}.",
+          "no_token": "Yüklü token yok.",
+          "rotate_token": "Token'ı yenile",
+          "issue_token": "Token oluştur",
+          "revoke": "İptal et",
+          "rotate_hint": "Yenileme hemen geçerli olur; bu nedenle Entra'ya yeni token verilene kadar sağlama başarısız olur.",
+          "last_sync": "Son senkronizasyon",
+          "resync_now": "Şimdi yeniden senkronize et",
+          "summary_added": "{count, plural, one {# eklendi} other {# eklendi}}",
+          "summary_restored": "{count, plural, one {# geri yüklendi} other {# geri yüklendi}}",
+          "summary_withdrawn": "{count, plural, one {# kaldırıldı} other {# kaldırıldı}}",
+          "resync_hint": "Yeniden senkronizasyon, dizinin zaten gönderdiği verileri yeniden uygular; Entra'yı çağırmaz. Dizinin zaten gönderdiği birini davet ettikten sonra kullanın.",
+          "unresolved_heading": "Dizin tarafından gönderilen, bu çalışma alanında olmayan kişiler ({count})",
+          "unresolved_empty": "Dizinin gönderdiği herkes bu çalışma alanının etkin bir üyesi.",
+          "not_workspace_member": "Çalışma alanı üyesi değil",
+          "inactive_in_directory": "Dizinde etkin değil",
+          "unresolved_hint": "Bu kişileri çalışma alanına davet edin; alanlarına otomatik olarak katılırlar. Ya da onları Entra'daki gruptan çıkarın.",
+          "auto_create_title": "Yeni gruplar için alan oluştur",
+          "auto_create_hint": "Kapalıyken dizin yalnızca sizin oluşturup eşleşen adı verdiğiniz alanları doldurabilir.",
+          "auto_create_saved": "Yeni dizin gruplarının nasıl işleneceği kaydedildi.",
+          "deprovision_title": "Dizinin kişileri kaldırmasına izin ver",
+          "deprovision_hint": "Kapalıyken senkronizasyon yalnızca ekler. Elle eklediğiniz kişiler her iki durumda da kaldırılmaz.",
+          "deprovision_saved": "Dizinden kaldırmaların nasıl işleneceği kaydedildi.",
+          "toast": {
+            "copied_title": "Kopyalandı",
+            "copied": "{label} panonuza kopyalandı.",
+            "not_copied_title": "Kopyalanamadı",
+            "not_copied": "{label} değerini seçip elle kopyalayın.",
+            "load_failed_title": "Dizin bağlantısı yüklenemedi",
+            "load_failed": "Lütfen kısa bir süre sonra yeniden deneyin.",
+            "save_failed": "Değişiklik kaydedilemedi. Lütfen yeniden deneyin.",
+            "token_issued_title": "Token oluşturuldu",
+            "token_issued": "Şimdi kopyalayın; yalnızca bu kez gösterilir.",
+            "token_not_issued_title": "Oluşturulmadı",
+            "token_not_issued": "Token oluşturulamadı.",
+            "token_revoked_title": "Token iptal edildi",
+            "token_revoked": "Yeni bir token oluşturulana kadar sağlama kapalı.",
+            "token_not_revoked_title": "İptal edilmedi",
+            "token_not_revoked": "Token iptal edilemedi.",
+            "resynced_title": "Yeniden senkronize edildi",
+            "resynced": "{added, plural, one {# eklendi} other {# eklendi}}, {withdrawn, plural, one {# kaldırıldı} other {# kaldırıldı}}.",
+            "not_resynced_title": "Yeniden senkronize edilmedi",
+            "not_resynced": "Yeniden senkronizasyon tamamlanamadı."
+          }
+        }
       }
     },
     "empty_state": {

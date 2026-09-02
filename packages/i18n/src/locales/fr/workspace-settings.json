@@ -495,7 +495,141 @@
         "title": "Domaines",
         "heading": "Domaines",
         "description": "Regroupez les personnes en domaines et donnez à chaque domaine l'accès à ses projets en une seule étape.",
-        "add": "Nouveau domaine"
+        "add": "Nouveau domaine",
+        "disabled": "Les domaines sont désactivés sur cette instance. Un administrateur peut les activer en définissant ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Réessayez dans un instant.",
+        "toast": {
+          "saved": "Enregistré",
+          "not_saved": "Non enregistré",
+          "role_unchanged": "Rôle inchangé"
+        },
+        "list": {
+          "empty_title": "Aucun domaine pour le moment.",
+          "empty_description": "Un domaine regroupe des personnes qui travaillent ensemble — Conformité, Ventes, Back-office — et leur donne accès à ses projets en une seule étape.",
+          "synced_badge": "Synchronisé",
+          "counts": "{members, plural, one {# personne} many {# personnes} other {# personnes}} · {projects, plural, one {# projet} many {# projets} other {# projets}}",
+          "delete_aria": "Supprimer {name}",
+          "delete_title": "Supprimer {name} ?",
+          "delete_content": "Toutes les personnes de ce domaine perdent l’accès aux projets qu’il leur accordait. L’accès accordé par un autre domaine, ou défini manuellement sur un projet, est conservé.",
+          "delete_content_synced": "Toutes les personnes de ce domaine perdent l’accès aux projets qu’il leur accordait. Ce domaine est synchronisé depuis votre annuaire : la prochaine synchronisation le recréera. Pour le supprimer définitivement, supprimez plutôt le groupe dans l’annuaire.",
+          "delete_loading": "Suppression...",
+          "delete_confirm": "Supprimer le domaine",
+          "toast": {
+            "deleted_title": "Domaine supprimé",
+            "deleted_message": "L’accès aux projets accordé par {name} a été retiré. L’accès accordé ailleurs est conservé.",
+            "not_deleted": "Non supprimé"
+          }
+        },
+        "form": {
+          "edit_title": "Modifier le domaine",
+          "name_placeholder": "Conformité",
+          "description_placeholder": "Ce dont ce domaine est responsable",
+          "create": "Créer le domaine",
+          "toast": {
+            "updated": "{name} a été mis à jour.",
+            "created_title": "Créé",
+            "created": "{name} est prêt à l’emploi.",
+            "name_taken": "Un domaine portant ce nom existe déjà. Choisissez un autre nom."
+          }
+        },
+        "detail": {
+          "tab_people": "Personnes",
+          "back_aria": "Retour à tous les domaines"
+        },
+        "members": {
+          "select_person": "Sélectionner une personne",
+          "no_addable": "Tout le monde dans cet espace de travail fait déjà partie de ce domaine",
+          "add": "Ajouter au domaine",
+          "empty": "Personne ne fait encore partie de ce domaine. Ajoutez des personnes pour leur donner accès à ses projets.",
+          "directory_badge": "Annuaire",
+          "remove_aria": "Retirer {name} de ce domaine",
+          "lead_note": "Le responsable d’un domaine gère le domaine lui-même. Le rôle d’administrateur de projet est accordé séparément, sur le projet.",
+          "directory_note": "Les personnes marquées {badge} proviennent de votre fournisseur d’identité. Les retirer ici ne dure que jusqu’à la prochaine synchronisation — retirez-les plutôt du groupe en amont. Les personnes que vous ajoutez manuellement ne sont jamais retirées par une synchronisation.",
+          "toast": {
+            "added_title": "Membre ajouté",
+            "added": "Cette personne a désormais accès aux projets de ce domaine.",
+            "not_added": "Non ajouté",
+            "one_lead": "Un domaine ne peut avoir qu’un seul responsable à la fois.",
+            "removed_title": "Membre retiré",
+            "removed": "{name} conserve tout accès aux projets accordé en dehors de ce domaine.",
+            "not_removed": "Non retiré"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Peut modifier les paramètres et les membres du projet",
+          "role_member_hint": "Peut créer et modifier des éléments de travail",
+          "role_guest_hint": "Accès limité",
+          "select_project": "Sélectionner un projet",
+          "no_linkable": "Tous les projets sont déjà liés à ce domaine",
+          "link": "Lier un projet",
+          "empty": "Aucun projet lié pour le moment. Liez-en un pour donner aux membres de ce domaine l’accès à celui-ci.",
+          "unlink_aria": "Délier {name} de ce domaine",
+          "role_note": "Le rôle d’une personne est le plus élevé accordé par ses domaines, plafonné par son rôle dans l’espace de travail. Les rôles définis manuellement sur un projet ne sont jamais abaissés ici.",
+          "toast": {
+            "linked_title": "Projet lié",
+            "linked": "Toutes les personnes de ce domaine y ont désormais accès.",
+            "not_linked": "Non lié",
+            "unlinked_title": "Projet délié",
+            "unlinked": "L’accès à {name} accordé en dehors de ce domaine est conservé.",
+            "not_unlinked": "Non délié"
+          }
+        },
+        "directory_sync": {
+          "heading": "Synchronisation de l’annuaire",
+          "description": "Laissez Microsoft Entra ID tenir à jour la composition des domaines. Entra décide qui appartient à un domaine ; les projets qu’un domaine accorde, et avec quel rôle, restent définis ici.",
+          "never": "Jamais",
+          "copy": "Copier",
+          "provisioning_on": "L’approvisionnement est activé.",
+          "provisioning_off": "L’approvisionnement est désactivé.",
+          "no_token_warning": "Émettez un jeton avant d’activer l’approvisionnement — Entra ne peut pas s’authentifier sans jeton.",
+          "tenant_url": "URL du locataire",
+          "tenant_url_hint": "Collez cette valeur dans Approvisionnement → Informations d’identification d’administrateur dans l’application d’entreprise Entra.",
+          "secret_token": "Jeton secret",
+          "token_installed": "Un jeton commençant par {prefix}… est installé. Dernière utilisation : {last_used}.",
+          "no_token": "Aucun jeton n’est installé.",
+          "rotate_token": "Renouveler le jeton",
+          "issue_token": "Émettre un jeton",
+          "revoke": "Révoquer",
+          "rotate_hint": "Le renouvellement prend effet immédiatement : l’approvisionnement échoue donc jusqu’à ce qu’Entra reçoive le nouveau jeton.",
+          "last_sync": "Dernière synchronisation",
+          "resync_now": "Resynchroniser maintenant",
+          "summary_added": "{count, plural, one {# ajouté} many {# ajoutés} other {# ajoutés}}",
+          "summary_restored": "{count, plural, one {# rétabli} many {# rétablis} other {# rétablis}}",
+          "summary_withdrawn": "{count, plural, one {# retiré} many {# retirés} other {# retirés}}",
+          "resync_hint": "La resynchronisation rejoue ce que l’annuaire a déjà envoyé — elle n’appelle pas Entra. Utilisez-la après avoir invité une personne que l’annuaire avait déjà transmise.",
+          "unresolved_heading": "Transmis par l’annuaire, absents de cet espace de travail ({count})",
+          "unresolved_empty": "Toutes les personnes envoyées par l’annuaire sont des membres actifs de cet espace de travail.",
+          "not_workspace_member": "Pas membre de l’espace de travail",
+          "inactive_in_directory": "Inactif dans l’annuaire",
+          "unresolved_hint": "Invitez ces personnes dans l’espace de travail et elles rejoindront automatiquement leurs domaines, ou retirez-les du groupe dans Entra.",
+          "auto_create_title": "Créer des domaines pour les nouveaux groupes",
+          "auto_create_hint": "Si cette option est désactivée, l’annuaire ne peut remplir que les domaines que vous avez créés et nommés à l’identique.",
+          "auto_create_saved": "Le traitement des nouveaux groupes de l’annuaire a été enregistré.",
+          "deprovision_title": "Laisser l’annuaire retirer des personnes",
+          "deprovision_hint": "Si cette option est désactivée, la synchronisation ne fait qu’ajouter. Les personnes que vous avez ajoutées manuellement ne sont jamais retirées, dans un cas comme dans l’autre.",
+          "deprovision_saved": "Le traitement des retraits provenant de l’annuaire a été enregistré.",
+          "toast": {
+            "copied_title": "Copié",
+            "copied": "{label} copié dans le presse-papiers.",
+            "not_copied_title": "Copie impossible",
+            "not_copied": "Sélectionnez et copiez manuellement le champ {label}.",
+            "load_failed_title": "Impossible de charger la connexion à l’annuaire",
+            "load_failed": "Veuillez réessayer dans un instant.",
+            "save_failed": "La modification n’a pas pu être enregistrée. Veuillez réessayer.",
+            "token_issued_title": "Jeton émis",
+            "token_issued": "Copiez-le maintenant — il ne sera affiché qu’une seule fois.",
+            "token_not_issued_title": "Non émis",
+            "token_not_issued": "Le jeton n’a pas pu être créé.",
+            "token_revoked_title": "Jeton révoqué",
+            "token_revoked": "L’approvisionnement est désactivé jusqu’à l’émission d’un nouveau jeton.",
+            "token_not_revoked_title": "Non révoqué",
+            "token_not_revoked": "Le jeton n’a pas pu être révoqué.",
+            "resynced_title": "Resynchronisé",
+            "resynced": "{added, plural, one {# ajouté} many {# ajoutés} other {# ajoutés}}, {withdrawn, plural, one {# retiré} many {# retirés} other {# retirés}}.",
+            "not_resynced_title": "Non resynchronisé",
+            "not_resynced": "La resynchronisation n’a pas pu être effectuée."
+          }
+        }
       }
     },
     "empty_state": {

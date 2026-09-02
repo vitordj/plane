@@ -121,20 +121,24 @@ class TestWorkspaceLabelSettings:
         assert response.data["is_enabled"] is True
         assert WorkspaceProjectLabelSettings.objects.get(workspace=workspace_with_members).is_enabled is True
 
-    def test_a_member_may_read_and_change_it(self, member_client, workspace_with_members):
+    def test_a_member_may_read_it_but_not_change_it(self, member_client, workspace_with_members):
         """
-        Worth stating plainly, because the class name says otherwise: upstream's
-        ``WorkSpaceAdminPermission`` admits Admin *and* Member, so a plain member
-        can flip the workspace-wide switch. Pinned so that if the fork ever means
-        admin-only here, this test is what says so.
+        The fork does mean admin-only here. Upstream's ``WorkSpaceAdminPermission``
+        admits Admin *and* Member despite its name, which let a plain member flip
+        a workspace-wide switch that rewrites the labels of every opted-in
+        project. Writes now go through ``WorkspaceAdminOnlyPermission``; reads
+        keep the broader rule so the settings screen still renders for members.
         """
         assert member_client.get(settings_url(workspace_with_members.slug)).status_code == status.HTTP_200_OK
         assert (
             member_client.patch(
                 settings_url(workspace_with_members.slug), {"is_enabled": True}, format="json"
             ).status_code
-            == status.HTTP_200_OK
+            == status.HTTP_403_FORBIDDEN
         )
+        assert not WorkspaceProjectLabelSettings.objects.filter(
+            workspace=workspace_with_members, is_enabled=True
+        ).exists()
 
     def test_a_guest_cannot_read_or_change_it(self, guest_client, workspace_with_members):
         assert guest_client.get(settings_url(workspace_with_members.slug)).status_code == status.HTTP_403_FORBIDDEN
@@ -182,11 +186,11 @@ class TestWorkspaceLabelCrud:
 
         assert {row["name"] for row in response.data} == {"Compliance"}
 
-    def test_a_member_can_read_and_write(self, member_client, workspace_with_members, make_workspace_label):
+    def test_a_member_can_read_but_not_write(self, member_client, workspace_with_members, make_workspace_label):
         """
-        Same surprise as the settings endpoint: writes here are gated on
-        ``WorkSpaceAdminPermission``, which admits members. A member can
-        therefore add a label that fans out into every opted-in project.
+        Creating a workspace label fans it out into every opted-in project, so
+        it is an Admin decision. A member keeps read access — the label list is
+        needed to work — but the write is refused.
         """
         make_workspace_label("Compliance")
 
@@ -195,8 +199,9 @@ class TestWorkspaceLabelCrud:
             member_client.post(
                 labels_url(workspace_with_members.slug), {"name": "Also fine"}, format="json"
             ).status_code
-            == status.HTTP_201_CREATED
+            == status.HTTP_403_FORBIDDEN
         )
+        assert not Label.objects.filter(workspace=workspace_with_members, name="Also fine").exists()
 
     def test_a_guest_can_read_but_not_write(self, guest_client, workspace_with_members, make_workspace_label):
         make_workspace_label("Compliance")

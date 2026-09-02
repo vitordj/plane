@@ -7,7 +7,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import SAFE_METHODS
 
 from plane.db.models import Workspace, Project, Label, ProjectProjectLabel, WorkspaceProjectLabelSettings, ProjectLabelProperty
-from plane.app.permissions import WorkSpaceAdminPermission, WorkspaceEntityPermission, ProjectBasePermission
+from plane.app.permissions import (
+    WorkSpaceAdminPermission,
+    WorkspaceAdminOnlyPermission,
+    WorkspaceEntityPermission,
+    ProjectBasePermission,
+)
 from plane.app.serializers import (
     WorkspaceProjectLabelSerializer,
     WorkspaceProjectLabelSettingsSerializer,
@@ -75,6 +80,16 @@ def sync_workspace_labels_to_project(workspace, project):
 class WorkspaceProjectLabelSettingsEndpoint(BaseAPIView):
     permission_classes = [WorkSpaceAdminPermission]
 
+    def get_permissions(self):
+        # Toggling the workspace label layer on turns every subscribed project's
+        # labels into copies of the workspace set, so the PATCH is workspace-wide
+        # configuration and belongs to Admins. The GET keeps the broader rule.
+        if self.request.method in SAFE_METHODS:
+            self.permission_classes = [WorkSpaceAdminPermission]
+        else:
+            self.permission_classes = [WorkspaceAdminOnlyPermission]
+        return super().get_permissions()
+
     def get(self, request, slug):
         workspace = Workspace.objects.get(slug=slug)
         settings_obj, created = WorkspaceProjectLabelSettings.objects.get_or_create(
@@ -102,10 +117,13 @@ class WorkspaceProjectLabelViewSet(BaseViewSet):
     model = Label
 
     def get_permissions(self):
+        # Creating, renaming or deleting a workspace label replicates into every
+        # project that has the label layer enabled, so writes are Admin-only.
+        # WorkSpaceAdminPermission would also admit Members despite its name.
         if self.request.method in SAFE_METHODS:
             self.permission_classes = [WorkspaceEntityPermission]
         else:
-            self.permission_classes = [WorkSpaceAdminPermission]
+            self.permission_classes = [WorkspaceAdminOnlyPermission]
         return super().get_permissions()
 
     def get_queryset(self):

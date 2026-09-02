@@ -8,6 +8,7 @@ import { useState } from "react";
 import { observer } from "mobx-react";
 import { ArrowLeft, Pencil } from "lucide-react";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import type { IOrganizationalUnit } from "@plane/types";
 // components
@@ -23,14 +24,17 @@ type Props = {
 
 type TTab = "members" | "projects";
 
+const OU = "workspace_settings.settings.organizational_units";
+
 export const OrganizationalUnitDetail = observer(function OrganizationalUnitDetail(props: Props) {
   const { workspaceSlug, unit, onBack } = props;
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TTab>("members");
   const [isEditing, setIsEditing] = useState(false);
 
   const tabs: { key: TTab; label: string; count: number }[] = [
-    { key: "members", label: "People", count: unit.member_count },
-    { key: "projects", label: "Projects", count: unit.project_count },
+    { key: "members", label: t(`${OU}.detail.tab_people`), count: unit.member_count },
+    { key: "projects", label: t("common.projects"), count: unit.project_count },
   ];
 
   return (
@@ -39,7 +43,7 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
         <div className="flex min-w-0 items-start gap-3">
           <button
             type="button"
-            aria-label="Back to all areas"
+            aria-label={t(`${OU}.detail.back_aria`)}
             className="text-custom-text-300 hover:bg-custom-background-80 focus-visible:ring-custom-primary-100 mt-1 rounded p-1 outline-none focus-visible:ring-2"
             onClick={onBack}
           >
@@ -51,7 +55,7 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
           </div>
         </div>
         <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)} prependIcon={<Pencil />}>
-          Edit
+          {t("common.edit")}
         </Button>
       </div>
 

@@ -15,6 +15,7 @@ import { Loader } from "@plane/ui";
 // components
 import { PageHead } from "@/components/core/page-title";
 import {
+  DirectorySyncPanel,
   OrganizationalUnitDetail,
   OrganizationalUnitFormModal,
   OrganizationalUnitList,
@@ -24,11 +25,7 @@ import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 import { OrganizationalUnitsWorkspaceSettingsHeader } from "./header";
 
-/** Falls back to English when a locale has not translated a key yet. */
-const translate = (t: (key: string) => string, key: string, fallback: string) => {
-  const value = t(key);
-  return !value || value === key ? fallback : value;
-};
+const OU = "workspace_settings.settings.organizational_units";
 
 const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
   const { workspaceSlug } = useParams();
@@ -42,18 +39,32 @@ const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
   useEffect(() => {
     if (!workspaceSlug) return;
     setIsLoading(true);
+    // Ask whether the layer is switched on before listing: with
+    // ORCA_ORG_UNITS_ENABLED=0 the list endpoint answers 404, and the page
+    // should say the feature is off rather than render an empty area list as
+    // if the workspace simply had none.
+    store.fetchConfig(workspaceSlug.toString());
     store.fetchUnits(workspaceSlug.toString()).finally(() => setIsLoading(false));
   }, [workspaceSlug, store]);
 
-  const title = translate(t, "workspace_settings.settings.organizational_units.title", "Areas");
-  const heading = translate(t, "workspace_settings.settings.organizational_units.heading", "Areas");
-  const description = translate(
-    t,
-    "workspace_settings.settings.organizational_units.description",
-    "Group people into areas and give each area access to its projects in one step."
-  );
+  const title = t(`${OU}.title`);
+  const heading = t(`${OU}.heading`);
+  const description = t(`${OU}.description`);
 
   const selectedUnit = selectedUnitId ? store.getUnitById(selectedUnitId) : undefined;
+
+  // Reachable by typing the URL even though the nav entry is hidden.
+  if (!store.isEnabled) {
+    return (
+      <SettingsContentWrapper header={<OrganizationalUnitsWorkspaceSettingsHeader />}>
+        <PageHead title={title} />
+        <div className="flex max-w-4xl flex-col gap-2 p-6">
+          <h3 className="text-xl text-custom-text-100 font-medium">{heading}</h3>
+          <p className="text-sm text-custom-text-300">{t(`${OU}.disabled`)}</p>
+        </div>
+      </SettingsContentWrapper>
+    );
+  }
 
   return (
     <SettingsContentWrapper header={<OrganizationalUnitsWorkspaceSettingsHeader />}>
@@ -73,7 +84,7 @@ const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
                 <p className="text-sm text-custom-text-300">{description}</p>
               </div>
               <Button variant="primary" size="sm" onClick={() => setIsCreating(true)} prependIcon={<Plus />}>
-                {translate(t, "workspace_settings.settings.organizational_units.add", "New area")}
+                {t(`${OU}.add`)}
               </Button>
             </div>
 
@@ -92,6 +103,11 @@ const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
                 />
               )
             )}
+
+            {/* Directory provisioning sits below the list on purpose: areas
+                work perfectly well without it, and the section is only
+                actionable for workspace admins. */}
+            {workspaceSlug && <DirectorySyncPanel workspaceSlug={workspaceSlug.toString()} />}
           </>
         )}
       </div>

@@ -266,6 +266,21 @@
       "click_to_downvote": "Clic pentru a vota negativ",
       "click_to_view_upvotes": "Clic pentru a vedea voturile pozitive",
       "click_to_view_downvotes": "Clic pentru a vedea voturile negative"
+    },
+    "organizational_unit": {
+      "no_match": "Nicio zonă nu corespunde",
+      "assign": "Atribuiți",
+      "assign_tooltip": "Atribuiți membrului zonei cu cele mai puține activități deschise",
+      "toast": {
+        "area_unchanged": "Zonă neschimbată",
+        "assigned_title": "Atribuită",
+        "assigned": "Atribuită membrului zonei cu cele mai puține activități deschise.",
+        "already_assigned_title": "Deja atribuită",
+        "already_assigned": "Această activitate are deja un responsabil.",
+        "nobody_title": "Nimeni disponibil",
+        "nobody": "Niciun membru al acestei zone nu are acces la acest proiect.",
+        "not_assigned": "Nu s-a atribuit"
+      }
     }
   },
   "sub_work_item": {

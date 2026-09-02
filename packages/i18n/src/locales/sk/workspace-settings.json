@@ -495,7 +495,141 @@
         "title": "Oblasti",
         "heading": "Oblasti",
         "description": "Zoskupte ľudí do oblastí a dajte každej oblasti prístup k jej projektom v jednom kroku.",
-        "add": "Nová oblasť"
+        "add": "Nová oblasť",
+        "disabled": "Oblasti sú v tejto inštancii vypnuté. Správca ich môže zapnúť nastavením ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Skúste to o chvíľu znova.",
+        "toast": {
+          "saved": "Uložené",
+          "not_saved": "Neuložené",
+          "role_unchanged": "Rola bez zmeny"
+        },
+        "list": {
+          "empty_title": "Zatiaľ žiadne oblasti.",
+          "empty_description": "Oblasť zoskupuje ľudí, ktorí spolupracujú — Účtovníctvo, Obchod, Prevádzka — a v jednom kroku im dáva prístup k jej projektom.",
+          "synced_badge": "Synchronizované",
+          "counts": "{members, plural, one {# osoba} few {# osoby} many {# osoby} other {# osôb}} · {projects, plural, one {# projekt} few {# projekty} many {# projektu} other {# projektov}}",
+          "delete_aria": "Odstrániť {name}",
+          "delete_title": "Odstrániť {name}?",
+          "delete_content": "Všetci v tejto oblasti stratia prístup k projektom, ktorý im udelila. Prístup udelený inou oblasťou alebo nastavený ručne v projekte zostane zachovaný.",
+          "delete_content_synced": "Všetci v tejto oblasti stratia prístup k projektom, ktorý im udelila. Táto oblasť je synchronizovaná z adresára, takže ju ďalšia synchronizácia znova vytvorí — ak ju chcete odstrániť natrvalo, odstráňte namiesto toho skupinu v adresári.",
+          "delete_loading": "Odstraňuje sa...",
+          "delete_confirm": "Odstrániť oblasť",
+          "toast": {
+            "deleted_title": "Oblasť odstránená",
+            "deleted_message": "Prístup k projektom udelený oblasťou {name} bol odobratý. Prístup udelený inde zostáva zachovaný.",
+            "not_deleted": "Neodstránené"
+          }
+        },
+        "form": {
+          "edit_title": "Upraviť oblasť",
+          "name_placeholder": "Účtovníctvo",
+          "description_placeholder": "Za čo táto oblasť zodpovedá",
+          "create": "Vytvoriť oblasť",
+          "toast": {
+            "updated": "Oblasť {name} bola aktualizovaná.",
+            "created_title": "Vytvorené",
+            "created": "Oblasť {name} je pripravená na použitie.",
+            "name_taken": "Oblasť s týmto názvom už existuje. Zvoľte iný názov."
+          }
+        },
+        "detail": {
+          "tab_people": "Ľudia",
+          "back_aria": "Späť na všetky oblasti"
+        },
+        "members": {
+          "select_person": "Vyberte osobu",
+          "no_addable": "Všetci v tomto pracovnom priestore už v tejto oblasti sú",
+          "add": "Pridať do oblasti",
+          "empty": "V tejto oblasti zatiaľ nikto nie je. Pridajte ľudí, aby získali prístup k jej projektom.",
+          "directory_badge": "Adresár",
+          "remove_aria": "Odobrať {name} z tejto oblasti",
+          "lead_note": "Vedúci oblasti spravuje iba samotnú oblasť. Správca projektu sa udeľuje samostatne, v projekte.",
+          "directory_note": "Ľudia označení {badge} pochádzajú od vášho poskytovateľa identity. Ich odobratie tu platí len do ďalšej synchronizácie — namiesto toho ich odoberte zo skupiny pri zdroji. Ľudia pridaní ručne nie sú synchronizáciou nikdy odobratí.",
+          "toast": {
+            "added_title": "Člen pridaný",
+            "added": "Teraz má prístup k projektom tejto oblasti.",
+            "not_added": "Nepridané",
+            "one_lead": "Oblasť môže mať naraz len jedného vedúceho.",
+            "removed_title": "Člen odobratý",
+            "removed": "{name} si ponecháva prístup k projektom udelený mimo tejto oblasti.",
+            "not_removed": "Neodobrané"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Môže meniť nastavenia a členov projektu",
+          "role_member_hint": "Môže vytvárať a upravovať pracovné položky",
+          "role_guest_hint": "Obmedzený prístup",
+          "select_project": "Vyberte projekt",
+          "no_linkable": "Všetky projekty sú už s touto oblasťou prepojené",
+          "link": "Prepojiť projekt",
+          "empty": "Zatiaľ nie sú prepojené žiadne projekty. Prepojte projekt, aby k nemu členovia tejto oblasti získali prístup.",
+          "unlink_aria": "Odpojiť {name} od tejto oblasti",
+          "role_note": "Rola osoby je najvyššia z rol, ktoré jej udeľujú jej oblasti, obmedzená jej rolou v pracovnom priestore. Roly nastavené ručne v projekte sa tu nikdy neznižujú.",
+          "toast": {
+            "linked_title": "Projekt prepojený",
+            "linked": "Všetci v tejto oblasti k nemu teraz majú prístup.",
+            "not_linked": "Neprepojené",
+            "unlinked_title": "Projekt odpojený",
+            "unlinked": "Prístup k projektu {name} udelený mimo tejto oblasti zostáva zachovaný.",
+            "not_unlinked": "Neodpojené"
+          }
+        },
+        "directory_sync": {
+          "heading": "Synchronizácia adresára",
+          "description": "Nechajte Microsoft Entra ID udržiavať členstvo v oblastiach aktuálne. Entra rozhoduje, kto do oblasti patrí; ktoré projekty a s akou rolou oblasť sprístupňuje, sa naďalej nastavuje tu.",
+          "never": "Nikdy",
+          "copy": "Kopírovať",
+          "provisioning_on": "Poskytovanie je zapnuté.",
+          "provisioning_off": "Poskytovanie je vypnuté.",
+          "no_token_warning": "Pred zapnutím poskytovania vydajte token — bez neho sa Entra nemôže overiť.",
+          "tenant_url": "Adresa URL nájomníka",
+          "tenant_url_hint": "Vložte ju do časti Poskytovanie → Prihlasovacie údaje správcu v podnikovej aplikácii Entra.",
+          "secret_token": "Tajný token",
+          "token_installed": "Token začínajúci na {prefix}… je nainštalovaný. Naposledy použitý {last_used}.",
+          "no_token": "Nie je nainštalovaný žiadny token.",
+          "rotate_token": "Obmeniť token",
+          "issue_token": "Vydať token",
+          "revoke": "Odvolať",
+          "rotate_hint": "Obmena sa prejaví okamžite, takže poskytovanie zlyháva, kým Entra nedostane nový token.",
+          "last_sync": "Posledná synchronizácia",
+          "resync_now": "Synchronizovať znova",
+          "summary_added": "{count, plural, one {# pridaná} few {# pridané} many {# pridanej} other {# pridaných}}",
+          "summary_restored": "{count, plural, one {# obnovená} few {# obnovené} many {# obnovenej} other {# obnovených}}",
+          "summary_withdrawn": "{count, plural, one {# odobratá} few {# odobraté} many {# odobratej} other {# odobratých}}",
+          "resync_hint": "Opätovná synchronizácia znova prehrá to, čo adresár už odoslal — nevolá Entra. Použite ju po pozvaní niekoho, koho adresár už predtým odoslal.",
+          "unresolved_heading": "Odoslané adresárom, ale nie v tomto pracovnom priestore ({count})",
+          "unresolved_empty": "Všetci, ktorých adresár odoslal, sú aktívnymi členmi tohto pracovného priestoru.",
+          "not_workspace_member": "Nie je členom pracovného priestoru",
+          "inactive_in_directory": "Neaktívny v adresári",
+          "unresolved_hint": "Pozvite týchto ľudí do pracovného priestoru a automaticky sa pripoja k svojim oblastiam, alebo ich odoberte zo skupiny v Entra.",
+          "auto_create_title": "Vytvárať oblasti pre nové skupiny",
+          "auto_create_hint": "Keď je vypnuté, adresár môže napĺňať len oblasti, ktoré ste vytvorili a pomenovali zhodne.",
+          "auto_create_saved": "Uložené, ako sa zaobchádza s novými skupinami z adresára.",
+          "deprovision_title": "Povoliť adresáru odoberať ľudí",
+          "deprovision_hint": "Keď je vypnuté, synchronizácia iba pridáva. Ľudia pridaní ručne nie sú odobratí v žiadnom prípade.",
+          "deprovision_saved": "Uložené, ako sa zaobchádza s odobratiami z adresára.",
+          "toast": {
+            "copied_title": "Skopírované",
+            "copied": "{label} skopírované do schránky.",
+            "not_copied_title": "Nepodarilo sa skopírovať",
+            "not_copied": "Vyberte a skopírujte {label} ručne.",
+            "load_failed_title": "Nepodarilo sa načítať pripojenie k adresáru",
+            "load_failed": "Skúste to prosím o chvíľu znova.",
+            "save_failed": "Zmenu sa nepodarilo uložiť. Skúste to prosím znova.",
+            "token_issued_title": "Token vydaný",
+            "token_issued": "Skopírujte ho teraz — zobrazí sa iba tentoraz.",
+            "token_not_issued_title": "Nevydané",
+            "token_not_issued": "Token sa nepodarilo vytvoriť.",
+            "token_revoked_title": "Token odvolaný",
+            "token_revoked": "Poskytovanie je vypnuté, kým nebude vydaný nový token.",
+            "token_not_revoked_title": "Neodvolané",
+            "token_not_revoked": "Token sa nepodarilo odvolať.",
+            "resynced_title": "Znova synchronizované",
+            "resynced": "{added, plural, one {# pridaná} few {# pridané} many {# pridanej} other {# pridaných}}, {withdrawn, plural, one {# odobratá} few {# odobraté} many {# odobratej} other {# odobratých}}.",
+            "not_resynced_title": "Nesynchronizované",
+            "not_resynced": "Opätovnú synchronizáciu sa nepodarilo dokončiť."
+          }
+        }
       }
     },
     "empty_state": {

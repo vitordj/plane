@@ -266,6 +266,21 @@
       "click_to_downvote": "Klikněte pro hlasování dolů",
       "click_to_view_upvotes": "Klikněte pro zobrazení hlasů nahoru",
       "click_to_view_downvotes": "Klikněte pro zobrazení hlasů dolů"
+    },
+    "organizational_unit": {
+      "no_match": "Žádné odpovídající oblasti",
+      "assign": "Přiřadit",
+      "assign_tooltip": "Přiřadit členu oblasti s nejmenším počtem otevřených pracovních položek",
+      "toast": {
+        "area_unchanged": "Oblast beze změny",
+        "assigned_title": "Přiřazeno",
+        "assigned": "Přiřazeno členu oblasti s nejmenším počtem otevřených pracovních položek.",
+        "already_assigned_title": "Již přiřazeno",
+        "already_assigned": "Tato pracovní položka již má přiřazenou osobu.",
+        "nobody_title": "Nikdo není k dispozici",
+        "nobody": "Žádný člen této oblasti nemá přístup k tomuto projektu.",
+        "not_assigned": "Nepřiřazeno"
+      }
     }
   },
   "sub_work_item": {

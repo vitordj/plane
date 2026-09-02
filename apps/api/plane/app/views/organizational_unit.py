@@ -12,8 +12,10 @@ at once, so v1 keeps it centralized. Unit leads have read access only.
 """
 
 # Django imports
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Count, Q
+from django.http import Http404
 from django.utils.text import slugify
 
 # Third party imports
@@ -23,6 +25,7 @@ from rest_framework.response import Response
 # Module imports
 from plane.app.permissions.base import ROLE, allow_permission
 from plane.app.serializers import (
+    OrganizationalUnitMembershipCreateSerializer,
     OrganizationalUnitMembershipSerializer,
     OrganizationalUnitProjectSerializer,
     OrganizationalUnitSerializer,
@@ -55,7 +58,53 @@ from .base import BaseAPIView, BaseViewSet
 VALID_PROJECT_ROLES = {ROLE.GUEST.value, ROLE.MEMBER.value, ROLE.ADMIN.value}
 
 
-class OrganizationalUnitViewSet(BaseViewSet):
+class OrganizationalUnitFeatureMixin:
+    """
+    Kill switch for the organizational layer.
+
+    ``ORCA_ORG_UNITS_ENABLED=0`` has to actually stop the feature rather than
+    merely describe an intent. This layer writes native ``ProjectMember`` rows,
+    so an operator turning it off is withdrawing a permission-granting
+    subsystem: leaving the API reachable while only the UI hides would keep
+    every mutation one curl away.
+
+    Enforced per request rather than by registering routes conditionally, so
+    the switch does not depend on import order and the API and the UI agree the
+    moment the setting changes — which is also what makes it testable.
+
+    Answers 404, not 403: a disabled feature should read as absent rather than
+    as something the caller merely lacks rights for.
+    """
+
+    def initial(self, request, *args, **kwargs):
+        if not organizational_units_enabled():
+            raise Http404("The organizational layer is disabled on this instance")
+        return super().initial(request, *args, **kwargs)
+
+
+def organizational_units_enabled() -> bool:
+    """Whether the organizational layer is switched on for this instance."""
+    return bool(getattr(settings, "ORCA_ORG_UNITS_ENABLED", True))
+
+
+class OrcaConfigEndpoint(BaseAPIView):
+    """
+    Which Orca features this instance has switched on.
+
+    @description Deliberately outside the kill switch: the UI has to be able to
+    ask whether the organizational layer exists in order to hide it, which it
+    could not do through an endpoint that the same switch makes invisible.
+    """
+
+    @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
+    def get(self, request, slug):
+        return Response(
+            {"organizational_units_enabled": organizational_units_enabled()},
+            status=status.HTTP_200_OK,
+        )
+
+
+class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
     """CRUD for organizational units inside a workspace."""
 
     serializer_class = OrganizationalUnitSerializer
@@ -159,7 +208,7 @@ class OrganizationalUnitViewSet(BaseViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class OrganizationalUnitMemberViewSet(BaseViewSet):
+class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
     """Manage who belongs to an organizational unit."""
 
     serializer_class = OrganizationalUnitMembershipSerializer
@@ -170,9 +219,16 @@ class OrganizationalUnitMemberViewSet(BaseViewSet):
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
     def list(self, request, slug, unit_id):
+        # Only active memberships: a directory sync withdraws access by
+        # deactivating the row rather than deleting it, so that the provenance
+        # survives for audit and re-adding somebody is a flag flip. Listing
+        # those rows would show people who have left the area as if they were
+        # still in it — and would disagree with ``member_count``, which has
+        # always counted active memberships only.
         memberships = OrganizationalUnitMembership.objects.filter(
             organizational_unit_id=unit_id,
             organizational_unit__workspace__slug=slug,
+            is_active=True,
         ).select_related("workspace_member", "workspace_member__member")
         serializer = OrganizationalUnitMembershipSerializer(memberships, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -183,16 +239,24 @@ class OrganizationalUnitMemberViewSet(BaseViewSet):
         if unit is None:
             return Response({"error": "Organizational unit not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        member_ids = request.data.get("workspace_member_ids") or []
-        role = request.data.get("role", "member")
-        if not member_ids:
-            return Response({"error": "At least one workspace member is required"}, status=status.HTTP_400_BAD_REQUEST)
+        # Validated before anything is written: `role` never reaches the model
+        # through a serializer on this path, and a second active lead would
+        # otherwise abort the transaction with an IntegrityError from the
+        # single-lead partial index instead of returning a 400.
+        payload = OrganizationalUnitMembershipCreateSerializer(
+            data=request.data, context={"organizational_unit": unit}
+        )
+        if not payload.is_valid():
+            return Response(payload.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        member_ids = payload.validated_data["workspace_member_ids"]
+        role = payload.validated_data["role"]
 
         # v1 grants access to existing workspace members only; units never invite.
         workspace_members = list(
             WorkspaceMember.objects.filter(id__in=member_ids, workspace_id=unit.workspace_id, is_active=True)
         )
-        if len(workspace_members) != len(set(member_ids)):
+        if len(workspace_members) != len(member_ids):
             return Response(
                 {"error": "All members must be active members of this workspace"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -201,14 +265,27 @@ class OrganizationalUnitMemberViewSet(BaseViewSet):
         created = []
         with transaction.atomic():
             for workspace_member in workspace_members:
-                membership, _ = OrganizationalUnitMembership.objects.get_or_create(
+                membership, was_created = OrganizationalUnitMembership.objects.get_or_create(
                     organizational_unit=unit,
                     workspace_member=workspace_member,
                     defaults={"workspace_id": unit.workspace_id, "role": role},
                 )
-                if not membership.is_active:
-                    membership.is_active = True
-                    membership.save()
+                if not was_created:
+                    changed = False
+                    if not membership.is_active:
+                        # Reactivation restores the role the membership was
+                        # stored with rather than overwriting it; the validator
+                        # has already rejected the case where reviving a stored
+                        # lead would produce a second active one.
+                        membership.is_active = True
+                        changed = True
+                    if role == OrganizationalUnitMemberRole.LEAD and membership.role != role:
+                        # An explicit lead request is unambiguous, and the
+                        # validator has ruled out a conflicting active lead.
+                        membership.role = role
+                        changed = True
+                    if changed:
+                        membership.save()
                 created.append(membership)
 
             reconcile_unit(unit)
@@ -269,7 +346,7 @@ class OrganizationalUnitMemberViewSet(BaseViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class OrganizationalUnitProjectViewSet(BaseViewSet):
+class OrganizationalUnitProjectViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
     """Manage which projects a unit grants access to, and at which role."""
 
     serializer_class = OrganizationalUnitProjectSerializer
@@ -367,7 +444,7 @@ class OrganizationalUnitProjectViewSet(BaseViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class OrganizationalUnitEffectiveAccessEndpoint(BaseAPIView):
+class OrganizationalUnitEffectiveAccessEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
     """
     Strictly read-only preview of the access a unit currently sources.
 
@@ -401,7 +478,7 @@ class OrganizationalUnitEffectiveAccessEndpoint(BaseAPIView):
         return Response({"changes": [change.as_dict() for change in changes]}, status=status.HTTP_200_OK)
 
 
-class UserOrganizationalUnitsEndpoint(BaseAPIView):
+class UserOrganizationalUnitsEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
     """
     The requesting user's own units, their role in each, and linked projects.
 
@@ -438,7 +515,7 @@ class UserOrganizationalUnitsEndpoint(BaseAPIView):
         return Response(payload, status=status.HTTP_200_OK)
 
 
-class IssueOrganizationalUnitEndpoint(BaseAPIView):
+class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
     """
     Set, read, or clear the organizational unit responsible for a work item.
 
@@ -497,7 +574,7 @@ class IssueOrganizationalUnitEndpoint(BaseAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class IssueOrganizationalUnitAssignEndpoint(BaseAPIView):
+class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
     """
     Assign a work item to the least-loaded member of its responsible unit.
 
@@ -535,7 +612,7 @@ class IssueOrganizationalUnitAssignEndpoint(BaseAPIView):
         return Response({"assigned": chosen.as_dict(), "reason": reason}, status=status.HTTP_200_OK)
 
 
-class OrganizationalUnitWorkloadEndpoint(BaseAPIView):
+class OrganizationalUnitWorkloadEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
     """Open-work count per unit member, across the unit's own projects."""
 
     use_read_replica = True

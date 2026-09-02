@@ -495,7 +495,141 @@
         "title": "Áreas",
         "heading": "Áreas",
         "description": "Agrupe a las personas en áreas y dé a cada área acceso a sus proyectos en un solo paso.",
-        "add": "Nueva área"
+        "add": "Nueva área",
+        "disabled": "Las áreas están desactivadas en esta instancia. Un administrador puede activarlas estableciendo ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Inténtelo de nuevo en un momento.",
+        "toast": {
+          "saved": "Guardado",
+          "not_saved": "No guardado",
+          "role_unchanged": "Rol sin cambios"
+        },
+        "list": {
+          "empty_title": "Aún no hay áreas.",
+          "empty_description": "Un área agrupa a las personas que trabajan juntas — Finanzas, Ventas, Administración — y les da acceso a sus proyectos en un solo paso.",
+          "synced_badge": "Sincronizada",
+          "counts": "{members, plural, one {# persona} other {# personas}} · {projects, plural, one {# proyecto} other {# proyectos}}",
+          "delete_aria": "Eliminar {name}",
+          "delete_title": "¿Eliminar {name}?",
+          "delete_content": "Todas las personas de esta área pierden el acceso a los proyectos que ella les concedió. El acceso concedido por otra área, o establecido manualmente en un proyecto, se conserva.",
+          "delete_content_synced": "Todas las personas de esta área pierden el acceso a los proyectos que ella les concedió. Esta área se sincroniza desde su directorio, así que la próxima sincronización la creará de nuevo — si quiere eliminarla definitivamente, quite el grupo en el directorio.",
+          "delete_loading": "Eliminando...",
+          "delete_confirm": "Eliminar área",
+          "toast": {
+            "deleted_title": "Área eliminada",
+            "deleted_message": "Se retiró el acceso a proyectos que concedía {name}. El acceso concedido por otras vías se conserva.",
+            "not_deleted": "No eliminada"
+          }
+        },
+        "form": {
+          "edit_title": "Editar área",
+          "name_placeholder": "Finanzas",
+          "description_placeholder": "De qué se encarga esta área",
+          "create": "Crear área",
+          "toast": {
+            "updated": "{name} se actualizó.",
+            "created_title": "Creada",
+            "created": "{name} está lista para usarse.",
+            "name_taken": "Ya existe un área con este nombre. Elija un nombre diferente."
+          }
+        },
+        "detail": {
+          "tab_people": "Personas",
+          "back_aria": "Volver a todas las áreas"
+        },
+        "members": {
+          "select_person": "Seleccione una persona",
+          "no_addable": "Todas las personas de este espacio de trabajo ya están en esta área",
+          "add": "Agregar al área",
+          "empty": "Aún no hay nadie en esta área. Agregue personas para darles acceso a sus proyectos.",
+          "directory_badge": "Directorio",
+          "remove_aria": "Quitar a {name} de esta área",
+          "lead_note": "Liderar un área da control sobre el área en sí. La administración del proyecto se concede por separado, en cada proyecto.",
+          "directory_note": "Las personas marcadas con {badge} provienen de su proveedor de identidad. Quitarlas aquí solo dura hasta la próxima sincronización — en su lugar, sáquelas del grupo en el origen. Las personas que agregue manualmente nunca son eliminadas por una sincronización.",
+          "toast": {
+            "added_title": "Miembro agregado",
+            "added": "Ahora tiene acceso a los proyectos de esta área.",
+            "not_added": "No agregado",
+            "one_lead": "Un área solo puede tener un líder a la vez.",
+            "removed_title": "Miembro quitado",
+            "removed": "{name} conserva cualquier acceso a proyectos concedido fuera de esta área.",
+            "not_removed": "No quitado"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Puede cambiar la configuración y los miembros del proyecto",
+          "role_member_hint": "Puede crear y editar elementos de trabajo",
+          "role_guest_hint": "Acceso limitado",
+          "select_project": "Seleccione un proyecto",
+          "no_linkable": "Todos los proyectos ya están vinculados a esta área",
+          "link": "Vincular proyecto",
+          "empty": "Aún no hay proyectos vinculados. Vincule uno para dar acceso a los miembros de esta área.",
+          "unlink_aria": "Desvincular {name} de esta área",
+          "role_note": "El rol de una persona es el más alto que le conceden sus áreas, limitado por su rol en el espacio de trabajo. Los roles establecidos manualmente en un proyecto nunca se reducen aquí.",
+          "toast": {
+            "linked_title": "Proyecto vinculado",
+            "linked": "Ahora todas las personas de esta área tienen acceso a él.",
+            "not_linked": "No vinculado",
+            "unlinked_title": "Proyecto desvinculado",
+            "unlinked": "El acceso a {name} concedido fuera de esta área se conserva.",
+            "not_unlinked": "No desvinculado"
+          }
+        },
+        "directory_sync": {
+          "heading": "Sincronización de directorio",
+          "description": "Deje que Microsoft Entra ID mantenga actualizada la pertenencia a las áreas. Entra decide quién pertenece a cada área; qué proyectos concede un área, y con qué rol, se sigue definiendo aquí.",
+          "never": "Nunca",
+          "copy": "Copiar",
+          "provisioning_on": "El aprovisionamiento está activado.",
+          "provisioning_off": "El aprovisionamiento está desactivado.",
+          "no_token_warning": "Emita un token antes de activar el aprovisionamiento — sin él, Entra no puede autenticarse.",
+          "tenant_url": "URL del inquilino",
+          "tenant_url_hint": "Pegue esto en Aprovisionamiento → Credenciales de administrador en la aplicación empresarial de Entra.",
+          "secret_token": "Token secreto",
+          "token_installed": "Hay un token instalado que empieza por {prefix}… y se usó por última vez {last_used}.",
+          "no_token": "No hay ningún token instalado.",
+          "rotate_token": "Rotar token",
+          "issue_token": "Emitir token",
+          "revoke": "Revocar",
+          "rotate_hint": "La rotación tiene efecto inmediato, así que el aprovisionamiento falla hasta que Entra reciba el nuevo token.",
+          "last_sync": "Última sincronización",
+          "resync_now": "Resincronizar ahora",
+          "summary_added": "{count, plural, one {# agregada} other {# agregadas}}",
+          "summary_restored": "{count, plural, one {# restaurada} other {# restauradas}}",
+          "summary_withdrawn": "{count, plural, one {# retirada} other {# retiradas}}",
+          "resync_hint": "La resincronización vuelve a aplicar lo que el directorio ya envió — no llama a Entra. Úsela después de invitar a alguien que el directorio ya había enviado.",
+          "unresolved_heading": "Enviados por el directorio, pero no en este espacio de trabajo ({count})",
+          "unresolved_empty": "Todas las personas que envió el directorio son miembros activos de este espacio de trabajo.",
+          "not_workspace_member": "No es miembro del espacio de trabajo",
+          "inactive_in_directory": "Inactivo en el directorio",
+          "unresolved_hint": "Invite a estas personas al espacio de trabajo y se unirán a sus áreas automáticamente, o quítelas del grupo en Entra.",
+          "auto_create_title": "Crear áreas para los grupos nuevos",
+          "auto_create_hint": "Cuando está desactivado, el directorio solo puede llenar las áreas que usted creó y nombró de forma coincidente.",
+          "auto_create_saved": "Se guardó cómo se gestionan los grupos nuevos del directorio.",
+          "deprovision_title": "Permitir que el directorio quite personas",
+          "deprovision_hint": "Cuando está desactivado, la sincronización solo agrega. Las personas que agregó manualmente nunca se quitan, en ningún caso.",
+          "deprovision_saved": "Se guardó cómo se gestionan las eliminaciones del directorio.",
+          "toast": {
+            "copied_title": "Copiado",
+            "copied": "El valor de {label} se copió al portapapeles.",
+            "not_copied_title": "No se pudo copiar",
+            "not_copied": "Seleccione y copie el valor de {label} manualmente.",
+            "load_failed_title": "No se pudo cargar la conexión con el directorio",
+            "load_failed": "Inténtelo de nuevo en un momento.",
+            "save_failed": "No se pudo guardar el cambio. Inténtelo de nuevo.",
+            "token_issued_title": "Token emitido",
+            "token_issued": "Cópielo ahora — se muestra solo esta vez.",
+            "token_not_issued_title": "No emitido",
+            "token_not_issued": "No se pudo crear el token.",
+            "token_revoked_title": "Token revocado",
+            "token_revoked": "El aprovisionamiento queda desactivado hasta que se emita un nuevo token.",
+            "token_not_revoked_title": "No revocado",
+            "token_not_revoked": "No se pudo revocar el token.",
+            "resynced_title": "Resincronizado",
+            "resynced": "{added, plural, one {# agregada} other {# agregadas}}, {withdrawn, plural, one {# retirada} other {# retiradas}}.",
+            "not_resynced_title": "No resincronizado",
+            "not_resynced": "No se pudo completar la resincronización."
+          }
+        }
       }
     },
     "empty_state": {

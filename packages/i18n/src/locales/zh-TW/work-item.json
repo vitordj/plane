@@ -266,6 +266,21 @@
       "click_to_downvote": "點擊反對",
       "click_to_view_upvotes": "點擊查看贊成票",
       "click_to_view_downvotes": "點擊查看反對票"
+    },
+    "organizational_unit": {
+      "no_match": "沒有符合的區域",
+      "assign": "指派",
+      "assign_tooltip": "指派給此區域中未完成工作最少的成員",
+      "toast": {
+        "area_unchanged": "區域未變更",
+        "assigned_title": "已指派",
+        "assigned": "已交給此區域中未完成工作最少的成員。",
+        "already_assigned_title": "已有指派對象",
+        "already_assigned": "此工作事項已有指派對象。",
+        "nobody_title": "無人可用",
+        "nobody": "此區域中沒有成員擁有此專案的存取權限。",
+        "not_assigned": "未指派"
+      }
     }
   },
   "sub_work_item": {

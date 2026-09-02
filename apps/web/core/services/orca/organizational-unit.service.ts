@@ -31,6 +31,20 @@ export class OrganizationalUnitService extends APIService {
     return `/api/orca/workspaces/${workspaceSlug}/organizational-units`;
   }
 
+  /**
+   * @description Which Orca features this instance has switched on. Served
+   * outside the organizational-units kill switch on purpose: the UI has to be
+   * able to ask whether the layer exists in order to hide it, which it could
+   * not do through an endpoint the same switch makes invisible.
+   */
+  async getOrcaConfig(workspaceSlug: string): Promise<{ organizational_units_enabled: boolean }> {
+    return this.get(`/api/orca/workspaces/${workspaceSlug}/config/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
   async getOrganizationalUnits(workspaceSlug: string): Promise<IOrganizationalUnit[]> {
     return this.get(`${this.basePath(workspaceSlug)}/`)
       .then((response) => response?.data)

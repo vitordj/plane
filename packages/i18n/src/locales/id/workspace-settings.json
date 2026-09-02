@@ -495,7 +495,141 @@
         "title": "Area",
         "heading": "Area",
         "description": "Kelompokkan orang ke dalam area dan beri setiap area akses ke proyeknya dalam satu langkah.",
-        "add": "Area baru"
+        "add": "Area baru",
+        "disabled": "Area dinonaktifkan di instans ini. Administrator dapat mengaktifkannya dengan mengatur ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Coba lagi sebentar lagi.",
+        "toast": {
+          "saved": "Disimpan",
+          "not_saved": "Tidak disimpan",
+          "role_unchanged": "Peran tidak berubah"
+        },
+        "list": {
+          "empty_title": "Belum ada area.",
+          "empty_description": "Area mengelompokkan orang-orang yang bekerja bersama — Kepatuhan, Penjualan, Administrasi — dan memberi mereka akses ke proyek-proyeknya dalam satu langkah.",
+          "synced_badge": "Tersinkron",
+          "counts": "{members, plural, one {# orang} other {# orang}} · {projects, plural, one {# proyek} other {# proyek}}",
+          "delete_aria": "Hapus {name}",
+          "delete_title": "Hapus {name}?",
+          "delete_content": "Semua orang di area ini akan kehilangan akses proyek yang diberikan oleh area ini. Akses yang diberikan oleh area lain, atau diatur secara manual pada proyek, tetap dipertahankan.",
+          "delete_content_synced": "Semua orang di area ini akan kehilangan akses proyek yang diberikan oleh area ini. Area ini disinkronkan dari direktori Anda, sehingga sinkronisasi berikutnya akan membuatnya lagi — hapus grupnya di direktori jika Anda ingin menghilangkannya secara permanen.",
+          "delete_loading": "Menghapus...",
+          "delete_confirm": "Hapus area",
+          "toast": {
+            "deleted_title": "Area dihapus",
+            "deleted_message": "Akses proyek yang diberikan {name} telah dicabut. Akses yang diberikan dari tempat lain tetap dipertahankan.",
+            "not_deleted": "Tidak dihapus"
+          }
+        },
+        "form": {
+          "edit_title": "Edit area",
+          "name_placeholder": "Kepatuhan",
+          "description_placeholder": "Apa yang menjadi tanggung jawab area ini",
+          "create": "Buat area",
+          "toast": {
+            "updated": "{name} telah diperbarui.",
+            "created_title": "Dibuat",
+            "created": "{name} siap digunakan.",
+            "name_taken": "Area dengan nama ini sudah ada. Pilih nama lain."
+          }
+        },
+        "detail": {
+          "tab_people": "Orang",
+          "back_aria": "Kembali ke semua area"
+        },
+        "members": {
+          "select_person": "Pilih seseorang",
+          "no_addable": "Semua orang di ruang kerja ini sudah berada di area ini",
+          "add": "Tambahkan ke area",
+          "empty": "Belum ada siapa pun di area ini. Tambahkan orang untuk memberi mereka akses ke proyek-proyeknya.",
+          "directory_badge": "Direktori",
+          "remove_aria": "Hapus {name} dari area ini",
+          "lead_note": "Memimpin area berarti mengelola area itu sendiri. Hak admin proyek diberikan secara terpisah, pada proyek.",
+          "directory_note": "Orang yang ditandai {badge} berasal dari penyedia identitas Anda. Menghapus mereka di sini hanya berlaku sampai sinkronisasi berikutnya — keluarkan mereka dari grup di sumbernya. Orang yang Anda tambahkan secara manual tidak akan pernah dihapus oleh sinkronisasi.",
+          "toast": {
+            "added_title": "Anggota ditambahkan",
+            "added": "Mereka kini memiliki akses ke proyek-proyek area ini.",
+            "not_added": "Tidak ditambahkan",
+            "one_lead": "Sebuah area hanya dapat memiliki satu pemimpin pada satu waktu.",
+            "removed_title": "Anggota dihapus",
+            "removed": "{name} tetap memiliki akses proyek yang diberikan di luar area ini.",
+            "not_removed": "Tidak dihapus"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Dapat mengubah pengaturan dan anggota proyek",
+          "role_member_hint": "Dapat membuat dan mengedit item kerja",
+          "role_guest_hint": "Akses terbatas",
+          "select_project": "Pilih proyek",
+          "no_linkable": "Semua proyek sudah ditautkan ke area ini",
+          "link": "Tautkan proyek",
+          "empty": "Belum ada proyek yang ditautkan. Tautkan satu proyek untuk memberi anggota area ini akses ke proyek tersebut.",
+          "unlink_aria": "Lepaskan tautan {name} dari area ini",
+          "role_note": "Peran seseorang adalah peran tertinggi yang diberikan oleh area-areanya, dibatasi oleh peran ruang kerjanya. Peran yang diatur secara manual pada proyek tidak akan pernah diturunkan di sini.",
+          "toast": {
+            "linked_title": "Proyek ditautkan",
+            "linked": "Semua orang di area ini kini memiliki akses ke proyek tersebut.",
+            "not_linked": "Tidak ditautkan",
+            "unlinked_title": "Tautan proyek dilepas",
+            "unlinked": "Akses ke {name} yang diberikan di luar area ini tetap dipertahankan.",
+            "not_unlinked": "Tautan tidak dilepas"
+          }
+        },
+        "directory_sync": {
+          "heading": "Sinkronisasi direktori",
+          "description": "Biarkan Microsoft Entra ID menjaga keanggotaan area selalu terbaru. Entra menentukan siapa yang termasuk dalam suatu area; proyek mana yang diberikan oleh area, dan dengan peran apa, tetap diatur di sini.",
+          "never": "Belum pernah",
+          "copy": "Salin",
+          "provisioning_on": "Penyediaan aktif.",
+          "provisioning_off": "Penyediaan nonaktif.",
+          "no_token_warning": "Terbitkan token sebelum mengaktifkan penyediaan — Entra tidak dapat melakukan autentikasi tanpanya.",
+          "tenant_url": "URL tenant",
+          "tenant_url_hint": "Tempelkan ini ke Provisioning → Admin Credentials di aplikasi perusahaan Entra.",
+          "secret_token": "Token rahasia",
+          "token_installed": "Token yang diawali {prefix}… telah terpasang. Terakhir digunakan {last_used}.",
+          "no_token": "Belum ada token yang terpasang.",
+          "rotate_token": "Rotasi token",
+          "issue_token": "Terbitkan token",
+          "revoke": "Cabut",
+          "rotate_hint": "Rotasi berlaku segera, sehingga penyediaan akan gagal sampai Entra diberi token yang baru.",
+          "last_sync": "Sinkronisasi terakhir",
+          "resync_now": "Sinkronkan ulang sekarang",
+          "summary_added": "{count, plural, one {# ditambahkan} other {# ditambahkan}}",
+          "summary_restored": "{count, plural, one {# dipulihkan} other {# dipulihkan}}",
+          "summary_withdrawn": "{count, plural, one {# dicabut} other {# dicabut}}",
+          "resync_hint": "Sinkronisasi ulang memutar kembali apa yang sudah dikirim direktori — tidak memanggil Entra. Gunakan setelah mengundang seseorang yang sudah didorong oleh direktori.",
+          "unresolved_heading": "Didorong oleh direktori, tidak ada di ruang kerja ini ({count})",
+          "unresolved_empty": "Semua orang yang dikirim direktori adalah anggota aktif ruang kerja ini.",
+          "not_workspace_member": "Bukan anggota ruang kerja",
+          "inactive_in_directory": "Tidak aktif di direktori",
+          "unresolved_hint": "Undang orang-orang ini ke ruang kerja dan mereka akan otomatis bergabung ke areanya, atau hapus mereka dari grup di Entra.",
+          "auto_create_title": "Buat area untuk grup baru",
+          "auto_create_hint": "Saat nonaktif, direktori hanya dapat mengisi area yang Anda buat dan beri nama yang sesuai.",
+          "auto_create_saved": "Cara penanganan grup direktori baru telah disimpan.",
+          "deprovision_title": "Izinkan direktori menghapus orang",
+          "deprovision_hint": "Saat nonaktif, sinkronisasi hanya menambahkan. Orang yang Anda tambahkan secara manual tidak akan pernah dihapus, apa pun pengaturannya.",
+          "deprovision_saved": "Cara penanganan penghapusan dari direktori telah disimpan.",
+          "toast": {
+            "copied_title": "Disalin",
+            "copied": "{label} disalin ke clipboard Anda.",
+            "not_copied_title": "Tidak dapat menyalin",
+            "not_copied": "Pilih dan salin {label} secara manual.",
+            "load_failed_title": "Tidak dapat memuat koneksi direktori",
+            "load_failed": "Silakan coba lagi sebentar lagi.",
+            "save_failed": "Perubahan tidak dapat disimpan. Silakan coba lagi.",
+            "token_issued_title": "Token diterbitkan",
+            "token_issued": "Salin sekarang — token hanya ditampilkan sekali ini saja.",
+            "token_not_issued_title": "Tidak diterbitkan",
+            "token_not_issued": "Token tidak dapat dibuat.",
+            "token_revoked_title": "Token dicabut",
+            "token_revoked": "Penyediaan dinonaktifkan sampai token baru diterbitkan.",
+            "token_not_revoked_title": "Tidak dicabut",
+            "token_not_revoked": "Token tidak dapat dicabut.",
+            "resynced_title": "Disinkronkan ulang",
+            "resynced": "{added, plural, one {# ditambahkan} other {# ditambahkan}}, {withdrawn, plural, one {# dicabut} other {# dicabut}}.",
+            "not_resynced_title": "Tidak disinkronkan ulang",
+            "not_resynced": "Sinkronisasi ulang tidak dapat diselesaikan."
+          }
+        }
       }
     },
     "empty_state": {

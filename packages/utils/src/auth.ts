@@ -36,7 +36,7 @@ export const getPasswordStrength = (password: string): E_PASSWORD_STRENGTH => {
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
   const hasDigit = /[0-9]/.test(password);
-  const hasSpecialChar = /[!@#$%^&*()\-_+=\[\]{}|;:'",.<>?/]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*()\-_+=[\]{}|;:'",.<>?/]/.test(password);
 
   if (hasUpperCase && hasLowerCase && hasDigit && hasSpecialChar) {
     return E_PASSWORD_STRENGTH.STRENGTH_VALID;
@@ -78,7 +78,7 @@ export const getPasswordCriteria = (password: string): PasswordCriteria[] => [
   {
     key: "special",
     label: "Min 1 special character",
-    isValid: /[!@#$%^&*()\-_+=\[\]{}|;:'",.<>?/]/.test(password),
+    isValid: /[!@#$%^&*()\-_+=[\]{}|;:'",.<>?/]/.test(password),
   },
 ];
 
@@ -228,6 +228,14 @@ const errorCodeMessages: {
     title: `GitLab OAuth provider error`,
     message: () => `GitLab OAuth provider error. Please try again.`,
   },
+  [EAuthErrorCodes.ENTRA_NOT_CONFIGURED]: {
+    title: `Microsoft Entra ID not configured`,
+    message: () => `Microsoft Entra ID not configured. Please contact your administrator.`,
+  },
+  [EAuthErrorCodes.ENTRA_OAUTH_PROVIDER_ERROR]: {
+    title: `Microsoft Entra ID sign-in error`,
+    message: () => `Microsoft Entra ID sign-in failed. Please try again.`,
+  },
   // Reset Password
   [EAuthErrorCodes.INVALID_PASSWORD_TOKEN]: {
     title: `Invalid password token`,
@@ -340,6 +348,8 @@ export const authErrorHandler = (errorCode: EAuthErrorCodes, email?: string): TA
     EAuthErrorCodes.GOOGLE_OAUTH_PROVIDER_ERROR,
     EAuthErrorCodes.GITHUB_OAUTH_PROVIDER_ERROR,
     EAuthErrorCodes.GITLAB_OAUTH_PROVIDER_ERROR,
+    EAuthErrorCodes.ENTRA_NOT_CONFIGURED,
+    EAuthErrorCodes.ENTRA_OAUTH_PROVIDER_ERROR,
     EAuthErrorCodes.INVALID_PASSWORD_TOKEN,
     EAuthErrorCodes.EXPIRED_PASSWORD_TOKEN,
     EAuthErrorCodes.INCORRECT_OLD_PASSWORD,

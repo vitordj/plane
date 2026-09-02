@@ -495,7 +495,141 @@
         "title": "Obszary",
         "heading": "Obszary",
         "description": "Grupowanie osób w obszary i przyznawanie każdemu obszarowi dostępu do jego projektów w jednym kroku.",
-        "add": "Nowy obszar"
+        "add": "Nowy obszar",
+        "disabled": "Obszary są wyłączone w tej instancji. Administrator może je włączyć, ustawiając ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Proszę spróbować ponownie za chwilę.",
+        "toast": {
+          "saved": "Zapisano",
+          "not_saved": "Nie zapisano",
+          "role_unchanged": "Rola bez zmian"
+        },
+        "list": {
+          "empty_title": "Brak obszarów.",
+          "empty_description": "Obszar grupuje osoby, które ze sobą pracują — Księgowość, Sprzedaż, Administracja — i w jednym kroku daje im dostęp do swoich projektów.",
+          "synced_badge": "Zsynchronizowano",
+          "counts": "{members, plural, one {# osoba} few {# osoby} many {# osób} other {# osoby}} · {projects, plural, one {# projekt} few {# projekty} many {# projektów} other {# projektu}}",
+          "delete_aria": "Usuń {name}",
+          "delete_title": "Usunąć {name}?",
+          "delete_content": "Wszyscy w tym obszarze stracą dostęp do projektów, który im przyznał. Dostęp przyznany przez inny obszar lub ustawiony ręcznie w projekcie zostanie zachowany.",
+          "delete_content_synced": "Wszyscy w tym obszarze stracą dostęp do projektów, który im przyznał. Ten obszar jest synchronizowany z katalogu, więc następna synchronizacja utworzy go ponownie — aby usunąć go na stałe, należy zamiast tego usunąć grupę w katalogu.",
+          "delete_loading": "Usuwanie...",
+          "delete_confirm": "Usuń obszar",
+          "toast": {
+            "deleted_title": "Obszar usunięty",
+            "deleted_message": "Dostęp do projektów przyznany przez {name} został cofnięty. Dostęp przyznany w innym miejscu zostaje zachowany.",
+            "not_deleted": "Nie usunięto"
+          }
+        },
+        "form": {
+          "edit_title": "Edytuj obszar",
+          "name_placeholder": "Księgowość",
+          "description_placeholder": "Za co odpowiada ten obszar",
+          "create": "Utwórz obszar",
+          "toast": {
+            "updated": "Zaktualizowano {name}.",
+            "created_title": "Utworzono",
+            "created": "Obszar {name} jest gotowy do użycia.",
+            "name_taken": "Obszar o tej nazwie już istnieje. Proszę wybrać inną nazwę."
+          }
+        },
+        "detail": {
+          "tab_people": "Osoby",
+          "back_aria": "Powrót do wszystkich obszarów"
+        },
+        "members": {
+          "select_person": "Wybierz osobę",
+          "no_addable": "Wszyscy z tej przestrzeni roboczej należą już do tego obszaru",
+          "add": "Dodaj do obszaru",
+          "empty": "W tym obszarze nie ma jeszcze nikogo. Dodane osoby otrzymają dostęp do jego projektów.",
+          "directory_badge": "Katalog",
+          "remove_aria": "Usuń {name} z tego obszaru",
+          "lead_note": "Lider obszaru zarządza tylko samym obszarem. Rola administratora projektu jest przyznawana osobno, w projekcie.",
+          "directory_note": "Osoby oznaczone jako {badge} pochodzą z dostawcy tożsamości. Usunięcie ich tutaj obowiązuje tylko do następnej synchronizacji — zamiast tego należy usunąć je z grupy u źródła. Osoby dodane ręcznie nigdy nie są usuwane przez synchronizację.",
+          "toast": {
+            "added_title": "Członek dodany",
+            "added": "Ta osoba ma teraz dostęp do projektów tego obszaru.",
+            "not_added": "Nie dodano",
+            "one_lead": "Obszar może mieć tylko jednego lidera naraz.",
+            "removed_title": "Członek usunięty",
+            "removed": "{name} zachowuje dostęp do projektów przyznany poza tym obszarem.",
+            "not_removed": "Nie usunięto"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Może zmieniać ustawienia i członków projektu",
+          "role_member_hint": "Może tworzyć i edytować elementy pracy",
+          "role_guest_hint": "Ograniczony dostęp",
+          "select_project": "Wybierz projekt",
+          "no_linkable": "Każdy projekt jest już połączony z tym obszarem",
+          "link": "Połącz projekt",
+          "empty": "Nie połączono jeszcze żadnych projektów. Po połączeniu projektu członkowie tego obszaru uzyskają do niego dostęp.",
+          "unlink_aria": "Odłącz {name} od tego obszaru",
+          "role_note": "Rola osoby to najwyższa rola przyznana przez jej obszary, ograniczona jej rolą w przestrzeni roboczej. Role ustawione ręcznie w projekcie nigdy nie są tutaj obniżane.",
+          "toast": {
+            "linked_title": "Projekt połączony",
+            "linked": "Wszyscy w tym obszarze mają teraz do niego dostęp.",
+            "not_linked": "Nie połączono",
+            "unlinked_title": "Projekt odłączony",
+            "unlinked": "Dostęp do {name} przyznany poza tym obszarem zostaje zachowany.",
+            "not_unlinked": "Nie odłączono"
+          }
+        },
+        "directory_sync": {
+          "heading": "Synchronizacja katalogu",
+          "description": "Microsoft Entra ID może na bieżąco aktualizować członkostwo w obszarach. Entra decyduje, kto należy do obszaru; to, do których projektów obszar daje dostęp i z jaką rolą, nadal ustawia się tutaj.",
+          "never": "Nigdy",
+          "copy": "Kopiuj",
+          "provisioning_on": "Aprowizacja jest włączona.",
+          "provisioning_off": "Aprowizacja jest wyłączona.",
+          "no_token_warning": "Przed włączeniem aprowizacji należy wystawić token — bez niego Entra nie może się uwierzytelnić.",
+          "tenant_url": "Adres URL dzierżawy",
+          "tenant_url_hint": "Ten adres należy wkleić w sekcji Aprowizacja → Poświadczenia administratora w aplikacji dla przedsiębiorstw Entra.",
+          "secret_token": "Tajny token",
+          "token_installed": "Token zaczynający się od {prefix}… jest zainstalowany. Ostatnio użyty: {last_used}.",
+          "no_token": "Nie zainstalowano żadnego tokenu.",
+          "rotate_token": "Wymień token",
+          "issue_token": "Wystaw token",
+          "revoke": "Unieważnij",
+          "rotate_hint": "Wymiana tokenu działa natychmiast, więc aprowizacja nie będzie działać, dopóki Entra nie otrzyma nowego tokenu.",
+          "last_sync": "Ostatnia synchronizacja",
+          "resync_now": "Synchronizuj ponownie",
+          "summary_added": "{count, plural, one {# dodana} few {# dodane} many {# dodanych} other {# dodanej}}",
+          "summary_restored": "{count, plural, one {# przywrócona} few {# przywrócone} many {# przywróconych} other {# przywróconej}}",
+          "summary_withdrawn": "{count, plural, one {# usunięta} few {# usunięte} many {# usuniętych} other {# usuniętej}}",
+          "resync_hint": "Ponowna synchronizacja odtwarza to, co katalog już wysłał — nie łączy się z Entra. Przydaje się po zaproszeniu osoby, którą katalog już wcześniej przesłał.",
+          "unresolved_heading": "Przesłane przez katalog, ale nie w tej przestrzeni roboczej ({count})",
+          "unresolved_empty": "Wszyscy przesłani przez katalog są aktywnymi członkami tej przestrzeni roboczej.",
+          "not_workspace_member": "Nie jest członkiem przestrzeni roboczej",
+          "inactive_in_directory": "Nieaktywny w katalogu",
+          "unresolved_hint": "Po zaproszeniu do przestrzeni roboczej te osoby automatycznie dołączą do swoich obszarów; można je też usunąć z grupy w Entra.",
+          "auto_create_title": "Tworzenie obszarów dla nowych grup",
+          "auto_create_hint": "Gdy wyłączone, katalog może wypełniać tylko obszary utworzone i nazwane tak, aby pasowały do grup.",
+          "auto_create_saved": "Zapisano sposób obsługi nowych grup z katalogu.",
+          "deprovision_title": "Usuwanie osób przez katalog",
+          "deprovision_hint": "Gdy wyłączone, synchronizacja tylko dodaje. Osoby dodane ręcznie nie są usuwane w żadnym przypadku.",
+          "deprovision_saved": "Zapisano sposób obsługi usunięć z katalogu.",
+          "toast": {
+            "copied_title": "Skopiowano",
+            "copied": "{label} skopiowano do schowka.",
+            "not_copied_title": "Nie udało się skopiować",
+            "not_copied": "{label} należy zaznaczyć i skopiować ręcznie.",
+            "load_failed_title": "Nie udało się wczytać połączenia z katalogiem",
+            "load_failed": "Proszę spróbować ponownie za chwilę.",
+            "save_failed": "Nie udało się zapisać zmiany. Proszę spróbować ponownie.",
+            "token_issued_title": "Token wystawiony",
+            "token_issued": "Należy go teraz skopiować — jest wyświetlany tylko ten jeden raz.",
+            "token_not_issued_title": "Nie wystawiono",
+            "token_not_issued": "Nie udało się utworzyć tokenu.",
+            "token_revoked_title": "Token unieważniony",
+            "token_revoked": "Aprowizacja jest wyłączona do czasu wystawienia nowego tokenu.",
+            "token_not_revoked_title": "Nie unieważniono",
+            "token_not_revoked": "Nie udało się unieważnić tokenu.",
+            "resynced_title": "Zsynchronizowano ponownie",
+            "resynced": "{added, plural, one {# dodana} few {# dodane} many {# dodanych} other {# dodanej}}, {withdrawn, plural, one {# usunięta} few {# usunięte} many {# usuniętych} other {# usuniętej}}.",
+            "not_resynced_title": "Nie zsynchronizowano",
+            "not_resynced": "Nie udało się ukończyć ponownej synchronizacji."
+          }
+        }
       }
     },
     "empty_state": {

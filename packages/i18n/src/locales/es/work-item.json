@@ -266,6 +266,21 @@
       "click_to_downvote": "Haz clic para votar en contra",
       "click_to_view_upvotes": "Haz clic para ver los votos a favor",
       "click_to_view_downvotes": "Haz clic para ver los votos en contra"
+    },
+    "organizational_unit": {
+      "no_match": "Ninguna área coincide",
+      "assign": "Asignar",
+      "assign_tooltip": "Asignar al miembro del área con menos trabajo abierto",
+      "toast": {
+        "area_unchanged": "Área sin cambios",
+        "assigned_title": "Asignado",
+        "assigned": "Se entregó al miembro del área con menos trabajo abierto.",
+        "already_assigned_title": "Ya asignado",
+        "already_assigned": "Este elemento de trabajo ya tiene un asignado.",
+        "nobody_title": "Nadie disponible",
+        "nobody": "Ningún miembro de esta área tiene acceso a este proyecto.",
+        "not_assigned": "No asignado"
+      }
     }
   },
   "sub_work_item": {

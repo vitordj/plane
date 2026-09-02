@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { IOrganizationalUnit } from "@plane/types";
@@ -22,9 +23,12 @@ type Props = {
   onClose: () => void;
 };
 
+const OU = "workspace_settings.settings.organizational_units";
+
 export const OrganizationalUnitFormModal = observer(function OrganizationalUnitFormModal(props: Props) {
   const { isOpen, workspaceSlug, unit, onClose } = props;
   const store = useOrganizationalUnit();
+  const { t } = useTranslation();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -42,18 +46,26 @@ export const OrganizationalUnitFormModal = observer(function OrganizationalUnitF
     try {
       if (unit) {
         await store.updateUnit(workspaceSlug, unit.id, { name: name.trim(), description: description.trim() });
-        setToast({ type: TOAST_TYPE.SUCCESS, title: "Saved", message: `${name.trim()} was updated.` });
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: t(`${OU}.toast.saved`),
+          message: t(`${OU}.form.toast.updated`, { name: name.trim() }),
+        });
       } else {
         await store.createUnit(workspaceSlug, { name: name.trim(), description: description.trim() });
-        setToast({ type: TOAST_TYPE.SUCCESS, title: "Created", message: `${name.trim()} is ready to use.` });
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: t(`${OU}.form.toast.created_title`),
+          message: t(`${OU}.form.toast.created`, { name: name.trim() }),
+        });
       }
       onClose();
     } catch (error) {
       const conflict = (error as { status?: number })?.status === 409;
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Not saved",
-        message: conflict ? "An area with this name already exists. Pick a different name." : "Try again in a moment.",
+        title: t(`${OU}.toast.not_saved`),
+        message: conflict ? t(`${OU}.form.toast.name_taken`) : t(`${OU}.try_again`),
       });
     } finally {
       setIsSubmitting(false);
@@ -63,39 +75,41 @@ export const OrganizationalUnitFormModal = observer(function OrganizationalUnitF
   return (
     <ModalCore isOpen={isOpen} handleClose={onClose} position={EModalPosition.CENTER} width={EModalWidth.XL}>
       <div className="flex flex-col gap-4 p-5">
-        <h3 className="text-lg text-custom-text-100 font-medium">{unit ? "Edit area" : "New area"}</h3>
+        <h3 className="text-lg text-custom-text-100 font-medium">
+          {unit ? t(`${OU}.form.edit_title`) : t(`${OU}.add`)}
+        </h3>
 
         <div className="flex flex-col gap-1">
           <label htmlFor="organizational-unit-name" className="text-sm text-custom-text-200">
-            Name
+            {t("common.name")}
           </label>
           <Input
             id="organizational-unit-name"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Compliance"
+            placeholder={t(`${OU}.form.name_placeholder`)}
           />
         </div>
 
         <div className="flex flex-col gap-1">
           <label htmlFor="organizational-unit-description" className="text-sm text-custom-text-200">
-            Description
+            {t("common.description")}
           </label>
           <TextArea
             id="organizational-unit-description"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
-            placeholder="What this area is responsible for"
+            placeholder={t(`${OU}.form.description_placeholder`)}
             rows={3}
           />
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="secondary" size="sm" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button variant="primary" size="sm" onClick={handleSubmit} loading={isSubmitting} disabled={!name.trim()}>
-            {unit ? "Save" : "Create area"}
+            {unit ? t("save") : t(`${OU}.form.create`)}
           </Button>
         </div>
       </div>

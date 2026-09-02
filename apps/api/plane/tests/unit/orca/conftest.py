@@ -11,10 +11,14 @@ nothing that matters.
 """
 
 import pytest
+from django.core.cache import cache
 from rest_framework.test import APIClient
 
 from plane.db.models import (
     Issue,
+    OrganizationalDirectoryConnection,
+    OrganizationalDirectoryGroupMembership,
+    OrganizationalDirectoryIdentity,
     OrganizationalUnit,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
@@ -30,6 +34,24 @@ from plane.db.models import (
 ROLE_ADMIN = 20
 ROLE_MEMBER = 15
 ROLE_GUEST = 5
+
+
+@pytest.fixture(autouse=True)
+def clear_throttle_history():
+    """
+    Give every test an empty rate-limit counter.
+
+    @description DRF keeps throttle history in the Django cache, which is
+    Redis here and therefore shared across the whole session. The SCIM views
+    are anonymous to DRF and keyed per workspace, and the ordinary views fall
+    under the project's 30/minute ``anon`` limit, so without this a test's
+    verdict depends on how many requests the tests before it happened to make
+    inside the same minute — the suite passes on a slow machine and fails on a
+    fast one. Clearing between tests makes each one answer for its own calls.
+    """
+    cache.clear()
+    yield
+    cache.clear()
 
 
 @pytest.fixture(autouse=True)
@@ -273,3 +295,105 @@ def issue_unit_url(slug, project_id, issue_id):
 
 def issue_assign_url(slug, project_id, issue_id):
     return f"/api/orca/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/organizational-unit-assign/"
+
+
+# --- directory (SCIM) fixtures -----------------------------------------------
+
+
+@pytest.fixture
+def directory_connection(db, workspace_with_members):
+    """An enabled directory connection, with a token the tests know."""
+    connection = OrganizationalDirectoryConnection.objects.create(
+        workspace=workspace_with_members, tenant_id="test-tenant"
+    )
+    token = connection.issue_token()
+    connection.is_enabled = True
+    connection.save()
+    # The plain token is only ever returned once, so hand it to the test here.
+    connection.plain_token = token
+    return connection
+
+
+@pytest.fixture
+def scim_client(directory_connection):
+    """An API client that authenticates the way Entra does."""
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {directory_connection.plain_token}")
+    return client
+
+
+@pytest.fixture
+def make_identity(workspace_with_members):
+    """Create a mirrored directory identity, optionally already linked."""
+
+    def _make(user_name, email=None, display_name="", external_id="", is_active=True):
+        return OrganizationalDirectoryIdentity.objects.create(
+            workspace=workspace_with_members,
+            user_name=user_name,
+            email=email if email is not None else user_name,
+            display_name=display_name or user_name,
+            external_id=external_id,
+            is_active=is_active,
+        )
+
+    return _make
+
+
+@pytest.fixture
+def put_in_group(workspace_with_members):
+    """Record the directory's assertion that an identity belongs to a unit."""
+
+    def _put(unit, identity):
+        return OrganizationalDirectoryGroupMembership.objects.create(
+            organizational_unit=unit, identity=identity, workspace=workspace_with_members
+        )
+
+    return _put
+
+
+@pytest.fixture
+def bound_unit(unit):
+    """A unit already bound to a directory group."""
+    unit.external_id = "entra-group-compliance"
+    unit.sync_source = "scim"
+    unit.save()
+    return unit
+
+
+# --- SCIM url builders --------------------------------------------------------
+
+
+def scim_base(slug):
+    return f"/api/orca/scim/v2/workspaces/{slug}"
+
+
+def scim_users_url(slug):
+    return f"{scim_base(slug)}/Users"
+
+
+def scim_user_url(slug, identity_id):
+    return f"{scim_users_url(slug)}/{identity_id}"
+
+
+def scim_groups_url(slug):
+    return f"{scim_base(slug)}/Groups"
+
+
+def scim_group_url(slug, unit_id):
+    return f"{scim_groups_url(slug)}/{unit_id}"
+
+
+def directory_url(slug):
+    return f"/api/orca/workspaces/{slug}/directory/"
+
+
+def directory_token_url(slug):
+    return f"{directory_url(slug)}token/"
+
+
+def directory_resync_url(slug):
+    return f"{directory_url(slug)}resync/"
+
+
+def directory_unresolved_url(slug):
+    return f"{directory_url(slug)}unresolved/"

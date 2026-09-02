@@ -266,6 +266,21 @@
       "click_to_downvote": "Klik untuk memberi suara turun",
       "click_to_view_upvotes": "Klik untuk melihat suara naik",
       "click_to_view_downvotes": "Klik untuk melihat suara turun"
+    },
+    "organizational_unit": {
+      "no_match": "Tidak ada area yang cocok",
+      "assign": "Tugaskan",
+      "assign_tooltip": "Tugaskan ke anggota area dengan pekerjaan terbuka paling sedikit",
+      "toast": {
+        "area_unchanged": "Area tidak berubah",
+        "assigned_title": "Ditugaskan",
+        "assigned": "Diberikan kepada anggota area dengan pekerjaan terbuka paling sedikit.",
+        "already_assigned_title": "Sudah ditugaskan",
+        "already_assigned": "Item kerja ini sudah memiliki penugas.",
+        "nobody_title": "Tidak ada yang tersedia",
+        "nobody": "Tidak ada anggota area ini yang memiliki akses ke proyek ini.",
+        "not_assigned": "Tidak ditugaskan"
+      }
     }
   },
   "sub_work_item": {

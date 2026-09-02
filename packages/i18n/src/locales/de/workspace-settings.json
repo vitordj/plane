@@ -495,7 +495,141 @@
         "title": "Bereiche",
         "heading": "Bereiche",
         "description": "Personen in Bereiche gruppieren und jedem Bereich in einem Schritt Zugriff auf seine Projekte geben.",
-        "add": "Neuer Bereich"
+        "add": "Neuer Bereich",
+        "disabled": "Bereiche sind in dieser Instanz deaktiviert. Ein Administrator kann sie durch Setzen von ORCA_ORG_UNITS_ENABLED=1 aktivieren.",
+        "try_again": "Versuchen Sie es gleich noch einmal.",
+        "toast": {
+          "saved": "Gespeichert",
+          "not_saved": "Nicht gespeichert",
+          "role_unchanged": "Rolle unverändert"
+        },
+        "list": {
+          "empty_title": "Noch keine Bereiche.",
+          "empty_description": "Ein Bereich fasst Personen zusammen, die gemeinsam arbeiten — Compliance, Vertrieb, Backoffice — und gibt ihnen in einem Schritt Zugriff auf seine Projekte.",
+          "synced_badge": "Synchronisiert",
+          "counts": "{members, plural, one {# Person} other {# Personen}} · {projects, plural, one {# Projekt} other {# Projekte}}",
+          "delete_aria": "{name} löschen",
+          "delete_title": "{name} löschen?",
+          "delete_content": "Alle Personen in diesem Bereich verlieren den Projektzugriff, den er ihnen gewährt hat. Zugriff, der über einen anderen Bereich gewährt oder manuell in einem Projekt festgelegt wurde, bleibt erhalten.",
+          "delete_content_synced": "Alle Personen in diesem Bereich verlieren den Projektzugriff, den er ihnen gewährt hat. Dieser Bereich wird aus Ihrem Verzeichnis synchronisiert, daher wird er bei der nächsten Synchronisierung erneut angelegt — entfernen Sie stattdessen die Gruppe im Verzeichnis, wenn er dauerhaft verschwinden soll.",
+          "delete_loading": "Wird gelöscht...",
+          "delete_confirm": "Bereich löschen",
+          "toast": {
+            "deleted_title": "Bereich gelöscht",
+            "deleted_message": "Der von {name} gewährte Projektzugriff wurde entzogen. Anderweitig gewährter Zugriff bleibt erhalten.",
+            "not_deleted": "Nicht gelöscht"
+          }
+        },
+        "form": {
+          "edit_title": "Bereich bearbeiten",
+          "name_placeholder": "Compliance",
+          "description_placeholder": "Wofür dieser Bereich zuständig ist",
+          "create": "Bereich erstellen",
+          "toast": {
+            "updated": "{name} wurde aktualisiert.",
+            "created_title": "Erstellt",
+            "created": "{name} ist einsatzbereit.",
+            "name_taken": "Ein Bereich mit diesem Namen existiert bereits. Wählen Sie einen anderen Namen."
+          }
+        },
+        "detail": {
+          "tab_people": "Personen",
+          "back_aria": "Zurück zu allen Bereichen"
+        },
+        "members": {
+          "select_person": "Person auswählen",
+          "no_addable": "Alle Personen in diesem Arbeitsbereich sind bereits in diesem Bereich",
+          "add": "Zum Bereich hinzufügen",
+          "empty": "In diesem Bereich ist noch niemand. Fügen Sie Personen hinzu, um ihnen Zugriff auf seine Projekte zu geben.",
+          "directory_badge": "Verzeichnis",
+          "remove_aria": "{name} aus diesem Bereich entfernen",
+          "lead_note": "Die Leitung eines Bereichs betrifft nur den Bereich selbst. Projektadministratorrechte werden separat im Projekt vergeben.",
+          "directory_note": "Mit {badge} markierte Personen stammen aus Ihrem Identitätsanbieter. Ein Entfernen hier gilt nur bis zur nächsten Synchronisierung — nehmen Sie sie stattdessen an der Quelle aus der Gruppe. Manuell hinzugefügte Personen werden durch eine Synchronisierung nie entfernt.",
+          "toast": {
+            "added_title": "Mitglied hinzugefügt",
+            "added": "Die Person hat jetzt Zugriff auf die Projekte dieses Bereichs.",
+            "not_added": "Nicht hinzugefügt",
+            "one_lead": "Ein Bereich kann nur eine Leitung gleichzeitig haben.",
+            "removed_title": "Mitglied entfernt",
+            "removed": "{name} behält jeden Projektzugriff, der außerhalb dieses Bereichs gewährt wurde.",
+            "not_removed": "Nicht entfernt"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Kann Projekteinstellungen und Mitglieder ändern",
+          "role_member_hint": "Kann Arbeitselemente erstellen und bearbeiten",
+          "role_guest_hint": "Eingeschränkter Zugriff",
+          "select_project": "Projekt auswählen",
+          "no_linkable": "Alle Projekte sind bereits mit diesem Bereich verknüpft",
+          "link": "Projekt verknüpfen",
+          "empty": "Noch keine Projekte verknüpft. Verknüpfen Sie eines, um den Mitgliedern dieses Bereichs Zugriff darauf zu geben.",
+          "unlink_aria": "Verknüpfung von {name} mit diesem Bereich aufheben",
+          "role_note": "Die Rolle einer Person ist die höchste, die ihre Bereiche gewähren, begrenzt durch ihre Rolle im Arbeitsbereich. Manuell in einem Projekt festgelegte Rollen werden hier nie herabgestuft.",
+          "toast": {
+            "linked_title": "Projekt verknüpft",
+            "linked": "Alle Personen in diesem Bereich haben jetzt Zugriff darauf.",
+            "not_linked": "Nicht verknüpft",
+            "unlinked_title": "Projektverknüpfung aufgehoben",
+            "unlinked": "Außerhalb dieses Bereichs gewährter Zugriff auf {name} bleibt erhalten.",
+            "not_unlinked": "Verknüpfung nicht aufgehoben"
+          }
+        },
+        "directory_sync": {
+          "heading": "Verzeichnissynchronisierung",
+          "description": "Lassen Sie Microsoft Entra ID die Mitgliedschaft in Bereichen aktuell halten. Entra entscheidet, wer zu einem Bereich gehört; welche Projekte ein Bereich gewährt und mit welcher Rolle, wird weiterhin hier festgelegt.",
+          "never": "Nie",
+          "copy": "Kopieren",
+          "provisioning_on": "Bereitstellung ist aktiviert.",
+          "provisioning_off": "Bereitstellung ist deaktiviert.",
+          "no_token_warning": "Stellen Sie ein Token aus, bevor Sie die Bereitstellung aktivieren — ohne Token kann sich Entra nicht authentifizieren.",
+          "tenant_url": "Mandanten-URL",
+          "tenant_url_hint": "Fügen Sie dies unter Bereitstellung → Administratoranmeldeinformationen in der Entra-Unternehmensanwendung ein.",
+          "secret_token": "Geheimes Token",
+          "token_installed": "Ein Token, das mit {prefix}… beginnt, ist installiert. Zuletzt verwendet: {last_used}.",
+          "no_token": "Es ist kein Token installiert.",
+          "rotate_token": "Token rotieren",
+          "issue_token": "Token ausstellen",
+          "revoke": "Widerrufen",
+          "rotate_hint": "Die Rotation wird sofort wirksam, daher schlägt die Bereitstellung fehl, bis Entra das neue Token erhalten hat.",
+          "last_sync": "Letzte Synchronisierung",
+          "resync_now": "Jetzt erneut synchronisieren",
+          "summary_added": "{count, plural, one {# hinzugefügt} other {# hinzugefügt}}",
+          "summary_restored": "{count, plural, one {# wiederhergestellt} other {# wiederhergestellt}}",
+          "summary_withdrawn": "{count, plural, one {# entzogen} other {# entzogen}}",
+          "resync_hint": "Die erneute Synchronisierung spielt ab, was das Verzeichnis bereits gesendet hat — Entra wird dabei nicht aufgerufen. Verwenden Sie sie, nachdem Sie jemanden eingeladen haben, den das Verzeichnis bereits übermittelt hatte.",
+          "unresolved_heading": "Vom Verzeichnis übermittelt, nicht in diesem Arbeitsbereich ({count})",
+          "unresolved_empty": "Alle vom Verzeichnis gesendeten Personen sind aktive Mitglieder dieses Arbeitsbereichs.",
+          "not_workspace_member": "Kein Mitglied des Arbeitsbereichs",
+          "inactive_in_directory": "Im Verzeichnis inaktiv",
+          "unresolved_hint": "Laden Sie diese Personen in den Arbeitsbereich ein, dann treten sie ihren Bereichen automatisch bei — oder entfernen Sie sie aus der Gruppe in Entra.",
+          "auto_create_title": "Bereiche für neue Gruppen erstellen",
+          "auto_create_hint": "Wenn deaktiviert, kann das Verzeichnis nur Bereiche befüllen, die Sie erstellt und passend benannt haben.",
+          "auto_create_saved": "Umgang mit neuen Verzeichnisgruppen gespeichert.",
+          "deprovision_title": "Verzeichnis darf Personen entfernen",
+          "deprovision_hint": "Wenn deaktiviert, fügt die Synchronisierung nur hinzu. Manuell hinzugefügte Personen werden in keinem Fall entfernt.",
+          "deprovision_saved": "Umgang mit Entfernungen aus dem Verzeichnis gespeichert.",
+          "toast": {
+            "copied_title": "Kopiert",
+            "copied": "{label} in die Zwischenablage kopiert.",
+            "not_copied_title": "Kopieren nicht möglich",
+            "not_copied": "Bitte {label} manuell markieren und kopieren.",
+            "load_failed_title": "Verzeichnisverbindung konnte nicht geladen werden",
+            "load_failed": "Bitte versuchen Sie es gleich noch einmal.",
+            "save_failed": "Die Änderung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+            "token_issued_title": "Token ausgestellt",
+            "token_issued": "Jetzt kopieren — es wird nur dieses eine Mal angezeigt.",
+            "token_not_issued_title": "Nicht ausgestellt",
+            "token_not_issued": "Das Token konnte nicht erstellt werden.",
+            "token_revoked_title": "Token widerrufen",
+            "token_revoked": "Die Bereitstellung ist deaktiviert, bis ein neues Token ausgestellt wird.",
+            "token_not_revoked_title": "Nicht widerrufen",
+            "token_not_revoked": "Das Token konnte nicht widerrufen werden.",
+            "resynced_title": "Erneut synchronisiert",
+            "resynced": "{added, plural, one {# hinzugefügt} other {# hinzugefügt}}, {withdrawn, plural, one {# entzogen} other {# entzogen}}.",
+            "not_resynced_title": "Nicht erneut synchronisiert",
+            "not_resynced": "Die erneute Synchronisierung konnte nicht abgeschlossen werden."
+          }
+        }
       }
     },
     "empty_state": {
