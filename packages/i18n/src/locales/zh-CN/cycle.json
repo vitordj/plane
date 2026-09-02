@@ -79,9 +79,11 @@
       },
       "search_placeholder": "搜索周期",
       "notice": "已完成的周期在归档前仍可编辑。未完成的工作项可以转移到其他周期。",
-      "action": "转移未完成的工作项"
+      "action": "转移未完成的工作项",
+      "heading": "转移未完成的工作项"
     },
-    "drop_archived_error": "工作项无法移入已归档的周期"
+    "drop_archived_error": "工作项无法移入已归档的周期",
+    "add_named": "将“{name}”添加到周期"
   },
   "active_cycle_analytics": {
     "empty_state": {

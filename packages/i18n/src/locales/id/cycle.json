@@ -79,9 +79,11 @@
       },
       "search_placeholder": "Cari siklus",
       "notice": "Siklus yang selesai tetap dapat diubah sampai diarsipkan. Item kerja yang belum selesai dapat dipindahkan ke siklus lain.",
-      "action": "Pindahkan item yang belum selesai"
+      "action": "Pindahkan item yang belum selesai",
+      "heading": "Pindahkan item yang belum selesai"
     },
-    "drop_archived_error": "Item kerja tidak dapat dipindahkan ke siklus yang diarsipkan"
+    "drop_archived_error": "Item kerja tidak dapat dipindahkan ke siklus yang diarsipkan",
+    "add_named": "Tambahkan “{name}” ke siklus"
   },
   "active_cycle_analytics": {
     "empty_state": {

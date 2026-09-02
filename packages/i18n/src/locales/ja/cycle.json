@@ -79,9 +79,11 @@
       },
       "search_placeholder": "サイクルを検索",
       "notice": "完了したサイクルは、アーカイブされるまで編集できます。未完了の作業項目は別のサイクルに移せます。",
-      "action": "未完了の作業項目を移す"
+      "action": "未完了の作業項目を移す",
+      "heading": "未完了の作業項目を移す"
     },
-    "drop_archived_error": "作業項目はアーカイブ済みのサイクルには移動できません"
+    "drop_archived_error": "作業項目はアーカイブ済みのサイクルには移動できません",
+    "add_named": "「{name}」をサイクルに追加"
   },
   "active_cycle_analytics": {
     "empty_state": {

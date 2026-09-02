@@ -79,9 +79,11 @@
       },
       "search_placeholder": "Hledat cyklus",
       "notice": "Dokončený cyklus zůstává upravitelný, dokud není archivován. Nedokončené pracovní položky lze přesunout do jiného cyklu.",
-      "action": "Přesunout nedokončené položky"
+      "action": "Přesunout nedokončené položky",
+      "heading": "Přesunout nedokončené položky"
     },
-    "drop_archived_error": "Pracovní položku nelze přesunout do archivovaného cyklu"
+    "drop_archived_error": "Pracovní položku nelze přesunout do archivovaného cyklu",
+    "add_named": "Přidat „{name}“ mezi cykly"
   },
   "active_cycle_analytics": {
     "empty_state": {

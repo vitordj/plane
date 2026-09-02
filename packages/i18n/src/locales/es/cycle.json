@@ -79,9 +79,11 @@
       },
       "search_placeholder": "Buscar un ciclo",
       "notice": "Un ciclo completado se puede editar hasta que se archiva. Los elementos de trabajo sin terminar se pueden mover a otro ciclo.",
-      "action": "Transferir los elementos sin terminar"
+      "action": "Transferir los elementos sin terminar",
+      "heading": "Transferir los elementos sin terminar"
     },
-    "drop_archived_error": "Un elemento de trabajo no se puede mover a un ciclo archivado"
+    "drop_archived_error": "Un elemento de trabajo no se puede mover a un ciclo archivado",
+    "add_named": "Añadir «{name}» a los ciclos"
   },
   "active_cycle_analytics": {
     "empty_state": {

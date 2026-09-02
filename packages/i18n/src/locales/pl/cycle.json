@@ -79,9 +79,11 @@
       },
       "search_placeholder": "Szukaj cyklu",
       "notice": "Ukończony cykl pozostaje edytowalny, dopóki nie zostanie zarchiwizowany. Nieukończone elementy pracy można przenieść do innego cyklu.",
-      "action": "Przenieś nieukończone elementy"
+      "action": "Przenieś nieukończone elementy",
+      "heading": "Przenieś nieukończone elementy"
     },
-    "drop_archived_error": "Elementu pracy nie można przenieść do zarchiwizowanego cyklu"
+    "drop_archived_error": "Elementu pracy nie można przenieść do zarchiwizowanego cyklu",
+    "add_named": "Dodaj „{name}” do cykli"
   },
   "active_cycle_analytics": {
     "empty_state": {

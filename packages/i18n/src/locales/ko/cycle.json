@@ -79,9 +79,11 @@
       },
       "search_placeholder": "사이클 검색",
       "notice": "완료된 사이클은 보관되기 전까지 편집할 수 있습니다. 끝나지 않은 작업 항목은 다른 사이클로 옮길 수 있습니다.",
-      "action": "끝나지 않은 작업 항목 옮기기"
+      "action": "끝나지 않은 작업 항목 옮기기",
+      "heading": "끝나지 않은 작업 항목 옮기기"
     },
-    "drop_archived_error": "작업 항목은 보관된 사이클로 옮길 수 없습니다"
+    "drop_archived_error": "작업 항목은 보관된 사이클로 옮길 수 없습니다",
+    "add_named": "“{name}”을(를) 사이클에 추가"
   },
   "active_cycle_analytics": {
     "empty_state": {

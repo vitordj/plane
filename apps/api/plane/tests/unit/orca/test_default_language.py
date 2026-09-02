@@ -299,6 +299,22 @@ class TestSupportedLanguagesDoNotDrift:
     def test_the_constants_type_union_matches_its_array(self):
         assert self.read_ts_union("packages/constants/src/language.ts", "TLanguageCode") == set(SUPPORTED_LANGUAGES)
 
+    def test_the_two_lists_show_the_same_labels(self):
+        """Codes agreeing is not enough — the picker renders the labels."""
+        import re as _re
+
+        def labels(relative_path):
+            path = REPO_ROOT / relative_path
+            if not path.exists():
+                pytest.skip(f"{relative_path} not in this checkout")
+            source = path.read_text(encoding="utf-8")
+            return dict(
+                (value, label)
+                for label, value in _re.findall(r'label: "([^"]+)", value: "([^"]+)"', source)
+            )
+
+        assert labels("packages/i18n/src/constants/language.ts") == labels("packages/constants/src/language.ts")
+
     def test_the_config_seed_default_is_a_supported_language(self):
         path = REPO_ROOT / "apps/api/plane/utils/instance_config_variables/orca.py"
         source = path.read_text(encoding="utf-8")

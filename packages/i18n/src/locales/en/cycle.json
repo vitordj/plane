@@ -79,9 +79,11 @@
       },
       "search_placeholder": "Search for a cycle",
       "notice": "Completed cycles stay editable until they are archived. Unfinished work items can be moved to another cycle.",
-      "action": "Transfer unfinished work items"
+      "action": "Transfer unfinished work items",
+      "heading": "Transfer unfinished work items"
     },
-    "drop_archived_error": "A work item cannot be moved into an archived cycle"
+    "drop_archived_error": "A work item cannot be moved into an archived cycle",
+    "add_named": "Add “{name}” to cycles"
   },
   "active_cycle_analytics": {
     "empty_state": {

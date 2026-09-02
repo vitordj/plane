@@ -79,9 +79,11 @@
       },
       "search_placeholder": "Căutați un ciclu",
       "notice": "Un ciclu finalizat rămâne editabil până este arhivat. Activitățile nefinalizate pot fi mutate în alt ciclu.",
-      "action": "Transferați activitățile nefinalizate"
+      "action": "Transferați activitățile nefinalizate",
+      "heading": "Transferați activitățile nefinalizate"
     },
-    "drop_archived_error": "O activitate nu poate fi mutată într-un ciclu arhivat"
+    "drop_archived_error": "O activitate nu poate fi mutată într-un ciclu arhivat",
+    "add_named": "Adăugați „{name}” la cicluri"
   },
   "active_cycle_analytics": {
     "empty_state": {

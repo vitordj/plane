@@ -79,9 +79,11 @@
       },
       "search_placeholder": "Rechercher un cycle",
       "notice": "Un cycle terminé reste modifiable jusqu’à son archivage. Les éléments de travail inachevés peuvent être déplacés vers un autre cycle.",
-      "action": "Transférer les éléments inachevés"
+      "action": "Transférer les éléments inachevés",
+      "heading": "Transférer les éléments inachevés"
     },
-    "drop_archived_error": "Un élément de travail ne peut pas être déplacé vers un cycle archivé"
+    "drop_archived_error": "Un élément de travail ne peut pas être déplacé vers un cycle archivé",
+    "add_named": "Ajouter « {name} » aux cycles"
   },
   "active_cycle_analytics": {
     "empty_state": {

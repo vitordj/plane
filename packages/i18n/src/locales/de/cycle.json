@@ -79,9 +79,11 @@
       },
       "search_placeholder": "Zyklus suchen",
       "notice": "Ein abgeschlossener Zyklus bleibt bearbeitbar, bis er archiviert wird. Offene Arbeitselemente lassen sich in einen anderen Zyklus verschieben.",
-      "action": "Offene Arbeitselemente übertragen"
+      "action": "Offene Arbeitselemente übertragen",
+      "heading": "Offene Arbeitselemente übertragen"
     },
-    "drop_archived_error": "Ein Arbeitselement lässt sich nicht in einen archivierten Zyklus verschieben"
+    "drop_archived_error": "Ein Arbeitselement lässt sich nicht in einen archivierten Zyklus verschieben",
+    "add_named": "„{name}“ zu den Zyklen hinzufügen"
   },
   "active_cycle_analytics": {
     "empty_state": {

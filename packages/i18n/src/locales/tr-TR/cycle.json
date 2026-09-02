@@ -79,9 +79,11 @@
       },
       "search_placeholder": "Döngü ara",
       "notice": "Tamamlanmış bir döngü, arşivlenene kadar düzenlenebilir kalır. Bitmemiş iş öğeleri başka bir döngüye taşınabilir.",
-      "action": "Bitmemiş iş öğelerini taşı"
+      "action": "Bitmemiş iş öğelerini taşı",
+      "heading": "Bitmemiş iş öğelerini taşı"
     },
-    "drop_archived_error": "Bir iş öğesi arşivlenmiş bir döngüye taşınamaz"
+    "drop_archived_error": "Bir iş öğesi arşivlenmiş bir döngüye taşınamaz",
+    "add_named": "“{name}” döngülere eklensin"
   },
   "active_cycle_analytics": {
     "empty_state": {

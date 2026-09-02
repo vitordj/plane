@@ -79,9 +79,11 @@
       },
       "search_placeholder": "搜尋週期",
       "notice": "已完成的週期在封存前仍可編輯。未完成的工作事項可以轉移到其他週期。",
-      "action": "轉移未完成的工作事項"
+      "action": "轉移未完成的工作事項",
+      "heading": "轉移未完成的工作事項"
     },
-    "drop_archived_error": "工作事項無法移入已封存的週期"
+    "drop_archived_error": "工作事項無法移入已封存的週期",
+    "add_named": "將「{name}」加入週期"
   },
   "active_cycle_analytics": {
     "empty_state": {

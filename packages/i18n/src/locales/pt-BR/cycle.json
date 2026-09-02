@@ -79,9 +79,11 @@
       },
       "search_placeholder": "Procurar um ciclo",
       "notice": "Um ciclo concluído continua editável até ser arquivado. Os itens de trabalho não finalizados podem ir para outro ciclo.",
-      "action": "Transferir os itens não finalizados"
+      "action": "Transferir os itens não finalizados",
+      "heading": "Transferir os itens não finalizados"
     },
-    "drop_archived_error": "Um item de trabalho não pode ser movido para um ciclo arquivado"
+    "drop_archived_error": "Um item de trabalho não pode ser movido para um ciclo arquivado",
+    "add_named": "Adicionar “{name}” aos ciclos"
   },
   "active_cycle_analytics": {
     "empty_state": {
