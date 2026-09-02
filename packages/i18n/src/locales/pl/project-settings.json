@@ -575,6 +575,14 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Cykle równoległe",
+        "description": "Prowadzić kilka aktywnych cykli naraz, z nakładającymi się okresami."
+      },
+      "auto_complete": {
+        "title": "Automatyczne kończenie cykli",
+        "description": "Kończyć cykl automatycznie, gdy minie jego data zakończenia. Przy wyłączonej opcji cykl pozostaje aktywny, dopóki ktoś go nie zamknie lub nie zarchiwizuje."
       }
     }
   }

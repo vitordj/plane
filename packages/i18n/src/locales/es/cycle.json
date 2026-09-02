@@ -20,7 +20,66 @@
   },
   "cycle": {
     "label": "{count, plural, one {Ciclo} other {Ciclos}}",
-    "no_cycle": "Sin ciclo"
+    "no_cycle": "Sin ciclo",
+    "start_stop": {
+      "start": {
+        "title": "Iniciar el ciclo",
+        "loading": "Iniciando",
+        "question": "¿Iniciar «{name}»? Esto establece {date} como fecha de inicio y pone el ciclo en activo."
+      },
+      "end": {
+        "title": "Completar el ciclo",
+        "loading": "Completando",
+        "question": "¿Completar «{name}»? Esto establece {date} como fecha de fin y marca el ciclo como completado."
+      },
+      "move_unstarted": {
+        "label": "Mover los elementos no iniciados a En progreso",
+        "hint": "Cada elemento de trabajo pendiente o no iniciado de este ciclo pasa al estado En progreso."
+      },
+      "no_in_progress": {
+        "title": "Este proyecto no tiene un estado En progreso.",
+        "hint": "Los elementos de trabajo de este ciclo conservan el estado que tienen."
+      },
+      "mark_completed": {
+        "label": "Marcar todos los elementos sin terminar como Completado",
+        "hint": "{count, plural, one {El único elemento de trabajo sin terminar de este ciclo pasa al estado Completado.} other {Los # elementos de trabajo sin terminar de este ciclo pasan al estado Completado.}}"
+      },
+      "no_completed": {
+        "hint": "Este proyecto no tiene un estado Completado al que moverlos.",
+        "title": "{count, plural, one {# elemento de trabajo todavía no está terminado.} other {# elementos de trabajo todavía no están terminados.}}"
+      },
+      "toast": {
+        "started": "Ciclo iniciado",
+        "started_message": "«{name}» está activo.",
+        "started_moved": "«{name}» está activo. Los elementos no iniciados pasaron a En progreso.",
+        "completed": "Ciclo completado",
+        "completed_message": "«{name}» está completado.",
+        "completed_moved": "«{name}» está completado. Los elementos sin terminar pasaron a Completado.",
+        "failed": "Algo salió mal"
+      },
+      "try_again": "Inténtalo de nuevo en un momento."
+    },
+    "actions": {
+      "start": "Iniciar el ciclo",
+      "complete": "Completar el ciclo"
+    },
+    "toast": {
+      "created": "Ciclo creado",
+      "not_created": "Ciclo no creado",
+      "updated": "Ciclo actualizado",
+      "not_updated": "Ciclo no actualizado",
+      "try_again": "Inténtalo de nuevo en un momento.",
+      "dates_taken": "Otro ciclo ya ocupa esas fechas. Borra las fechas para crear un ciclo en borrador."
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "Elementos de trabajo transferidos",
+        "not_transferred": "Elementos de trabajo no transferidos",
+        "not_loaded": "No se pudo cargar el ciclo"
+      },
+      "search_placeholder": "Buscar un ciclo"
+    },
+    "drop_archived_error": "Un elemento de trabajo no se puede mover a un ciclo archivado"
   },
   "active_cycle_analytics": {
     "empty_state": {

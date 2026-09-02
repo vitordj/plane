@@ -78,7 +78,7 @@ export const useQuickActionsFactory = () => {
      */
     createStartCycleMenuItem: (handler: () => void, shouldRender: boolean = true): TContextMenuItem => ({
       key: "start-cycle",
-      title: "Start cycle",
+      title: t("cycle.actions.start"),
       icon: PlayCircle,
       action: handler,
       shouldRender,
@@ -92,7 +92,7 @@ export const useQuickActionsFactory = () => {
      */
     createEndCycleMenuItem: (handler: () => void, shouldRender: boolean = true): TContextMenuItem => ({
       key: "end-cycle",
-      title: "Complete cycle",
+      title: t("cycle.actions.complete"),
       icon: StopCircle,
       action: handler,
       shouldRender,

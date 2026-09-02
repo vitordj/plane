@@ -20,7 +20,66 @@
   },
   "cycle": {
     "label": "{count, plural, one {Zyklus} few {Zyklen} other {Zyklen}}",
-    "no_cycle": "Kein Zyklus"
+    "no_cycle": "Kein Zyklus",
+    "start_stop": {
+      "start": {
+        "title": "Zyklus starten",
+        "loading": "Wird gestartet",
+        "question": "„{name}“ starten? Damit wird {date} als Startdatum gesetzt und der Zyklus aktiv."
+      },
+      "end": {
+        "title": "Zyklus abschließen",
+        "loading": "Wird abgeschlossen",
+        "question": "„{name}“ abschließen? Damit wird {date} als Enddatum gesetzt und der Zyklus als abgeschlossen markiert."
+      },
+      "move_unstarted": {
+        "label": "Nicht begonnene Arbeitselemente auf In Bearbeitung setzen",
+        "hint": "Jedes Backlog- und nicht begonnene Arbeitselement in diesem Zyklus wechselt in den Status In Bearbeitung."
+      },
+      "no_in_progress": {
+        "title": "Dieses Projekt hat keinen Status In Bearbeitung.",
+        "hint": "Die Arbeitselemente in diesem Zyklus behalten ihren bisherigen Status."
+      },
+      "mark_completed": {
+        "label": "Alle offenen Arbeitselemente als Abgeschlossen markieren",
+        "hint": "{count, plural, one {Das eine offene Arbeitselement in diesem Zyklus wechselt in den Status Abgeschlossen.} other {Alle # offenen Arbeitselemente in diesem Zyklus wechseln in den Status Abgeschlossen.}}"
+      },
+      "no_completed": {
+        "hint": "Dieses Projekt hat keinen Status Abgeschlossen, in den sie wechseln könnten.",
+        "title": "{count, plural, one {# Arbeitselement ist noch nicht fertig.} other {# Arbeitselemente sind noch nicht fertig.}}"
+      },
+      "toast": {
+        "started": "Zyklus gestartet",
+        "started_message": "„{name}“ ist aktiv.",
+        "started_moved": "„{name}“ ist aktiv. Nicht begonnene Arbeitselemente stehen auf In Bearbeitung.",
+        "completed": "Zyklus abgeschlossen",
+        "completed_message": "„{name}“ ist abgeschlossen.",
+        "completed_moved": "„{name}“ ist abgeschlossen. Offene Arbeitselemente stehen auf Abgeschlossen.",
+        "failed": "Etwas ist schiefgelaufen"
+      },
+      "try_again": "Bitte gleich noch einmal versuchen."
+    },
+    "actions": {
+      "start": "Zyklus starten",
+      "complete": "Zyklus abschließen"
+    },
+    "toast": {
+      "created": "Zyklus erstellt",
+      "not_created": "Zyklus nicht erstellt",
+      "updated": "Zyklus aktualisiert",
+      "not_updated": "Zyklus nicht aktualisiert",
+      "try_again": "Bitte gleich noch einmal versuchen.",
+      "dates_taken": "Ein anderer Zyklus belegt diese Daten bereits. Die Daten entfernen, um einen Entwurfszyklus anzulegen."
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "Arbeitselemente übertragen",
+        "not_transferred": "Arbeitselemente nicht übertragen",
+        "not_loaded": "Zyklus konnte nicht geladen werden"
+      },
+      "search_placeholder": "Zyklus suchen"
+    },
+    "drop_archived_error": "Ein Arbeitselement lässt sich nicht in einen archivierten Zyklus verschieben"
   },
   "active_cycle_analytics": {
     "empty_state": {

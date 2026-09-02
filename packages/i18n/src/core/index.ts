@@ -5,4 +5,4 @@
  */
 
 export { i18nInstance, initPromise } from "./instance";
-export { applyDefaultLanguage, clearLanguagePreference, setLanguage } from "./set-language";
+export { applyDefaultLanguage, clearLanguagePreference, setLanguage, translate } from "./set-language";

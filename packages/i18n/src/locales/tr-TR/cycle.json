@@ -20,7 +20,66 @@
   },
   "cycle": {
     "label": "{count, plural, one {Döngü} other {Döngüler}}",
-    "no_cycle": "Döngü yok"
+    "no_cycle": "Döngü yok",
+    "start_stop": {
+      "start": {
+        "title": "Döngüyü başlat",
+        "loading": "Başlatılıyor",
+        "question": "“{name}” başlatılsın mı? Bu, {date} tarihini başlangıç tarihi yapar ve döngüyü etkin hale getirir."
+      },
+      "end": {
+        "title": "Döngüyü tamamla",
+        "loading": "Tamamlanıyor",
+        "question": "“{name}” tamamlansın mı? Bu, {date} tarihini bitiş tarihi yapar ve döngüyü tamamlandı olarak işaretler."
+      },
+      "move_unstarted": {
+        "label": "Başlanmamış iş öğelerini Devam Ediyor durumuna taşı",
+        "hint": "Bu döngüdeki her bekleme listesi ve başlanmamış iş öğesi Devam Ediyor durumuna geçer."
+      },
+      "no_in_progress": {
+        "title": "Bu projede Devam Ediyor durumu yok.",
+        "hint": "Bu döngüdeki iş öğeleri mevcut durumlarını korur."
+      },
+      "mark_completed": {
+        "label": "Bitmemiş tüm iş öğelerini Tamamlandı olarak işaretle",
+        "hint": "{count, plural, one {Bu döngüdeki # bitmemiş iş öğesi Tamamlandı durumuna geçer.} other {Bu döngüdeki # bitmemiş iş öğesi Tamamlandı durumuna geçer.}}"
+      },
+      "no_completed": {
+        "hint": "Bu projede onları taşıyabileceğiniz bir Tamamlandı durumu yok.",
+        "title": "{count, plural, one {# iş öğesi henüz bitmedi.} other {# iş öğesi henüz bitmedi.}}"
+      },
+      "toast": {
+        "started": "Döngü başlatıldı",
+        "started_message": "“{name}” etkin.",
+        "started_moved": "“{name}” etkin. Başlanmamış öğeler Devam Ediyor durumuna geçti.",
+        "completed": "Döngü tamamlandı",
+        "completed_message": "“{name}” tamamlandı.",
+        "completed_moved": "“{name}” tamamlandı. Bitmemiş öğeler Tamamlandı durumuna geçti.",
+        "failed": "Bir şeyler ters gitti"
+      },
+      "try_again": "Birazdan tekrar deneyin."
+    },
+    "actions": {
+      "start": "Döngüyü başlat",
+      "complete": "Döngüyü tamamla"
+    },
+    "toast": {
+      "created": "Döngü oluşturuldu",
+      "not_created": "Döngü oluşturulmadı",
+      "updated": "Döngü güncellendi",
+      "not_updated": "Döngü güncellenmedi",
+      "try_again": "Birazdan tekrar deneyin.",
+      "dates_taken": "Bu tarihleri başka bir döngü kaplıyor. Taslak döngü oluşturmak için tarihleri temizleyin."
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "İş öğeleri aktarıldı",
+        "not_transferred": "İş öğeleri aktarılmadı",
+        "not_loaded": "Döngü yüklenemedi"
+      },
+      "search_placeholder": "Döngü ara"
+    },
+    "drop_archived_error": "Bir iş öğesi arşivlenmiş bir döngüye taşınamaz"
   },
   "active_cycle_analytics": {
     "empty_state": {

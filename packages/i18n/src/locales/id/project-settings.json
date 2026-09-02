@@ -575,6 +575,14 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Siklus paralel",
+        "description": "Menjalankan beberapa siklus aktif sekaligus, dengan rentang tanggal yang tumpang tindih."
+      },
+      "auto_complete": {
+        "title": "Selesaikan siklus secara otomatis",
+        "description": "Menyelesaikan siklus begitu tanggal berakhirnya lewat. Saat nonaktif, siklus tetap aktif sampai seseorang menutup atau mengarsipkannya."
       }
     }
   }

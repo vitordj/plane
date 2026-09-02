@@ -57,8 +57,8 @@ function FeaturesCyclesSettingsPage({ params }: Route.ComponentProps) {
           />
           {currentProjectDetails?.cycle_view && (
             <ProjectSettingsFeatureControlItem
-              title="Parallel cycles"
-              description="Run multiple active cycles simultaneously with overlapping date ranges."
+              title={t("project_settings.cycles.parallel.title")}
+              description={t("project_settings.cycles.parallel.description")}
               featureProperty="parallel_cycles"
               projectId={projectId}
               value={!!currentProjectDetails?.parallel_cycles}

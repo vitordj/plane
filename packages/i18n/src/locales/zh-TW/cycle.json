@@ -20,7 +20,66 @@
   },
   "cycle": {
     "label": "{count, plural, one {週期} other {週期}}",
-    "no_cycle": "無週期"
+    "no_cycle": "無週期",
+    "start_stop": {
+      "start": {
+        "title": "開始週期",
+        "loading": "正在開始",
+        "question": "開始「{name}」？這會將 {date} 設為開始日期，並將週期設為進行中。"
+      },
+      "end": {
+        "title": "完成週期",
+        "loading": "正在完成",
+        "question": "完成「{name}」？這會將 {date} 設為結束日期，並將週期標記為已完成。"
+      },
+      "move_unstarted": {
+        "label": "將未開始的工作事項移到進行中",
+        "hint": "此週期中所有待辦與未開始的工作事項都會轉到進行中狀態。"
+      },
+      "no_in_progress": {
+        "title": "此專案沒有進行中狀態。",
+        "hint": "此週期中的工作事項會維持現有狀態。"
+      },
+      "mark_completed": {
+        "label": "將所有未完成的工作事項標記為已完成",
+        "hint": "{count, plural, one {此週期中 # 個未完成的工作事項會轉到已完成狀態。} other {此週期中 # 個未完成的工作事項會轉到已完成狀態。}}"
+      },
+      "no_completed": {
+        "hint": "此專案沒有可供轉入的已完成狀態。",
+        "title": "{count, plural, one {還有 # 個工作事項尚未完成。} other {還有 # 個工作事項尚未完成。}}"
+      },
+      "toast": {
+        "started": "週期已開始",
+        "started_message": "「{name}」已進入進行中。",
+        "started_moved": "「{name}」已進入進行中。未開始的工作事項已轉到進行中。",
+        "completed": "週期已完成",
+        "completed_message": "「{name}」已完成。",
+        "completed_moved": "「{name}」已完成。未完成的工作事項已轉到已完成。",
+        "failed": "發生問題"
+      },
+      "try_again": "請稍後再試。"
+    },
+    "actions": {
+      "start": "開始週期",
+      "complete": "完成週期"
+    },
+    "toast": {
+      "created": "已建立週期",
+      "not_created": "未建立週期",
+      "updated": "已更新週期",
+      "not_updated": "未更新週期",
+      "try_again": "請稍後再試。",
+      "dates_taken": "已有其他週期佔用這些日期。清除日期即可建立草稿週期。"
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "已轉移工作事項",
+        "not_transferred": "未轉移工作事項",
+        "not_loaded": "無法載入週期"
+      },
+      "search_placeholder": "搜尋週期"
+    },
+    "drop_archived_error": "工作事項無法移入已封存的週期"
   },
   "active_cycle_analytics": {
     "empty_state": {

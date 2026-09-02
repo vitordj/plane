@@ -20,7 +20,66 @@
   },
   "cycle": {
     "label": "{count, plural, one {Cycle} other {Cycles}}",
-    "no_cycle": "Pas de cycle"
+    "no_cycle": "Pas de cycle",
+    "start_stop": {
+      "start": {
+        "title": "Démarrer le cycle",
+        "loading": "Démarrage",
+        "question": "Démarrer « {name} » ? Cela définit {date} comme date de début et rend le cycle actif."
+      },
+      "end": {
+        "title": "Terminer le cycle",
+        "loading": "Clôture",
+        "question": "Terminer « {name} » ? Cela définit {date} comme date de fin et marque le cycle comme terminé."
+      },
+      "move_unstarted": {
+        "label": "Déplacer les éléments non démarrés vers En cours",
+        "hint": "Chaque élément de travail du backlog ou non démarré de ce cycle passe à l’état En cours."
+      },
+      "no_in_progress": {
+        "title": "Ce projet n’a pas d’état En cours.",
+        "hint": "Les éléments de travail de ce cycle conservent leur état actuel."
+      },
+      "mark_completed": {
+        "label": "Marquer tous les éléments inachevés comme Terminé",
+        "hint": "{count, plural, one {L’unique élément de travail inachevé de ce cycle passe à l’état Terminé.} many {Les # éléments de travail inachevés de ce cycle passent à l’état Terminé.} other {Les # éléments de travail inachevés de ce cycle passent à l’état Terminé.}}"
+      },
+      "no_completed": {
+        "hint": "Ce projet n’a pas d’état Terminé vers lequel les déplacer.",
+        "title": "{count, plural, one {# élément de travail n’est pas encore terminé.} many {# éléments de travail ne sont pas encore terminés.} other {# éléments de travail ne sont pas encore terminés.}}"
+      },
+      "toast": {
+        "started": "Cycle démarré",
+        "started_message": "« {name} » est actif.",
+        "started_moved": "« {name} » est actif. Les éléments non démarrés sont passés à En cours.",
+        "completed": "Cycle terminé",
+        "completed_message": "« {name} » est terminé.",
+        "completed_moved": "« {name} » est terminé. Les éléments inachevés sont passés à Terminé.",
+        "failed": "Une erreur est survenue"
+      },
+      "try_again": "Réessayez dans un instant."
+    },
+    "actions": {
+      "start": "Démarrer le cycle",
+      "complete": "Terminer le cycle"
+    },
+    "toast": {
+      "created": "Cycle créé",
+      "not_created": "Cycle non créé",
+      "updated": "Cycle mis à jour",
+      "not_updated": "Cycle non mis à jour",
+      "try_again": "Réessayez dans un instant.",
+      "dates_taken": "Un autre cycle couvre déjà ces dates. Effacez les dates pour créer un cycle brouillon."
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "Éléments de travail transférés",
+        "not_transferred": "Éléments de travail non transférés",
+        "not_loaded": "Impossible de charger le cycle"
+      },
+      "search_placeholder": "Rechercher un cycle"
+    },
+    "drop_archived_error": "Un élément de travail ne peut pas être déplacé vers un cycle archivé"
   },
   "active_cycle_analytics": {
     "empty_state": {

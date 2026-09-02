@@ -8,6 +8,7 @@ import { useState } from "react";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 import { AlertCircle } from "lucide-react";
+import { useTranslation } from "@plane/i18n";
 import { SearchIcon, TransferIcon, CloseIcon, CycleGroupIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { EIssuesStoreType } from "@plane/types";
@@ -24,6 +25,8 @@ type Props = {
 };
 
 export const TransferIssuesModal = observer(function TransferIssuesModal(props: Props) {
+  // translation
+  const { t } = useTranslation();
   const { isOpen, handleClose, cycleId } = props;
   // states
   const [query, setQuery] = useState("");
@@ -43,15 +46,14 @@ export const TransferIssuesModal = observer(function TransferIssuesModal(props: 
       await transferIssuesFromCycle(workspaceSlug.toString(), projectId.toString(), cycleId.toString(), payload);
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Success!",
-        message: "Work items have been transferred successfully",
+        title: t("cycle.transfer.toast.transferred"),
       });
       await getCycleDetails(payload.new_cycle_id);
     } catch {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Unable to transfer work items. Please try again.",
+        title: t("cycle.transfer.toast.not_transferred"),
+        message: t("cycle.toast.try_again"),
       });
     }
   };
@@ -67,8 +69,8 @@ export const TransferIssuesModal = observer(function TransferIssuesModal(props: 
     await Promise.all(cyclesFetch).catch((error) => {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error",
-        message: error.error || "Unable to fetch cycle details",
+        title: t("cycle.transfer.toast.not_loaded"),
+        message: error.error || t("cycle.toast.try_again"),
       });
     });
   };
@@ -95,7 +97,7 @@ export const TransferIssuesModal = observer(function TransferIssuesModal(props: 
           <SearchIcon className="h-4 w-4 text-secondary" />
           <input
             className="text-13 outline-none"
-            placeholder="Search for a cycle..."
+            placeholder={t("cycle.transfer.search_placeholder")}
             onChange={(e) => setQuery(e.target.value)}
             value={query}
           />

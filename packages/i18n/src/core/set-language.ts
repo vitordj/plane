@@ -98,3 +98,19 @@ export async function clearLanguagePreference(fallback: TLanguage): Promise<void
   }
   await applyLanguage(fallback);
 }
+
+/**
+ * @description Translates outside React, for the handful of modules that build
+ * user-facing strings without a component to hold a hook — the same escape
+ * hatch `@/lib/store-context` provides for MobX.
+ *
+ * Prefer `useTranslation()` everywhere a hook is possible: this reads the
+ * language at call time and does not re-render anything on its own, so it is
+ * only correct where the caller is already re-evaluated on each render.
+ * @param key Catalogue key.
+ * @param params ICU values.
+ */
+export function translate(key: string, params?: Record<string, unknown>): string {
+  const value = i18nInstance.t(key, params);
+  return typeof value === "string" ? value : key;
+}

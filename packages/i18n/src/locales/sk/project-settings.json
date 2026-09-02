@@ -575,6 +575,14 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Paralelné cykly",
+        "description": "Mať súčasne aktívnych viac cyklov s prekrývajúcimi sa obdobiami."
+      },
+      "auto_complete": {
+        "title": "Automatické dokončenie cyklov",
+        "description": "Dokončiť cyklus automaticky, len čo uplynie jeho dátum ukončenia. Keď je vypnuté, cyklus zostáva aktívny, kým ho niekto neuzavrie alebo nearchivuje."
       }
     }
   }

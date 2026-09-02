@@ -575,6 +575,14 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Ciclos paralelos",
+        "description": "Ejecutar varios ciclos activos a la vez, con periodos que se solapan."
+      },
+      "auto_complete": {
+        "title": "Completar los ciclos automáticamente",
+        "description": "Completar un ciclo en cuanto pase su fecha de fin. Si está desactivado, el ciclo sigue activo hasta que alguien lo cierre o lo archive."
       }
     }
   }

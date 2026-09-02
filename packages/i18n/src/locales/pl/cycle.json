@@ -20,7 +20,66 @@
   },
   "cycle": {
     "label": "{count, plural, one {Cykl} few {Cykle} other {Cyklów}}",
-    "no_cycle": "Brak cyklu"
+    "no_cycle": "Brak cyklu",
+    "start_stop": {
+      "start": {
+        "title": "Rozpocznij cykl",
+        "loading": "Rozpoczynanie",
+        "question": "Rozpocząć „{name}”? Ustawi to {date} jako datę rozpoczęcia i uczyni cykl aktywnym."
+      },
+      "end": {
+        "title": "Zakończ cykl",
+        "loading": "Kończenie",
+        "question": "Zakończyć „{name}”? Ustawi to {date} jako datę zakończenia i oznaczy cykl jako ukończony."
+      },
+      "move_unstarted": {
+        "label": "Przenieś nierozpoczęte elementy pracy do stanu W trakcie",
+        "hint": "Każdy element pracy z backlogu i każdy nierozpoczęty element w tym cyklu przejdzie do stanu W trakcie."
+      },
+      "no_in_progress": {
+        "title": "Ten projekt nie ma stanu W trakcie.",
+        "hint": "Elementy pracy w tym cyklu zachowają swój dotychczasowy stan."
+      },
+      "mark_completed": {
+        "label": "Oznacz wszystkie nieukończone elementy pracy jako Ukończone",
+        "hint": "{count, plural, one {Jedyny nieukończony element pracy w tym cyklu przejdzie do stanu Ukończone.} few {Wszystkie # nieukończone elementy pracy w tym cyklu przejdą do stanu Ukończone.} many {Wszystkie # nieukończonych elementów pracy w tym cyklu przejdzie do stanu Ukończone.} other {Wszystkie # nieukończonego elementu pracy w tym cyklu przejdzie do stanu Ukończone.}}"
+      },
+      "no_completed": {
+        "hint": "Ten projekt nie ma stanu Ukończone, do którego można by je przenieść.",
+        "title": "{count, plural, one {# element pracy nie jest jeszcze gotowy.} few {# elementy pracy nie są jeszcze gotowe.} many {# elementów pracy nie jest jeszcze gotowych.} other {# elementu pracy nie jest jeszcze gotowe.}}"
+      },
+      "toast": {
+        "started": "Cykl rozpoczęty",
+        "started_message": "„{name}” jest aktywny.",
+        "started_moved": "„{name}” jest aktywny. Nierozpoczęte elementy przeszły do stanu W trakcie.",
+        "completed": "Cykl ukończony",
+        "completed_message": "„{name}” jest ukończony.",
+        "completed_moved": "„{name}” jest ukończony. Nieukończone elementy przeszły do stanu Ukończone.",
+        "failed": "Coś poszło nie tak"
+      },
+      "try_again": "Spróbuj ponownie za chwilę."
+    },
+    "actions": {
+      "start": "Rozpocznij cykl",
+      "complete": "Zakończ cykl"
+    },
+    "toast": {
+      "created": "Cykl utworzony",
+      "not_created": "Cykl nie został utworzony",
+      "updated": "Cykl zaktualizowany",
+      "not_updated": "Cykl nie został zaktualizowany",
+      "try_again": "Spróbuj ponownie za chwilę.",
+      "dates_taken": "Inny cykl zajmuje już te daty. Usuń daty, aby utworzyć cykl roboczy."
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "Elementy pracy przeniesione",
+        "not_transferred": "Elementy pracy nie zostały przeniesione",
+        "not_loaded": "Nie udało się wczytać cyklu"
+      },
+      "search_placeholder": "Szukaj cyklu"
+    },
+    "drop_archived_error": "Elementu pracy nie można przenieść do zarchiwizowanego cyklu"
   },
   "active_cycle_analytics": {
     "empty_state": {

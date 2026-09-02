@@ -575,6 +575,14 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Paralel döngüler",
+        "description": "Tarih aralıkları çakışan birden fazla döngüyü aynı anda etkin tutun."
+      },
+      "auto_complete": {
+        "title": "Döngüleri otomatik tamamla",
+        "description": "Bitiş tarihi geçtiği anda döngüyü otomatik tamamla. Kapalıyken döngü, biri kapatana veya arşivleyene kadar etkin kalır."
       }
     }
   }

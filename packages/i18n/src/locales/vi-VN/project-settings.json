@@ -575,6 +575,14 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Chu kỳ song song",
+        "description": "Chạy nhiều chu kỳ hoạt động cùng lúc, với các khoảng thời gian chồng lấn."
+      },
+      "auto_complete": {
+        "title": "Tự động hoàn thành chu kỳ",
+        "description": "Tự động hoàn thành chu kỳ ngay khi qua ngày kết thúc. Khi tắt, chu kỳ vẫn hoạt động cho đến khi có người đóng hoặc lưu trữ nó."
       }
     }
   }

@@ -575,6 +575,14 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Cicluri paralele",
+        "description": "Rulați mai multe cicluri active în același timp, cu perioade care se suprapun."
+      },
+      "auto_complete": {
+        "title": "Finalizarea automată a ciclurilor",
+        "description": "Finalizați un ciclu automat de îndată ce trece data lui de sfârșit. Dezactivat, ciclul rămâne activ până când cineva îl închide sau îl arhivează."
       }
     }
   }

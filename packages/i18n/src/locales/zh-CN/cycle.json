@@ -20,7 +20,66 @@
   },
   "cycle": {
     "label": "{count, plural, one {周期} other {周期}}",
-    "no_cycle": "无周期"
+    "no_cycle": "无周期",
+    "start_stop": {
+      "start": {
+        "title": "开始周期",
+        "loading": "正在开始",
+        "question": "开始“{name}”？这会将 {date} 设为开始日期，并将周期置为进行中。"
+      },
+      "end": {
+        "title": "完成周期",
+        "loading": "正在完成",
+        "question": "完成“{name}”？这会将 {date} 设为结束日期，并将周期标记为已完成。"
+      },
+      "move_unstarted": {
+        "label": "将未开始的工作项移到进行中",
+        "hint": "此周期中所有待办和未开始的工作项都会转到进行中状态。"
+      },
+      "no_in_progress": {
+        "title": "此项目没有进行中状态。",
+        "hint": "此周期中的工作项会保持现有状态。"
+      },
+      "mark_completed": {
+        "label": "将所有未完成的工作项标记为已完成",
+        "hint": "{count, plural, one {此周期中 # 个未完成的工作项会转到已完成状态。} other {此周期中 # 个未完成的工作项会转到已完成状态。}}"
+      },
+      "no_completed": {
+        "hint": "此项目没有可供转入的已完成状态。",
+        "title": "{count, plural, one {还有 # 个工作项没有完成。} other {还有 # 个工作项没有完成。}}"
+      },
+      "toast": {
+        "started": "周期已开始",
+        "started_message": "“{name}”已进入进行中。",
+        "started_moved": "“{name}”已进入进行中。未开始的工作项已转到进行中。",
+        "completed": "周期已完成",
+        "completed_message": "“{name}”已完成。",
+        "completed_moved": "“{name}”已完成。未完成的工作项已转到已完成。",
+        "failed": "出了点问题"
+      },
+      "try_again": "请稍后重试。"
+    },
+    "actions": {
+      "start": "开始周期",
+      "complete": "完成周期"
+    },
+    "toast": {
+      "created": "已创建周期",
+      "not_created": "未创建周期",
+      "updated": "已更新周期",
+      "not_updated": "未更新周期",
+      "try_again": "请稍后重试。",
+      "dates_taken": "已有其他周期占用这些日期。清除日期即可创建草稿周期。"
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "已转移工作项",
+        "not_transferred": "未转移工作项",
+        "not_loaded": "无法加载周期"
+      },
+      "search_placeholder": "搜索周期"
+    },
+    "drop_archived_error": "工作项无法移入已归档的周期"
   },
   "active_cycle_analytics": {
     "empty_state": {

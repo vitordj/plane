@@ -575,6 +575,14 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Parallel cycles",
+        "description": "Run several active cycles at once, with overlapping date ranges."
+      },
+      "auto_complete": {
+        "title": "Auto-complete cycles",
+        "description": "Complete a cycle automatically once its end date passes. While off, a cycle stays active until somebody closes or archives it."
       }
     }
   }

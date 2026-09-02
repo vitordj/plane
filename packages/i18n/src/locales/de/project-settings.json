@@ -575,6 +575,14 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Parallele Zyklen",
+        "description": "Mehrere Zyklen gleichzeitig aktiv halten, mit überlappenden Zeiträumen."
+      },
+      "auto_complete": {
+        "title": "Zyklen automatisch abschließen",
+        "description": "Einen Zyklus automatisch abschließen, sobald sein Enddatum vorbei ist. Ausgeschaltet bleibt ein Zyklus aktiv, bis ihn jemand schließt oder archiviert."
       }
     }
   }

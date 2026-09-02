@@ -575,6 +575,14 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Cycles parallèles",
+        "description": "Faire tourner plusieurs cycles actifs à la fois, avec des périodes qui se chevauchent."
+      },
+      "auto_complete": {
+        "title": "Clôture automatique des cycles",
+        "description": "Clôturer un cycle automatiquement une fois sa date de fin passée. Désactivé, un cycle reste actif jusqu’à ce que quelqu’un le clôture ou l’archive."
       }
     }
   }
