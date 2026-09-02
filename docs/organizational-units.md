@@ -175,16 +175,16 @@ rules keep it safe to point at a workspace already in use:
   workspace members are recorded and reported, and become members of their
   units by themselves once they join.
 
-What a unit *grants* — its projects and their inherited roles — stays a Plane
+What a unit _grants_ — its projects and their inherited roles — stays a Plane
 decision that no SCIM call can reach. Setup, endpoints and troubleshooting are
 in [entra-directory-sync.md](./entra-directory-sync.md).
 
 ## Settings
 
-| Setting                   | Default | Effect                                                                                                                                                                                                                                                                                                                                                          |
-| ------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ORCA_ORG_UNITS_ENABLED`  | `1`     | Kill switch. Set to `0` and every `/api/orca/` organizational-unit route answers 404, the reconcile management command refuses to run, and the UI hides the layer. Existing inherited `ProjectMember` rows are left exactly as they are — the switch stops the layer acting, it does not withdraw access it already granted. Re-enable and reconcile to resume. |
-| `ORCA_ORG_SYNC_MAX_EDGES` | `100`   | Fan-out threshold for inline vs. Celery reconciliation.                                                                                                                                                                                                                                                                                                         |
+| Setting                   | Default | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ORCA_ORG_UNITS_ENABLED`  | `1`     | Kill switch. Set to `0` and every `/api/orca/` organizational-unit route answers 404 — the directory connection endpoints and the SCIM provisioning endpoints included — the reconcile management command refuses to run, and the UI hides the layer. Existing inherited `ProjectMember` rows are left exactly as they are — the switch stops the layer acting, it does not withdraw access it already granted. Re-enable and reconcile to resume. |
+| `ORCA_ORG_SYNC_MAX_EDGES` | `100`   | Fan-out threshold for inline vs. Celery reconciliation.                                                                                                                                                                                                                                                                                                                                                                                            |
 
 Directory provisioning is configured per workspace, not per instance — a
 workspace admin issues the SCIM token from **Workspace settings → Areas**.

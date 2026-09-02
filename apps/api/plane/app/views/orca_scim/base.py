@@ -37,6 +37,7 @@ from rest_framework.views import APIView
 
 # Module imports
 from plane.db.models import OrganizationalDirectoryConnection, Workspace, hash_directory_token
+from plane.app.views.organizational_unit import organizational_units_enabled
 
 SCIM_CONTENT_TYPE = "application/scim+json"
 
@@ -232,6 +233,13 @@ class SCIMBaseView(APIView):
 
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
+        # The organizational layer's kill switch closes provisioning too: a
+        # SCIM write is a unit membership write, and an operator who turned the
+        # layer off must not find Entra still filling units through this door.
+        # Checked before authentication so the answer is the same 404 the rest
+        # of the layer gives, whatever token the caller holds.
+        if not organizational_units_enabled():
+            raise SCIMError("The organizational layer is disabled on this instance", status.HTTP_404_NOT_FOUND)
         self.workspace = None
         self.connection = None
         if self.requires_authentication:

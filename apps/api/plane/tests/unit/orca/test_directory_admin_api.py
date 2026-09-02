@@ -152,3 +152,52 @@ class TestDirectoryResyncAndReport:
 
         assert response.status_code == 200
         assert [row["user_name"] for row in response.data] == ["nobody@plane.so"]
+
+
+@pytest.mark.unit
+class TestFeatureFlagClosesTheDirectory:
+    """
+    A directory connection exists only to feed units, so the layer's kill
+    switch has to close it too. Otherwise an operator who set
+    ``ORCA_ORG_UNITS_ENABLED=0`` would still find the token endpoint minting
+    credentials that grant project access through a layer they believe is off.
+    """
+
+    def test_the_connection_cannot_be_read_when_the_layer_is_disabled(
+        self, settings, admin_client, workspace_with_members
+    ):
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        response = admin_client.get(directory_url(workspace_with_members.slug))
+
+        # 404, not 403: a disabled feature reads as absent.
+        assert response.status_code == 404
+        # The read normally creates the disabled placeholder connection; when
+        # the layer is off nothing must be written either.
+        assert not OrganizationalDirectoryConnection.objects.filter(workspace=workspace_with_members).exists()
+
+    def test_no_token_can_be_issued_when_the_layer_is_disabled(self, settings, admin_client, workspace_with_members):
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        response = admin_client.post(directory_token_url(workspace_with_members.slug))
+
+        assert response.status_code == 404
+        assert not OrganizationalDirectoryConnection.objects.filter(workspace=workspace_with_members).exists()
+
+    def test_resync_and_the_unresolved_report_are_closed_too(
+        self, settings, admin_client, workspace_with_members, directory_connection
+    ):
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        resync = admin_client.post(directory_resync_url(workspace_with_members.slug))
+        unresolved = admin_client.get(directory_unresolved_url(workspace_with_members.slug))
+
+        assert resync.status_code == 404
+        assert unresolved.status_code == 404
+
+    def test_the_directory_works_normally_while_enabled(self, settings, admin_client, workspace_with_members):
+        settings.ORCA_ORG_UNITS_ENABLED = True
+
+        response = admin_client.get(directory_url(workspace_with_members.slug))
+
+        assert response.status_code == 200

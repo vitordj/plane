@@ -13,6 +13,10 @@ could not be turned into workspace access.
 Everything here is workspace-Admin only: the SCIM token grants a machine the
 power to add people to units, which cascades into project access, so issuing
 one is an authorization decision of the same weight as editing a unit.
+
+Every endpoint also sits behind the organizational layer's kill switch: a
+directory connection exists only to feed units, so ``ORCA_ORG_UNITS_ENABLED=0``
+closes it along with the rest of the layer.
 """
 
 # Django imports
@@ -32,6 +36,7 @@ from plane.app.services.orca import project_workspace, unresolved_identities
 from plane.db.models import OrganizationalDirectoryConnection, Workspace
 
 from .base import BaseAPIView
+from .organizational_unit import OrganizationalUnitFeatureMixin
 
 # Fields an admin may set. The token, its metadata and the sync counters are
 # server-owned, so they are not accepted from the request body.
@@ -58,7 +63,7 @@ def get_or_create_connection(workspace_id):
     return connection
 
 
-class OrganizationalDirectoryConnectionEndpoint(BaseAPIView):
+class OrganizationalDirectoryConnectionEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
     """Read and configure the workspace's directory connection."""
 
     @allow_permission([ROLE.ADMIN], level="WORKSPACE")
@@ -106,7 +111,7 @@ class OrganizationalDirectoryConnectionEndpoint(BaseAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class OrganizationalDirectoryTokenEndpoint(BaseAPIView):
+class OrganizationalDirectoryTokenEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
     """Mint and revoke the SCIM bearer token."""
 
     @allow_permission([ROLE.ADMIN], level="WORKSPACE")
@@ -155,7 +160,7 @@ class OrganizationalDirectoryTokenEndpoint(BaseAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class OrganizationalDirectoryResyncEndpoint(BaseAPIView):
+class OrganizationalDirectoryResyncEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
     """Re-run the projection for the whole workspace."""
 
     @allow_permission([ROLE.ADMIN], level="WORKSPACE")
@@ -180,7 +185,7 @@ class OrganizationalDirectoryResyncEndpoint(BaseAPIView):
         return Response(result.as_dict(), status=status.HTTP_200_OK)
 
 
-class OrganizationalDirectoryUnresolvedEndpoint(BaseAPIView):
+class OrganizationalDirectoryUnresolvedEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
     """Report the directory identities that granted nothing."""
 
     @allow_permission([ROLE.ADMIN], level="WORKSPACE")

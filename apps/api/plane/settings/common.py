@@ -353,6 +353,9 @@ CELERY_IMPORTS = (
     # module has to be imported explicitly or the worker answers a queued
     # reconciliation with "Received unregistered task".
     "plane.bgtasks.organizational_unit_task",
+    # The hourly beat entry in plane/celery.py names this module's task; the
+    # worker can only run it if it imported the module at startup.
+    "plane.bgtasks.organizational_directory_task",
 )
 
 FILE_SIZE_LIMIT = int(os.environ.get("FILE_SIZE_LIMIT", 5242880))

@@ -580,3 +580,54 @@ class TestScimGroups:
         response = scim_client.get(scim_group_url(workspace_with_members.slug, foreign_unit.id))
 
         assert response.status_code == 404
+
+
+@pytest.mark.unit
+class TestFeatureFlagClosesProvisioning:
+    """
+    A SCIM write is a unit membership write. When the organizational layer is
+    switched off, Entra must not keep filling units through this door — and
+    the answer has to be the layer's 404 rather than a 401, so that a valid
+    token does not read as "wrong token" in the Entra provisioning log.
+    """
+
+    def test_a_valid_token_gets_404_when_the_layer_is_disabled(
+        self, settings, scim_client, workspace_with_members, directory_connection
+    ):
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        response = scim_client.get(scim_users_url(workspace_with_members.slug))
+
+        assert response.status_code == 404
+        assert response.data["schemas"] == ["urn:ietf:params:scim:api:messages:2.0:Error"]
+
+    def test_a_provisioning_write_is_refused_when_the_layer_is_disabled(
+        self, settings, scim_client, workspace_with_members, directory_connection
+    ):
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        response = scim_client.post(
+            scim_users_url(workspace_with_members.slug),
+            {
+                "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+                "userName": "closed@example.com",
+                "active": True,
+            },
+            format="json",
+        )
+
+        assert response.status_code == 404
+        assert not OrganizationalDirectoryIdentity.objects.filter(
+            workspace=workspace_with_members, user_name="closed@example.com"
+        ).exists()
+
+    def test_discovery_is_closed_as_well(self, settings, scim_client, workspace_with_members, directory_connection):
+        # Discovery is what Entra's "Test Connection" calls; it must not report
+        # a healthy endpoint for a layer that is off.
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        response = scim_client.get(
+            f"/api/orca/scim/v2/workspaces/{workspace_with_members.slug}/ServiceProviderConfig"
+        )
+
+        assert response.status_code == 404
