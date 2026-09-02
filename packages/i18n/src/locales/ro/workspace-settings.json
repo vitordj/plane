@@ -496,7 +496,140 @@
         "heading": "Zone",
         "description": "Grupați persoanele în zone și acordați fiecărei zone acces la proiectele sale într-un singur pas.",
         "add": "Zonă nouă",
-        "disabled": "Zonele sunt dezactivate în această instanță. Un administrator le poate activa setând ORCA_ORG_UNITS_ENABLED=1."
+        "disabled": "Zonele sunt dezactivate în această instanță. Un administrator le poate activa setând ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Încercați din nou peste câteva momente.",
+        "toast": {
+          "saved": "Salvat",
+          "not_saved": "Nu s-a salvat",
+          "role_unchanged": "Rol neschimbat"
+        },
+        "list": {
+          "empty_title": "Nicio zonă încă.",
+          "empty_description": "O zonă grupează persoanele care lucrează împreună — Conformitate, Vânzări, Back-office — și le acordă acces la proiectele sale într-un singur pas.",
+          "synced_badge": "Sincronizat",
+          "counts": "{members, plural, one {# persoană} few {# persoane} other {# de persoane}} · {projects, plural, one {# proiect} few {# proiecte} other {# de proiecte}}",
+          "delete_aria": "Ștergeți {name}",
+          "delete_title": "Ștergeți {name}?",
+          "delete_content": "Toate persoanele din această zonă pierd accesul la proiecte pe care ea li l-a acordat. Accesul acordat de o altă zonă sau setat manual pe un proiect se păstrează.",
+          "delete_content_synced": "Toate persoanele din această zonă pierd accesul la proiecte pe care ea li l-a acordat. Această zonă este sincronizată din directorul dumneavoastră, așa că următoarea sincronizare o va crea din nou — eliminați în schimb grupul din director dacă doriți să dispară definitiv.",
+          "delete_loading": "Se șterge...",
+          "delete_confirm": "Ștergeți zona",
+          "toast": {
+            "deleted_title": "Zonă ștearsă",
+            "deleted_message": "Accesul la proiecte acordat de {name} a fost retras. Accesul acordat în alt mod se păstrează.",
+            "not_deleted": "Nu s-a șters"
+          }
+        },
+        "form": {
+          "edit_title": "Editați zona",
+          "name_placeholder": "Conformitate",
+          "description_placeholder": "De ce este responsabilă această zonă",
+          "create": "Creați zona",
+          "toast": {
+            "updated": "{name} a fost actualizată.",
+            "created_title": "Creată",
+            "created": "{name} este gata de utilizare.",
+            "name_taken": "Există deja o zonă cu acest nume. Alegeți un alt nume."
+          }
+        },
+        "detail": {
+          "tab_people": "Persoane",
+          "back_aria": "Înapoi la toate zonele"
+        },
+        "members": {
+          "select_person": "Selectați o persoană",
+          "no_addable": "Toate persoanele din acest spațiu de lucru fac deja parte din această zonă",
+          "add": "Adăugați în zonă",
+          "empty": "Nimeni nu face încă parte din această zonă. Adăugați persoane pentru a le acorda acces la proiectele sale.",
+          "directory_badge": "Director",
+          "remove_aria": "Eliminați {name} din această zonă",
+          "lead_note": "Liderul unei zone gestionează doar zona în sine. Rolul de administrator de proiect se acordă separat, pe proiect.",
+          "directory_note": "Persoanele marcate {badge} provin de la furnizorul dumneavoastră de identitate. Eliminarea lor de aici durează doar până la următoarea sincronizare — scoateți-le în schimb din grupul de la sursă. Persoanele adăugate manual nu sunt niciodată eliminate de o sincronizare.",
+          "toast": {
+            "added_title": "Membru adăugat",
+            "added": "Persoana are acum acces la proiectele acestei zone.",
+            "not_added": "Nu s-a adăugat",
+            "one_lead": "O zonă poate avea un singur lider la un moment dat.",
+            "removed_title": "Membru eliminat",
+            "removed": "{name} păstrează orice acces la proiecte acordat în afara acestei zone.",
+            "not_removed": "Nu s-a eliminat"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Poate modifica setările și membrii proiectului",
+          "role_member_hint": "Poate crea și edita activități",
+          "role_guest_hint": "Acces limitat",
+          "select_project": "Selectați un proiect",
+          "no_linkable": "Toate proiectele sunt deja asociate acestei zone",
+          "link": "Asociați un proiect",
+          "empty": "Niciun proiect asociat încă. Asociați unul pentru a acorda membrilor acestei zone acces la el.",
+          "unlink_aria": "Anulați asocierea proiectului {name} cu această zonă",
+          "role_note": "Rolul unei persoane este cel mai înalt acordat de zonele sale, limitat de rolul său în spațiul de lucru. Rolurile setate manual pe un proiect nu sunt niciodată coborâte aici.",
+          "toast": {
+            "linked_title": "Proiect asociat",
+            "linked": "Toate persoanele din această zonă au acum acces la el.",
+            "not_linked": "Nu s-a asociat",
+            "unlinked_title": "Asociere anulată",
+            "unlinked": "Accesul la {name} acordat în afara acestei zone se păstrează.",
+            "not_unlinked": "Asocierea nu s-a anulat"
+          }
+        },
+        "directory_sync": {
+          "heading": "Sincronizare cu directorul",
+          "description": "Lăsați Microsoft Entra ID să mențină actualizată componența zonelor. Entra decide cine aparține unei zone; proiectele pe care le acordă o zonă, și cu ce rol, rămân setate aici.",
+          "never": "Niciodată",
+          "copy": "Copiați",
+          "provisioning_on": "Provizionarea este activată.",
+          "provisioning_off": "Provizionarea este dezactivată.",
+          "no_token_warning": "Emiteți un token înainte de a activa provizionarea — fără el, Entra nu se poate autentifica.",
+          "tenant_url": "URL tenant",
+          "tenant_url_hint": "Lipiți această valoare în Provisioning → Admin Credentials din aplicația de întreprindere Entra.",
+          "secret_token": "Token secret",
+          "token_installed": "Un token care începe cu {prefix}… este instalat. Ultima utilizare: {last_used}.",
+          "no_token": "Nu este instalat niciun token.",
+          "rotate_token": "Rotiți tokenul",
+          "issue_token": "Emiteți token",
+          "revoke": "Revocați",
+          "rotate_hint": "Rotirea intră în vigoare imediat, așa că provizionarea eșuează până când Entra primește noul token.",
+          "last_sync": "Ultima sincronizare",
+          "resync_now": "Resincronizați acum",
+          "summary_added": "{count, plural, one {# adăugare} few {# adăugări} other {# de adăugări}}",
+          "summary_restored": "{count, plural, one {# restaurare} few {# restaurări} other {# de restaurări}}",
+          "summary_withdrawn": "{count, plural, one {# retragere} few {# retrageri} other {# de retrageri}}",
+          "resync_hint": "Resincronizarea reia ce a trimis deja directorul — nu apelează Entra. Folosiți-o după ce ați invitat o persoană pe care directorul o transmisese deja.",
+          "unresolved_heading": "Transmise de director, dar nu în acest spațiu de lucru ({count})",
+          "unresolved_empty": "Toate persoanele trimise de director sunt membri activi ai acestui spațiu de lucru.",
+          "not_workspace_member": "Nu este membru al spațiului de lucru",
+          "inactive_in_directory": "Inactiv în director",
+          "unresolved_hint": "Invitați aceste persoane în spațiul de lucru și se vor alătura automat zonelor lor, sau eliminați-le din grupul din Entra.",
+          "auto_create_title": "Creați zone pentru grupurile noi",
+          "auto_create_hint": "Când este dezactivată, directorul poate completa doar zonele pe care le-ați creat și denumit corespunzător.",
+          "auto_create_saved": "S-a salvat modul de tratare a grupurilor noi din director.",
+          "deprovision_title": "Permiteți directorului să elimine persoane",
+          "deprovision_hint": "Când este dezactivată, sincronizarea doar adaugă. Persoanele adăugate manual nu sunt eliminate în niciun caz.",
+          "deprovision_saved": "S-a salvat modul de tratare a eliminărilor din director.",
+          "toast": {
+            "copied_title": "Copiat",
+            "copied": "{label} a fost copiat în clipboard.",
+            "not_copied_title": "Nu s-a putut copia",
+            "not_copied": "Selectați și copiați manual {label}.",
+            "load_failed_title": "Nu s-a putut încărca conexiunea cu directorul",
+            "load_failed": "Încercați din nou peste câteva momente.",
+            "save_failed": "Modificarea nu a putut fi salvată. Încercați din nou.",
+            "token_issued_title": "Token emis",
+            "token_issued": "Copiați-l acum — este afișat doar de această dată.",
+            "token_not_issued_title": "Nu s-a emis",
+            "token_not_issued": "Tokenul nu a putut fi creat.",
+            "token_revoked_title": "Token revocat",
+            "token_revoked": "Provizionarea este dezactivată până la emiterea unui nou token.",
+            "token_not_revoked_title": "Nu s-a revocat",
+            "token_not_revoked": "Tokenul nu a putut fi revocat.",
+            "resynced_title": "Resincronizat",
+            "resynced": "{added, plural, one {# adăugare} few {# adăugări} other {# de adăugări}}, {withdrawn, plural, one {# retragere} few {# retrageri} other {# de retrageri}}.",
+            "not_resynced_title": "Nu s-a resincronizat",
+            "not_resynced": "Resincronizarea nu a putut fi finalizată."
+          }
+        }
       }
     },
     "empty_state": {

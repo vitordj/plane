@@ -496,7 +496,140 @@
         "heading": "Khu vực",
         "description": "Nhóm mọi người vào các khu vực và cấp cho mỗi khu vực quyền truy cập vào các dự án của nó trong một bước.",
         "add": "Khu vực mới",
-        "disabled": "Khu vực đã bị tắt trên phiên bản này. Quản trị viên có thể bật bằng cách đặt ORCA_ORG_UNITS_ENABLED=1."
+        "disabled": "Khu vực đã bị tắt trên phiên bản này. Quản trị viên có thể bật bằng cách đặt ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Vui lòng thử lại sau một lát.",
+        "toast": {
+          "saved": "Đã lưu",
+          "not_saved": "Chưa lưu",
+          "role_unchanged": "Vai trò không thay đổi"
+        },
+        "list": {
+          "empty_title": "Chưa có khu vực nào.",
+          "empty_description": "Khu vực nhóm những người cùng làm việc với nhau — Pháp chế, Kinh doanh, Hành chính — và cấp cho họ quyền truy cập vào các dự án của khu vực trong một bước.",
+          "synced_badge": "Đã đồng bộ",
+          "counts": "{members, plural, one {# người} other {# người}} · {projects, plural, one {# dự án} other {# dự án}}",
+          "delete_aria": "Xóa {name}",
+          "delete_title": "Xóa {name}?",
+          "delete_content": "Mọi người trong khu vực này sẽ mất quyền truy cập dự án mà khu vực đã cấp cho họ. Quyền truy cập do khu vực khác cấp hoặc được thiết lập thủ công trên dự án vẫn được giữ lại.",
+          "delete_content_synced": "Mọi người trong khu vực này sẽ mất quyền truy cập dự án mà khu vực đã cấp cho họ. Khu vực này được đồng bộ từ thư mục của bạn, nên lần đồng bộ tiếp theo sẽ tạo lại nó — nếu muốn xóa vĩnh viễn, hãy xóa nhóm trong thư mục.",
+          "delete_loading": "Đang xóa...",
+          "delete_confirm": "Xóa khu vực",
+          "toast": {
+            "deleted_title": "Đã xóa khu vực",
+            "deleted_message": "Quyền truy cập dự án do {name} cấp đã bị thu hồi. Quyền truy cập được cấp từ nơi khác vẫn được giữ lại.",
+            "not_deleted": "Chưa xóa"
+          }
+        },
+        "form": {
+          "edit_title": "Chỉnh sửa khu vực",
+          "name_placeholder": "Pháp chế",
+          "description_placeholder": "Khu vực này chịu trách nhiệm về việc gì",
+          "create": "Tạo khu vực",
+          "toast": {
+            "updated": "{name} đã được cập nhật.",
+            "created_title": "Đã tạo",
+            "created": "{name} đã sẵn sàng để sử dụng.",
+            "name_taken": "Đã có khu vực với tên này. Vui lòng chọn tên khác."
+          }
+        },
+        "detail": {
+          "tab_people": "Mọi người",
+          "back_aria": "Quay lại tất cả khu vực"
+        },
+        "members": {
+          "select_person": "Chọn một người",
+          "no_addable": "Mọi người trong không gian làm việc này đều đã ở trong khu vực này",
+          "add": "Thêm vào khu vực",
+          "empty": "Chưa có ai trong khu vực này. Thêm người để cấp cho họ quyền truy cập vào các dự án của khu vực.",
+          "directory_badge": "Thư mục",
+          "remove_aria": "Xóa {name} khỏi khu vực này",
+          "lead_note": "Trưởng khu vực quản lý chính khu vực đó. Quyền quản trị dự án được cấp riêng, trên từng dự án.",
+          "directory_note": "Những người được đánh dấu {badge} đến từ nhà cung cấp danh tính của bạn. Việc xóa họ ở đây chỉ có hiệu lực đến lần đồng bộ tiếp theo — hãy xóa họ khỏi nhóm ở phía nguồn. Những người bạn thêm thủ công sẽ không bao giờ bị đồng bộ xóa.",
+          "toast": {
+            "added_title": "Đã thêm thành viên",
+            "added": "Giờ họ có quyền truy cập vào các dự án của khu vực này.",
+            "not_added": "Chưa thêm",
+            "one_lead": "Một khu vực chỉ có thể có một trưởng khu vực tại một thời điểm.",
+            "removed_title": "Đã xóa thành viên",
+            "removed": "{name} vẫn giữ mọi quyền truy cập dự án được cấp ngoài khu vực này.",
+            "not_removed": "Chưa xóa"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Có thể thay đổi cài đặt và thành viên của dự án",
+          "role_member_hint": "Có thể tạo và chỉnh sửa mục công việc",
+          "role_guest_hint": "Quyền truy cập hạn chế",
+          "select_project": "Chọn một dự án",
+          "no_linkable": "Mọi dự án đều đã được liên kết với khu vực này",
+          "link": "Liên kết dự án",
+          "empty": "Chưa có dự án nào được liên kết. Liên kết một dự án để cấp cho thành viên của khu vực này quyền truy cập vào nó.",
+          "unlink_aria": "Hủy liên kết {name} khỏi khu vực này",
+          "role_note": "Vai trò của một người là vai trò cao nhất mà các khu vực của họ cấp, nhưng không vượt quá vai trò của họ trong không gian làm việc. Vai trò được thiết lập thủ công trên dự án sẽ không bao giờ bị hạ thấp ở đây.",
+          "toast": {
+            "linked_title": "Đã liên kết dự án",
+            "linked": "Giờ mọi người trong khu vực này đều có quyền truy cập vào dự án đó.",
+            "not_linked": "Chưa liên kết",
+            "unlinked_title": "Đã hủy liên kết dự án",
+            "unlinked": "Quyền truy cập vào {name} được cấp ngoài khu vực này vẫn được giữ lại.",
+            "not_unlinked": "Chưa hủy liên kết"
+          }
+        },
+        "directory_sync": {
+          "heading": "Đồng bộ thư mục",
+          "description": "Cho phép Microsoft Entra ID giữ cho thành viên khu vực luôn được cập nhật. Entra quyết định ai thuộc khu vực nào; còn khu vực cấp quyền cho những dự án nào và với vai trò gì vẫn được thiết lập tại đây.",
+          "never": "Chưa bao giờ",
+          "copy": "Sao chép",
+          "provisioning_on": "Cấp phát đang bật.",
+          "provisioning_off": "Cấp phát đang tắt.",
+          "no_token_warning": "Hãy phát hành token trước khi bật cấp phát — Entra không thể xác thực nếu không có token.",
+          "tenant_url": "URL của tenant",
+          "tenant_url_hint": "Dán giá trị này vào Provisioning → Admin Credentials trong ứng dụng doanh nghiệp Entra.",
+          "secret_token": "Token bí mật",
+          "token_installed": "Một token bắt đầu bằng {prefix}… đã được cài đặt. Sử dụng lần cuối {last_used}.",
+          "no_token": "Chưa có token nào được cài đặt.",
+          "rotate_token": "Xoay vòng token",
+          "issue_token": "Phát hành token",
+          "revoke": "Thu hồi",
+          "rotate_hint": "Xoay vòng có hiệu lực ngay lập tức, nên cấp phát sẽ thất bại cho đến khi Entra được cung cấp token mới.",
+          "last_sync": "Đồng bộ lần cuối",
+          "resync_now": "Đồng bộ lại ngay",
+          "summary_added": "{count, plural, one {# đã thêm} other {# đã thêm}}",
+          "summary_restored": "{count, plural, one {# đã khôi phục} other {# đã khôi phục}}",
+          "summary_withdrawn": "{count, plural, one {# đã thu hồi} other {# đã thu hồi}}",
+          "resync_hint": "Đồng bộ lại chỉ phát lại những gì thư mục đã gửi — không gọi đến Entra. Dùng sau khi mời một người mà thư mục đã đẩy sang.",
+          "unresolved_heading": "Được thư mục đẩy sang nhưng không có trong không gian làm việc này ({count})",
+          "unresolved_empty": "Mọi người mà thư mục đã gửi đều là thành viên đang hoạt động của không gian làm việc này.",
+          "not_workspace_member": "Không phải thành viên không gian làm việc",
+          "inactive_in_directory": "Không hoạt động trong thư mục",
+          "unresolved_hint": "Mời những người này vào không gian làm việc và họ sẽ tự động tham gia khu vực của mình, hoặc xóa họ khỏi nhóm trong Entra.",
+          "auto_create_title": "Tạo khu vực cho nhóm mới",
+          "auto_create_hint": "Khi tắt, thư mục chỉ có thể điền vào những khu vực bạn đã tạo và đặt tên trùng khớp.",
+          "auto_create_saved": "Đã lưu cách xử lý nhóm thư mục mới.",
+          "deprovision_title": "Cho phép thư mục xóa người",
+          "deprovision_hint": "Khi tắt, đồng bộ chỉ thêm. Dù thế nào, những người bạn thêm thủ công sẽ không bao giờ bị xóa.",
+          "deprovision_saved": "Đã lưu cách xử lý việc xóa từ thư mục.",
+          "toast": {
+            "copied_title": "Đã sao chép",
+            "copied": "Đã sao chép {label} vào bảng tạm của bạn.",
+            "not_copied_title": "Không thể sao chép",
+            "not_copied": "Hãy chọn và sao chép {label} theo cách thủ công.",
+            "load_failed_title": "Không thể tải kết nối thư mục",
+            "load_failed": "Vui lòng thử lại sau một lát.",
+            "save_failed": "Không thể lưu thay đổi. Vui lòng thử lại.",
+            "token_issued_title": "Đã phát hành token",
+            "token_issued": "Hãy sao chép ngay — token chỉ được hiển thị một lần này.",
+            "token_not_issued_title": "Chưa phát hành",
+            "token_not_issued": "Không thể tạo token.",
+            "token_revoked_title": "Đã thu hồi token",
+            "token_revoked": "Cấp phát sẽ tắt cho đến khi token mới được phát hành.",
+            "token_not_revoked_title": "Chưa thu hồi",
+            "token_not_revoked": "Không thể thu hồi token.",
+            "resynced_title": "Đã đồng bộ lại",
+            "resynced": "{added, plural, one {# đã thêm} other {# đã thêm}}, {withdrawn, plural, one {# đã thu hồi} other {# đã thu hồi}}.",
+            "not_resynced_title": "Chưa đồng bộ lại",
+            "not_resynced": "Không thể hoàn tất đồng bộ lại."
+          }
+        }
       }
     },
     "empty_state": {

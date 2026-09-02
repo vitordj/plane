@@ -266,6 +266,21 @@
       "click_to_downvote": "클릭하여 비추천",
       "click_to_view_upvotes": "클릭하여 추천 목록 보기",
       "click_to_view_downvotes": "클릭하여 비추천 목록 보기"
+    },
+    "organizational_unit": {
+      "no_match": "일치하는 영역이 없습니다",
+      "assign": "할당",
+      "assign_tooltip": "미완료 작업이 가장 적은 영역 멤버에게 할당",
+      "toast": {
+        "area_unchanged": "영역이 변경되지 않았습니다",
+        "assigned_title": "할당되었습니다",
+        "assigned": "미완료 작업이 가장 적은 영역 멤버에게 할당되었습니다.",
+        "already_assigned_title": "이미 할당됨",
+        "already_assigned": "이 작업 항목에는 이미 담당자가 있습니다.",
+        "nobody_title": "할당 가능한 멤버가 없습니다",
+        "nobody": "이 영역의 멤버 중 이 프로젝트에 접근할 수 있는 사람이 없습니다.",
+        "not_assigned": "할당되지 않았습니다"
+      }
     }
   },
   "sub_work_item": {

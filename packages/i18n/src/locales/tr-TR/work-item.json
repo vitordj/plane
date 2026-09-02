@@ -266,6 +266,21 @@
       "click_to_downvote": "Olumsuz oy vermek için tıklayın",
       "click_to_view_upvotes": "Olumlu oyları görüntülemek için tıklayın",
       "click_to_view_downvotes": "Olumsuz oyları görüntülemek için tıklayın"
+    },
+    "organizational_unit": {
+      "no_match": "Eşleşen alan yok",
+      "assign": "Ata",
+      "assign_tooltip": "En az açık işi olan alan üyesine ata",
+      "toast": {
+        "area_unchanged": "Alan değişmedi",
+        "assigned_title": "Atandı",
+        "assigned": "En az açık işi olan alan üyesine verildi.",
+        "already_assigned_title": "Zaten atanmış",
+        "already_assigned": "Bu iş öğesinin zaten bir atananı var.",
+        "nobody_title": "Uygun kimse yok",
+        "nobody": "Bu alanın hiçbir üyesinin bu projeye erişimi yok.",
+        "not_assigned": "Atanmadı"
+      }
     }
   },
   "sub_work_item": {

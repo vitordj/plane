@@ -496,7 +496,140 @@
         "heading": "エリア",
         "description": "メンバーをエリアにまとめ、各エリアにプロジェクトへのアクセス権を一度に付与します。",
         "add": "新しいエリア",
-        "disabled": "このインスタンスではエリアが無効になっています。管理者が ORCA_ORG_UNITS_ENABLED=1 を設定すると有効になります。"
+        "disabled": "このインスタンスではエリアが無効になっています。管理者が ORCA_ORG_UNITS_ENABLED=1 を設定すると有効になります。",
+        "try_again": "しばらくしてからもう一度お試しください。",
+        "toast": {
+          "saved": "保存しました",
+          "not_saved": "保存できませんでした",
+          "role_unchanged": "ロールは変更されていません"
+        },
+        "list": {
+          "empty_title": "エリアはまだありません。",
+          "empty_description": "エリアは、コンプライアンス、営業、バックオフィスなど、一緒に働くメンバーをまとめ、そのプロジェクトへのアクセス権を一度に付与します。",
+          "synced_badge": "同期済み",
+          "counts": "{members, plural, one {# 人} other {# 人}} · {projects, plural, one {# 件のプロジェクト} other {# 件のプロジェクト}}",
+          "delete_aria": "{name}を削除",
+          "delete_title": "{name}を削除しますか？",
+          "delete_content": "このエリアのメンバー全員が、このエリアによって付与されていたプロジェクトへのアクセス権を失います。他のエリアから付与されたアクセス権や、プロジェクトで手動で設定したアクセス権は維持されます。",
+          "delete_content_synced": "このエリアのメンバー全員が、このエリアによって付与されていたプロジェクトへのアクセス権を失います。このエリアはディレクトリから同期されているため、次回の同期で再び作成されます。完全に削除したい場合は、代わりにディレクトリ側でグループを削除してください。",
+          "delete_loading": "削除中...",
+          "delete_confirm": "エリアを削除",
+          "toast": {
+            "deleted_title": "エリアを削除しました",
+            "deleted_message": "{name}が付与していたプロジェクトへのアクセス権を取り消しました。他で付与されたアクセス権は維持されます。",
+            "not_deleted": "削除できませんでした"
+          }
+        },
+        "form": {
+          "edit_title": "エリアを編集",
+          "name_placeholder": "コンプライアンス",
+          "description_placeholder": "このエリアの担当範囲",
+          "create": "エリアを作成",
+          "toast": {
+            "updated": "{name}を更新しました。",
+            "created_title": "作成しました",
+            "created": "{name}を使用できるようになりました。",
+            "name_taken": "この名前のエリアはすでに存在します。別の名前を指定してください。"
+          }
+        },
+        "detail": {
+          "tab_people": "メンバー",
+          "back_aria": "すべてのエリアに戻る"
+        },
+        "members": {
+          "select_person": "メンバーを選択",
+          "no_addable": "このワークスペースの全員がすでにこのエリアに所属しています",
+          "add": "エリアに追加",
+          "empty": "このエリアにはまだ誰もいません。メンバーを追加すると、そのプロジェクトへのアクセス権が付与されます。",
+          "directory_badge": "ディレクトリ",
+          "remove_aria": "{name}をこのエリアから削除",
+          "lead_note": "エリアのリードは、エリア自体を管理します。プロジェクトの管理者権限は、プロジェクト側で別途付与されます。",
+          "directory_note": "{badge}と表示されているメンバーは、IDプロバイダーから同期されています。ここで削除しても次回の同期までしか有効ではないため、代わりに上流のグループから削除してください。手動で追加したメンバーが同期によって削除されることはありません。",
+          "toast": {
+            "added_title": "メンバーを追加しました",
+            "added": "このエリアのプロジェクトにアクセスできるようになりました。",
+            "not_added": "追加できませんでした",
+            "one_lead": "エリアに設定できるリードは一度に 1 人だけです。",
+            "removed_title": "メンバーを削除しました",
+            "removed": "{name}は、このエリア以外で付与されたプロジェクトへのアクセス権を引き続き保持します。",
+            "not_removed": "削除できませんでした"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "プロジェクトの設定とメンバーを変更できます",
+          "role_member_hint": "作業項目を作成・編集できます",
+          "role_guest_hint": "限定的なアクセス",
+          "select_project": "プロジェクトを選択",
+          "no_linkable": "すべてのプロジェクトがすでにこのエリアにリンクされています",
+          "link": "プロジェクトをリンク",
+          "empty": "リンクされたプロジェクトはまだありません。プロジェクトをリンクすると、このエリアのメンバーがアクセスできるようになります。",
+          "unlink_aria": "{name}をこのエリアからリンク解除",
+          "role_note": "メンバーのロールは、所属するエリアが付与するロールのうち最も高いものになり、ワークスペースのロールが上限となります。プロジェクトで手動で設定したロールがここで下げられることはありません。",
+          "toast": {
+            "linked_title": "プロジェクトをリンクしました",
+            "linked": "このエリアの全員がアクセスできるようになりました。",
+            "not_linked": "リンクできませんでした",
+            "unlinked_title": "プロジェクトのリンクを解除しました",
+            "unlinked": "このエリア以外で付与された{name}へのアクセス権は維持されます。",
+            "not_unlinked": "リンクを解除できませんでした"
+          }
+        },
+        "directory_sync": {
+          "heading": "ディレクトリ同期",
+          "description": "Microsoft Entra ID でエリアのメンバーシップを最新の状態に保ちます。誰がどのエリアに所属するかは Entra が決定し、エリアがどのプロジェクトにどのロールでアクセス権を付与するかは、引き続きここで設定します。",
+          "never": "なし",
+          "copy": "コピー",
+          "provisioning_on": "プロビジョニングは有効です。",
+          "provisioning_off": "プロビジョニングは無効です。",
+          "no_token_warning": "プロビジョニングを有効にする前にトークンを発行してください。トークンがないと Entra は認証できません。",
+          "tenant_url": "テナント URL",
+          "tenant_url_hint": "Entra のエンタープライズ アプリケーションで、プロビジョニング → 管理者資格情報にこの値を貼り付けてください。",
+          "secret_token": "シークレット トークン",
+          "token_installed": "{prefix}……で始まるトークンが登録されています。最終使用：{last_used}。",
+          "no_token": "トークンは登録されていません。",
+          "rotate_token": "トークンをローテーション",
+          "issue_token": "トークンを発行",
+          "revoke": "取り消す",
+          "rotate_hint": "ローテーションは即時に反映されるため、Entra に新しいトークンを設定するまでプロビジョニングは失敗します。",
+          "last_sync": "最終同期",
+          "resync_now": "今すぐ再同期",
+          "summary_added": "{count, plural, one {# 件追加} other {# 件追加}}",
+          "summary_restored": "{count, plural, one {# 件復元} other {# 件復元}}",
+          "summary_withdrawn": "{count, plural, one {# 件取り消し} other {# 件取り消し}}",
+          "resync_hint": "再同期は、ディレクトリからすでに送信された内容を再適用するだけで、Entra を呼び出すことはありません。ディレクトリからすでに送られていたメンバーを招待した後に使用してください。",
+          "unresolved_heading": "ディレクトリから送信されたが、このワークスペースにいないメンバー（{count}）",
+          "unresolved_empty": "ディレクトリから送信された全員が、このワークスペースのアクティブなメンバーです。",
+          "not_workspace_member": "ワークスペースのメンバーではありません",
+          "inactive_in_directory": "ディレクトリで非アクティブ",
+          "unresolved_hint": "これらのメンバーをワークスペースに招待すると、自動的に所属エリアに参加します。または、Entra のグループから削除してください。",
+          "auto_create_title": "新しいグループのエリアを作成",
+          "auto_create_hint": "無効の場合、ディレクトリは、名前が一致するように作成済みのエリアにのみメンバーを追加します。",
+          "auto_create_saved": "新しいディレクトリ グループの処理方法を保存しました。",
+          "deprovision_title": "ディレクトリによるメンバーの削除を許可",
+          "deprovision_hint": "無効の場合、同期はメンバーの追加のみを行います。手動で追加したメンバーは、いずれの場合も削除されません。",
+          "deprovision_saved": "ディレクトリからの削除の処理方法を保存しました。",
+          "toast": {
+            "copied_title": "コピーしました",
+            "copied": "{label}をクリップボードにコピーしました。",
+            "not_copied_title": "コピーできませんでした",
+            "not_copied": "{label}を選択して手動でコピーしてください。",
+            "load_failed_title": "ディレクトリ接続を読み込めませんでした",
+            "load_failed": "しばらくしてからもう一度お試しください。",
+            "save_failed": "変更を保存できませんでした。もう一度お試しください。",
+            "token_issued_title": "トークンを発行しました",
+            "token_issued": "今すぐコピーしてください。表示されるのはこの一度だけです。",
+            "token_not_issued_title": "発行できませんでした",
+            "token_not_issued": "トークンを作成できませんでした。",
+            "token_revoked_title": "トークンを取り消しました",
+            "token_revoked": "新しいトークンが発行されるまで、プロビジョニングは無効になります。",
+            "token_not_revoked_title": "取り消せませんでした",
+            "token_not_revoked": "トークンを取り消せませんでした。",
+            "resynced_title": "再同期しました",
+            "resynced": "{added, plural, one {# 件追加} other {# 件追加}}、{withdrawn, plural, one {# 件取り消し} other {# 件取り消し}}。",
+            "not_resynced_title": "再同期できませんでした",
+            "not_resynced": "再同期を完了できませんでした。"
+          }
+        }
       }
     },
     "empty_state": {

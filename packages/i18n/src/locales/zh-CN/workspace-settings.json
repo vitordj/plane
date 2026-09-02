@@ -496,7 +496,140 @@
         "heading": "区域",
         "description": "将成员分组到区域，并一步为每个区域授予其项目的访问权限。",
         "add": "新建区域",
-        "disabled": "本实例已关闭区域功能。管理员可以通过设置 ORCA_ORG_UNITS_ENABLED=1 来启用。"
+        "disabled": "本实例已关闭区域功能。管理员可以通过设置 ORCA_ORG_UNITS_ENABLED=1 来启用。",
+        "try_again": "请稍后再试。",
+        "toast": {
+          "saved": "已保存",
+          "not_saved": "未保存",
+          "role_unchanged": "角色未更改"
+        },
+        "list": {
+          "empty_title": "还没有区域。",
+          "empty_description": "区域将一起工作的成员分组（例如合规、销售、后台运营），并一步为他们授予其项目的访问权限。",
+          "synced_badge": "已同步",
+          "counts": "{members, plural, one {# 人} other {# 人}} · {projects, plural, one {# 个项目} other {# 个项目}}",
+          "delete_aria": "删除 {name}",
+          "delete_title": "删除 {name}？",
+          "delete_content": "此区域中的所有成员都将失去由该区域授予的项目访问权限。由其他区域授予或在项目中手动设置的访问权限将保留。",
+          "delete_content_synced": "此区域中的所有成员都将失去由该区域授予的项目访问权限。此区域从您的目录同步而来，下次同步时会再次创建。如果您希望彻底删除，请改为在目录中移除该组。",
+          "delete_loading": "正在删除...",
+          "delete_confirm": "删除区域",
+          "toast": {
+            "deleted_title": "区域已删除",
+            "deleted_message": "由 {name} 授予的项目访问权限已撤销。其他途径授予的访问权限将保留。",
+            "not_deleted": "未删除"
+          }
+        },
+        "form": {
+          "edit_title": "编辑区域",
+          "name_placeholder": "合规",
+          "description_placeholder": "此区域负责的工作",
+          "create": "创建区域",
+          "toast": {
+            "updated": "{name} 已更新。",
+            "created_title": "已创建",
+            "created": "{name} 已可以使用。",
+            "name_taken": "已存在同名区域。请换一个名称。"
+          }
+        },
+        "detail": {
+          "tab_people": "成员",
+          "back_aria": "返回所有区域"
+        },
+        "members": {
+          "select_person": "选择成员",
+          "no_addable": "此工作区的所有成员都已在此区域中",
+          "add": "添加到区域",
+          "empty": "此区域中还没有成员。添加成员以授予他们对其项目的访问权限。",
+          "directory_badge": "目录",
+          "remove_aria": "将 {name} 从此区域中移除",
+          "lead_note": "担任区域负责人只管理区域本身。项目管理员权限需在项目中单独授予。",
+          "directory_note": "标记为 {badge} 的成员来自您的身份提供者。在此处移除只在下次同步前有效，请改为在上游的组中将其移除。手动添加的成员不会被同步移除。",
+          "toast": {
+            "added_title": "成员已添加",
+            "added": "他们现在可以访问此区域的项目。",
+            "not_added": "未添加",
+            "one_lead": "一个区域同时只能有一位负责人。",
+            "removed_title": "成员已移除",
+            "removed": "{name} 将保留在此区域之外授予的项目访问权限。",
+            "not_removed": "未移除"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "可以更改项目设置和成员",
+          "role_member_hint": "可以创建和编辑工作项",
+          "role_guest_hint": "有限访问",
+          "select_project": "选择项目",
+          "no_linkable": "所有项目都已关联到此区域",
+          "link": "关联项目",
+          "empty": "还没有关联的项目。关联一个项目以授予此区域成员访问权限。",
+          "unlink_aria": "取消 {name} 与此区域的关联",
+          "role_note": "成员的角色取其所属区域授予的最高角色，且不超过其工作区角色。在项目中手动设置的角色不会在此被降低。",
+          "toast": {
+            "linked_title": "项目已关联",
+            "linked": "此区域的所有成员现在都可以访问该项目。",
+            "not_linked": "未关联",
+            "unlinked_title": "已取消项目关联",
+            "unlinked": "在此区域之外授予的 {name} 访问权限将保留。",
+            "not_unlinked": "未取消关联"
+          }
+        },
+        "directory_sync": {
+          "heading": "目录同步",
+          "description": "让 Microsoft Entra ID 保持区域成员身份最新。由 Entra 决定谁属于哪个区域；区域授予哪些项目的访问权限以及对应的角色，仍在此处设置。",
+          "never": "从未",
+          "copy": "复制",
+          "provisioning_on": "预配已开启。",
+          "provisioning_off": "预配已关闭。",
+          "no_token_warning": "请在开启预配之前先颁发令牌，否则 Entra 无法进行身份验证。",
+          "tenant_url": "租户 URL",
+          "tenant_url_hint": "在 Entra 企业应用程序中，将此值粘贴到预配 → 管理员凭据。",
+          "secret_token": "机密令牌",
+          "token_installed": "已安装以 {prefix}… 开头的令牌。上次使用：{last_used}。",
+          "no_token": "未安装令牌。",
+          "rotate_token": "轮换令牌",
+          "issue_token": "颁发令牌",
+          "revoke": "吊销",
+          "rotate_hint": "轮换会立即生效，因此在向 Entra 提供新令牌之前，预配将会失败。",
+          "last_sync": "上次同步",
+          "resync_now": "立即重新同步",
+          "summary_added": "{count, plural, one {新增 # 项} other {新增 # 项}}",
+          "summary_restored": "{count, plural, one {恢复 # 项} other {恢复 # 项}}",
+          "summary_withdrawn": "{count, plural, one {撤销 # 项} other {撤销 # 项}}",
+          "resync_hint": "重新同步只会重放目录已发送的内容，不会调用 Entra。请在邀请了目录已推送过的人员之后使用。",
+          "unresolved_heading": "由目录推送但不在此工作区中（{count}）",
+          "unresolved_empty": "目录发送的所有人员都是此工作区的活跃成员。",
+          "not_workspace_member": "不是工作区成员",
+          "inactive_in_directory": "在目录中处于非活跃状态",
+          "unresolved_hint": "邀请这些人员加入工作区，他们将自动加入各自的区域；或者在 Entra 的组中将其移除。",
+          "auto_create_title": "为新组创建区域",
+          "auto_create_hint": "关闭时，目录只能填充您已创建且名称匹配的区域。",
+          "auto_create_saved": "已保存新目录组的处理方式。",
+          "deprovision_title": "允许目录移除成员",
+          "deprovision_hint": "关闭时，同步只会添加成员。无论如何，手动添加的成员都不会被移除。",
+          "deprovision_saved": "已保存目录移除操作的处理方式。",
+          "toast": {
+            "copied_title": "已复制",
+            "copied": "{label} 已复制到剪贴板。",
+            "not_copied_title": "无法复制",
+            "not_copied": "请手动选择并复制 {label}。",
+            "load_failed_title": "无法加载目录连接",
+            "load_failed": "请稍后再试。",
+            "save_failed": "无法保存更改。请重试。",
+            "token_issued_title": "令牌已颁发",
+            "token_issued": "请立即复制，它只会显示这一次。",
+            "token_not_issued_title": "未颁发",
+            "token_not_issued": "无法创建令牌。",
+            "token_revoked_title": "令牌已吊销",
+            "token_revoked": "在颁发新令牌之前，预配将保持关闭。",
+            "token_not_revoked_title": "未吊销",
+            "token_not_revoked": "无法吊销令牌。",
+            "resynced_title": "已重新同步",
+            "resynced": "{added, plural, one {新增 # 项} other {新增 # 项}}，{withdrawn, plural, one {撤销 # 项} other {撤销 # 项}}。",
+            "not_resynced_title": "未重新同步",
+            "not_resynced": "无法完成重新同步。"
+          }
+        }
       }
     },
     "empty_state": {

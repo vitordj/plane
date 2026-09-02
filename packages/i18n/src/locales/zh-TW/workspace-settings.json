@@ -496,7 +496,140 @@
         "heading": "區域",
         "description": "將成員分組到區域，並一步為每個區域授予其專案的存取權限。",
         "add": "新增區域",
-        "disabled": "本執行個體已關閉區域功能。管理員可以透過設定 ORCA_ORG_UNITS_ENABLED=1 來啟用。"
+        "disabled": "本執行個體已關閉區域功能。管理員可以透過設定 ORCA_ORG_UNITS_ENABLED=1 來啟用。",
+        "try_again": "請稍後再試。",
+        "toast": {
+          "saved": "已儲存",
+          "not_saved": "未儲存",
+          "role_unchanged": "角色未變更"
+        },
+        "list": {
+          "empty_title": "尚無區域。",
+          "empty_description": "區域將共同工作的人員分為一組（例如法遵、業務、行政），並一步授予他們其專案的存取權限。",
+          "synced_badge": "已同步",
+          "counts": "{members, plural, one {# 人} other {# 人}} · {projects, plural, one {# 個專案} other {# 個專案}}",
+          "delete_aria": "刪除 {name}",
+          "delete_title": "要刪除 {name} 嗎？",
+          "delete_content": "此區域中的所有人都將失去它授予的專案存取權限。由其他區域授予或在專案中手動設定的存取權限將會保留。",
+          "delete_content_synced": "此區域中的所有人都將失去它授予的專案存取權限。此區域是從您的目錄同步而來，因此下次同步時會再次建立它——若要永久移除，請改為在目錄中移除該群組。",
+          "delete_loading": "刪除中...",
+          "delete_confirm": "刪除區域",
+          "toast": {
+            "deleted_title": "區域已刪除",
+            "deleted_message": "{name} 授予的專案存取權限已撤銷。其他來源授予的存取權限將會保留。",
+            "not_deleted": "未刪除"
+          }
+        },
+        "form": {
+          "edit_title": "編輯區域",
+          "name_placeholder": "法遵",
+          "description_placeholder": "此區域負責的事項",
+          "create": "建立區域",
+          "toast": {
+            "updated": "{name} 已更新。",
+            "created_title": "已建立",
+            "created": "{name} 已可使用。",
+            "name_taken": "已有同名的區域。請選擇其他名稱。"
+          }
+        },
+        "detail": {
+          "tab_people": "人員",
+          "back_aria": "返回所有區域"
+        },
+        "members": {
+          "select_person": "選擇人員",
+          "no_addable": "此工作區中的所有人都已在此區域中",
+          "add": "加入區域",
+          "empty": "此區域中尚無任何人。新增人員以授予他們其專案的存取權限。",
+          "directory_badge": "目錄",
+          "remove_aria": "將 {name} 從此區域移除",
+          "lead_note": "區域負責人負責管理區域本身。專案管理員權限需在專案中另行授予。",
+          "directory_note": "標示為 {badge} 的人員來自您的身份提供者。在此移除他們僅在下次同步前有效——請改為在上游群組中移除他們。您手動新增的人員絕不會被同步移除。",
+          "toast": {
+            "added_title": "成員已新增",
+            "added": "他們現在可以存取此區域的專案。",
+            "not_added": "未新增",
+            "one_lead": "一個區域一次只能有一位負責人。",
+            "removed_title": "成員已移除",
+            "removed": "{name} 保留在此區域之外授予的所有專案存取權限。",
+            "not_removed": "未移除"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "可以變更專案設定和成員",
+          "role_member_hint": "可以建立和編輯工作事項",
+          "role_guest_hint": "有限的存取權限",
+          "select_project": "選擇專案",
+          "no_linkable": "所有專案都已連結至此區域",
+          "link": "連結專案",
+          "empty": "尚未連結任何專案。連結一個專案，讓此區域的成員可以存取它。",
+          "unlink_aria": "將 {name} 從此區域取消連結",
+          "role_note": "人員的角色是其所屬區域授予的最高角色，且不超過其工作區角色。在專案中手動設定的角色絕不會在此被降低。",
+          "toast": {
+            "linked_title": "專案已連結",
+            "linked": "此區域中的所有人現在都可以存取它。",
+            "not_linked": "未連結",
+            "unlinked_title": "專案已取消連結",
+            "unlinked": "在此區域之外授予的 {name} 存取權限將會保留。",
+            "not_unlinked": "未取消連結"
+          }
+        },
+        "directory_sync": {
+          "heading": "目錄同步",
+          "description": "讓 Microsoft Entra ID 保持區域成員資格為最新。Entra 決定誰屬於哪個區域；區域授予哪些專案及其角色，仍在此設定。",
+          "never": "從未",
+          "copy": "複製",
+          "provisioning_on": "佈建已開啟。",
+          "provisioning_off": "佈建已關閉。",
+          "no_token_warning": "開啟佈建前請先核發權杖——沒有權杖，Entra 無法進行驗證。",
+          "tenant_url": "租用戶 URL",
+          "tenant_url_hint": "將此貼到 Entra 企業應用程式的「佈建」→「管理員認證」中。",
+          "secret_token": "秘密權杖",
+          "token_installed": "已安裝以 {prefix}… 開頭的權杖。上次使用時間：{last_used}。",
+          "no_token": "尚未安裝權杖。",
+          "rotate_token": "輪替權杖",
+          "issue_token": "核發權杖",
+          "revoke": "撤銷",
+          "rotate_hint": "輪替會立即生效，因此在 Entra 取得新權杖之前，佈建將會失敗。",
+          "last_sync": "上次同步",
+          "resync_now": "立即重新同步",
+          "summary_added": "{count, plural, one {已新增 # 人} other {已新增 # 人}}",
+          "summary_restored": "{count, plural, one {已還原 # 人} other {已還原 # 人}}",
+          "summary_withdrawn": "{count, plural, one {已撤銷 # 人} other {已撤銷 # 人}}",
+          "resync_hint": "重新同步只會重播目錄已傳送的內容——不會呼叫 Entra。請在邀請目錄已推送的人員之後使用。",
+          "unresolved_heading": "由目錄推送但不在此工作區中（{count}）",
+          "unresolved_empty": "目錄傳送的所有人都是此工作區的有效成員。",
+          "not_workspace_member": "不是工作區成員",
+          "inactive_in_directory": "在目錄中非使用中",
+          "unresolved_hint": "邀請這些人員加入工作區，他們就會自動加入所屬區域；或在 Entra 中將他們從群組移除。",
+          "auto_create_title": "為新群組建立區域",
+          "auto_create_hint": "關閉時，目錄只能填入您已建立且名稱相符的區域。",
+          "auto_create_saved": "已儲存新目錄群組的處理方式。",
+          "deprovision_title": "允許目錄移除人員",
+          "deprovision_hint": "關閉時，同步只會新增。無論如何，您手動新增的人員絕不會被移除。",
+          "deprovision_saved": "已儲存目錄移除作業的處理方式。",
+          "toast": {
+            "copied_title": "已複製",
+            "copied": "{label} 已複製到您的剪貼簿。",
+            "not_copied_title": "無法複製",
+            "not_copied": "請手動選取並複製 {label}。",
+            "load_failed_title": "無法載入目錄連線",
+            "load_failed": "請稍後再試。",
+            "save_failed": "無法儲存變更。請再試一次。",
+            "token_issued_title": "權杖已核發",
+            "token_issued": "請立即複製——它只會顯示這一次。",
+            "token_not_issued_title": "未核發",
+            "token_not_issued": "無法建立權杖。",
+            "token_revoked_title": "權杖已撤銷",
+            "token_revoked": "在核發新權杖之前，佈建將保持關閉。",
+            "token_not_revoked_title": "未撤銷",
+            "token_not_revoked": "無法撤銷權杖。",
+            "resynced_title": "已重新同步",
+            "resynced": "{added, plural, one {已新增 # 人} other {已新增 # 人}}，{withdrawn, plural, one {已撤銷 # 人} other {已撤銷 # 人}}。",
+            "not_resynced_title": "未重新同步",
+            "not_resynced": "無法完成重新同步。"
+          }
+        }
       }
     },
     "empty_state": {

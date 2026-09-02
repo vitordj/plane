@@ -266,6 +266,21 @@
       "click_to_downvote": "Kliknij, aby zagłosować przeciw",
       "click_to_view_upvotes": "Kliknij, aby zobaczyć głosy za",
       "click_to_view_downvotes": "Kliknij, aby zobaczyć głosy przeciw"
+    },
+    "organizational_unit": {
+      "no_match": "Brak pasujących obszarów",
+      "assign": "Przypisz",
+      "assign_tooltip": "Przypisz członkowi obszaru z najmniejszą liczbą otwartych elementów pracy",
+      "toast": {
+        "area_unchanged": "Obszar bez zmian",
+        "assigned_title": "Przypisano",
+        "assigned": "Przekazano członkowi obszaru z najmniejszą liczbą otwartych elementów pracy.",
+        "already_assigned_title": "Już przypisano",
+        "already_assigned": "Ten element pracy ma już przypisaną osobę.",
+        "nobody_title": "Nikt nie jest dostępny",
+        "nobody": "Żaden członek tego obszaru nie ma dostępu do tego projektu.",
+        "not_assigned": "Nie przypisano"
+      }
     }
   },
   "sub_work_item": {

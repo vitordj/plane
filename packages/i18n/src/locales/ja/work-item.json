@@ -266,6 +266,21 @@
       "click_to_downvote": "クリックして反対票を投じる",
       "click_to_view_upvotes": "クリックして賛成票を表示",
       "click_to_view_downvotes": "クリックして反対票を表示"
+    },
+    "organizational_unit": {
+      "no_match": "一致するエリアはありません",
+      "assign": "割り当て",
+      "assign_tooltip": "未完了の作業が最も少ないエリアのメンバーに割り当てます",
+      "toast": {
+        "area_unchanged": "エリアは変更されていません",
+        "assigned_title": "割り当てました",
+        "assigned": "未完了の作業が最も少ないエリアのメンバーに割り当てました。",
+        "already_assigned_title": "すでに割り当て済みです",
+        "already_assigned": "この作業項目にはすでに担当者がいます。",
+        "nobody_title": "割り当て可能なメンバーがいません",
+        "nobody": "このエリアのメンバーには、このプロジェクトへのアクセス権を持つ人がいません。",
+        "not_assigned": "割り当てできませんでした"
+      }
     }
   },
   "sub_work_item": {
