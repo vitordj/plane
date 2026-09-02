@@ -75,13 +75,12 @@ export const DefaultLanguageForm = observer(function DefaultLanguageForm(props: 
       <div>
         <div className="text-16 font-medium text-primary">Default language</div>
         <div className="text-13 font-regular text-tertiary">
-          The language new members start in, and the language the sign-in and sign-up screens use. Anyone can pick a
-          different one for themselves in their profile preferences, and their choice is never overwritten.
+          The language everyone here works in, and the language the sign-in and sign-up screens use. Changing it moves
+          everyone who has not picked a language of their own. Anyone can pick a different one in their profile
+          preferences, and their choice is never overwritten.
         </div>
       </div>
-      <div
-        className="grid-col grid w-full grid-cols-1 items-center justify-between gap-8 md:grid-cols-2 lg:grid-cols-3"
-      >
+      <div className="grid-col grid w-full grid-cols-1 items-center justify-between gap-8 md:grid-cols-2 lg:grid-cols-3">
         <div className="flex flex-col gap-1">
           <h4 className="text-13 text-tertiary">Language</h4>
           <CustomSelect
