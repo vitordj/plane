@@ -232,6 +232,14 @@
         "title": "自動提醒",
         "description": "Plane 將自動通過電子郵件和應用程式通知來提醒您的團隊保持進度。",
         "duration": "提前提醒"
+      },
+      "auto-cycle-complete": {
+        "title": "自動完成週期",
+        "description": "週期的結束日期一過就自動完成。關閉時，週期會一直進行到有人關閉或封存它為止。"
+      },
+      "auto-conventional-commit": {
+        "title": "依 Conventional Commits 加標籤",
+        "description": "根據標題中的 Conventional Commit 前綴為工作事項加上對應標籤。開啟後也會掃描並標記尚未加標籤的工作事項。"
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "並行週期",
         "description": "同時執行多個進行中的週期，日期範圍可以重疊。"
-      },
-      "auto_complete": {
-        "title": "自動完成週期",
-        "description": "週期的結束日期一過就自動完成。關閉時，週期會一直進行到有人關閉或封存它為止。"
       }
     }
   }

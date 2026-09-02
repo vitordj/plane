@@ -232,6 +232,14 @@
         "title": "Automatické upozornění",
         "description": "Plane automaticky pošle upozornění přes e-mail a v aplikaci, aby vaše tým zůstal na cestě s termíny.",
         "duration": "Odeslat upozornění před"
+      },
+      "auto-cycle-complete": {
+        "title": "Automatické dokončení cyklů",
+        "description": "Dokončit cyklus automaticky, jakmile uplyne jeho datum ukončení. Když je vypnuto, cyklus zůstává aktivní, dokud ho někdo neuzavře nebo nearchivuje."
+      },
+      "auto-conventional-commit": {
+        "title": "Označovat conventional commits štítky",
+        "description": "Přidělit pracovní položce štítek, který vyplývá z prefixu conventional commit v jejím názvu. Zapnutí zároveň projde a označí položky, které štítek zatím nemají."
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "Paralelní cykly",
         "description": "Mít současně aktivních víc cyklů s překrývajícími se obdobími."
-      },
-      "auto_complete": {
-        "title": "Automatické dokončení cyklů",
-        "description": "Dokončit cyklus automaticky, jakmile uplyne jeho datum ukončení. Když je vypnuto, cyklus zůstává aktivní, dokud ho někdo neuzavře nebo nearchivuje."
       }
     }
   }

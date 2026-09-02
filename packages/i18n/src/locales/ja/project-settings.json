@@ -232,6 +232,14 @@
         "title": "自動リマインダー",
         "description": "Planeはメールとアプリ内通知を通じて、チームが期限に沿って進めるように自動的にリマインダーを送信します。",
         "duration": "リマインダーを送信する前"
+      },
+      "auto-cycle-complete": {
+        "title": "サイクルの自動完了",
+        "description": "終了日を過ぎたサイクルを自動的に完了します。オフの場合、誰かが閉じるかアーカイブするまでサイクルはアクティブなままです。"
+      },
+      "auto-conventional-commit": {
+        "title": "Conventional Commits のラベルを付ける",
+        "description": "タイトルの Conventional Commit プレフィックスが示すラベルを作業項目に付けます。オンにすると、まだラベルのない作業項目も検査してラベルを付けます。"
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "並行サイクル",
         "description": "期間が重なる複数のサイクルを同時にアクティブにします。"
-      },
-      "auto_complete": {
-        "title": "サイクルの自動完了",
-        "description": "終了日を過ぎたサイクルを自動的に完了します。オフの場合、誰かが閉じるかアーカイブするまでサイクルはアクティブなままです。"
       }
     }
   }

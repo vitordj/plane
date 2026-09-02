@@ -232,6 +232,14 @@
         "title": "Promemoria automatici",
         "description": "Plane invierà automaticamente promemoria via email e notifiche in-app per mantenere il tuo team in linea con le scadenze.",
         "duration": "Invia promemoria prima di"
+      },
+      "auto-cycle-complete": {
+        "title": "Completamento automatico dei cicli",
+        "description": "Completare un ciclo appena passata la data di fine. Se disattivato, il ciclo resta attivo finché qualcuno non lo chiude o lo archivia."
+      },
+      "auto-conventional-commit": {
+        "title": "Etichettare i conventional commit",
+        "description": "Assegnare a un elemento di lavoro l’etichetta implicata dal prefisso conventional commit del suo titolo. Attivandolo vengono anche esaminati ed etichettati gli elementi ancora privi di etichetta."
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "Cicli paralleli",
         "description": "Tenere attivi più cicli contemporaneamente, con periodi che si sovrappongono."
-      },
-      "auto_complete": {
-        "title": "Completamento automatico dei cicli",
-        "description": "Completare un ciclo appena passata la data di fine. Se disattivato, il ciclo resta attivo finché qualcuno non lo chiude o lo archivia."
       }
     }
   }

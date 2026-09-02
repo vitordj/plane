@@ -232,6 +232,14 @@
         "title": "Automatische Erinnerungen",
         "description": "Plane wird automatische Erinnerungen via E-Mail und in-App-Benachrichtigungen senden, um Ihr Team auf den Lauf der Dinge zu halten.",
         "duration": "Erinnerung vor"
+      },
+      "auto-cycle-complete": {
+        "title": "Zyklen automatisch abschließen",
+        "description": "Einen Zyklus automatisch abschließen, sobald sein Enddatum vorbei ist. Ausgeschaltet bleibt ein Zyklus aktiv, bis ihn jemand schließt oder archiviert."
+      },
+      "auto-conventional-commit": {
+        "title": "Conventional Commits als Label setzen",
+        "description": "Einem Arbeitselement das Label geben, das sich aus dem Conventional-Commit-Präfix seines Titels ergibt. Beim Einschalten werden auch die Arbeitselemente ohne Label geprüft und beschriftet."
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "Parallele Zyklen",
         "description": "Mehrere Zyklen gleichzeitig aktiv halten, mit überlappenden Zeiträumen."
-      },
-      "auto_complete": {
-        "title": "Zyklen automatisch abschließen",
-        "description": "Einen Zyklus automatisch abschließen, sobald sein Enddatum vorbei ist. Ausgeschaltet bleibt ein Zyklus aktiv, bis ihn jemand schließt oder archiviert."
       }
     }
   }

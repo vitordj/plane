@@ -52,8 +52,8 @@ export const AutoCycleCompleteAutomation = observer(function AutoCycleCompleteAu
           <CheckCircle2 className="size-4 shrink-0 text-success-primary" />
         </div>
         <SettingsControlItem
-          title={t("project_settings.cycles.auto_complete.title")}
-          description={t("project_settings.cycles.auto_complete.description")}
+          title={t("project_settings.automations.auto-cycle-complete.title")}
+          description={t("project_settings.automations.auto-cycle-complete.description")}
           control={<ToggleSwitch value={autoCompleteStatus} onChange={handleToggle} size="sm" disabled={!isAdmin} />}
         />
       </div>

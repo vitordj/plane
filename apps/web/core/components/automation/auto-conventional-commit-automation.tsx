@@ -8,6 +8,7 @@ import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 import { GitCommit } from "lucide-react";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import type { IProject } from "@plane/types";
 import { ToggleSwitch } from "@plane/ui";
@@ -36,6 +37,8 @@ type Props = {
 };
 
 export const AutoConventionalCommitAutomation = observer(function AutoConventionalCommitAutomation(props: Props) {
+  // translation
+  const { t } = useTranslation();
   const { handleChange } = props;
   // router
   const { workspaceSlug } = useParams();
@@ -63,8 +66,8 @@ export const AutoConventionalCommitAutomation = observer(function AutoConvention
           <GitCommit className="text-custom-primary size-4 shrink-0" />
         </div>
         <SettingsControlItem
-          title="Auto-label conventional commits"
-          description="Automatically assign conventional commit labels to work items based on their title prefix. Activating this will scan and label existing unlabeled work items."
+          title={t("project_settings.automations.auto-conventional-commit.title")}
+          description={t("project_settings.automations.auto-conventional-commit.description")}
           control={
             <ToggleSwitch value={autoConventionalStatus} onChange={handleToggle} size="sm" disabled={!isAdmin} />
           }

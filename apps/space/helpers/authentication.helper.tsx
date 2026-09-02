@@ -6,6 +6,7 @@
 
 import { Link } from "react-router";
 // helpers
+import { translate } from "@plane/i18n";
 import { SUPPORT_EMAIL } from "@plane/constants";
 
 export enum EPageTypes {
@@ -265,13 +266,21 @@ const errorCodeMessages: {
     title: `GitLab OAuth provider error`,
     message: () => `GitLab OAuth provider error. Please try again.`,
   },
+  // Orca (fork). `title` is a getter so the lookup happens when
+  // authErrorHandler reads it, not when this module is first imported —
+  // at import time i18next has not resolved a language yet. The rest of this
+  // map is still English; see the TODO above.
   [EAuthenticationErrorCodes.ENTRA_NOT_CONFIGURED]: {
-    title: `Microsoft Entra ID not configured`,
-    message: () => `Microsoft Entra ID not configured. Please contact your administrator.`,
+    get title() {
+      return translate("auth.errors.entra.not_configured.title");
+    },
+    message: () => translate("auth.errors.entra.not_configured.message"),
   },
   [EAuthenticationErrorCodes.ENTRA_OAUTH_PROVIDER_ERROR]: {
-    title: `Microsoft Entra ID sign-in error`,
-    message: () => `Microsoft Entra ID sign-in failed. Please try again.`,
+    get title() {
+      return translate("auth.errors.entra.sign_in_failed.title");
+    },
+    message: () => translate("auth.errors.entra.sign_in_failed.message"),
   },
 
   // Reset Password

@@ -232,6 +232,14 @@
         "title": "Pengingat otomatis",
         "description": "Plane akan mengirim pengingat otomatis via email dan notifikasi dalam aplikasi untuk memantau kemajuan proyek Anda.",
         "duration": "Kirim pengingat sebelum"
+      },
+      "auto-cycle-complete": {
+        "title": "Selesaikan siklus secara otomatis",
+        "description": "Menyelesaikan siklus begitu tanggal berakhirnya lewat. Saat nonaktif, siklus tetap aktif sampai seseorang menutup atau mengarsipkannya."
+      },
+      "auto-conventional-commit": {
+        "title": "Beri label conventional commit",
+        "description": "Memberi item kerja label yang tersirat dari awalan conventional commit pada judulnya. Saat diaktifkan, item kerja yang belum berlabel juga dipindai dan diberi label."
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "Siklus paralel",
         "description": "Menjalankan beberapa siklus aktif sekaligus, dengan rentang tanggal yang tumpang tindih."
-      },
-      "auto_complete": {
-        "title": "Selesaikan siklus secara otomatis",
-        "description": "Menyelesaikan siklus begitu tanggal berakhirnya lewat. Saat nonaktif, siklus tetap aktif sampai seseorang menutup atau mengarsipkannya."
       }
     }
   }

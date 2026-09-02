@@ -232,6 +232,14 @@
         "title": "Auto-reminders",
         "description": "Plane will automatically send reminders via email and in-app notifications to keep your team on track with deadlines.",
         "duration": "Send reminder before"
+      },
+      "auto-cycle-complete": {
+        "title": "Auto-complete cycles",
+        "description": "Complete a cycle automatically once its end date passes. While off, a cycle stays active until somebody closes or archives it."
+      },
+      "auto-conventional-commit": {
+        "title": "Label conventional commits",
+        "description": "Give a work item the label its title's conventional commit prefix implies. Turning this on also scans and labels the work items that have no label yet."
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "Parallel cycles",
         "description": "Run several active cycles at once, with overlapping date ranges."
-      },
-      "auto_complete": {
-        "title": "Auto-complete cycles",
-        "description": "Complete a cycle automatically once its end date passes. While off, a cycle stays active until somebody closes or archives it."
       }
     }
   }

@@ -232,6 +232,14 @@
         "title": "Otomatik hatırlatmalar",
         "description": "Plane, e-posta ve uygulama bildirimleri aracılığıyla otomatik olarak takımınızı zamanlama yolunda tutacaktır.",
         "duration": "Hatırlatma gönderimi öncesi"
+      },
+      "auto-cycle-complete": {
+        "title": "Döngüleri otomatik tamamla",
+        "description": "Bitiş tarihi geçtiği anda döngüyü otomatik tamamla. Kapalıyken döngü, biri kapatana veya arşivleyene kadar etkin kalır."
+      },
+      "auto-conventional-commit": {
+        "title": "Conventional commit etiketleri ver",
+        "description": "İş öğesine, başlığındaki conventional commit önekinin işaret ettiği etiketi ver. Açıldığında henüz etiketi olmayan iş öğeleri de taranıp etiketlenir."
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "Paralel döngüler",
         "description": "Tarih aralıkları çakışan birden fazla döngüyü aynı anda etkin tutun."
-      },
-      "auto_complete": {
-        "title": "Döngüleri otomatik tamamla",
-        "description": "Bitiş tarihi geçtiği anda döngüyü otomatik tamamla. Kapalıyken döngü, biri kapatana veya arşivleyene kadar etkin kalır."
       }
     }
   }

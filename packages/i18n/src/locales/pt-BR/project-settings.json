@@ -232,6 +232,14 @@
         "title": "Avisos automáticos",
         "description": "O Plane enviará avisos automáticos via e-mail e notificações no aplicativo para manter sua equipe no caminho dos prazos.",
         "duration": "Enviar aviso antes"
+      },
+      "auto-cycle-complete": {
+        "title": "Concluir os ciclos automaticamente",
+        "description": "Concluir um ciclo assim que a data de término passar. Desativado, o ciclo continua ativo até alguém fechá-lo ou arquivá-lo."
+      },
+      "auto-conventional-commit": {
+        "title": "Etiquetar conventional commits",
+        "description": "Dar ao item de trabalho a etiqueta que o prefixo conventional commit do título indica. Ativar também percorre e etiqueta os itens que ainda não têm etiqueta."
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "Ciclos paralelos",
         "description": "Manter vários ciclos ativos ao mesmo tempo, com períodos que se sobrepõem."
-      },
-      "auto_complete": {
-        "title": "Concluir os ciclos automaticamente",
-        "description": "Concluir um ciclo assim que a data de término passar. Desativado, o ciclo continua ativo até alguém fechá-lo ou arquivá-lo."
       }
     }
   }

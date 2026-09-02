@@ -232,6 +232,14 @@
         "title": "Recordatorios automáticos",
         "description": "Plane enviará recordatorios automáticos via correo electrónico y notificaciones en la aplicación para mantener a tu equipo en el camino de los plazos.",
         "duration": "Enviar recordatorio antes"
+      },
+      "auto-cycle-complete": {
+        "title": "Completar los ciclos automáticamente",
+        "description": "Completar un ciclo en cuanto pase su fecha de fin. Si está desactivado, el ciclo sigue activo hasta que alguien lo cierre o lo archive."
+      },
+      "auto-conventional-commit": {
+        "title": "Etiquetar conventional commits",
+        "description": "Dar a un elemento de trabajo la etiqueta que implica el prefijo conventional commit de su título. Al activarlo también se revisan y etiquetan los elementos que aún no tienen etiqueta."
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "Ciclos paralelos",
         "description": "Ejecutar varios ciclos activos a la vez, con periodos que se solapan."
-      },
-      "auto_complete": {
-        "title": "Completar los ciclos automáticamente",
-        "description": "Completar un ciclo en cuanto pase su fecha de fin. Si está desactivado, el ciclo sigue activo hasta que alguien lo cierre o lo archive."
       }
     }
   }

@@ -232,6 +232,14 @@
         "title": "Rappels automatiques",
         "description": "Plane enverra automatiquement des rappels via e-mail et notifications dans l'application pour garder votre équipe sur le bon chemin des délais.",
         "duration": "Envoyer un rappel avant"
+      },
+      "auto-cycle-complete": {
+        "title": "Clôture automatique des cycles",
+        "description": "Clôturer un cycle automatiquement une fois sa date de fin passée. Désactivé, un cycle reste actif jusqu’à ce que quelqu’un le clôture ou l’archive."
+      },
+      "auto-conventional-commit": {
+        "title": "Étiqueter les conventional commits",
+        "description": "Attribuer à un élément de travail l’étiquette qu’implique le préfixe conventional commit de son titre. L’activer analyse aussi les éléments qui n’ont pas encore d’étiquette et les étiquette."
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "Cycles parallèles",
         "description": "Faire tourner plusieurs cycles actifs à la fois, avec des périodes qui se chevauchent."
-      },
-      "auto_complete": {
-        "title": "Clôture automatique des cycles",
-        "description": "Clôturer un cycle automatiquement une fois sa date de fin passée. Désactivé, un cycle reste actif jusqu’à ce que quelqu’un le clôture ou l’archive."
       }
     }
   }

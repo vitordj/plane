@@ -232,6 +232,14 @@
         "title": "Nhắc nhở tự động",
         "description": "Plane sẽ tự động gửi nhắc nhở qua email và thông báo trong ứng dụng để giữ cho nhóm của bạn trên đường đến các hạn chót.",
         "duration": "Gửi nhắc nhở trước"
+      },
+      "auto-cycle-complete": {
+        "title": "Tự động hoàn thành chu kỳ",
+        "description": "Tự động hoàn thành chu kỳ ngay khi qua ngày kết thúc. Khi tắt, chu kỳ vẫn hoạt động cho đến khi có người đóng hoặc lưu trữ nó."
+      },
+      "auto-conventional-commit": {
+        "title": "Gắn nhãn theo conventional commit",
+        "description": "Gán cho mục công việc nhãn mà tiền tố conventional commit trong tiêu đề gợi ý. Khi bật, hệ thống cũng quét và gắn nhãn cho những mục chưa có nhãn."
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "Chu kỳ song song",
         "description": "Chạy nhiều chu kỳ hoạt động cùng lúc, với các khoảng thời gian chồng lấn."
-      },
-      "auto_complete": {
-        "title": "Tự động hoàn thành chu kỳ",
-        "description": "Tự động hoàn thành chu kỳ ngay khi qua ngày kết thúc. Khi tắt, chu kỳ vẫn hoạt động cho đến khi có người đóng hoặc lưu trữ nó."
       }
     }
   }

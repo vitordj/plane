@@ -232,6 +232,14 @@
         "title": "Avertismente automate",
         "description": "Plane va trimite avertizări automate prin e-mail și notificări în aplicație pentru a menține echipa pe calea termenelor.",
         "duration": "Trimite avertizare înainte"
+      },
+      "auto-cycle-complete": {
+        "title": "Finalizarea automată a ciclurilor",
+        "description": "Finalizați un ciclu automat de îndată ce trece data lui de sfârșit. Dezactivat, ciclul rămâne activ până când cineva îl închide sau îl arhivează."
+      },
+      "auto-conventional-commit": {
+        "title": "Etichetați conventional commits",
+        "description": "Atribuiți activității eticheta sugerată de prefixul conventional commit din titlul ei. Activarea parcurge și etichetează și activitățile care nu au încă etichetă."
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "Cicluri paralele",
         "description": "Rulați mai multe cicluri active în același timp, cu perioade care se suprapun."
-      },
-      "auto_complete": {
-        "title": "Finalizarea automată a ciclurilor",
-        "description": "Finalizați un ciclu automat de îndată ce trece data lui de sfârșit. Dezactivat, ciclul rămâne activ până când cineva îl închide sau îl arhivează."
       }
     }
   }

@@ -232,6 +232,14 @@
         "title": "자동 알림",
         "description": "Plane은 이메일과 앱 알림을 통해 팀이 마감일에 따라 추진하도록 자동으로 알림을 보냅니다.",
         "duration": "알림 전"
+      },
+      "auto-cycle-complete": {
+        "title": "사이클 자동 완료",
+        "description": "종료일이 지나면 사이클을 자동으로 완료합니다. 꺼져 있으면 누군가 닫거나 보관할 때까지 사이클이 활성 상태로 남습니다."
+      },
+      "auto-conventional-commit": {
+        "title": "Conventional Commit 레이블 지정",
+        "description": "제목의 Conventional Commit 접두사가 가리키는 레이블을 작업 항목에 지정합니다. 켜면 아직 레이블이 없는 작업 항목도 검사해 레이블을 붙입니다."
       }
     },
     "empty_state": {
@@ -579,10 +587,6 @@
       "parallel": {
         "title": "병렬 사이클",
         "description": "기간이 겹치는 여러 사이클을 동시에 활성 상태로 운영합니다."
-      },
-      "auto_complete": {
-        "title": "사이클 자동 완료",
-        "description": "종료일이 지나면 사이클을 자동으로 완료합니다. 꺼져 있으면 누군가 닫거나 보관할 때까지 사이클이 활성 상태로 남습니다."
       }
     }
   }
