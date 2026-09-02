@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react";
 import { Sparkles } from "lucide-react";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import { CustomSearchSelect } from "@plane/ui";
@@ -23,6 +24,9 @@ type Props = {
   onAssigned?: () => void;
 };
 
+const KEY = "issue.organizational_unit";
+const TRY_AGAIN = "workspace_settings.settings.organizational_units.try_again";
+
 /**
  * @description Which area owns this work item, and a one-click way to hand it
  * to that area's least-loaded member. The area is responsibility, not access —
@@ -31,6 +35,7 @@ type Props = {
 export const IssueOrganizationalUnitProperty = observer(function IssueOrganizationalUnitProperty(props: Props) {
   const { workspaceSlug, projectId, issueId, disabled, onAssigned } = props;
   const store = useOrganizationalUnit();
+  const { t } = useTranslation();
 
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [isAssigning, setIsAssigning] = useState(false);
@@ -75,7 +80,7 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
       await store.setIssueUnit(workspaceSlug, projectId, issueId, unitId);
     } catch {
       setSelectedUnitId(previous);
-      setToast({ type: TOAST_TYPE.ERROR, title: "Area unchanged", message: "Try again in a moment." });
+      setToast({ type: TOAST_TYPE.ERROR, title: t(`${KEY}.toast.area_unchanged`), message: t(TRY_AGAIN) });
     }
   };
 
@@ -87,25 +92,25 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
       if (result.assigned) {
         setToast({
           type: TOAST_TYPE.SUCCESS,
-          title: "Assigned",
-          message: "Given to the area member with the least open work.",
+          title: t(`${KEY}.toast.assigned_title`),
+          message: t(`${KEY}.toast.assigned`),
         });
         onAssigned?.();
       } else if (result.reason === "already_assigned") {
         setToast({
           type: TOAST_TYPE.INFO,
-          title: "Already assigned",
-          message: "This work item already has an assignee.",
+          title: t(`${KEY}.toast.already_assigned_title`),
+          message: t(`${KEY}.toast.already_assigned`),
         });
       } else {
         setToast({
           type: TOAST_TYPE.ERROR,
-          title: "Nobody available",
-          message: "No member of this area has access to this project.",
+          title: t(`${KEY}.toast.nobody_title`),
+          message: t(`${KEY}.toast.nobody`),
         });
       }
     } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: "Not assigned", message: "Try again in a moment." });
+      setToast({ type: TOAST_TYPE.ERROR, title: t(`${KEY}.toast.not_assigned`), message: t(TRY_AGAIN) });
     } finally {
       setIsAssigning(false);
     }
@@ -122,11 +127,11 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
         options={options}
         onChange={handleChange}
         disabled={disabled}
-        label={selectedUnit?.name ?? "None"}
+        label={selectedUnit?.name ?? t("common.none")}
         maxHeight="md"
         className="group min-w-0 flex-1"
         buttonClassName={`text-body-xs-regular justify-between ${selectedUnit ? "" : "text-placeholder"}`}
-        noResultsMessage="No areas match"
+        noResultsMessage={t(`${KEY}.no_match`)}
       />
       {selectedUnitId && !disabled && (
         <Button
@@ -136,9 +141,9 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
           onClick={handleAutoAssign}
           loading={isAssigning}
           prependIcon={<Sparkles />}
-          title="Assign to the area member with the least open work"
+          title={t(`${KEY}.assign_tooltip`)}
         >
-          Assign
+          {t(`${KEY}.assign`)}
         </Button>
       )}
     </div>

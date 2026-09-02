@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react";
 import { X } from "lucide-react";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { TOrganizationalUnitMemberRole } from "@plane/types";
@@ -21,10 +22,7 @@ type Props = {
   unitId: string;
 };
 
-const UNIT_ROLES: { value: TOrganizationalUnitMemberRole; label: string }[] = [
-  { value: "member", label: "Member" },
-  { value: "lead", label: "Lead" },
-];
+const OU = "workspace_settings.settings.organizational_units";
 
 /**
  * @description Who belongs to an area. Adding someone here grants them access
@@ -34,6 +32,7 @@ const UNIT_ROLES: { value: TOrganizationalUnitMemberRole; label: string }[] = [
 export const OrganizationalUnitMembersTab = observer(function OrganizationalUnitMembersTab(props: Props) {
   const { workspaceSlug, unitId } = props;
   const store = useOrganizationalUnit();
+  const { t } = useTranslation();
   const {
     workspace: { workspaceMemberIds, getWorkspaceMemberDetails },
   } = useMember();
@@ -43,6 +42,13 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
   const [isAdding, setIsAdding] = useState(false);
 
   const memberships = store.getMembersByUnitId(unitId);
+
+  const unitRoles: { value: TOrganizationalUnitMemberRole; label: string }[] = [
+    { value: "member", label: t("common.member") },
+    { value: "lead", label: t("lead") },
+  ];
+  const roleLabel = (role: TOrganizationalUnitMemberRole) =>
+    unitRoles.find((option) => option.value === role)?.label ?? t("common.member");
 
   useEffect(() => {
     setIsLoading(true);
@@ -76,11 +82,11 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
       setSelectedMemberId(null);
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Member added",
-        message: "They now have access to this area's projects.",
+        title: t(`${OU}.members.toast.added_title`),
+        message: t(`${OU}.members.toast.added`),
       });
     } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: "Not added", message: "Try again in a moment." });
+      setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.members.toast.not_added`), message: t(`${OU}.try_again`) });
     } finally {
       setIsAdding(false);
     }
@@ -92,8 +98,8 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
     } catch {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Role unchanged",
-        message: "An area can only have one lead at a time.",
+        title: t(`${OU}.toast.role_unchanged`),
+        message: t(`${OU}.members.toast.one_lead`),
       });
     }
   };
@@ -103,11 +109,11 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
       await store.removeMember(workspaceSlug, unitId, membershipId);
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Member removed",
-        message: `${displayName} keeps any project access granted outside this area.`,
+        title: t(`${OU}.members.toast.removed_title`),
+        message: t(`${OU}.members.toast.removed`, { name: displayName }),
       });
     } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: "Not removed", message: "Try again in a moment." });
+      setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.members.toast.not_removed`), message: t(`${OU}.try_again`) });
     }
   };
 
@@ -120,6 +126,8 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
       </Loader>
     );
 
+  const directoryBadge = t(`${OU}.members.directory_badge`);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
@@ -129,21 +137,20 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
           onChange={(value: string) => setSelectedMemberId(value)}
           label={
             selectedMemberId
-              ? (addableOptions.find((option) => option.value === selectedMemberId)?.query ?? "Select a person")
-              : "Select a person"
+              ? (addableOptions.find((option) => option.value === selectedMemberId)?.query ??
+                t(`${OU}.members.select_person`))
+              : t(`${OU}.members.select_person`)
           }
           maxHeight="md"
-          noResultsMessage="Everyone in this workspace is already in this area"
+          noResultsMessage={t(`${OU}.members.no_addable`)}
         />
         <Button variant="primary" size="sm" onClick={handleAdd} loading={isAdding} disabled={!selectedMemberId}>
-          Add to area
+          {t(`${OU}.members.add`)}
         </Button>
       </div>
 
       {memberships.length === 0 ? (
-        <p className="text-sm text-custom-text-300 py-8 text-center">
-          Nobody is in this area yet. Add people to give them access to its projects.
-        </p>
+        <p className="text-sm text-custom-text-300 py-8 text-center">{t(`${OU}.members.empty`)}</p>
       ) : (
         <div className="divide-custom-border-200 border-custom-border-200 divide-y rounded border">
           {memberships.map((membership) => (
@@ -157,7 +164,7 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
                         next sync; the badge is the warning before the click. */}
                     {membership.sync_source === "scim" && (
                       <span className="text-custom-text-400 shrink-0 rounded bg-layer-1 px-1.5 py-0.5 text-[10px] tracking-wide uppercase">
-                        Directory
+                        {directoryBadge}
                       </span>
                     )}
                   </p>
@@ -167,11 +174,11 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
               <div className="flex flex-shrink-0 items-center gap-2">
                 <CustomSelect
                   value={membership.role}
-                  label={UNIT_ROLES.find((role) => role.value === membership.role)?.label ?? "Member"}
+                  label={roleLabel(membership.role)}
                   onChange={(value: TOrganizationalUnitMemberRole) => handleRoleChange(membership.id, value)}
                   buttonClassName="text-xs"
                 >
-                  {UNIT_ROLES.map((role) => (
+                  {unitRoles.map((role) => (
                     <CustomSelect.Option key={role.value} value={role.value}>
                       {role.label}
                     </CustomSelect.Option>
@@ -179,7 +186,7 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
                 </CustomSelect>
                 <button
                   type="button"
-                  aria-label={`Remove ${membership.display_name} from this area`}
+                  aria-label={t(`${OU}.members.remove_aria`, { name: membership.display_name })}
                   className="text-custom-text-300 hover:bg-custom-background-80 focus-visible:ring-custom-primary-100 rounded p-1 outline-none focus-visible:ring-2"
                   onClick={() => handleRemove(membership.id, membership.display_name)}
                 >
@@ -191,13 +198,9 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
         </div>
       )}
 
-      <p className="text-xs text-custom-text-300">
-        Leading an area governs the area itself. Project admin is granted separately, on the project.
-      </p>
+      <p className="text-xs text-custom-text-300">{t(`${OU}.members.lead_note`)}</p>
       <p className="text-xs text-custom-text-400">
-        People marked <span className="uppercase">Directory</span> come from your identity provider. Removing them here
-        lasts only until the next sync — take them out of the group upstream instead. People you add by hand are never
-        removed by a sync.
+        {t(`${OU}.members.directory_note`, { badge: directoryBadge.toUpperCase() })}
       </p>
     </div>
   );

@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react";
 import { X } from "lucide-react";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import { EUserWorkspaceRoles } from "@plane/types";
@@ -21,12 +22,7 @@ type Props = {
   unitId: string;
 };
 
-/** Project roles an area can grant, using Plane's own role values. */
-const INHERITED_ROLES: { value: number; label: string; hint: string }[] = [
-  { value: EUserWorkspaceRoles.ADMIN, label: "Admin", hint: "Can change project settings and members" },
-  { value: EUserWorkspaceRoles.MEMBER, label: "Member", hint: "Can create and edit work items" },
-  { value: EUserWorkspaceRoles.GUEST, label: "Guest", hint: "Limited access" },
-];
+const OU = "workspace_settings.settings.organizational_units";
 
 /**
  * @description Which projects an area grants access to, and at which role.
@@ -36,6 +32,7 @@ const INHERITED_ROLES: { value: number; label: string; hint: string }[] = [
 export const OrganizationalUnitProjectsTab = observer(function OrganizationalUnitProjectsTab(props: Props) {
   const { workspaceSlug, unitId } = props;
   const store = useOrganizationalUnit();
+  const { t } = useTranslation();
   const { workspaceProjectIds, getProjectById } = useProject();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +41,27 @@ export const OrganizationalUnitProjectsTab = observer(function OrganizationalUni
   const [isLinking, setIsLinking] = useState(false);
 
   const linkedProjects = store.getProjectsByUnitId(unitId);
+
+  /** Project roles an area can grant, using Plane's own role values. */
+  const inheritedRoles: { value: number; label: string; hint: string }[] = [
+    {
+      value: EUserWorkspaceRoles.ADMIN,
+      label: t("role_details.admin.title"),
+      hint: t(`${OU}.projects.role_admin_hint`),
+    },
+    {
+      value: EUserWorkspaceRoles.MEMBER,
+      label: t("role_details.member.title"),
+      hint: t(`${OU}.projects.role_member_hint`),
+    },
+    {
+      value: EUserWorkspaceRoles.GUEST,
+      label: t("role_details.guest.title"),
+      hint: t(`${OU}.projects.role_guest_hint`),
+    },
+  ];
+  const roleLabel = (role: number) =>
+    inheritedRoles.find((option) => option.value === role)?.label ?? t("role_details.member.title");
 
   useEffect(() => {
     setIsLoading(true);
@@ -77,11 +95,11 @@ export const OrganizationalUnitProjectsTab = observer(function OrganizationalUni
       setSelectedProjectId(null);
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Project linked",
-        message: "Everyone in this area now has access to it.",
+        title: t(`${OU}.projects.toast.linked_title`),
+        message: t(`${OU}.projects.toast.linked`),
       });
     } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: "Not linked", message: "Try again in a moment." });
+      setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.projects.toast.not_linked`), message: t(`${OU}.try_again`) });
     } finally {
       setIsLinking(false);
     }
@@ -91,7 +109,7 @@ export const OrganizationalUnitProjectsTab = observer(function OrganizationalUni
     try {
       await store.updateLinkedProjectRole(workspaceSlug, unitId, linkId, role);
     } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: "Role unchanged", message: "Try again in a moment." });
+      setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.toast.role_unchanged`), message: t(`${OU}.try_again`) });
     }
   };
 
@@ -100,11 +118,15 @@ export const OrganizationalUnitProjectsTab = observer(function OrganizationalUni
       await store.unlinkProject(workspaceSlug, unitId, linkId);
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Project unlinked",
-        message: `Access to ${projectName} granted outside this area is kept.`,
+        title: t(`${OU}.projects.toast.unlinked_title`),
+        message: t(`${OU}.projects.toast.unlinked`, { name: projectName }),
       });
     } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: "Not unlinked", message: "Try again in a moment." });
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${OU}.projects.toast.not_unlinked`),
+        message: t(`${OU}.try_again`),
+      });
     }
   };
 
@@ -124,17 +146,19 @@ export const OrganizationalUnitProjectsTab = observer(function OrganizationalUni
           options={linkableOptions}
           onChange={(value: string) => setSelectedProjectId(value)}
           label={
-            selectedProjectId ? (getProjectById(selectedProjectId)?.name ?? "Select a project") : "Select a project"
+            selectedProjectId
+              ? (getProjectById(selectedProjectId)?.name ?? t(`${OU}.projects.select_project`))
+              : t(`${OU}.projects.select_project`)
           }
           maxHeight="md"
-          noResultsMessage="Every project is already linked to this area"
+          noResultsMessage={t(`${OU}.projects.no_linkable`)}
         />
         <CustomSelect
           value={selectedRole}
-          label={INHERITED_ROLES.find((role) => role.value === selectedRole)?.label ?? "Member"}
+          label={roleLabel(selectedRole)}
           onChange={(value: number) => setSelectedRole(value)}
         >
-          {INHERITED_ROLES.map((role) => (
+          {inheritedRoles.map((role) => (
             <CustomSelect.Option key={role.value} value={role.value}>
               <div className="flex flex-col">
                 <span>{role.label}</span>
@@ -144,14 +168,12 @@ export const OrganizationalUnitProjectsTab = observer(function OrganizationalUni
           ))}
         </CustomSelect>
         <Button variant="primary" size="sm" onClick={handleLink} loading={isLinking} disabled={!selectedProjectId}>
-          Link project
+          {t(`${OU}.projects.link`)}
         </Button>
       </div>
 
       {linkedProjects.length === 0 ? (
-        <p className="text-sm text-custom-text-300 py-8 text-center">
-          No projects linked yet. Link one to give this area&apos;s members access to it.
-        </p>
+        <p className="text-sm text-custom-text-300 py-8 text-center">{t(`${OU}.projects.empty`)}</p>
       ) : (
         <div className="divide-custom-border-200 border-custom-border-200 divide-y rounded border">
           {linkedProjects.map((link) => (
@@ -165,11 +187,11 @@ export const OrganizationalUnitProjectsTab = observer(function OrganizationalUni
               <div className="flex flex-shrink-0 items-center gap-2">
                 <CustomSelect
                   value={link.default_role}
-                  label={INHERITED_ROLES.find((role) => role.value === link.default_role)?.label ?? "Member"}
+                  label={roleLabel(link.default_role)}
                   onChange={(value: number) => handleRoleChange(link.id, value)}
                   buttonClassName="text-xs"
                 >
-                  {INHERITED_ROLES.map((role) => (
+                  {inheritedRoles.map((role) => (
                     <CustomSelect.Option key={role.value} value={role.value}>
                       {role.label}
                     </CustomSelect.Option>
@@ -177,7 +199,7 @@ export const OrganizationalUnitProjectsTab = observer(function OrganizationalUni
                 </CustomSelect>
                 <button
                   type="button"
-                  aria-label={`Unlink ${link.project_name} from this area`}
+                  aria-label={t(`${OU}.projects.unlink_aria`, { name: link.project_name })}
                   className="text-custom-text-300 hover:bg-custom-background-80 focus-visible:ring-custom-primary-100 rounded p-1 outline-none focus-visible:ring-2"
                   onClick={() => handleUnlink(link.id, link.project_name)}
                 >
@@ -189,10 +211,7 @@ export const OrganizationalUnitProjectsTab = observer(function OrganizationalUni
         </div>
       )}
 
-      <p className="text-xs text-custom-text-300">
-        A person&apos;s role is the highest their areas grant, capped by their workspace role. Roles set by hand on a
-        project are never lowered here.
-      </p>
+      <p className="text-xs text-custom-text-300">{t(`${OU}.projects.role_note`)}</p>
     </div>
   );
 });

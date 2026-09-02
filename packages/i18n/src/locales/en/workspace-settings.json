@@ -272,7 +272,140 @@
         "heading": "Areas",
         "description": "Group people into areas and give each area access to its projects in one step.",
         "add": "New area",
-        "disabled": "Areas are turned off on this instance. An administrator can enable them by setting ORCA_ORG_UNITS_ENABLED=1."
+        "disabled": "Areas are turned off on this instance. An administrator can enable them by setting ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Try again in a moment.",
+        "toast": {
+          "saved": "Saved",
+          "not_saved": "Not saved",
+          "role_unchanged": "Role unchanged"
+        },
+        "list": {
+          "empty_title": "No areas yet.",
+          "empty_description": "An area groups people who work together — Compliance, Sales, Back office — and gives them access to its projects in one step.",
+          "synced_badge": "Synced",
+          "counts": "{members, plural, one {# person} other {# people}} · {projects, plural, one {# project} other {# projects}}",
+          "delete_aria": "Delete {name}",
+          "delete_title": "Delete {name}?",
+          "delete_content": "Everyone in this area loses the project access it granted them. Access granted by another area, or set by hand on a project, is kept.",
+          "delete_content_synced": "Everyone in this area loses the project access it granted them. This area is synced from your directory, so the next sync will create it again — remove the group in the directory instead if you want it gone for good.",
+          "delete_loading": "Deleting...",
+          "delete_confirm": "Delete area",
+          "toast": {
+            "deleted_title": "Area deleted",
+            "deleted_message": "Project access {name} granted was withdrawn. Access granted elsewhere is kept.",
+            "not_deleted": "Not deleted"
+          }
+        },
+        "form": {
+          "edit_title": "Edit area",
+          "name_placeholder": "Compliance",
+          "description_placeholder": "What this area is responsible for",
+          "create": "Create area",
+          "toast": {
+            "updated": "{name} was updated.",
+            "created_title": "Created",
+            "created": "{name} is ready to use.",
+            "name_taken": "An area with this name already exists. Pick a different name."
+          }
+        },
+        "detail": {
+          "tab_people": "People",
+          "back_aria": "Back to all areas"
+        },
+        "members": {
+          "select_person": "Select a person",
+          "no_addable": "Everyone in this workspace is already in this area",
+          "add": "Add to area",
+          "empty": "Nobody is in this area yet. Add people to give them access to its projects.",
+          "directory_badge": "Directory",
+          "remove_aria": "Remove {name} from this area",
+          "lead_note": "Leading an area governs the area itself. Project admin is granted separately, on the project.",
+          "directory_note": "People marked {badge} come from your identity provider. Removing them here lasts only until the next sync — take them out of the group upstream instead. People you add by hand are never removed by a sync.",
+          "toast": {
+            "added_title": "Member added",
+            "added": "They now have access to this area's projects.",
+            "not_added": "Not added",
+            "one_lead": "An area can only have one lead at a time.",
+            "removed_title": "Member removed",
+            "removed": "{name} keeps any project access granted outside this area.",
+            "not_removed": "Not removed"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Can change project settings and members",
+          "role_member_hint": "Can create and edit work items",
+          "role_guest_hint": "Limited access",
+          "select_project": "Select a project",
+          "no_linkable": "Every project is already linked to this area",
+          "link": "Link project",
+          "empty": "No projects linked yet. Link one to give this area's members access to it.",
+          "unlink_aria": "Unlink {name} from this area",
+          "role_note": "A person's role is the highest their areas grant, capped by their workspace role. Roles set by hand on a project are never lowered here.",
+          "toast": {
+            "linked_title": "Project linked",
+            "linked": "Everyone in this area now has access to it.",
+            "not_linked": "Not linked",
+            "unlinked_title": "Project unlinked",
+            "unlinked": "Access to {name} granted outside this area is kept.",
+            "not_unlinked": "Not unlinked"
+          }
+        },
+        "directory_sync": {
+          "heading": "Directory sync",
+          "description": "Let Microsoft Entra ID keep area membership up to date. Entra decides who belongs to an area; which projects an area grants, and at which role, stays set here.",
+          "never": "Never",
+          "copy": "Copy",
+          "provisioning_on": "Provisioning is on.",
+          "provisioning_off": "Provisioning is off.",
+          "no_token_warning": "Issue a token before switching provisioning on — Entra cannot authenticate without one.",
+          "tenant_url": "Tenant URL",
+          "tenant_url_hint": "Paste this into Provisioning → Admin Credentials in the Entra enterprise application.",
+          "secret_token": "Secret token",
+          "token_installed": "A token starting {prefix}… is installed. Last used {last_used}.",
+          "no_token": "No token is installed.",
+          "rotate_token": "Rotate token",
+          "issue_token": "Issue token",
+          "revoke": "Revoke",
+          "rotate_hint": "Rotating takes effect immediately, so provisioning fails until Entra is given the new token.",
+          "last_sync": "Last sync",
+          "resync_now": "Resync now",
+          "summary_added": "{count, plural, one {# added} other {# added}}",
+          "summary_restored": "{count, plural, one {# restored} other {# restored}}",
+          "summary_withdrawn": "{count, plural, one {# withdrawn} other {# withdrawn}}",
+          "resync_hint": "Resync replays what the directory already sent — it does not call Entra. Use it after inviting somebody the directory had already pushed.",
+          "unresolved_heading": "Pushed by the directory, not in this workspace ({count})",
+          "unresolved_empty": "Everyone the directory sent is an active member of this workspace.",
+          "not_workspace_member": "Not a workspace member",
+          "inactive_in_directory": "Inactive in the directory",
+          "unresolved_hint": "Invite these people to the workspace and they join their areas automatically, or remove them from the group in Entra.",
+          "auto_create_title": "Create areas for new groups",
+          "auto_create_hint": "When off, the directory can only fill areas you created and named to match.",
+          "auto_create_saved": "Saved how new directory groups are handled.",
+          "deprovision_title": "Let the directory remove people",
+          "deprovision_hint": "When off, sync only adds. People you added by hand are never removed either way.",
+          "deprovision_saved": "Saved how removals from the directory are handled.",
+          "toast": {
+            "copied_title": "Copied",
+            "copied": "{label} copied to your clipboard.",
+            "not_copied_title": "Could not copy",
+            "not_copied": "Select and copy the {label} manually.",
+            "load_failed_title": "Could not load the directory connection",
+            "load_failed": "Please try again in a moment.",
+            "save_failed": "The change could not be saved. Please try again.",
+            "token_issued_title": "Token issued",
+            "token_issued": "Copy it now — it is shown only this once.",
+            "token_not_issued_title": "Not issued",
+            "token_not_issued": "The token could not be created.",
+            "token_revoked_title": "Token revoked",
+            "token_revoked": "Provisioning is switched off until a new token is issued.",
+            "token_not_revoked_title": "Not revoked",
+            "token_not_revoked": "The token could not be revoked.",
+            "resynced_title": "Resynced",
+            "resynced": "{added, plural, one {# added} other {# added}}, {withdrawn, plural, one {# withdrawn} other {# withdrawn}}.",
+            "not_resynced_title": "Not resynced",
+            "not_resynced": "The resync could not be completed."
+          }
+        }
       },
       "projects": {
         "title": "Projects",

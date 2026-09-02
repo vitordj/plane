@@ -9,6 +9,7 @@ import { observer } from "mobx-react";
 import { AlertTriangle, Check, Copy, RefreshCw } from "lucide-react";
 // plane imports
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { IDirectoryConnection, IDirectoryIdentity } from "@plane/types";
@@ -25,20 +26,8 @@ type Props = {
 
 const directoryService = new DirectoryService();
 
-/** Copy that reports the outcome instead of failing silently. */
-const copyWithFeedback = async (value: string, label: string) => {
-  try {
-    await copyTextToClipboard(value);
-    setToast({ type: TOAST_TYPE.SUCCESS, title: "Copied", message: `${label} copied to your clipboard.` });
-  } catch {
-    setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy", message: `Select and copy the ${label} manually.` });
-  }
-};
-
-const formatTimestamp = (value: string | null): string => {
-  if (!value) return "Never";
-  return new Date(value).toLocaleString();
-};
+const OU = "workspace_settings.settings.organizational_units";
+const DS = `${OU}.directory_sync`;
 
 /**
  * @description Directory (SCIM) provisioning for areas: the tenant URL and
@@ -53,6 +42,7 @@ const formatTimestamp = (value: string | null): string => {
  */
 export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Props) {
   const { workspaceSlug } = props;
+  const { t } = useTranslation();
   // store hooks
   const { allowPermissions } = useUserPermissions();
   // Every endpoint behind this panel is workspace-admin only, so a member
@@ -65,6 +55,29 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
   const [isBusy, setIsBusy] = useState(false);
   // Held in state, never re-fetched: the API returns the token exactly once.
   const [issuedToken, setIssuedToken] = useState<string | null>(null);
+
+  /** Copy that reports the outcome instead of failing silently. */
+  const copyWithFeedback = async (value: string, label: string) => {
+    try {
+      await copyTextToClipboard(value);
+      setToast({
+        type: TOAST_TYPE.SUCCESS,
+        title: t(`${DS}.toast.copied_title`),
+        message: t(`${DS}.toast.copied`, { label }),
+      });
+    } catch {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${DS}.toast.not_copied_title`),
+        message: t(`${DS}.toast.not_copied`, { label }),
+      });
+    }
+  };
+
+  const formatTimestamp = (value: string | null): string => {
+    if (!value) return t(`${DS}.never`);
+    return new Date(value).toLocaleString();
+  };
 
   const load = useCallback(async () => {
     if (!isAdmin) {
@@ -81,13 +94,13 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
     } catch {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Could not load the directory connection",
-        message: "Please try again in a moment.",
+        title: t(`${DS}.toast.load_failed_title`),
+        message: t(`${DS}.toast.load_failed`),
       });
     } finally {
       setIsLoading(false);
     }
-  }, [workspaceSlug, isAdmin]);
+  }, [workspaceSlug, isAdmin, t]);
 
   useEffect(() => {
     void load();
@@ -98,10 +111,10 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
     try {
       const next = await directoryService.updateConnection(workspaceSlug, data);
       setConnection(next);
-      setToast({ type: TOAST_TYPE.SUCCESS, title: "Saved", message: successMessage });
+      setToast({ type: TOAST_TYPE.SUCCESS, title: t(`${OU}.toast.saved`), message: successMessage });
     } catch (error) {
-      const message = (error as { error?: string })?.error ?? "The change could not be saved. Please try again.";
-      setToast({ type: TOAST_TYPE.ERROR, title: "Not saved", message });
+      const message = (error as { error?: string })?.error ?? t(`${DS}.toast.save_failed`);
+      setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.toast.not_saved`), message });
     } finally {
       setIsBusy(false);
     }
@@ -115,11 +128,15 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
       setIssuedToken(next.token);
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Token issued",
-        message: "Copy it now — it is shown only this once.",
+        title: t(`${DS}.toast.token_issued_title`),
+        message: t(`${DS}.toast.token_issued`),
       });
     } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: "Not issued", message: "The token could not be created." });
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${DS}.toast.token_not_issued_title`),
+        message: t(`${DS}.toast.token_not_issued`),
+      });
     } finally {
       setIsBusy(false);
     }
@@ -133,11 +150,15 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
       await load();
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Token revoked",
-        message: "Provisioning is switched off until a new token is issued.",
+        title: t(`${DS}.toast.token_revoked_title`),
+        message: t(`${DS}.toast.token_revoked`),
       });
     } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: "Not revoked", message: "The token could not be revoked." });
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${DS}.toast.token_not_revoked_title`),
+        message: t(`${DS}.toast.token_not_revoked`),
+      });
     } finally {
       setIsBusy(false);
     }
@@ -150,11 +171,18 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
       await load();
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Resynced",
-        message: `${summary.memberships_created ?? 0} added, ${summary.memberships_deactivated ?? 0} withdrawn.`,
+        title: t(`${DS}.toast.resynced_title`),
+        message: t(`${DS}.toast.resynced`, {
+          added: summary.memberships_created ?? 0,
+          withdrawn: summary.memberships_deactivated ?? 0,
+        }),
       });
     } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: "Not resynced", message: "The resync could not be completed." });
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${DS}.toast.not_resynced_title`),
+        message: t(`${DS}.toast.not_resynced`),
+      });
     } finally {
       setIsBusy(false);
     }
@@ -175,22 +203,22 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
 
   if (!connection) return null;
 
+  const tenantUrlLabel = t(`${DS}.tenant_url`);
+  const secretTokenLabel = t(`${DS}.secret_token`);
+
   return (
     <div className="flex flex-col gap-6 border-t border-subtle pt-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h4 className="text-base text-custom-text-100 font-medium">Directory sync</h4>
-          <p className="text-sm text-custom-text-300">
-            Let Microsoft Entra ID keep area membership up to date. Entra decides who belongs to an area; which projects
-            an area grants, and at which role, stays set here.
-          </p>
+          <h4 className="text-base text-custom-text-100 font-medium">{t(`${DS}.heading`)}</h4>
+          <p className="text-sm text-custom-text-300">{t(`${DS}.description`)}</p>
         </div>
         <ToggleSwitch
           value={connection.is_enabled}
           onChange={() =>
             void updateConnection(
               { is_enabled: !connection.is_enabled },
-              connection.is_enabled ? "Provisioning is off." : "Provisioning is on."
+              connection.is_enabled ? t(`${DS}.provisioning_off`) : t(`${DS}.provisioning_on`)
             )
           }
           size="sm"
@@ -201,13 +229,13 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
       {!connection.has_token && (
         <div className="text-sm text-custom-text-300 flex items-start gap-2 rounded-md bg-layer-1 p-3">
           <AlertTriangle className="text-amber-500 mt-0.5 size-4 shrink-0" />
-          <span>Issue a token before switching provisioning on — Entra cannot authenticate without one.</span>
+          <span>{t(`${DS}.no_token_warning`)}</span>
         </div>
       )}
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <span className="text-sm text-custom-text-200 font-medium">Tenant URL</span>
+          <span className="text-sm text-custom-text-200 font-medium">{tenantUrlLabel}</span>
           <div className="flex items-center gap-2">
             <code className="text-xs text-custom-text-200 flex-1 truncate rounded-md bg-layer-1 px-3 py-2">
               {connection.scim_base_url}
@@ -216,18 +244,16 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
               variant="secondary"
               size="sm"
               prependIcon={<Copy className="size-3.5" />}
-              onClick={() => void copyWithFeedback(connection.scim_base_url, "Tenant URL")}
+              onClick={() => void copyWithFeedback(connection.scim_base_url, tenantUrlLabel)}
             >
-              Copy
+              {t(`${DS}.copy`)}
             </Button>
           </div>
-          <span className="text-xs text-custom-text-400">
-            Paste this into Provisioning → Admin Credentials in the Entra enterprise application.
-          </span>
+          <span className="text-xs text-custom-text-400">{t(`${DS}.tenant_url_hint`)}</span>
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-sm text-custom-text-200 font-medium">Secret token</span>
+          <span className="text-sm text-custom-text-200 font-medium">{secretTokenLabel}</span>
           {issuedToken ? (
             <div className="flex items-center gap-2">
               <code className="text-xs text-custom-text-200 flex-1 truncate rounded-md bg-layer-1 px-3 py-2">
@@ -237,42 +263,39 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
                 variant="secondary"
                 size="sm"
                 prependIcon={<Copy className="size-3.5" />}
-                onClick={() => void copyWithFeedback(issuedToken, "Secret token")}
+                onClick={() => void copyWithFeedback(issuedToken, secretTokenLabel)}
               >
-                Copy
+                {t(`${DS}.copy`)}
               </Button>
             </div>
           ) : (
             <span className="text-sm text-custom-text-300">
               {connection.has_token
-                ? `A token starting ${connection.token_prefix}… is installed. Last used ${formatTimestamp(
-                    connection.token_last_used_at
-                  )}.`
-                : "No token is installed."}
+                ? t(`${DS}.token_installed`, {
+                    prefix: connection.token_prefix,
+                    last_used: formatTimestamp(connection.token_last_used_at),
+                  })
+                : t(`${DS}.no_token`)}
             </span>
           )}
           <div className="flex items-center gap-2 pt-1">
             <Button variant="secondary" size="sm" onClick={() => void handleIssueToken()} disabled={isBusy}>
-              {connection.has_token ? "Rotate token" : "Issue token"}
+              {connection.has_token ? t(`${DS}.rotate_token`) : t(`${DS}.issue_token`)}
             </Button>
             {connection.has_token && (
               <Button variant="error-outline" size="sm" onClick={() => void handleRevokeToken()} disabled={isBusy}>
-                Revoke
+                {t(`${DS}.revoke`)}
               </Button>
             )}
           </div>
-          {connection.has_token && (
-            <span className="text-xs text-custom-text-400">
-              Rotating takes effect immediately, so provisioning fails until Entra is given the new token.
-            </span>
-          )}
+          {connection.has_token && <span className="text-xs text-custom-text-400">{t(`${DS}.rotate_hint`)}</span>}
         </div>
       </div>
 
       <div className="flex flex-col gap-3 rounded-md bg-layer-1 p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col">
-            <span className="text-sm text-custom-text-200 font-medium">Last sync</span>
+            <span className="text-sm text-custom-text-200 font-medium">{t(`${DS}.last_sync`)}</span>
             <span className="text-xs text-custom-text-400">{formatTimestamp(connection.last_sync_at)}</span>
           </div>
           <Button
@@ -282,28 +305,25 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
             onClick={() => void handleResync()}
             disabled={isBusy}
           >
-            Resync now
+            {t(`${DS}.resync_now`)}
           </Button>
         </div>
         <div className="text-xs text-custom-text-300 flex flex-wrap gap-x-6 gap-y-1">
-          <span>{lastSync.memberships_created ?? 0} added</span>
-          <span>{lastSync.memberships_reactivated ?? 0} restored</span>
-          <span>{lastSync.memberships_deactivated ?? 0} withdrawn</span>
+          <span>{t(`${DS}.summary_added`, { count: lastSync.memberships_created ?? 0 })}</span>
+          <span>{t(`${DS}.summary_restored`, { count: lastSync.memberships_reactivated ?? 0 })}</span>
+          <span>{t(`${DS}.summary_withdrawn`, { count: lastSync.memberships_deactivated ?? 0 })}</span>
         </div>
-        <span className="text-xs text-custom-text-400">
-          Resync replays what the directory already sent — it does not call Entra. Use it after inviting somebody the
-          directory had already pushed.
-        </span>
+        <span className="text-xs text-custom-text-400">{t(`${DS}.resync_hint`)}</span>
       </div>
 
       <div className="flex flex-col gap-2">
         <span className="text-sm text-custom-text-200 font-medium">
-          Pushed by the directory, not in this workspace ({unresolved.length})
+          {t(`${DS}.unresolved_heading`, { count: unresolved.length })}
         </span>
         {unresolved.length === 0 ? (
           <div className="text-sm text-custom-text-300 flex items-center gap-2">
             <Check className="text-green-500 size-4" />
-            Everyone the directory sent is an active member of this workspace.
+            {t(`${DS}.unresolved_empty`)}
           </div>
         ) : (
           <>
@@ -315,15 +335,12 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
                     <span className="text-xs text-custom-text-400 truncate">{identity.user_name}</span>
                   </div>
                   <span className="text-xs text-custom-text-400 shrink-0">
-                    {identity.is_active ? "Not a workspace member" : "Inactive in the directory"}
+                    {identity.is_active ? t(`${DS}.not_workspace_member`) : t(`${DS}.inactive_in_directory`)}
                   </span>
                 </li>
               ))}
             </ul>
-            <span className="text-xs text-custom-text-400">
-              Invite these people to the workspace and they join their areas automatically, or remove them from the
-              group in Entra.
-            </span>
+            <span className="text-xs text-custom-text-400">{t(`${DS}.unresolved_hint`)}</span>
           </>
         )}
       </div>
@@ -331,18 +348,13 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
       <div className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-4">
           <span className="flex flex-col">
-            <span className="text-sm text-custom-text-200">Create areas for new groups</span>
-            <span className="text-xs text-custom-text-400">
-              When off, the directory can only fill areas you created and named to match.
-            </span>
+            <span className="text-sm text-custom-text-200">{t(`${DS}.auto_create_title`)}</span>
+            <span className="text-xs text-custom-text-400">{t(`${DS}.auto_create_hint`)}</span>
           </span>
           <ToggleSwitch
             value={connection.auto_create_units}
             onChange={() =>
-              void updateConnection(
-                { auto_create_units: !connection.auto_create_units },
-                "Saved how new directory groups are handled."
-              )
+              void updateConnection({ auto_create_units: !connection.auto_create_units }, t(`${DS}.auto_create_saved`))
             }
             size="sm"
             disabled={isBusy}
@@ -350,17 +362,15 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
         </div>
         <div className="flex items-start justify-between gap-4">
           <span className="flex flex-col">
-            <span className="text-sm text-custom-text-200">Let the directory remove people</span>
-            <span className="text-xs text-custom-text-400">
-              When off, sync only adds. People you added by hand are never removed either way.
-            </span>
+            <span className="text-sm text-custom-text-200">{t(`${DS}.deprovision_title`)}</span>
+            <span className="text-xs text-custom-text-400">{t(`${DS}.deprovision_hint`)}</span>
           </span>
           <ToggleSwitch
             value={connection.deprovision_removes_membership}
             onChange={() =>
               void updateConnection(
                 { deprovision_removes_membership: !connection.deprovision_removes_membership },
-                "Saved how removals from the directory are handled."
+                t(`${DS}.deprovision_saved`)
               )
             }
             size="sm"

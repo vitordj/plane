@@ -25,11 +25,7 @@ import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 import { OrganizationalUnitsWorkspaceSettingsHeader } from "./header";
 
-/** Falls back to English when a locale has not translated a key yet. */
-const translate = (t: (key: string) => string, key: string, fallback: string) => {
-  const value = t(key);
-  return !value || value === key ? fallback : value;
-};
+const OU = "workspace_settings.settings.organizational_units";
 
 const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
   const { workspaceSlug } = useParams();
@@ -51,13 +47,9 @@ const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
     store.fetchUnits(workspaceSlug.toString()).finally(() => setIsLoading(false));
   }, [workspaceSlug, store]);
 
-  const title = translate(t, "workspace_settings.settings.organizational_units.title", "Areas");
-  const heading = translate(t, "workspace_settings.settings.organizational_units.heading", "Areas");
-  const description = translate(
-    t,
-    "workspace_settings.settings.organizational_units.description",
-    "Group people into areas and give each area access to its projects in one step."
-  );
+  const title = t(`${OU}.title`);
+  const heading = t(`${OU}.heading`);
+  const description = t(`${OU}.description`);
 
   const selectedUnit = selectedUnitId ? store.getUnitById(selectedUnitId) : undefined;
 
@@ -68,13 +60,7 @@ const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
         <PageHead title={title} />
         <div className="flex max-w-4xl flex-col gap-2 p-6">
           <h3 className="text-xl text-custom-text-100 font-medium">{heading}</h3>
-          <p className="text-sm text-custom-text-300">
-            {translate(
-              t,
-              "workspace_settings.settings.organizational_units.disabled",
-              "Areas are turned off on this instance. An administrator can enable them by setting ORCA_ORG_UNITS_ENABLED=1."
-            )}
-          </p>
+          <p className="text-sm text-custom-text-300">{t(`${OU}.disabled`)}</p>
         </div>
       </SettingsContentWrapper>
     );
@@ -98,7 +84,7 @@ const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
                 <p className="text-sm text-custom-text-300">{description}</p>
               </div>
               <Button variant="primary" size="sm" onClick={() => setIsCreating(true)} prependIcon={<Plus />}>
-                {translate(t, "workspace_settings.settings.organizational_units.add", "New area")}
+                {t(`${OU}.add`)}
               </Button>
             </div>
 
