@@ -137,6 +137,14 @@ applications → New application → Create your own application** (non-gallery)
 | **Create areas for new groups**     | On      | The directory may only fill areas you created and named to match. Use this when you want to curate which groups become areas.                                                                                 |
 | **Let the directory remove people** | On      | Sync becomes additive only — useful while directory data is still being cleaned up, so a half-populated group cannot strip people of access on its first run. Manually added people are protected either way. |
 
+Both switches live on the workspace's connection. Above them sits the
+instance-wide kill switch for the whole organizational layer,
+`ORCA_ORG_UNITS_ENABLED` (see `organizational-units.md`): set to `0`, the
+directory endpoints on this screen answer 404 and every SCIM call — discovery
+included — gets a 404 error envelope, so Entra's _Test Connection_ fails until
+the layer is switched back on. Nothing is deleted; provisioning simply cannot
+write while the layer is off.
+
 ### Rotating and revoking
 
 **Rotate token** replaces the credential immediately, so provisioning fails
