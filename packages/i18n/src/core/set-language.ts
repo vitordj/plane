@@ -76,6 +76,11 @@ export async function setLanguage(lng: TLanguage): Promise<void> {
 export async function applyDefaultLanguage(lng: TLanguage | undefined): Promise<boolean> {
   if (!lng) return false;
   if (hasExplicitLanguage || readStoredLanguage()) return false;
+  // Wait for i18next before re-checking: the profile fetch can resolve while
+  // this await is pending, and applying the default after it would overwrite
+  // the person's own language with the organization's.
+  await initPromise;
+  if (hasExplicitLanguage || readStoredLanguage()) return false;
   await applyLanguage(lng);
   return true;
 }
