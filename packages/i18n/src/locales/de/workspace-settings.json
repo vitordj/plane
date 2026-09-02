@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Projektstatus",
-        "heading": "Fortschrittsübersicht für alle Projekte anzeigen.",
-        "description": "Projektstatus ist eine Plane-exklusive Funktion zur Verfolgung des Fortschritts aller Ihrer Projekte nach beliebiger Projekteigenschaft.",
-        "go_to_settings": "Zu den Einstellungen"
+        "heading": "Projektstatus",
+        "description": "Projektlebenszyklen im gesamten Arbeitsbereich einheitlich einordnen und verfolgen.",
+        "go_to_settings": "Zu den Einstellungen",
+        "loading": "Einstellungen werden geladen",
+        "list_heading": "Projektstatus des Arbeitsbereichs",
+        "try_again": "Bitte gleich noch einmal versuchen.",
+        "toast": {
+          "enabled": "Projektstatus aktiviert",
+          "disabled": "Projektstatus deaktiviert",
+          "not_saved": "Nicht gespeichert",
+          "state_created": "Status erstellt",
+          "state_updated": "Status aktualisiert",
+          "state_deleted": "Status gelöscht",
+          "default_set": "Standardstatus aktualisiert"
+        },
+        "confirm": {
+          "enable_title": "Projektstatus des Arbeitsbereichs aktivieren?",
+          "disable_title": "Projektstatus des Arbeitsbereichs deaktivieren?",
+          "enable_content": "Der Status wird künftig im Arbeitsbereich verwaltet, projektübergreifend. Bei Arbeitselementen kann der Status an den des Arbeitsbereichs angeglichen werden.",
+          "disable_content": "Jedes Projekt verwaltet seinen Status wieder selbst. Bei Arbeitselementen kann der Status an den des Projekts angeglichen werden."
+        }
       },
       "project_labels": {
         "title": "Projekt-Labels",
         "heading": "Projekt-Labels",
         "description": "Erstellen und verwalten Sie Projekt-Labels auf Arbeitsbereichsebene für die Kategorisierung und die Gruppierung in Board- und Listenansichten.",
-        "go_to_settings": "Zu den Einstellungen"
+        "go_to_settings": "Zu den Einstellungen",
+        "loading": "Einstellungen werden geladen",
+        "list_heading": "Projekt-Labels des Arbeitsbereichs",
+        "try_again": "Bitte gleich noch einmal versuchen.",
+        "toast": {
+          "enabled": "Projekt-Labels aktiviert",
+          "disabled": "Projekt-Labels deaktiviert",
+          "not_saved": "Nicht gespeichert",
+          "label_created": "Label erstellt",
+          "label_updated": "Label aktualisiert",
+          "label_deleted": "Label gelöscht"
+        },
+        "confirm": {
+          "enable_title": "Projekt-Labels des Arbeitsbereichs aktivieren?",
+          "disable_title": "Projekt-Labels des Arbeitsbereichs deaktivieren?",
+          "enable_content": "Labels werden künftig im Arbeitsbereich verwaltet, projektübergreifend.",
+          "disable_content": "Jedes Projekt verwaltet seine Labels wieder selbst."
+        }
       },
       "projects": {
         "title": "Projekte",

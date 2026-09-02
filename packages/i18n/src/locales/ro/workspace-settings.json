@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Stări de proiect",
-        "heading": "Vezi prezentarea progresului pentru toate proiectele.",
-        "description": "Stările proiectelor sunt o funcție exclusivă Plane pentru urmărirea progresului tuturor proiectelor tale după orice proprietate a proiectului.",
-        "go_to_settings": "Mergi la setări"
+        "heading": "Stări de proiect",
+        "description": "Clasificați și urmăriți ciclul de viață al proiectelor în mod unitar în tot spațiul de lucru.",
+        "go_to_settings": "Mergi la setări",
+        "loading": "Se încarcă setările",
+        "list_heading": "Stări de proiect ale spațiului de lucru",
+        "try_again": "Încercați din nou peste o clipă.",
+        "toast": {
+          "enabled": "Stările de proiect sunt active",
+          "disabled": "Stările de proiect sunt dezactivate",
+          "not_saved": "Nu s-a salvat",
+          "state_created": "Stare creată",
+          "state_updated": "Stare actualizată",
+          "state_deleted": "Stare ștearsă",
+          "default_set": "Stare implicită actualizată"
+        },
+        "confirm": {
+          "enable_title": "Activați stările de proiect ale spațiului de lucru?",
+          "disable_title": "Dezactivați stările de proiect ale spațiului de lucru?",
+          "enable_content": "Stările vor fi gestionate din spațiul de lucru, în toate proiectele. Activitățile pot avea starea aliniată la setul spațiului de lucru.",
+          "disable_content": "Fiecare proiect își gestionează din nou propriile stări. Activitățile pot avea starea aliniată la setul proiectului."
+        }
       },
       "project_labels": {
         "title": "Etichete de proiect",
         "heading": "Etichete de proiect",
         "description": "Creează și gestionează etichete de proiect la nivel de spațiu de lucru pentru categorizare și grupare în vizualizările tablou și listă.",
-        "go_to_settings": "Mergi la setări"
+        "go_to_settings": "Mergi la setări",
+        "loading": "Se încarcă setările",
+        "list_heading": "Etichete de proiect ale spațiului de lucru",
+        "try_again": "Încercați din nou peste o clipă.",
+        "toast": {
+          "enabled": "Etichetele de proiect sunt active",
+          "disabled": "Etichetele de proiect sunt dezactivate",
+          "not_saved": "Nu s-a salvat",
+          "label_created": "Etichetă creată",
+          "label_updated": "Etichetă actualizată",
+          "label_deleted": "Etichetă ștearsă"
+        },
+        "confirm": {
+          "enable_title": "Activați etichetele de proiect ale spațiului de lucru?",
+          "disable_title": "Dezactivați etichetele de proiect ale spațiului de lucru?",
+          "enable_content": "Etichetele vor fi gestionate din spațiul de lucru, în toate proiectele.",
+          "disable_content": "Fiecare proiect își gestionează din nou propriile etichete."
+        }
       },
       "projects": {
         "title": "Proiecte",

@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "專案狀態",
-        "heading": "查看所有專案的進度概覽。",
-        "description": "專案狀態是 Plane 獨有的功能，可依任何專案屬性追蹤所有專案的進度。",
-        "go_to_settings": "前往設定"
+        "heading": "專案狀態",
+        "description": "在整個工作區中以一致的方式為專案生命週期分類並追蹤。",
+        "go_to_settings": "前往設定",
+        "loading": "正在載入設定",
+        "list_heading": "工作區專案狀態",
+        "try_again": "請稍後再試。",
+        "toast": {
+          "enabled": "專案狀態已開啟",
+          "disabled": "專案狀態已關閉",
+          "not_saved": "未儲存",
+          "state_created": "已建立狀態",
+          "state_updated": "已更新狀態",
+          "state_deleted": "已刪除狀態",
+          "default_set": "已更新預設狀態"
+        },
+        "confirm": {
+          "enable_title": "開啟工作區專案狀態？",
+          "disable_title": "關閉工作區專案狀態？",
+          "enable_content": "今後狀態將由工作區統一管理，適用於所有專案。工作事項的狀態可能會與工作區的狀態集對齊。",
+          "disable_content": "各專案重新管理自己的狀態。工作事項的狀態可能會與專案的狀態集對齊。"
+        }
       },
       "project_labels": {
         "title": "專案標籤",
         "heading": "專案標籤",
         "description": "建立和管理工作區層級的專案標籤，用於分類以及看板和清單檢視中的分組。",
-        "go_to_settings": "前往設定"
+        "go_to_settings": "前往設定",
+        "loading": "正在載入設定",
+        "list_heading": "工作區專案標籤",
+        "try_again": "請稍後再試。",
+        "toast": {
+          "enabled": "專案標籤已開啟",
+          "disabled": "專案標籤已關閉",
+          "not_saved": "未儲存",
+          "label_created": "已建立標籤",
+          "label_updated": "已更新標籤",
+          "label_deleted": "已刪除標籤"
+        },
+        "confirm": {
+          "enable_title": "開啟工作區專案標籤？",
+          "disable_title": "關閉工作區專案標籤？",
+          "enable_content": "今後標籤將由工作區統一管理，適用於所有專案。",
+          "disable_content": "各專案重新管理自己的標籤。"
+        }
       },
       "projects": {
         "title": "專案",

@@ -28,7 +28,7 @@ export const OrganizationalUnitsWorkspaceSettingsHeader = observer(
               <Breadcrumbs.Item
                 component={
                   <BreadcrumbLink
-                    label={t(settingsDetails.i18n_label) || "Areas"}
+                    label={t(settingsDetails.i18n_label)}
                     icon={<Icon className="size-4 text-tertiary" />}
                   />
                 }

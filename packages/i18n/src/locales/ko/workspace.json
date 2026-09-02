@@ -223,6 +223,14 @@
       "search": {
         "description": "일치하는 프로젝트가 없습니다. 대신 새 프로젝트를 생성하세요"
       }
+    },
+    "group_by_button": "그룹화 기준: {value}",
+    "group": {
+      "no_label": "레이블 없음"
+    },
+    "card": {
+      "set_state": "상태 설정",
+      "add_label": "+ 레이블"
     }
   },
   "workspace_views": {

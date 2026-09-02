@@ -223,6 +223,14 @@
       "search": {
         "description": "找不到符合篩選條件的專案。\n改為建立新專案"
       }
+    },
+    "group_by_button": "分組依據：{value}",
+    "group": {
+      "no_label": "無標籤"
+    },
+    "card": {
+      "set_state": "設定狀態",
+      "add_label": "+ 標籤"
     }
   },
   "workspace_views": {

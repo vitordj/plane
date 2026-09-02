@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "Nicio stare disponibilă pentru grupul {groupKey}",
         "description": "Te rog să creezi o stare nouă"
+      },
+      "workspace_states": {
+        "title": "Folosiți stările de proiect ale spațiului de lucru",
+        "description": "Cât timp opțiunea este activă, stările vin din spațiul de lucru și nu pot fi editate aici.",
+        "active_title": "Stările de proiect ale spațiului de lucru sunt active",
+        "active_description": "Acest proiect folosește stările spațiului de lucru. Dezactivați comutatorul de mai sus pentru a gestiona stările aici.",
+        "try_again": "Încercați din nou peste o clipă.",
+        "toast": {
+          "enabled": "Folosește stările spațiului de lucru",
+          "disabled": "Folosește stările acestui proiect",
+          "not_saved": "Nu s-a salvat"
+        },
+        "confirm": {
+          "enable_title": "Folosiți stările spațiului de lucru pentru acest proiect?",
+          "disable_title": "Gestionați stările în acest proiect?",
+          "enable_content": "De acum stările acestui proiect vin din spațiul de lucru. Activitățile pot avea starea actualizată sau mutată.",
+          "disable_content": "Acest proiect își gestionează din nou propriile stări. Activitățile pot avea starea actualizată sau mutată."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "Numele etichetei nu trebuie să depășească 255 de caractere",
       "toast": {
         "error": "Eroare la actualizarea etichetei"
+      },
+      "workspace_labels": {
+        "title": "Folosiți etichetele de proiect ale spațiului de lucru",
+        "description": "Cât timp opțiunea este activă, etichetele spațiului de lucru sunt atribuite și afișate pe cardul acestui proiect.",
+        "active_title": "Etichetele de proiect ale spațiului de lucru sunt active",
+        "active_description": "Acest proiect folosește etichetele spațiului de lucru. Dezactivați comutatorul de mai sus pentru a gestiona etichetele aici.",
+        "try_again": "Încercați din nou peste o clipă.",
+        "toast": {
+          "enabled": "Folosește etichetele spațiului de lucru",
+          "disabled": "Folosește etichetele acestui proiect",
+          "not_saved": "Nu s-a salvat"
+        }
+      },
+      "delete": {
+        "title": "Ștergeți eticheta",
+        "question": "Sigur doriți să ștergeți această etichetă?",
+        "warning": "Fiecare activitate care o poartă o va pierde. Această acțiune nu poate fi anulată.",
+        "not_deleted": "Nu s-a șters",
+        "try_again": "Încercați din nou peste o clipă."
       }
     },
     "estimates": {
@@ -437,7 +474,16 @@
         "loading": "Se actualizează funcționalitatea proiectului...",
         "success": "Funcționalitatea proiectului a fost actualizată cu succes.",
         "error": "Ceva a mers greșit la actualizarea funcționalității proiectului. Vă rugăm să încercați din nou."
-      }
+      },
+      "project_states": {
+        "title": "Stări de proiect",
+        "description": "Clasificați și urmăriți progresul acestui proiect cu stările spațiului de lucru."
+      },
+      "project_labels": {
+        "title": "Etichete de proiect",
+        "description": "Categorisiți și grupați acest proiect cu etichetele spațiului de lucru."
+      },
+      "paid_plan_tooltip": "Disponibil în planurile plătite"
     },
     "project_updates": {
       "heading": "Actualizări proiect",

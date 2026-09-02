@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Estados do projeto",
-        "heading": "Veja uma visão geral do progresso de todos os projetos.",
-        "description": "Os Estados de projeto são um recurso exclusivo do Plane para acompanhar o progresso de todos os seus projetos por qualquer propriedade do projeto.",
-        "go_to_settings": "Ir para as configurações"
+        "heading": "Estados de projeto",
+        "description": "Classifique e acompanhe o ciclo de vida dos projetos de forma consistente em todo o espaço de trabalho.",
+        "go_to_settings": "Ir para as configurações",
+        "loading": "Carregando as configurações",
+        "list_heading": "Estados de projeto do espaço de trabalho",
+        "try_again": "Tente novamente em instantes.",
+        "toast": {
+          "enabled": "Estados de projeto ativados",
+          "disabled": "Estados de projeto desativados",
+          "not_saved": "Não salvo",
+          "state_created": "Estado criado",
+          "state_updated": "Estado atualizado",
+          "state_deleted": "Estado excluído",
+          "default_set": "Estado padrão atualizado"
+        },
+        "confirm": {
+          "enable_title": "Ativar os estados de projeto do espaço de trabalho?",
+          "disable_title": "Desativar os estados de projeto do espaço de trabalho?",
+          "enable_content": "Os estados passam a ser gerenciados pelo espaço de trabalho, em todos os projetos. Os itens de trabalho podem ter o estado alinhado ao conjunto do espaço de trabalho.",
+          "disable_content": "Cada projeto volta a gerenciar os próprios estados. Os itens de trabalho podem ter o estado alinhado ao conjunto do projeto."
+        }
       },
       "project_labels": {
         "title": "Etiquetas de projeto",
         "heading": "Etiquetas de projeto",
         "description": "Crie e gerencie etiquetas de projeto no nível do espaço de trabalho para categorização e agrupamento nas visualizações de quadro e lista.",
-        "go_to_settings": "Ir para as configurações"
+        "go_to_settings": "Ir para as configurações",
+        "loading": "Carregando as configurações",
+        "list_heading": "Etiquetas de projeto do espaço de trabalho",
+        "try_again": "Tente novamente em instantes.",
+        "toast": {
+          "enabled": "Etiquetas de projeto ativadas",
+          "disabled": "Etiquetas de projeto desativadas",
+          "not_saved": "Não salvo",
+          "label_created": "Etiqueta criada",
+          "label_updated": "Etiqueta atualizada",
+          "label_deleted": "Etiqueta excluída"
+        },
+        "confirm": {
+          "enable_title": "Ativar as etiquetas de projeto do espaço de trabalho?",
+          "disable_title": "Desativar as etiquetas de projeto do espaço de trabalho?",
+          "enable_content": "As etiquetas passam a ser gerenciadas pelo espaço de trabalho, em todos os projetos.",
+          "disable_content": "Cada projeto volta a gerenciar as próprias etiquetas."
+        }
       },
       "organizational_units": {
         "title": "Áreas",

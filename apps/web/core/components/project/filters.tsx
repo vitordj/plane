@@ -86,18 +86,20 @@ const HeaderFilters = observer(function HeaderFilters({
         customButton={
           <div className={getButtonStyling("secondary", "lg")}>
             <LayoutGrid className="size-3.5 shrink-0" strokeWidth={2} />
-            Group By: {groupBy === "label" ? "Label" : "None"}
+            {t("workspace_projects.group_by_button", {
+              value: groupBy === "label" ? t("common.label") : t("common.none"),
+            })}
           </div>
         }
         placement="bottom-end"
         closeOnSelect
       >
         <CustomMenu.MenuItem className="flex items-center justify-between gap-2" onClick={() => setGroupBy("none")}>
-          None
+          {t("common.none")}
           {groupBy === "none" && <CheckIcon className="h-3 w-3" />}
         </CustomMenu.MenuItem>
         <CustomMenu.MenuItem className="flex items-center justify-between gap-2" onClick={() => setGroupBy("label")}>
-          Label
+          {t("common.label")}
           {groupBy === "label" && <CheckIcon className="h-3 w-3" />}
         </CustomMenu.MenuItem>
       </CustomMenu>

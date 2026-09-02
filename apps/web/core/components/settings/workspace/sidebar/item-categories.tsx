@@ -65,15 +65,6 @@ export const WorkspaceSettingsSidebarItemCategories = observer(function Workspac
                     ? pathname === `/${workspaceSlug}${item.href}/`
                     : new RegExp(`^/${workspaceSlug}${item.href}/`).test(pathname);
 
-                const itemLabel = t(item.i18n_label);
-                const displayLabel =
-                  !itemLabel || itemLabel === item.i18n_label
-                    ? item.key
-                        .split("-")
-                        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                        .join(" ")
-                    : itemLabel;
-
                 return (
                   <SettingsSidebarItem
                     key={item.key}
@@ -81,7 +72,7 @@ export const WorkspaceSettingsSidebarItemCategories = observer(function Workspac
                     href={joinUrlPath(workspaceSlug ?? "", item.href)}
                     isActive={isItemActive}
                     icon={WORKSPACE_SETTINGS_ICONS[item.key]}
-                    label={displayLabel}
+                    label={t(item.i18n_label)}
                   />
                 );
               })}

@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Stavy projektů",
-        "heading": "Zobrazit přehled pokroku pro všechny projekty.",
-        "description": "Stavy projektů jsou funkce výhradně Plane pro sledování pokroku všech vašich projektů podle libovolné vlastnosti projektu.",
-        "go_to_settings": "Přejít do nastavení"
+        "heading": "Stavy projektů",
+        "description": "Zařazujte a sledujte životní cyklus projektů jednotně v celém pracovním prostoru.",
+        "go_to_settings": "Přejít do nastavení",
+        "loading": "Načítání nastavení",
+        "list_heading": "Stavy projektů pracovního prostoru",
+        "try_again": "Zkuste to prosím za okamžik znovu.",
+        "toast": {
+          "enabled": "Stavy projektů jsou zapnuté",
+          "disabled": "Stavy projektů jsou vypnuté",
+          "not_saved": "Neuloženo",
+          "state_created": "Stav vytvořen",
+          "state_updated": "Stav aktualizován",
+          "state_deleted": "Stav smazán",
+          "default_set": "Výchozí stav aktualizován"
+        },
+        "confirm": {
+          "enable_title": "Zapnout stavy projektů pracovního prostoru?",
+          "disable_title": "Vypnout stavy projektů pracovního prostoru?",
+          "enable_content": "Stavy se budou spravovat z pracovního prostoru, napříč všemi projekty. U pracovních položek se stav může srovnat se sadou pracovního prostoru.",
+          "disable_content": "Každý projekt si opět spravuje vlastní stavy. U pracovních položek se stav může srovnat se sadou projektu."
+        }
       },
       "project_labels": {
         "title": "Štítky projektů",
         "heading": "Štítky projektů",
         "description": "Vytvářejte a spravujte štítky projektů na úrovni pracovního prostoru pro kategorizaci a seskupování v nástěnce a seznamu.",
-        "go_to_settings": "Přejít do nastavení"
+        "go_to_settings": "Přejít do nastavení",
+        "loading": "Načítání nastavení",
+        "list_heading": "Štítky projektů pracovního prostoru",
+        "try_again": "Zkuste to prosím za okamžik znovu.",
+        "toast": {
+          "enabled": "Štítky projektů jsou zapnuté",
+          "disabled": "Štítky projektů jsou vypnuté",
+          "not_saved": "Neuloženo",
+          "label_created": "Štítek vytvořen",
+          "label_updated": "Štítek aktualizován",
+          "label_deleted": "Štítek smazán"
+        },
+        "confirm": {
+          "enable_title": "Zapnout štítky projektů pracovního prostoru?",
+          "disable_title": "Vypnout štítky projektů pracovního prostoru?",
+          "enable_content": "Štítky se budou spravovat z pracovního prostoru, napříč všemi projekty.",
+          "disable_content": "Každý projekt si opět spravuje vlastní štítky."
+        }
       },
       "projects": {
         "title": "Projekty",

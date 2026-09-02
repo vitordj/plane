@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Proje durumları",
-        "heading": "Tüm projeler için ilerleme özetini görün.",
-        "description": "Proje Durumları, herhangi bir proje özelliğine göre tüm projelerinizin ilerlemesini takip etmek için Plane'e özgü bir özelliktir.",
-        "go_to_settings": "Ayarlara git"
+        "heading": "Proje durumları",
+        "description": "Proje yaşam döngülerini çalışma alanı genelinde tutarlı biçimde sınıflandırın ve izleyin.",
+        "go_to_settings": "Ayarlara git",
+        "loading": "Ayarlar yükleniyor",
+        "list_heading": "Çalışma alanı proje durumları",
+        "try_again": "Birazdan tekrar deneyin.",
+        "toast": {
+          "enabled": "Proje durumları açık",
+          "disabled": "Proje durumları kapalı",
+          "not_saved": "Kaydedilmedi",
+          "state_created": "Durum oluşturuldu",
+          "state_updated": "Durum güncellendi",
+          "state_deleted": "Durum silindi",
+          "default_set": "Varsayılan durum güncellendi"
+        },
+        "confirm": {
+          "enable_title": "Çalışma alanı proje durumları açılsın mı?",
+          "disable_title": "Çalışma alanı proje durumları kapatılsın mı?",
+          "enable_content": "Durumlar bundan sonra tüm projelerde çalışma alanından yönetilir. İş öğelerinin durumu çalışma alanı kümesine hizalanabilir.",
+          "disable_content": "Her proje yeniden kendi durumlarını yönetir. İş öğelerinin durumu proje kümesine hizalanabilir."
+        }
       },
       "project_labels": {
         "title": "Proje etiketleri",
         "heading": "Proje etiketleri",
         "description": "Kategorilendirme ve pano/liste gruplaması için çalışma alanı düzeyinde proje etiketleri oluşturun ve yönetin.",
-        "go_to_settings": "Ayarlara git"
+        "go_to_settings": "Ayarlara git",
+        "loading": "Ayarlar yükleniyor",
+        "list_heading": "Çalışma alanı proje etiketleri",
+        "try_again": "Birazdan tekrar deneyin.",
+        "toast": {
+          "enabled": "Proje etiketleri açık",
+          "disabled": "Proje etiketleri kapalı",
+          "not_saved": "Kaydedilmedi",
+          "label_created": "Etiket oluşturuldu",
+          "label_updated": "Etiket güncellendi",
+          "label_deleted": "Etiket silindi"
+        },
+        "confirm": {
+          "enable_title": "Çalışma alanı proje etiketleri açılsın mı?",
+          "disable_title": "Çalışma alanı proje etiketleri kapatılsın mı?",
+          "enable_content": "Etiketler bundan sonra tüm projelerde çalışma alanından yönetilir.",
+          "disable_content": "Her proje yeniden kendi etiketlerini yönetir."
+        }
       },
       "projects": {
         "title": "Projeler",

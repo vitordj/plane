@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "Aucun état disponible pour le groupe {groupKey}",
         "description": "Veuillez créer un nouvel état"
+      },
+      "workspace_states": {
+        "title": "Utiliser les états de projet de l’espace de travail",
+        "description": "Tant que cette option est active, les états viennent de l’espace de travail et ne sont pas modifiables ici.",
+        "active_title": "Les états de projet de l’espace de travail sont actifs",
+        "active_description": "Ce projet utilise les états de l’espace de travail. Désactivez l’interrupteur ci-dessus pour gérer les états ici.",
+        "try_again": "Réessayez dans un instant.",
+        "toast": {
+          "enabled": "Utilise les états de l’espace de travail",
+          "disabled": "Utilise les états de ce projet",
+          "not_saved": "Non enregistré"
+        },
+        "confirm": {
+          "enable_title": "Utiliser les états de l’espace de travail pour ce projet ?",
+          "disable_title": "Gérer les états dans ce projet ?",
+          "enable_content": "Les états de ce projet viendront désormais de l’espace de travail. Les éléments de travail peuvent voir leur état mis à jour ou déplacé.",
+          "disable_content": "Ce projet gère de nouveau ses propres états. Les éléments de travail peuvent voir leur état mis à jour ou déplacé."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "Le nom de l’étiquette ne doit pas dépasser 255 caractères",
       "toast": {
         "error": "Erreur lors de la mise à jour de l’étiquette"
+      },
+      "workspace_labels": {
+        "title": "Utiliser les étiquettes de projet de l’espace de travail",
+        "description": "Tant que cette option est active, les étiquettes de l’espace de travail sont attribuées et affichées sur la carte de ce projet.",
+        "active_title": "Les étiquettes de projet de l’espace de travail sont actives",
+        "active_description": "Ce projet utilise les étiquettes de l’espace de travail. Désactivez l’interrupteur ci-dessus pour gérer les étiquettes ici.",
+        "try_again": "Réessayez dans un instant.",
+        "toast": {
+          "enabled": "Utilise les étiquettes de l’espace de travail",
+          "disabled": "Utilise les étiquettes de ce projet",
+          "not_saved": "Non enregistré"
+        }
+      },
+      "delete": {
+        "title": "Supprimer l’étiquette",
+        "question": "Voulez-vous vraiment supprimer cette étiquette ?",
+        "warning": "Tous les éléments de travail qui la portent la perdront. Cette action est irréversible.",
+        "not_deleted": "Non supprimée",
+        "try_again": "Réessayez dans un instant."
       }
     },
     "estimates": {
@@ -437,7 +474,16 @@
         "loading": "Mise à jour de la fonctionnalité du projet...",
         "success": "Fonctionnalité du projet mise à jour avec succès.",
         "error": "Une erreur s'est produite lors de la mise à jour de la fonctionnalité du projet. Veuillez réessayer."
-      }
+      },
+      "project_states": {
+        "title": "États de projet",
+        "description": "Classez et suivez la progression de ce projet à l’aide des états de l’espace de travail."
+      },
+      "project_labels": {
+        "title": "Étiquettes de projet",
+        "description": "Catégorisez et regroupez ce projet à l’aide des étiquettes de l’espace de travail."
+      },
+      "paid_plan_tooltip": "Disponible sur les forfaits payants"
     },
     "project_updates": {
       "heading": "Mises à jour du projet",

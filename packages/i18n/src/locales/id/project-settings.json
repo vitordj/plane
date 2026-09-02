@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "Tidak ada status yang tersedia untuk grup {groupKey}",
         "description": "Silakan buat status baru"
+      },
+      "workspace_states": {
+        "title": "Gunakan status proyek ruang kerja",
+        "description": "Selama ini aktif, status berasal dari ruang kerja dan tidak dapat diubah di sini.",
+        "active_title": "Status proyek ruang kerja sedang aktif",
+        "active_description": "Proyek ini memakai status ruang kerja. Matikan sakelar di atas untuk mengelola status di sini.",
+        "try_again": "Coba lagi sebentar lagi.",
+        "toast": {
+          "enabled": "Memakai status ruang kerja",
+          "disabled": "Memakai status proyek ini",
+          "not_saved": "Tidak tersimpan"
+        },
+        "confirm": {
+          "enable_title": "Gunakan status ruang kerja untuk proyek ini?",
+          "disable_title": "Kelola status di proyek ini?",
+          "enable_content": "Mulai sekarang status proyek ini berasal dari ruang kerja. Status item kerja dapat diperbarui atau dipindahkan.",
+          "disable_content": "Proyek ini kembali mengelola statusnya sendiri. Status item kerja dapat diperbarui atau dipindahkan."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "Nama label tidak boleh lebih dari 255 karakter",
       "toast": {
         "error": "Kesalahan saat memperbarui label"
+      },
+      "workspace_labels": {
+        "title": "Gunakan label proyek ruang kerja",
+        "description": "Selama ini aktif, label ruang kerja ditetapkan dan ditampilkan pada kartu proyek ini.",
+        "active_title": "Label proyek ruang kerja sedang aktif",
+        "active_description": "Proyek ini memakai label ruang kerja. Matikan sakelar di atas untuk mengelola label di sini.",
+        "try_again": "Coba lagi sebentar lagi.",
+        "toast": {
+          "enabled": "Memakai label ruang kerja",
+          "disabled": "Memakai label proyek ini",
+          "not_saved": "Tidak tersimpan"
+        }
+      },
+      "delete": {
+        "title": "Hapus label",
+        "question": "Yakin ingin menghapus label ini?",
+        "warning": "Setiap item kerja yang memakainya akan kehilangan label ini. Tindakan ini tidak dapat dibatalkan.",
+        "not_deleted": "Tidak terhapus",
+        "try_again": "Coba lagi sebentar lagi."
       }
     },
     "estimates": {
@@ -437,7 +474,16 @@
         "loading": "Memperbarui fitur proyek...",
         "success": "Fitur proyek berhasil diperbarui.",
         "error": "Terjadi kesalahan saat memperbarui fitur proyek. Silakan coba lagi."
-      }
+      },
+      "project_states": {
+        "title": "Status proyek",
+        "description": "Klasifikasikan dan lacak kemajuan proyek ini dengan status ruang kerja."
+      },
+      "project_labels": {
+        "title": "Label proyek",
+        "description": "Kategorikan dan kelompokkan proyek ini dengan label ruang kerja."
+      },
+      "paid_plan_tooltip": "Tersedia pada paket berbayar"
     },
     "project_updates": {
       "heading": "Pembaruan Proyek",

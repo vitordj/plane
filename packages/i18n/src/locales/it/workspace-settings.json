@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Stati del progetto",
-        "heading": "Visualizza una panoramica dei progressi per tutti i progetti.",
-        "description": "Gli stati dei progetti sono una funzionalità esclusiva di Plane per tracciare i progressi di tutti i tuoi progetti in base a qualsiasi proprietà del progetto.",
-        "go_to_settings": "Vai alle impostazioni"
+        "heading": "Stati di progetto",
+        "description": "Classifica e monitora il ciclo di vita dei progetti in modo coerente in tutto lo spazio di lavoro.",
+        "go_to_settings": "Vai alle impostazioni",
+        "loading": "Caricamento delle impostazioni",
+        "list_heading": "Stati di progetto dello spazio di lavoro",
+        "try_again": "Riprovi tra un istante.",
+        "toast": {
+          "enabled": "Stati di progetto attivi",
+          "disabled": "Stati di progetto disattivati",
+          "not_saved": "Non salvato",
+          "state_created": "Stato creato",
+          "state_updated": "Stato aggiornato",
+          "state_deleted": "Stato eliminato",
+          "default_set": "Stato predefinito aggiornato"
+        },
+        "confirm": {
+          "enable_title": "Attivare gli stati di progetto dello spazio di lavoro?",
+          "disable_title": "Disattivare gli stati di progetto dello spazio di lavoro?",
+          "enable_content": "Gli stati saranno gestiti dallo spazio di lavoro, in tutti i progetti. Gli elementi di lavoro potrebbero vedere il proprio stato allineato a quello dello spazio di lavoro.",
+          "disable_content": "Ogni progetto torna a gestire i propri stati. Gli elementi di lavoro potrebbero vedere il proprio stato allineato a quello del progetto."
+        }
       },
       "project_labels": {
         "title": "Etichette di progetto",
         "heading": "Etichette di progetto",
         "description": "Crea e gestisci le etichette di progetto a livello di spazio di lavoro per la categorizzazione e il raggruppamento nelle viste bacheca ed elenco.",
-        "go_to_settings": "Vai alle impostazioni"
+        "go_to_settings": "Vai alle impostazioni",
+        "loading": "Caricamento delle impostazioni",
+        "list_heading": "Etichette di progetto dello spazio di lavoro",
+        "try_again": "Riprovi tra un istante.",
+        "toast": {
+          "enabled": "Etichette di progetto attive",
+          "disabled": "Etichette di progetto disattivate",
+          "not_saved": "Non salvato",
+          "label_created": "Etichetta creata",
+          "label_updated": "Etichetta aggiornata",
+          "label_deleted": "Etichetta eliminata"
+        },
+        "confirm": {
+          "enable_title": "Attivare le etichette di progetto dello spazio di lavoro?",
+          "disable_title": "Disattivare le etichette di progetto dello spazio di lavoro?",
+          "enable_content": "Le etichette saranno gestite dallo spazio di lavoro, in tutti i progetti.",
+          "disable_content": "Ogni progetto torna a gestire le proprie etichette."
+        }
       },
       "projects": {
         "title": "Progetti",

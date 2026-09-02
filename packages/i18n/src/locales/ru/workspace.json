@@ -223,6 +223,14 @@
       "search": {
         "description": "Не найдено проектов по заданным критериям.\nСоздайте новый проект"
       }
+    },
+    "group_by_button": "Группировать по: {value}",
+    "group": {
+      "no_label": "Без метки"
+    },
+    "card": {
+      "set_state": "Задать статус",
+      "add_label": "+ Метка"
     }
   },
   "workspace_views": {

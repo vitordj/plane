@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "No states available for the {groupKey} group",
         "description": "Please create a new state"
+      },
+      "workspace_states": {
+        "title": "Use workspace project states",
+        "description": "While this is on, states come from the workspace and cannot be edited here.",
+        "active_title": "Workspace project states are active",
+        "active_description": "This project uses the workspace's states. Turn the switch above off to manage states here instead.",
+        "try_again": "Try again in a moment.",
+        "toast": {
+          "enabled": "Using workspace states",
+          "disabled": "Using this project's states",
+          "not_saved": "Not saved"
+        },
+        "confirm": {
+          "enable_title": "Use workspace states for this project?",
+          "disable_title": "Manage states in this project?",
+          "enable_content": "This project's states come from the workspace from now on. Work items may have their state updated or moved.",
+          "disable_content": "This project manages its own states again. Work items may have their state updated or moved."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "Label name should not exceed 255 characters",
       "toast": {
         "error": "Error while updating the label"
+      },
+      "workspace_labels": {
+        "title": "Use workspace project labels",
+        "description": "While this is on, the workspace's labels are assigned and shown on this project's card.",
+        "active_title": "Workspace project labels are active",
+        "active_description": "This project uses the workspace's labels. Turn the switch above off to manage labels here instead.",
+        "try_again": "Try again in a moment.",
+        "toast": {
+          "enabled": "Using workspace labels",
+          "disabled": "Using this project's labels",
+          "not_saved": "Not saved"
+        }
+      },
+      "delete": {
+        "title": "Delete label",
+        "question": "Are you sure you want to delete this label?",
+        "warning": "Every work item carrying it loses it. This cannot be undone.",
+        "not_deleted": "Not deleted",
+        "try_again": "Try again in a moment."
       }
     },
     "estimates": {
@@ -437,7 +474,16 @@
         "loading": "Updating project feature...",
         "success": "Project feature updated successfully.",
         "error": "Something went wrong while updating project feature. Please try again."
-      }
+      },
+      "project_states": {
+        "title": "Project states",
+        "description": "Classify and track this project's progress using workspace-level states."
+      },
+      "project_labels": {
+        "title": "Project labels",
+        "description": "Categorize and group this project using workspace-level labels."
+      },
+      "paid_plan_tooltip": "Available on paid plans"
     },
     "project_updates": {
       "heading": "Project Updates",

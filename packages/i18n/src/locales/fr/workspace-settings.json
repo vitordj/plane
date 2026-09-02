@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "États du projet",
-        "heading": "Consultez la vue d’ensemble de la progression pour tous les projets.",
-        "description": "Les États de projet sont une fonctionnalité exclusive à Plane pour suivre la progression de tous vos projets par n’importe quelle propriété de projet.",
-        "go_to_settings": "Aller aux paramètres"
+        "heading": "États de projet",
+        "description": "Classez et suivez le cycle de vie des projets de façon cohérente dans tout l’espace de travail.",
+        "go_to_settings": "Aller aux paramètres",
+        "loading": "Chargement des paramètres",
+        "list_heading": "États de projet de l’espace de travail",
+        "try_again": "Réessayez dans un instant.",
+        "toast": {
+          "enabled": "États de projet activés",
+          "disabled": "États de projet désactivés",
+          "not_saved": "Non enregistré",
+          "state_created": "État créé",
+          "state_updated": "État mis à jour",
+          "state_deleted": "État supprimé",
+          "default_set": "État par défaut mis à jour"
+        },
+        "confirm": {
+          "enable_title": "Activer les états de projet de l’espace de travail ?",
+          "disable_title": "Désactiver les états de projet de l’espace de travail ?",
+          "enable_content": "Les états seront gérés depuis l’espace de travail, pour tous les projets. Les éléments de travail peuvent voir leur état aligné sur celui de l’espace de travail.",
+          "disable_content": "Chaque projet gère de nouveau ses propres états. Les éléments de travail peuvent voir leur état aligné sur celui du projet."
+        }
       },
       "project_labels": {
         "title": "Étiquettes de projet",
         "heading": "Étiquettes de projet",
         "description": "Créez et gérez des étiquettes de projet au niveau de l’espace de travail pour la catégorisation et le regroupement dans les vues tableau et liste.",
-        "go_to_settings": "Aller aux paramètres"
+        "go_to_settings": "Aller aux paramètres",
+        "loading": "Chargement des paramètres",
+        "list_heading": "Étiquettes de projet de l’espace de travail",
+        "try_again": "Réessayez dans un instant.",
+        "toast": {
+          "enabled": "Étiquettes de projet activées",
+          "disabled": "Étiquettes de projet désactivées",
+          "not_saved": "Non enregistré",
+          "label_created": "Étiquette créée",
+          "label_updated": "Étiquette mise à jour",
+          "label_deleted": "Étiquette supprimée"
+        },
+        "confirm": {
+          "enable_title": "Activer les étiquettes de projet de l’espace de travail ?",
+          "disable_title": "Désactiver les étiquettes de projet de l’espace de travail ?",
+          "enable_content": "Les étiquettes seront gérées depuis l’espace de travail, pour tous les projets.",
+          "disable_content": "Chaque projet gère de nouveau ses propres étiquettes."
+        }
       },
       "projects": {
         "title": "Projets",

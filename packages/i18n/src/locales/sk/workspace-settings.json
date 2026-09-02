@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Stavy projektu",
-        "heading": "Zobrazte prehľad priebehu všetkých projektov.",
-        "description": "Stavy projektov sú funkcia exkluzívna pre Plane na sledovanie priebehu všetkých vašich projektov podľa ľubovoľnej vlastnosti projektu.",
-        "go_to_settings": "Prejsť na nastavenia"
+        "heading": "Stavy projektov",
+        "description": "Zaraďujte a sledujte životný cyklus projektov jednotne v celom pracovnom priestore.",
+        "go_to_settings": "Prejsť na nastavenia",
+        "loading": "Načítava sa nastavenie",
+        "list_heading": "Stavy projektov pracovného priestoru",
+        "try_again": "Skúste to prosím o chvíľu znova.",
+        "toast": {
+          "enabled": "Stavy projektov sú zapnuté",
+          "disabled": "Stavy projektov sú vypnuté",
+          "not_saved": "Neuložené",
+          "state_created": "Stav vytvorený",
+          "state_updated": "Stav aktualizovaný",
+          "state_deleted": "Stav odstránený",
+          "default_set": "Predvolený stav aktualizovaný"
+        },
+        "confirm": {
+          "enable_title": "Zapnúť stavy projektov pracovného priestoru?",
+          "disable_title": "Vypnúť stavy projektov pracovného priestoru?",
+          "enable_content": "Stavy sa budú spravovať z pracovného priestoru, naprieč všetkými projektmi. Pri pracovných položkách sa stav môže zarovnať so sadou pracovného priestoru.",
+          "disable_content": "Každý projekt si opäť spravuje vlastné stavy. Pri pracovných položkách sa stav môže zarovnať so sadou projektu."
+        }
       },
       "project_labels": {
         "title": "Štítky projektov",
         "heading": "Štítky projektov",
         "description": "Vytvárajte a spravujte štítky projektov na úrovni pracovného priestoru na kategorizáciu a zoskupovanie v zobrazeniach tabule a zoznamu.",
-        "go_to_settings": "Prejsť na nastavenia"
+        "go_to_settings": "Prejsť na nastavenia",
+        "loading": "Načítava sa nastavenie",
+        "list_heading": "Štítky projektov pracovného priestoru",
+        "try_again": "Skúste to prosím o chvíľu znova.",
+        "toast": {
+          "enabled": "Štítky projektov sú zapnuté",
+          "disabled": "Štítky projektov sú vypnuté",
+          "not_saved": "Neuložené",
+          "label_created": "Štítok vytvorený",
+          "label_updated": "Štítok aktualizovaný",
+          "label_deleted": "Štítok odstránený"
+        },
+        "confirm": {
+          "enable_title": "Zapnúť štítky projektov pracovného priestoru?",
+          "disable_title": "Vypnúť štítky projektov pracovného priestoru?",
+          "enable_content": "Štítky sa budú spravovať z pracovného priestoru, naprieč všetkými projektmi.",
+          "disable_content": "Každý projekt si opäť spravuje vlastné štítky."
+        }
       },
       "projects": {
         "title": "Projekty",

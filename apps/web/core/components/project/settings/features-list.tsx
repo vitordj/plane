@@ -145,7 +145,7 @@ export const ProjectFeaturesList = observer(function ProjectFeaturesList(props: 
                     {featureItem.icon}
                     {featureItem.title}
                     {featureItem.isPro && (
-                      <Tooltip tooltipContent="Available on plan paid">
+                      <Tooltip tooltipContent={t("project_settings.features.paid_plan_tooltip")}>
                         <UpgradeBadge className="rounded-sm" />
                       </Tooltip>
                     )}
@@ -174,10 +174,10 @@ export const ProjectFeaturesList = observer(function ProjectFeaturesList(props: 
                 title={
                   <span className="flex items-center gap-2">
                     <Layers className="h-5 w-5 flex-shrink-0 text-tertiary" />
-                    Project States
+                    {t("project_settings.features.project_states.title")}
                   </span>
                 }
-                description="Classify and track this project's progress using workspace-level states."
+                description={t("project_settings.features.project_states.description")}
                 control={
                   <ToggleSwitch
                     value={isProjectStateEnabled}
@@ -199,10 +199,10 @@ export const ProjectFeaturesList = observer(function ProjectFeaturesList(props: 
                 title={
                   <span className="flex items-center gap-2">
                     <Tags className="h-5 w-5 flex-shrink-0 text-tertiary" />
-                    Project Labels
+                    {t("project_settings.features.project_labels.title")}
                   </span>
                 }
-                description="Categorize and group this project using workspace-level labels."
+                description={t("project_settings.features.project_labels.description")}
                 control={
                   <ToggleSwitch
                     value={isProjectLabelEnabled}

@@ -223,6 +223,14 @@
       "search": {
         "description": "Không phát hiện dự án nào phù hợp với điều kiện tìm kiếm.\nTạo dự án mới"
       }
+    },
+    "group_by_button": "Nhóm theo: {value}",
+    "group": {
+      "no_label": "Không có nhãn"
+    },
+    "card": {
+      "set_state": "Đặt trạng thái",
+      "add_label": "+ Nhãn"
     }
   },
   "workspace_views": {

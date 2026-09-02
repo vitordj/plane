@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "Žádné stavy pro skupinu {groupKey}",
         "description": "Vytvořte nový stav"
+      },
+      "workspace_states": {
+        "title": "Používat stavy projektů pracovního prostoru",
+        "description": "Dokud je toto zapnuté, stavy pocházejí z pracovního prostoru a nelze je zde upravovat.",
+        "active_title": "Stavy projektů pracovního prostoru jsou aktivní",
+        "active_description": "Tento projekt používá stavy pracovního prostoru. Vypněte přepínač výše, chcete-li stavy spravovat zde.",
+        "try_again": "Zkuste to prosím za okamžik znovu.",
+        "toast": {
+          "enabled": "Používají se stavy pracovního prostoru",
+          "disabled": "Používají se stavy tohoto projektu",
+          "not_saved": "Neuloženo"
+        },
+        "confirm": {
+          "enable_title": "Použít pro tento projekt stavy pracovního prostoru?",
+          "disable_title": "Spravovat stavy v tomto projektu?",
+          "enable_content": "Stavy tohoto projektu budou nadále pocházet z pracovního prostoru. U pracovních položek se stav může aktualizovat nebo přesunout.",
+          "disable_content": "Tento projekt si opět spravuje vlastní stavy. U pracovních položek se stav může aktualizovat nebo přesunout."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "Název štítku nesmí přesáhnout 255 znaků",
       "toast": {
         "error": "Chyba při aktualizaci štítku"
+      },
+      "workspace_labels": {
+        "title": "Používat štítky projektů pracovního prostoru",
+        "description": "Dokud je toto zapnuté, štítky pracovního prostoru se přiřazují a zobrazují na kartě tohoto projektu.",
+        "active_title": "Štítky projektů pracovního prostoru jsou aktivní",
+        "active_description": "Tento projekt používá štítky pracovního prostoru. Vypněte přepínač výše, chcete-li štítky spravovat zde.",
+        "try_again": "Zkuste to prosím za okamžik znovu.",
+        "toast": {
+          "enabled": "Používají se štítky pracovního prostoru",
+          "disabled": "Používají se štítky tohoto projektu",
+          "not_saved": "Neuloženo"
+        }
+      },
+      "delete": {
+        "title": "Smazat štítek",
+        "question": "Opravdu chcete tento štítek smazat?",
+        "warning": "Každá pracovní položka s tímto štítkem o něj přijde. Tuto akci nelze vrátit zpět.",
+        "not_deleted": "Nesmazáno",
+        "try_again": "Zkuste to prosím za okamžik znovu."
       }
     },
     "estimates": {
@@ -437,7 +474,16 @@
         "loading": "Aktualizace funkce projektu...",
         "success": "Funkce projektu byla úspěšně aktualizována.",
         "error": "Při aktualizaci funkce projektu se něco pokazilo. Zkuste to prosím znovu."
-      }
+      },
+      "project_states": {
+        "title": "Stavy projektů",
+        "description": "Zařazujte a sledujte postup tohoto projektu pomocí stavů pracovního prostoru."
+      },
+      "project_labels": {
+        "title": "Štítky projektů",
+        "description": "Kategorizujte a seskupujte tento projekt pomocí štítků pracovního prostoru."
+      },
+      "paid_plan_tooltip": "Dostupné v placených tarifech"
     },
     "project_updates": {
       "heading": "Aktualizace projektu",

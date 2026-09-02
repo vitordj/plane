@@ -223,6 +223,14 @@
       "search": {
         "description": "Nu s-au găsit proiecte care să corespundă criteriilor.\nCreează un proiect nou."
       }
+    },
+    "group_by_button": "Grupează după: {value}",
+    "group": {
+      "no_label": "Fără etichetă"
+    },
+    "card": {
+      "set_state": "Setați starea",
+      "add_label": "+ Etichetă"
     }
   },
   "workspace_views": {

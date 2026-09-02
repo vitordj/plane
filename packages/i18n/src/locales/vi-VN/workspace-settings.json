@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Trạng thái dự án",
-        "heading": "Xem tổng quan tiến độ cho tất cả dự án.",
-        "description": "Trạng thái Dự án là tính năng chỉ có trong Plane để theo dõi tiến độ của tất cả các dự án của bạn theo bất kỳ thuộc tính dự án nào.",
-        "go_to_settings": "Đi đến cài đặt"
+        "heading": "Trạng thái dự án",
+        "description": "Phân loại và theo dõi vòng đời dự án một cách nhất quán trong toàn bộ không gian làm việc.",
+        "go_to_settings": "Đi đến cài đặt",
+        "loading": "Đang tải cài đặt",
+        "list_heading": "Trạng thái dự án của không gian làm việc",
+        "try_again": "Vui lòng thử lại sau giây lát.",
+        "toast": {
+          "enabled": "Đã bật trạng thái dự án",
+          "disabled": "Đã tắt trạng thái dự án",
+          "not_saved": "Chưa lưu",
+          "state_created": "Đã tạo trạng thái",
+          "state_updated": "Đã cập nhật trạng thái",
+          "state_deleted": "Đã xóa trạng thái",
+          "default_set": "Đã cập nhật trạng thái mặc định"
+        },
+        "confirm": {
+          "enable_title": "Bật trạng thái dự án của không gian làm việc?",
+          "disable_title": "Tắt trạng thái dự án của không gian làm việc?",
+          "enable_content": "Trạng thái sẽ được quản lý từ không gian làm việc, trên mọi dự án. Các mục công việc có thể được điều chỉnh trạng thái theo bộ của không gian làm việc.",
+          "disable_content": "Mỗi dự án quản lý lại trạng thái của riêng mình. Các mục công việc có thể được điều chỉnh trạng thái theo bộ của dự án."
+        }
       },
       "project_labels": {
         "title": "Nhãn dự án",
         "heading": "Nhãn dự án",
         "description": "Tạo và quản lý nhãn dự án ở cấp không gian làm việc để phân loại và nhóm trong chế độ xem bảng và danh sách.",
-        "go_to_settings": "Đi đến cài đặt"
+        "go_to_settings": "Đi đến cài đặt",
+        "loading": "Đang tải cài đặt",
+        "list_heading": "Nhãn dự án của không gian làm việc",
+        "try_again": "Vui lòng thử lại sau giây lát.",
+        "toast": {
+          "enabled": "Đã bật nhãn dự án",
+          "disabled": "Đã tắt nhãn dự án",
+          "not_saved": "Chưa lưu",
+          "label_created": "Đã tạo nhãn",
+          "label_updated": "Đã cập nhật nhãn",
+          "label_deleted": "Đã xóa nhãn"
+        },
+        "confirm": {
+          "enable_title": "Bật nhãn dự án của không gian làm việc?",
+          "disable_title": "Tắt nhãn dự án của không gian làm việc?",
+          "enable_content": "Nhãn sẽ được quản lý từ không gian làm việc, trên mọi dự án.",
+          "disable_content": "Mỗi dự án quản lý lại nhãn của riêng mình."
+        }
       },
       "projects": {
         "title": "Dự án",
