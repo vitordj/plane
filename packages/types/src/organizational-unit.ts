@@ -244,6 +244,17 @@ export interface IUnitQueueRow {
   can_assign: boolean;
   can_return: boolean;
   can_transfer: boolean;
+  /** The process run this work item is a step of, when it is one. */
+  process: IQueueRowProcess | null;
+}
+
+/** One work item's place in a run of a process, as the queue shows it. */
+export interface IQueueRowProcess {
+  instance_id: string;
+  source: string;
+  template_name: string;
+  step_key: string;
+  progress: { done: number; total: number };
 }
 
 /** Somebody an area could hand a work item to, with the load that ranks them. */

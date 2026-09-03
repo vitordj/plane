@@ -763,7 +763,8 @@
           },
           "executor_away": "Abwesend",
           "executor_away_tooltip": "Diese Person ist gerade nicht verfügbar. Die Arbeit bleibt bei ihr — jemand muss entscheiden, ob sie wartet.",
-          "suggestion": "Vorschlag: {name}"
+          "suggestion": "Vorschlag: {name}",
+          "process_progress": "{done} von {total} erledigt"
         },
         "decisions": {
           "title": "Entscheidungen",

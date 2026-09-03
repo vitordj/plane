@@ -145,6 +145,29 @@ class OrganizationalUnitAssignmentPolicy(BaseModel):
     assignment_sla_seconds = models.PositiveIntegerField(null=True, blank=True)
     max_open_items_per_member = models.PositiveIntegerField(null=True, blank=True)
 
+    # Where an automatically closed process step lands. Null means "the first
+    # state in the project's completed group" — a sensible default that most
+    # projects never need to override, and a named one for the projects whose
+    # completed group has three states that mean different things.
+    completed_state = models.ForeignKey(
+        "db.State",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orca_completing_policies",
+    )
+    # Where a step closed "with review" lands. Null falls back to leaving the
+    # state alone and labelling it, because a project with no review state has
+    # nowhere better to put it, and moving it to done would be the one thing
+    # "with review" exists to prevent.
+    review_state = models.ForeignKey(
+        "db.State",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orca_reviewing_policies",
+    )
+
     is_active = models.BooleanField(default=True)
     # Frozen into every decision, so a decision can be read against the rules
     # that were in force when it was made rather than today's.

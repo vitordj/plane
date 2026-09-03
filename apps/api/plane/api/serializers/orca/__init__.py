@@ -5,7 +5,9 @@
 from .units import PublicUnitSerializer
 from .work_items import (
     AssignmentBlockSerializer,
+    CompleteStepSerializer,
     ExternalRefSerializer,
+    ProcessBlockSerializer,
     ReassignSerializer,
     TransferSerializer,
     WorkItemAutomationSerializer,

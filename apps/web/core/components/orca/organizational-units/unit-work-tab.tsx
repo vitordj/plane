@@ -14,6 +14,7 @@ import type { IUnitQueueRow } from "@plane/types";
 import { AssignMemberModal } from "./assign-member-modal";
 import { DecisionTimeline } from "./decision-timeline";
 import { QueueList } from "./queue-list";
+import { QueueProcessGroup } from "./queue-process-group";
 import { TransferUnitModal } from "./transfer-unit-modal";
 // hooks
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
@@ -145,18 +146,33 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
           {t(`${OU}.queue.inbox`)}
           <span className="text-custom-text-400 ml-1.5">{waiting.length}</span>
         </h4>
-        <QueueList
-          workspaceSlug={workspaceSlug}
-          unitId={unitId}
-          rows={waiting}
-          isLoading={isLoading}
-          emptyLabel={`${OU}.queue.inbox_empty`}
-          busyIssueId={busyIssueId}
-          onClaim={handleClaim}
-          onAssign={setRowToAssign}
-          onReturn={handleReturn}
-          onTransfer={setRowToTransfer}
-        />
+        {isLoading ? (
+          <QueueList
+            workspaceSlug={workspaceSlug}
+            unitId={unitId}
+            rows={[]}
+            isLoading
+            emptyLabel={`${OU}.queue.inbox_empty`}
+            onClaim={handleClaim}
+            onAssign={setRowToAssign}
+            onReturn={handleReturn}
+            onTransfer={setRowToTransfer}
+          />
+        ) : (
+          /* The inbox is where the steps of one process run being kept
+             together matters: it is the list somebody assigns from. */
+          <QueueProcessGroup
+            workspaceSlug={workspaceSlug}
+            unitId={unitId}
+            rows={waiting}
+            emptyLabel={`${OU}.queue.inbox_empty`}
+            busyIssueId={busyIssueId}
+            onClaim={handleClaim}
+            onAssign={setRowToAssign}
+            onReturn={handleReturn}
+            onTransfer={setRowToTransfer}
+          />
+        )}
       </section>
 
       <section className="space-y-3">

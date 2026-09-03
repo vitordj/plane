@@ -763,7 +763,8 @@
           },
           "executor_away": "不在",
           "executor_away_tooltip": "這個人現在沒空。事情還在他手上——要不要等，得有人拿主意。",
-          "suggestion": "建議：{name}"
+          "suggestion": "建議：{name}",
+          "process_progress": "{total} 項中已完成 {done} 項"
         },
         "decisions": {
           "title": "決定",

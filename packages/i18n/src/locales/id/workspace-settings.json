@@ -763,7 +763,8 @@
           },
           "executor_away": "Sedang tidak ada",
           "executor_away_tooltip": "Orang ini sedang tidak tersedia. Pekerjaannya tetap miliknya — seseorang harus memutuskan apakah menunggu.",
-          "suggestion": "Saran: {name}"
+          "suggestion": "Saran: {name}",
+          "process_progress": "{done} dari {total} selesai"
         },
         "decisions": {
           "title": "Keputusan",

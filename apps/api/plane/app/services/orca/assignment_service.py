@@ -57,6 +57,7 @@ from plane.db.models import (
 from . import metrics
 from .availability import allocation_settings_for, unavailable_member_ids
 from .coverage import unit_covers_project
+from .service_level import record_from_resolution
 from .errors import (
     AlreadyClaimed,
     AssignmentModeNotAllowed,
@@ -514,6 +515,10 @@ def _record(
             "updated_at",
         ]
     )
+
+    # What the area promised about this work item, kept where editing the
+    # native target date cannot reach it (RFC F22).
+    record_from_resolution(issue, link, resolution, actor=actor, reason=reason)
 
     metrics.record_assignment_outcome(
         resolution.effective_mode,

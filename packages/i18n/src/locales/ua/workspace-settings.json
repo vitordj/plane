@@ -763,7 +763,8 @@
           },
           "executor_away": "Відсутній",
           "executor_away_tooltip": "Ця людина зараз недоступна. Робота лишається за нею — хтось має вирішити, чи чекати.",
-          "suggestion": "Пропозиція: {name}"
+          "suggestion": "Пропозиція: {name}",
+          "process_progress": "готово {done} з {total}"
         },
         "decisions": {
           "title": "Рішення",

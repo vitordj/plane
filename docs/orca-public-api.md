@@ -158,6 +158,32 @@ looks like it worked while the work sits there.
 (`400 ORG_ASSIGNEES_NOT_ALLOWED_HERE`). Who does the work is the area's
 decision, and it is recorded as one.
 
+**Steps of a process.** An optional `process` block makes the work item a step
+of a run, and reconnects to that run when it already exists — which is what
+makes replaying a whole template after a restart safe:
+
+```json
+"process": {
+  "source": "espo-onboarding",
+  "instance_id": "client-123",
+  "template_name": "onboarding-cliente",
+  "template_version": "3",
+  "step_key": "compliance.kyc",
+  "completion_mode": "automatic_with_review"
+}
+```
+
+`template_version` is required. A run whose steps were created under two
+versions of a template happens, and the only way to explain it afterwards is
+if every step says which version made it. `responsibility.completion_due_at`
+alongside it is recorded as the promise, with its first value kept immutable —
+`target_date` on the work item is a projection anybody can edit, so it is not
+the thing a report about lateness should read.
+
+`algorithm_version` in the decision reads `lb-2` where availability is on and
+`lb-1` where it was decided before that; every decision keeps saying which
+ranking made it.
+
 ### Read one back
 
 ```bash
@@ -201,6 +227,55 @@ goes back to that area's queue rather than staying with somebody the area
 cannot direct.
 
 ---
+
+### Say a step is done
+
+`POST /api/v1/orca/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/complete/`
+
+Only for work items that are steps of a process run, and only in the way the
+step's own `completion_mode` allows:
+
+- `automatic` moves it to the project's completed state — the one the area's
+  policy names, or the first in the completed group.
+- `automatic_with_review` leaves the state alone and marks it for a person: the
+  area's review state when it has one, otherwise the label
+  `aguardando-validacao`. It does **not** close it; flagging for review and
+  closing are the two things this mode exists to keep apart.
+- `manual` is refused with `4921`. A step whose template says a person decides
+  is not something an API key gets to decide instead.
+
+```bash
+curl -X POST "$PLANE/api/v1/orca/workspaces/$SLUG/projects/$PROJECT/work-items/$ISSUE/complete/" \
+  -H "X-Api-Key: $KEY" -H "Content-Type: application/json" \
+  -H "Idempotency-Key: espo:client-123:kyc:evt-77" \
+  -d '{"source": "espo", "event_id": "evt-77", "rule_version": "2.1",
+       "evidence": {"document": "kyc.pdf", "checked_by": "ocr"}}'
+```
+
+The evidence is kept, append-only, alongside which system asserted it and under
+which version of the rule. The first time somebody disputes an automatic
+closure, that record is the answer.
+
+### Read a process run
+
+`GET /api/v1/orca/workspaces/{slug}/process-instances/{source}/{instance_id}/`
+
+Every step with its native state, where it stands in its area's queue, who is
+executing it and what was promised — which is what an orchestrator needs after
+a restart to work out what to do next.
+
+Progress and status are derived from the work items, not from a counter kept up
+to date as steps close. A step somebody reopened in the app reopens the run;
+the app is allowed to be right.
+
+Both routes need `ORCA_PROCESS_PROJECTION_ENABLED=1`; without it they answer
+`4929`, as does a `process` block on a create — refused rather than ignored,
+because an automation that thought it was building a process and got four
+unrelated work items is worse than an error.
+
+See [`orca-orchestrator-contract.md`](./orca-orchestrator-contract.md) for what
+an orchestrator may and may not rely on, and the contract tests it should pass
+against staging first.
 
 ## Errors
 

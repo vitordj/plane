@@ -763,7 +763,8 @@
           },
           "executor_away": "Nepřítomen",
           "executor_away_tooltip": "Tato osoba teď není k dispozici. Práce zůstává její — někdo musí rozhodnout, jestli počká.",
-          "suggestion": "Návrh: {name}"
+          "suggestion": "Návrh: {name}",
+          "process_progress": "hotovo {done} z {total}"
         },
         "decisions": {
           "title": "Rozhodnutí",

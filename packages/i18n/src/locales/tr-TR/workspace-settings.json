@@ -763,7 +763,8 @@
           },
           "executor_away": "Yok",
           "executor_away_tooltip": "Bu kişi şu anda müsait değil. İş yine onda — birinin beklesin mi diye karar vermesi gerek.",
-          "suggestion": "Öneri: {name}"
+          "suggestion": "Öneri: {name}",
+          "process_progress": "{total} işten {done} tamam"
         },
         "decisions": {
           "title": "Kararlar",

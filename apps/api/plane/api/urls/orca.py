@@ -15,7 +15,9 @@ from django.urls import path
 # Module imports
 from plane.api.views.orca.units import OrcaUnitListEndpoint, OrcaUnitQueueEndpoint
 from plane.api.views.orca.work_items import (
+    OrcaProcessInstanceEndpoint,
     OrcaWorkItemByExternalEndpoint,
+    OrcaWorkItemCompleteEndpoint,
     OrcaWorkItemListCreateEndpoint,
     OrcaWorkItemReassignEndpoint,
     OrcaWorkItemTransferEndpoint,
@@ -51,5 +53,15 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/work-items/by-external/<str:source>/<str:external_id>/",
         OrcaWorkItemByExternalEndpoint.as_view(),
         name="orca-public-work-item-by-external",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/work-items/<uuid:issue_id>/complete/",
+        OrcaWorkItemCompleteEndpoint.as_view(),
+        name="orca-public-work-item-complete",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/process-instances/<str:source>/<str:instance_id>/",
+        OrcaProcessInstanceEndpoint.as_view(),
+        name="orca-public-process-instance",
     ),
 ]

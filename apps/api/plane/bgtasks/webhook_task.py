@@ -49,6 +49,7 @@ from plane.db.models import (
     IssueLabel,
     IssueAssignee,
 )
+from plane.app.services.orca.webhook_payload import orca_webhook_extension
 from plane.license.utils.instance_value import get_email_configuration
 from plane.utils.email import generate_plain_text_from_html
 from plane.utils.exception_logger import log_exception
@@ -292,6 +293,10 @@ def webhook_send_task(
             "data": event_data,
             "activity": activity,
         }
+        # Orca (see FORK.md): which area owns this work item and who is doing
+        # it, so a listener does not have to call back for it. One line, and
+        # the whole extension lives in the service module it imports.
+        payload.update(orca_webhook_extension(event, event_data))
 
         # Use HMAC for generating signature
         if webhook.secret_key:

@@ -95,6 +95,15 @@ from .organizational_unit import (
     RoutingState,
     WorkspaceMemberAvailability,
 )
+from .organizational_process import (
+    CompletionMode,
+    IssueServiceLevel,
+    ProcessCompletionEvent,
+    ProcessInstanceItem,
+    ProcessInstanceReference,
+    ProcessInstanceStatus,
+    ServiceLevelSource,
+)
 from .organizational_directory import (
     OrganizationalDirectoryConnection,
     OrganizationalDirectoryGroupMembership,

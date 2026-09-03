@@ -763,7 +763,8 @@
           },
           "executor_away": "Отсутствует",
           "executor_away_tooltip": "Этот человек сейчас недоступен. Работа остаётся за ним — кто-то должен решить, ждать ли.",
-          "suggestion": "Предложение: {name}"
+          "suggestion": "Предложение: {name}",
+          "process_progress": "готово {done} из {total}"
         },
         "decisions": {
           "title": "Решения",

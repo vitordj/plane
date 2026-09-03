@@ -763,7 +763,8 @@
           },
           "executor_away": "Đang vắng",
           "executor_away_tooltip": "Người này hiện không rảnh. Việc vẫn là của họ — ai đó phải quyết định có chờ hay không.",
-          "suggestion": "Gợi ý: {name}"
+          "suggestion": "Gợi ý: {name}",
+          "process_progress": "xong {done}/{total}"
         },
         "decisions": {
           "title": "Quyết định",

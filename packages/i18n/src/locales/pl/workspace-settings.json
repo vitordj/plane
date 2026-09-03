@@ -763,7 +763,8 @@
           },
           "executor_away": "Nieobecny",
           "executor_away_tooltip": "Ta osoba jest teraz niedostępna. Praca nadal należy do niej — ktoś musi zdecydować, czy poczeka.",
-          "suggestion": "Propozycja: {name}"
+          "suggestion": "Propozycja: {name}",
+          "process_progress": "gotowe {done} z {total}"
         },
         "decisions": {
           "title": "Decyzje",

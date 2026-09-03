@@ -763,7 +763,8 @@
           },
           "executor_away": "不在",
           "executor_away_tooltip": "この人は今、対応できません。仕事はこの人のままです。待つかどうかは誰かが決める必要があります。",
-          "suggestion": "候補: {name}"
+          "suggestion": "候補: {name}",
+          "process_progress": "{total} 件中 {done} 件完了"
         },
         "decisions": {
           "title": "決定",

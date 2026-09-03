@@ -763,7 +763,8 @@
           },
           "executor_away": "부재중",
           "executor_away_tooltip": "이 사람은 지금 대응할 수 없습니다. 일은 그대로 그 사람 몫이며, 기다릴지는 누군가 정해야 합니다.",
-          "suggestion": "추천: {name}"
+          "suggestion": "추천: {name}",
+          "process_progress": "{total}개 중 {done}개 완료"
         },
         "decisions": {
           "title": "결정",

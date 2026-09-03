@@ -763,7 +763,8 @@
           },
           "executor_away": "Absent",
           "executor_away_tooltip": "Persoana nu este disponibilă acum. Munca rămâne a ei — cineva trebuie să decidă dacă așteaptă.",
-          "suggestion": "Sugestie: {name}"
+          "suggestion": "Sugestie: {name}",
+          "process_progress": "{done} din {total} gata"
         },
         "decisions": {
           "title": "Decizii",

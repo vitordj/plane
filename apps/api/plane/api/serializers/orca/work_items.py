@@ -61,6 +61,35 @@ class ResponsibilityBlockSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True, default="")
 
 
+class ProcessBlockSerializer(serializers.Serializer):
+    """
+    Which run of which process this work item is a step of.
+
+    @description ``template_version`` is required, not defaulted. A run whose
+    steps were created under two versions of a template is a thing that
+    happens, and the only way to find out later is if every step says which
+    version made it.
+    """
+
+    source = serializers.CharField(max_length=255)
+    instance_id = serializers.CharField(max_length=255)
+    template_name = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")
+    template_version = serializers.CharField(max_length=64)
+    step_key = serializers.CharField(max_length=255)
+    completion_mode = serializers.ChoiceField(
+        choices=["automatic", "automatic_with_review", "manual"], required=False, default="manual"
+    )
+
+
+class CompleteStepSerializer(serializers.Serializer):
+    """An outside system asserting that a step is done."""
+
+    source = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")
+    event_id = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")
+    rule_version = serializers.CharField(max_length=64, required=False, allow_blank=True, default="")
+    evidence = serializers.DictField(required=False, default=dict)
+
+
 class WorkItemAutomationSerializer(serializers.Serializer):
     """
     The composed create request.
@@ -74,7 +103,7 @@ class WorkItemAutomationSerializer(serializers.Serializer):
     external = ExternalRefSerializer()
     work_item = serializers.DictField()
     responsibility = ResponsibilityBlockSerializer()
-    process = serializers.DictField(required=False)
+    process = ProcessBlockSerializer(required=False)
 
     # Fields of the native work item that this API does not let a caller set,
     # because the area decides them and the decision has to be recorded.

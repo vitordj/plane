@@ -539,7 +539,8 @@
           },
           "executor_away": "Away",
           "executor_away_tooltip": "This person is not available right now. The work is still theirs — somebody has to decide whether it waits.",
-          "suggestion": "Suggested: {name}"
+          "suggestion": "Suggested: {name}",
+          "process_progress": "{done} of {total} done"
         },
         "decisions": {
           "title": "Decisions",

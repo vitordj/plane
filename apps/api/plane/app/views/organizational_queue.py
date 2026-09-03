@@ -35,6 +35,7 @@ from plane.app.services.orca import (
     reassign,
     resolve_policy,
     return_to_queue,
+    instance_progress,
     transfer_unit,
     unavailable_member_ids,
     unit_covers_project,
@@ -47,6 +48,7 @@ from plane.db.models import (
     OrganizationalUnitAssignmentPolicy,
     OrganizationalUnitCoordinator,
     OrganizationalUnitProject,
+    ProcessInstanceItem,
     User,
     WorkspaceMember,
 )
@@ -103,7 +105,11 @@ class UnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
         # queue is where somebody notices that the person carrying a work item
         # is on holiday, and noticing is the whole point of showing it.
         away = self._away_executors(links, unit)
-        rows = [self._row(link, request.user, unit, roles, is_admin, away) for link in links]
+        # Which process run each work item belongs to, and how far along that
+        # run is — so the interface can group four steps of one onboarding
+        # together instead of showing them as four unrelated things.
+        processes = self._process_by_issue(links)
+        rows = [self._row(link, request.user, unit, roles, is_admin, away, processes) for link in links]
 
         # Overdue first: a queue sorted purely by age buries the thing that
         # somebody already promised would be done by now.
@@ -131,7 +137,39 @@ class UnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
         away_member_ids = unavailable_member_ids(member_to_user.keys())
         return {member_to_user[member_id] for member_id in away_member_ids}
 
-    def _row(self, link, user, unit, roles, is_admin, away=frozenset()):
+    def _process_by_issue(self, links) -> dict:
+        """
+        @description The process step each queued work item is, keyed by issue
+        id, with its run's progress. Two queries for the whole queue rather
+        than one per row, and an empty map when nothing here is part of a
+        process — which is the ordinary case.
+        @param links: The queue's links.
+        @returns: ``{issue_id: {...}}``.
+        """
+        items = list(
+            ProcessInstanceItem.objects.filter(issue_id__in=[link.issue_id for link in links]).select_related(
+                "process_instance"
+            )
+        )
+        if not items:
+            return {}
+
+        progress_by_instance = {
+            item.process_instance_id: instance_progress(item.process_instance)
+            for item in {item.process_instance_id: item for item in items}.values()
+        }
+        return {
+            item.issue_id: {
+                "instance_id": item.process_instance.external_instance_id,
+                "source": item.process_instance.external_source,
+                "template_name": item.process_instance.template_name,
+                "step_key": item.step_key,
+                "progress": progress_by_instance[item.process_instance_id],
+            }
+            for item in items
+        }
+
+    def _row(self, link, user, unit, roles, is_admin, away=frozenset(), processes=None):
         issue = link.issue
         executor = link.primary_executor
         now = timezone.now()
@@ -170,6 +208,8 @@ class UnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
             "current_decision": str(link.current_assignment_decision_id)
             if link.current_assignment_decision_id
             else None,
+            # The process run this is a step of, when it is one.
+            "process": (processes or {}).get(link.issue_id),
             # What this reader may do with this row, decided here so the
             # interface never has to guess.
             "can_claim": bool(waiting and effective_mode == "self_claim" and ROLE_UNIT_MEMBER in roles)

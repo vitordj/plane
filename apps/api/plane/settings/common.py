@@ -598,6 +598,13 @@ ORCA_PUBLIC_API_RATE_LIMIT = os.environ.get("ORCA_PUBLIC_API_RATE_LIMIT", "300/m
 # rather than a way into a different set of bugs.
 ORCA_AVAILABILITY_ENABLED = os.environ.get("ORCA_AVAILABILITY_ENABLED", "0") == "1"
 
+# Projecting a run of an external process into Plane: which work items belong
+# to it, and letting the orchestrator close a step. Off by default — with it
+# off the `process` block on the public API is refused rather than ignored,
+# because an automation that thought it was building a process and got four
+# unrelated work items is worse than an error.
+ORCA_PROCESS_PROJECTION_ENABLED = os.environ.get("ORCA_PROCESS_PROJECTION_ENABLED", "0") == "1"
+
 ENABLE_DRF_SPECTACULAR = os.environ.get("ENABLE_DRF_SPECTACULAR", "0") == "1"
 
 if ENABLE_DRF_SPECTACULAR:
