@@ -42,10 +42,11 @@ concurrency:
   group: stage-${{ github.ref }}
   cancel-in-progress: false
 
+# Read-only by default; the three jobs that write (labeler, build-push,
+# promote-rc) widen it themselves, so a step added to any other job cannot
+# quietly push a commit or a package.
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+  contents: read
 
 env:
   REGISTRY: ghcr.io
@@ -133,7 +134,8 @@ jobs:
     if: github.event_name == 'pull_request' && !startsWith(github.event.pull_request.head.ref, 'release-please--') && github.event.pull_request.head.ref != 'stage' && github.event.pull_request.user.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      # Rewrites the PR body and its labels; it never writes to the repository.
+      contents: read
       pull-requests: write
       issues: write
     steps:
@@ -190,6 +192,8 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.code_changes == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
@@ -204,7 +208,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Run Format and Lint Checks
         run: |
@@ -236,6 +240,8 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.api == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       postgres:
         image: postgres:16-alpine
@@ -348,8 +354,10 @@ jobs:
         if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
         run: echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
+      # ORCA CUSTOM FEATURE: a pull request builds but never authenticates to the
+      # registry, so a PR cannot reach the tags staging deploys from.
       - name: Log in to GHCR
-        if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name != 'pull_request' && (needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch') }}
         uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
@@ -368,16 +376,60 @@ jobs:
           docker image prune -a -f --filter "until=24h"
           docker builder prune -a -f --filter "until=24h"
 
+      # A pull request gets a throwaway tag it never pushes; a push to stage gets
+      # both the mutable :stage pointer the staging environment follows and an
+      # immutable :sha-<commit> tag, which is what production promotes from
+      # (prod.yml). Same build, same digest, two names.
+      - name: Compose Image Tags
+        id: tags
+        if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          set -euo pipefail
+          image="${REGISTRY}/${IMAGE_NAME}/${{ matrix.service }}"
+          {
+            echo 'IMAGE_TAGS<<TAGS_EOF'
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "${image}:pr-${{ github.event.pull_request.number }}-${{ github.sha }}"
+            else
+              echo "${image}:stage"
+              echo "${image}:sha-${{ github.sha }}"
+            fi
+            echo 'TAGS_EOF'
+          } >> "$GITHUB_ENV"
+
       - name: Build and Push ${{ matrix.service }}
+        id: build
         if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
         uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.file }}
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}:stage
+          # The build still runs on a pull request — it is the proof the image
+          # compiles — but nothing leaves the runner.
+          push: ${{ github.event_name != 'pull_request' }}
+          load: false
+          tags: ${{ env.IMAGE_TAGS }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # The digest is what production promotes by, so it is recorded per service
+      # and merged into one artifact by the collect-digests job below.
+      - name: Record Image Digest
+        if: ${{ github.event_name != 'pull_request' && (needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch') }}
+        run: |
+          set -euo pipefail
+          mkdir -p digests
+          printf '{"%s": "%s"}\n' "${{ matrix.service }}" "${{ steps.build.outputs.digest }}" \
+            > "digests/${{ matrix.service }}.json"
+          cat "digests/${{ matrix.service }}.json"
+
+      - name: Upload Image Digest
+        if: ${{ github.event_name != 'pull_request' && (needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-digest-${{ matrix.service }}
+          path: digests/${{ matrix.service }}.json
+          retention-days: 90
 
       - name: Post-build Runner Hygiene Cleanup
         if: ${{ always() && (needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch') }}
@@ -387,13 +439,88 @@ jobs:
           docker image prune -f
           docker builder prune -f
 
+  # ---------------------------------------------------------------------------
+  # Collect the digests this run produced. Production promotes by digest rather
+  # than by the mutable :stage tag (prod.yml), so the run that built the images
+  # is the one that has to say, on the record, which digests they are.
+  # ---------------------------------------------------------------------------
+  collect-digests:
+    name: Collect Image Digests
+    needs: [build-push, changes]
+    if: ${{ !cancelled() && github.event_name != 'pull_request' && needs.build-push.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      digests: ${{ steps.merge.outputs.digests }}
+    steps:
+      - name: Download Per-Service Digests
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: image-digest-*
+          path: digests
+          merge-multiple: true
+
+      - name: Merge Digests
+        id: merge
+        run: |
+          set -euo pipefail
+          python3 - <<'PY_MERGE'
+          import json, os, pathlib
+
+          merged = {}
+          for path in sorted(pathlib.Path("digests").glob("*.json")) if pathlib.Path("digests").exists() else []:
+              with path.open() as handle:
+                  merged.update(json.load(handle))
+
+          with open("image-digests.json", "w") as handle:
+              json.dump(merged, handle, indent=2, sort_keys=True)
+
+          compact = json.dumps(merged, separators=(",", ":"), sort_keys=True)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as handle:
+              handle.write(f"digests={compact}\n")
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a") as handle:
+                  handle.write("## Image digests\n\n| Service | Digest |\n|---|---|\n")
+                  for service, digest in sorted(merged.items()):
+                      handle.write(f"| {service} | `{digest}` |\n")
+                  if not merged:
+                      handle.write("| _none_ | this run built no images |\n")
+          PY_MERGE
+          cat image-digests.json
+
+      - name: Upload Merged Digests
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-digests
+          path: image-digests.json
+          retention-days: 90
+
   deploy:
     name: Deploy to Stage (Coolify)
-    needs: [build-push, changes]
+    needs: [build-push, changes, collect-digests]
     if: ${{ always() && vars.COOLIFY_DEPLOY_ENABLED == 'true' && github.event_name != 'pull_request' && (needs.build-push.result == 'success' || needs.build-push.result == 'skipped') && (needs.changes.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch') && !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     environment: stage
+    permissions:
+      contents: read
     steps:
+      # What staging is about to run, by digest — the same values production
+      # will promote from later, so a mismatch is visible here first.
+      - name: Log Image Digests
+        run: |
+          digests='${{ needs.collect-digests.outputs.digests }}'
+          if [ -z "$digests" ] || [ "$digests" = "{}" ]; then
+            echo "No images were built in this run; Coolify will redeploy the current :stage tags."
+          else
+            echo "Deploying these digests:"
+            echo "$digests" | python3 -m json.tool
+          fi
+
       - name: Trigger Coolify deploy
         id: deploy
         run: |
@@ -586,7 +713,9 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      # Reads the repository, opens and assigns the release-candidate PR.
+      # It never writes to a branch.
+      contents: read
       pull-requests: write
       issues: write
     steps:
@@ -611,6 +740,10 @@ jobs:
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 
+      # ORCA CUSTOM FEATURE: this job is the only signal that the release
+      # candidate exists, so it either creates the PR, finds it, or fails.
+      # It used to swallow every error (curl without -f, `|| true`, exit 0 on
+      # paths that confirmed nothing) and reported success with no PR at all.
       - name: Maintain Release Candidate PR
         if: steps.sync-guard.outputs.skip != 'true'
         env:
@@ -618,96 +751,64 @@ jobs:
           RELEASE_ASSIGNEE_VAR: ${{ vars.RELEASE_ASSIGNEE }}
           ACTOR: ${{ github.actor }}
         run: |
+          set -euo pipefail
+
           TARGET_ASSIGNEE="${RELEASE_ASSIGNEE_VAR:-$ACTOR}"
+          # The only tolerated failure in this job: prod may not exist yet on a
+          # fresh clone, and the count below then has nothing to compare against.
           git fetch origin prod || true
+
+          if ! git rev-parse --verify --quiet origin/prod >/dev/null; then
+            echo "::error::origin/prod does not exist; cannot determine whether a release candidate is due"
+            exit 1
+          fi
 
           COMMITS_AHEAD=$(git rev-list --count origin/prod..stage)
           echo "Commits on stage ahead of prod: $COMMITS_AHEAD"
 
           if [ "$COMMITS_AHEAD" -eq 0 ]; then
-            echo "Stage branch is completely synced with prod. No Release Candidate PR needed."
+            echo "Stage is level with prod. No release candidate is due."
             exit 0
           fi
 
-          VERSION=$(python3 -c "
-          import json
-          for f in ['package.json', 'composer.json', 'app.json']:
-              try:
-                  v = json.load(open(f)).get('version', '')
-                  if v:
-                      print(v)
-                      break
-              except Exception:
-                  pass
-          " 2>/dev/null || true)
-          VERSION="${VERSION:-}"
-          echo "Current package version: $VERSION"
-
+          VERSION=$(python3 -c "import json; print(json.load(open('package.json')).get('version', ''))")
           if [ -n "$VERSION" ]; then
             PR_TITLE="release: Promote Release Candidate from v${VERSION}"
           else
             PR_TITLE="release: Promote Release Candidate"
           fi
-          REPO_OWNER="${GITHUB_REPOSITORY%%/*}"
+          echo "Current package version: ${VERSION:-unknown}"
 
-          EXISTING_PR_JSON=$(curl -sS -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls?head=${REPO_OWNER}:stage&base=prod&state=open")
+          PR_NUMBER=$(gh pr list --base prod --head stage --state open --json number --jq '.[0].number // empty')
 
-          EXISTING_PR_NUMBER=$(python3 -c "
-          import sys, json
-          try:
-              prs = json.load(sys.stdin)
-              if isinstance(prs, list) and len(prs) > 0:
-                  print(prs[0].get('number', ''))
-          except Exception:
-              pass
-          " <<< "$EXISTING_PR_JSON" 2>/dev/null || true)
-
-          if [ -n "$EXISTING_PR_NUMBER" ] && [ "$EXISTING_PR_NUMBER" != "null" ]; then
-            echo "Existing open Release Candidate PR found (#$EXISTING_PR_NUMBER). Ensuring assignee is set to $TARGET_ASSIGNEE..."
-            curl -sS -X POST \
-              -H "Authorization: Bearer ${GH_TOKEN}" \
-              -H "Accept: application/vnd.github+json" \
-              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/issues/${EXISTING_PR_NUMBER}/assignees" \
-              -d "{\"assignees\":[\"${TARGET_ASSIGNEE}\"]}" || true
-            exit 0
-          fi
-
-          echo "No open Release Candidate PR found. Automatically creating PR from stage to prod via REST API..."
-
-          if [ -f .github/PULL_REQUEST_TEMPLATE/release_candidate.md ]; then
-            PR_BODY=$(cat .github/PULL_REQUEST_TEMPLATE/release_candidate.md)
+          if [ -n "$PR_NUMBER" ]; then
+            echo "Release candidate PR #${PR_NUMBER} already open."
           else
-            PR_BODY="Promote Release Candidate changes from stage to prod."
+            echo "No open release candidate PR. Creating one from stage to prod..."
+            BODY_FILE=.github/PULL_REQUEST_TEMPLATE/release_candidate.md
+            if [ ! -f "$BODY_FILE" ]; then
+              BODY_FILE=$(mktemp)
+              echo "Promote Release Candidate changes from stage to prod." > "$BODY_FILE"
+            fi
+            # A failure here is the interesting case: most often the repository
+            # setting "Allow GitHub Actions to create and approve pull requests"
+            # is off (see docs/release-runbook.md).
+            gh pr create --base prod --head stage --title "$PR_TITLE" --body-file "$BODY_FILE"
+            PR_NUMBER=$(gh pr list --base prod --head stage --state open --json number --jq '.[0].number // empty')
           fi
 
-          export PR_TITLE PR_BODY GH_TOKEN GITHUB_API_URL GITHUB_REPOSITORY
-          CREATED_PR_NUMBER=$(python3 -c "
-          import os, sys, json, urllib.request
-
-          url = f\"{os.environ['GITHUB_API_URL']}/repos/{os.environ['GITHUB_REPOSITORY']}/pulls\"
-          token = os.environ['GH_TOKEN']
-          title = os.environ['PR_TITLE']
-          body = os.environ['PR_BODY']
-
-          payload = json.dumps({'title': title, 'head': 'stage', 'base': 'prod', 'body': body}).encode('utf-8')
-          headers = {'Authorization': f'Bearer {token}', 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json'}
-
-          req = urllib.request.Request(url, data=payload, headers=headers, method='POST')
-          try:
-              with urllib.request.urlopen(req) as resp:
-                  d = json.loads(resp.read().decode('utf-8'))
-                  print(d.get('number', ''))
-          except Exception as e:
-              sys.stderr.write(f'Error creating PR: {e}\n')
-          " 2>/dev/null || true)
-
-          if [ -n "$CREATED_PR_NUMBER" ] && [ "$CREATED_PR_NUMBER" != "null" ] && [ -n "$TARGET_ASSIGNEE" ]; then
-            echo "Release Candidate PR #$CREATED_PR_NUMBER created. Assigning $TARGET_ASSIGNEE..."
-            curl -sS -X POST \
-              -H "Authorization: Bearer ${GH_TOKEN}" \
-              -H "Accept: application/vnd.github+json" \
-              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/issues/${CREATED_PR_NUMBER}/assignees" \
-              -d "{\"assignees\":[\"${TARGET_ASSIGNEE}\"]}" || true
+          if [ -z "$PR_NUMBER" ]; then
+            echo "::error::Release candidate PR was neither found nor created"
+            exit 1
           fi
+
+          if [ -n "$TARGET_ASSIGNEE" ]; then
+            gh pr edit "$PR_NUMBER" --add-assignee "$TARGET_ASSIGNEE"
+          fi
+
+          echo "Release candidate PR #${PR_NUMBER} is open and assigned to ${TARGET_ASSIGNEE}."
+          {
+            echo "## Release candidate"
+            echo ""
+            echo "PR [#${PR_NUMBER}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}) — ${COMMITS_AHEAD} commit(s) ahead of prod."
+          } >> "$GITHUB_STEP_SUMMARY"
