@@ -100,7 +100,7 @@ LEIA ANTES DE EDITAR
 1. docs/plans/orca-work-management/codex/00-context.md.
 2. docs/orca-work-management-rfc.md §2.2 (defeito D2) e §3 (decisões fechadas).
 3. docs/plans/orca-work-management/D0-domain-foundation.md, seção "D0.2".
-4. apps/api/plane/api/serializers/issue.py, ~l.188, bloco marcado
+4. apps/api/plane/api/serializers/issue.py, ~l.191, bloco marcado
    "# ORCA CUSTOM FEATURE: Default to assignees of user's last created issue".
 5. O mesmo trecho no commit upstream base:
    git show 5662b7610:apps/api/plane/api/serializers/issue.py
