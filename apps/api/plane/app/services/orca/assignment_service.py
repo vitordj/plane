@@ -479,7 +479,34 @@ def _record(
     )
     if supersedes is not None:
         metrics.record_decision_superseded(unit.id, supersedes.effective_mode, issue_id=str(issue.id))
+
+    if outcome == DecisionOutcome.ALLOCATION_FAILED:
+        # Not something to leave for the next sweep: automatic allocation
+        # finding nobody usually means the area's membership or its project
+        # links are wrong, and the work sits still until a person looks.
+        _alert_allocation_failed(link, issue)
+
     return decision
+
+
+def _alert_allocation_failed(link, issue):
+    """
+    @description Tell whoever runs the area, immediately. Failures here are
+    swallowed on purpose: an allocation that succeeded must not be rolled back
+    because a notification could not be written.
+    """
+    try:
+        from plane.bgtasks.organizational_queue_task import notify_overdue
+
+        # The link is in memory with the state just written; give the alert the
+        # issue it belongs to so it does not go back to the database for it.
+        link.issue = issue
+        notify_overdue(link)
+    except Exception:  # noqa: BLE001 - never fail an allocation over an alert
+        logger.warning(
+            "orca.assignment.alert_failed",
+            extra={"issue_id": str(issue.id), "unit_id": str(link.organizational_unit_id)},
+        )
 
 
 def _park(link, *, queue_reason, due_at, state=RoutingState.QUEUED):

@@ -361,6 +361,8 @@ CELERY_IMPORTS = (
     # The hourly beat entry in plane/celery.py names this module's task; the
     # worker can only run it if it imported the module at startup.
     "plane.bgtasks.organizational_directory_task",
+    # Same reason: the queue's SLA sweep is named by a beat entry.
+    "plane.bgtasks.organizational_queue_task",
 )
 
 FILE_SIZE_LIMIT = int(os.environ.get("FILE_SIZE_LIMIT", 5242880))

@@ -102,6 +102,13 @@ app.conf.beat_schedule = {
         "task": "plane.bgtasks.organizational_directory_task.resolve_directory_identities",
         "schedule": crontab(minute=20),  # Every hour at :20
     },
+    # Orca: tell the people who run an area when work has been waiting past the
+    # time the area promised. Every fifteen minutes so the alert is useful, with
+    # a four-hour cooldown per work item so it stays worth reading.
+    "check-every-fifteen-minutes-for-overdue-assignments": {
+        "task": "plane.bgtasks.organizational_queue_task.sweep_assignment_sla",
+        "schedule": crontab(minute="*/15"),
+    },
 }
 
 

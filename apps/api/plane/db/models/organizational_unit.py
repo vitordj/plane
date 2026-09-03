@@ -592,6 +592,10 @@ class IssueOrganizationalUnit(BaseModel):
         blank=True,
         related_name="orca_primary_executions",
     )
+    # When the queue last complained about this item being overdue. Without it
+    # a sweep every fifteen minutes would notify the same coordinator about the
+    # same work item ninety-six times a day, which trains people to ignore it.
+    last_alerted_at = models.DateTimeField(null=True, blank=True)
     # The decision currently in force. Callers pass it back as an If-Match when
     # they reassign, so two coordinators acting on the same stale view of the
     # queue cannot both win.

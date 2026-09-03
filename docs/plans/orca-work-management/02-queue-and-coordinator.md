@@ -67,7 +67,7 @@ novo fora do tema. Todas as strings no catálogo i18n
 
 ---
 
-## 2.4 — Alertas e varredura de SLA de atribuição `[ ]`
+## 2.4 — Alertas e varredura de SLA de atribuição `[x]`
 
 - Tarefa Celery `plane.bgtasks.organizational_queue_task.sweep_assignment_sla` a cada 15 min (registrar em `plane/celery.py` e no `include` de `settings/common.py`, com o mesmo comentário explicativo das tarefas Orca existentes).
 - Para cada item `queued`/`allocation_failed` com `assignment_due_at < now()` sem alerta nas últimas 4 h (guardar `last_alerted_at` em `IssueOrganizationalUnit`, campo novo na mesma fase, migração `0140`), criar notificação nativa (`Notification`) para os coordenadores da área e, se não houver coordenador, para o `lead`.
