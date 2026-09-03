@@ -60,6 +60,12 @@ from .project import (
     ProjectUserProperty,
 )
 from .project_custom_settings import ProjectCustomSettings
+from .organizational_automation import (
+    AutomationOperation,
+    AutomationOperationStatus,
+    AutomationOperationType,
+    ExternalWorkItemBinding,
+)
 from .organizational_assignment import (
     AssignmentDecision,
     AssignmentMode,

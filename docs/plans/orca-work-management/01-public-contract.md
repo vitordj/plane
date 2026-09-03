@@ -11,7 +11,7 @@ Gate 2-mínimo.
 
 ---
 
-## 1.1 — Migração 0138: binding externo e operação de automação `[ ]`
+## 1.1 — Migração 0138: binding externo e operação de automação `[x]`
 
 **Modelos** em `apps/api/plane/db/models/organizational_automation.py`
 (exportar em `__init__.py`): `ExternalWorkItemBinding` e
