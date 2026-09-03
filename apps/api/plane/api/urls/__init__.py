@@ -15,6 +15,10 @@ from .work_item import urlpatterns as work_item_patterns
 from .invite import urlpatterns as invite_patterns
 from .sticky import urlpatterns as sticky_patterns
 
+# ORCA CUSTOM FEATURE: the public automation API, under its own /orca/ prefix
+# so upstream can add routes without colliding with it.
+from .orca import urlpatterns as orca_patterns
+
 urlpatterns = [
     *asset_patterns,
     *cycle_patterns,
@@ -28,4 +32,5 @@ urlpatterns = [
     *work_item_patterns,
     *invite_patterns,
     *sticky_patterns,
+    *orca_patterns,
 ]

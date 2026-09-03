@@ -65,7 +65,7 @@ valor diferente.
 
 ---
 
-## 1.4 — Endpoints: `work-items/` composto, `by-external/`, `units/`, `queue/` `[ ]`
+## 1.4 — Endpoints: `work-items/` composto, `by-external/`, `units/`, `queue/` `[x]`
 
 **Arquivos.** `apps/api/plane/api/views/orca/{units,work_items}.py`,
 `apps/api/plane/api/serializers/orca/{units,work_items}.py`,
@@ -105,7 +105,7 @@ bloco → 400; transação (política proibida não deixa `Issue` nem binding);
 
 ---
 
-## 1.5 — `reassign/` e `transfer/` públicos `[ ]`
+## 1.5 — `reassign/` e `transfer/` públicos `[x]`
 
 - `POST .../work-items/{issue_id}/reassign/` com header `If-Match: <decision_id>`; corpo `{"primary_executor": ...}` ou `{"return_to_queue": true}`, `reason`. Sem `If-Match` → 428 `ORG_IF_MATCH_REQUIRED` (código novo); divergente → 412 `ORG_DECISION_STALE`. Também exige `Idempotency-Key`.
 - `POST .../work-items/{issue_id}/transfer/` corpo `{"unit": slug, "reason"}`; `Idempotency-Key`.
@@ -116,7 +116,7 @@ decisão; transfer para área que não cobre 400.
 
 ---
 
-## 1.6 — Códigos de erro e respostas `[ ]`
+## 1.6 — Códigos de erro e respostas `[x]`
 
 Registrar nos três lugares (RFC §7.3 + `ORG_ASSIGNEES_NOT_ALLOWED_HERE`,
 `ORG_IF_MATCH_REQUIRED`, `ORG_INTERNAL_ERROR`). Header `Idempotent-Replay:

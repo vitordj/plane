@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
+# Python imports
+import hashlib
+
 # Django imports
 from django.conf import settings
 
@@ -28,10 +31,13 @@ class OrcaPublicRateThrottle(SimpleRateThrottle):
     rate = settings.ORCA_PUBLIC_API_RATE_LIMIT
 
     def get_cache_key(self, request, view):
-        token = getattr(request, "api_token", None) or getattr(request.auth, "id", None)
-        token_id = getattr(token, "id", token)
-        if token_id:
-            return f"{self.scope}:token:{token_id}"
+        # request.auth is the API key itself. It is hashed rather than used, so
+        # the cache never holds a credential — a cache dump should not be a
+        # list of working tokens.
+        token = getattr(request, "auth", None)
+        if token:
+            digest = hashlib.sha256(str(token).encode("utf-8")).hexdigest()[:32]
+            return f"{self.scope}:token:{digest}"
         # Unauthenticated calls never get past authentication anyway; keying
         # them by IP keeps an unauthenticated flood from being free.
         return f"{self.scope}:ip:{self.get_ident(request)}"

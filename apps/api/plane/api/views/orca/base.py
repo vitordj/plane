@@ -54,3 +54,25 @@ class OrcaPublicBaseAPIView(OrcaPublicApiFeatureMixin, BaseAPIView):
 
     def get_throttles(self):
         return [OrcaPublicRateThrottle()]
+
+    def current_api_token(self, request):
+        """
+        @description The token row behind this call, for the receipt: knowing
+        which automation did something is most of what makes an audit trail
+        useful. ``request.auth`` is the key itself, so this resolves it once
+        and caches it on the request.
+        @returns: The ``APIToken``, or ``None`` for a session call.
+        """
+        cached = getattr(request, "_orca_api_token", None)
+        if cached is not None:
+            return cached
+
+        key = getattr(request, "auth", None)
+        if not key:
+            return None
+
+        from plane.db.models import APIToken
+
+        token = APIToken.objects.filter(token=str(key)).first()
+        request._orca_api_token = token
+        return token

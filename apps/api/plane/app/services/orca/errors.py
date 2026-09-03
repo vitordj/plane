@@ -134,3 +134,17 @@ class ProcessProjectionDisabled(OrcaDomainError):
     """The request carried a ``process`` block and the instance has it off."""
 
     error_code = "ORG_PROCESS_PROJECTION_DISABLED"
+
+
+class UnitNotFound(OrcaDomainError):
+    """No active area with that slug in this workspace."""
+
+    error_code = "ORG_UNIT_NOT_FOUND"
+    http_status = status.HTTP_404_NOT_FOUND
+
+
+class WorkItemNotFound(OrcaDomainError):
+    """No work item with that reference here."""
+
+    error_code = "ORG_WORK_ITEM_NOT_FOUND"
+    http_status = status.HTTP_404_NOT_FOUND
