@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "Tidak ada area yang cocok",
+      "routing": {
+        "queued": "Dalam antrean",
+        "assigned": "Sedang dikerjakan oleh {name}",
+        "assigned_unknown": "Sedang dikerjakan oleh anggota area",
+        "allocation_failed": "Tidak ada yang tersedia",
+        "suspended": "Dijeda"
+      },
       "assign": "Tugaskan",
       "assign_tooltip": "Tugaskan ke anggota area dengan pekerjaan terbuka paling sedikit",
       "toast": {

@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "Немає відповідних областей",
+      "routing": {
+        "queued": "У черзі",
+        "assigned": "Виконує {name}",
+        "assigned_unknown": "Виконує учасник області",
+        "allocation_failed": "Нікого немає",
+        "suspended": "Призупинено"
+      },
       "assign": "Призначити",
       "assign_tooltip": "Призначити учаснику області з найменшою кількістю відкритих робочих одиниць",
       "toast": {

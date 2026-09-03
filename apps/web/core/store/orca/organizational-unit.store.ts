@@ -6,6 +6,7 @@
 
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import type {
+  IIssueRouting,
   IOrganizationalUnit,
   IOrganizationalUnitAccessChange,
   IOrganizationalUnitMembership,
@@ -84,6 +85,8 @@ export interface IOrganizationalUnitStore {
     options?: { unitId?: string; mode?: TOrganizationalUnitAssignMode }
   ) => Promise<{ assigned: { user_id: string; open_issues: number } | null; reason: string }>;
   fetchIssueUnit: (workspaceSlug: string, projectId: string, issueId: string) => Promise<IOrganizationalUnit | null>;
+  /** The queue state of a work item: who is executing it, and why it waits. */
+  fetchIssueRouting: (workspaceSlug: string, projectId: string, issueId: string) => Promise<IIssueRouting | null>;
   setIssueUnit: (
     workspaceSlug: string,
     projectId: string,
@@ -326,6 +329,11 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
   fetchIssueUnit = async (workspaceSlug: string, projectId: string, issueId: string) => {
     const response = await this.service.getIssueOrganizationalUnit(workspaceSlug, projectId, issueId);
     return response.organizational_unit ?? null;
+  };
+
+  fetchIssueRouting = async (workspaceSlug: string, projectId: string, issueId: string) => {
+    const response = await this.service.getIssueOrganizationalUnit(workspaceSlug, projectId, issueId);
+    return response.routing ?? null;
   };
 
   setIssueUnit = async (workspaceSlug: string, projectId: string, issueId: string, unitId: string) => {

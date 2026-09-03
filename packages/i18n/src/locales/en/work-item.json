@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "No areas match",
+      "routing": {
+        "queued": "Queued",
+        "assigned": "Being done by {name}",
+        "assigned_unknown": "Being done by a member of the area",
+        "allocation_failed": "Nobody available",
+        "suspended": "Paused"
+      },
       "assign": "Assign",
       "assign_tooltip": "Assign to the area member with the least open work",
       "toast": {

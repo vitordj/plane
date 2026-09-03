@@ -13,6 +13,7 @@ from plane.app.views import (
     ProjectProjectLabelEndpoint,
     OrganizationalUnitViewSet,
     OrganizationalUnitMemberViewSet,
+    OrganizationalUnitPolicyEndpoint,
     OrganizationalUnitProjectViewSet,
     OrganizationalUnitEffectiveAccessEndpoint,
     OrganizationalUnitWorkloadEndpoint,
@@ -140,6 +141,18 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/workload/",
         OrganizationalUnitWorkloadEndpoint.as_view(),
         name="organizational-unit-workload",
+    ),
+    # The effective assignment policy — for the area, or for one of its
+    # projects. Resolved rather than stored: see the endpoint's docstring.
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/policy/",
+        OrganizationalUnitPolicyEndpoint.as_view(),
+        name="organizational-unit-policy",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/projects/<uuid:pk>/policy/",
+        OrganizationalUnitPolicyEndpoint.as_view(),
+        name="organizational-unit-project-policy",
     ),
     # Work item ownership by organizational unit, and unit-based assignment.
     path(

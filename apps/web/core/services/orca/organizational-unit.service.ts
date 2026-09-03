@@ -6,6 +6,7 @@
 
 import { API_BASE_URL } from "@plane/constants";
 import type {
+  IIssueRouting,
   IOrganizationalUnit,
   IOrganizationalUnitAccessChange,
   IOrganizationalUnitMembership,
@@ -217,7 +218,7 @@ export class OrganizationalUnitService extends APIService {
     workspaceSlug: string,
     projectId: string,
     issueId: string
-  ): Promise<{ organizational_unit: IOrganizationalUnit | null }> {
+  ): Promise<{ organizational_unit: IOrganizationalUnit | null; routing: IIssueRouting | null }> {
     return this.get(
       `/api/orca/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/organizational-unit/`
     )

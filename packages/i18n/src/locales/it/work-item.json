@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "Nessuna area corrisponde",
+      "routing": {
+        "queued": "In coda",
+        "assigned": "In esecuzione da {name}",
+        "assigned_unknown": "In esecuzione da un membro dell’area",
+        "allocation_failed": "Nessuno disponibile",
+        "suspended": "In pausa"
+      },
       "assign": "Assegna",
       "assign_tooltip": "Assegna al membro dell'area con meno lavoro aperto",
       "toast": {

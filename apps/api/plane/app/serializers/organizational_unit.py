@@ -9,9 +9,12 @@ from rest_framework import serializers
 
 # Module imports
 from plane.db.models import (
+    AssignmentDecision,
+    IssueOrganizationalUnit,
     OrganizationalDirectoryConnection,
     OrganizationalDirectoryIdentity,
     OrganizationalUnit,
+    OrganizationalUnitAssignmentPolicy,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
 )
@@ -273,5 +276,77 @@ class OrganizationalDirectoryIdentitySerializer(BaseSerializer):
             "workspace_member_display_name",
             "last_seen_at",
             "created_at",
+        ]
+        read_only_fields = fields
+
+
+class AssignmentPolicySerializer(BaseSerializer):
+    """How an area assigns work, for the settings screen and the policy read."""
+
+    class Meta:
+        model = OrganizationalUnitAssignmentPolicy
+        fields = [
+            "id",
+            "organizational_unit",
+            "unit_project",
+            "default_mode",
+            "allowed_modes",
+            "assignment_sla_seconds",
+            "max_open_items_per_member",
+            "is_active",
+            "version",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["workspace", "version"]
+
+
+class AssignmentDecisionSerializer(BaseSerializer):
+    """
+    One decision, as the timeline shows it.
+
+    @description Includes the candidates snapshot: the question a coordinator
+    asks about an automatic choice is "why them and not me?", and the answer
+    is the ranking that was in front of the service at the time.
+    """
+
+    class Meta:
+        model = AssignmentDecision
+        fields = [
+            "id",
+            "issue",
+            "organizational_unit",
+            "trigger",
+            "requested_mode",
+            "effective_mode",
+            "policy_source",
+            "policy_version",
+            "algorithm_version",
+            "outcome",
+            "candidates_snapshot",
+            "chosen_assignee",
+            "previous_primary_executor",
+            "decided_by",
+            "supersedes",
+            "reason",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class IssueRoutingSerializer(BaseSerializer):
+    """Where a work item stands in its area's queue."""
+
+    class Meta:
+        model = IssueOrganizationalUnit
+        fields = [
+            "id",
+            "organizational_unit",
+            "routing_state",
+            "queue_reason",
+            "queued_at",
+            "assignment_due_at",
+            "primary_executor",
+            "current_assignment_decision",
         ]
         read_only_fields = fields

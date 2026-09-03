@@ -13,8 +13,51 @@
 /** Role a person holds inside a unit — governs the unit, not its projects. */
 export type TOrganizationalUnitMemberRole = "lead" | "member";
 
-/** Assignment behavior when a unit is asked to take a work item. */
+/**
+ * Assignment behavior when a unit is asked to take a work item.
+ *
+ * `fill_empty` and `append` are the v1 vocabulary and are deprecated: the API
+ * still accepts them, and both now mean automatic allocation. Prefer the
+ * modes below, which are what the area's policy is written in.
+ */
 export type TOrganizationalUnitAssignMode = "fill_empty" | "append";
+
+/** How an area picks the person who executes a work item. */
+export type TAssignmentMode = "manual" | "self_claim" | "least_loaded" | "explicit";
+
+/** Where a work item stands in its area's queue. */
+export type TRoutingState = "queued" | "assigned" | "allocation_failed" | "suspended";
+
+/** Why a work item is waiting. */
+export type TQueueReason =
+  | ""
+  | "new_item"
+  | "awaiting_coordinator"
+  | "awaiting_claim"
+  | "no_eligible_member"
+  | "executor_unavailable"
+  | "manually_returned";
+
+/** The queue state of one work item, as the API returns it. */
+export interface IIssueRouting {
+  id: string;
+  organizational_unit: string;
+  routing_state: TRoutingState;
+  queue_reason: TQueueReason;
+  queued_at: string | null;
+  assignment_due_at: string | null;
+  /** The one person answerable for the work; others are collaborators. */
+  primary_executor: string | null;
+  current_assignment_decision: string | null;
+}
+
+/** The policy an area applies, already resolved for a project. */
+export interface IResolvedAssignmentPolicy {
+  effective_mode: TAssignmentMode;
+  policy_source: "request" | "unit_project" | "unit" | "fallback";
+  policy_version: number | null;
+  assignment_sla_seconds: number | null;
+}
 
 /** What reconciliation would do, or did, for one person on one project. */
 export type TOrganizationalUnitAccessAction =

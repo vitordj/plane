@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "一致するエリアはありません",
+      "routing": {
+        "queued": "待機中",
+        "assigned": "{name} が担当中",
+        "assigned_unknown": "エリアのメンバーが担当中",
+        "allocation_failed": "対応できる人がいません",
+        "suspended": "一時停止中"
+      },
       "assign": "割り当て",
       "assign_tooltip": "未完了の作業が最も少ないエリアのメンバーに割り当てます",
       "toast": {

@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "沒有符合的區域",
+      "routing": {
+        "queued": "排隊中",
+        "assigned": "由 {name} 執行中",
+        "assigned_unknown": "由該領域的成員執行中",
+        "allocation_failed": "沒有可用人員",
+        "suspended": "已暫停"
+      },
       "assign": "指派",
       "assign_tooltip": "指派給此區域中未完成工作最少的成員",
       "toast": {

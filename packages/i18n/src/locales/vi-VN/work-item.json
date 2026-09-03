@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "Không có khu vực nào phù hợp",
+      "routing": {
+        "queued": "Trong hàng đợi",
+        "assigned": "Đang do {name} thực hiện",
+        "assigned_unknown": "Đang do một thành viên của khu vực thực hiện",
+        "allocation_failed": "Không có ai khả dụng",
+        "suspended": "Tạm dừng"
+      },
       "assign": "Giao việc",
       "assign_tooltip": "Giao cho thành viên khu vực có ít công việc đang mở nhất",
       "toast": {

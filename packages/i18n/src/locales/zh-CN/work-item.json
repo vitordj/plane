@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "没有匹配的区域",
+      "routing": {
+        "queued": "排队中",
+        "assigned": "由 {name} 执行中",
+        "assigned_unknown": "由该领域的成员执行中",
+        "allocation_failed": "没有可用人员",
+        "suspended": "已暂停"
+      },
       "assign": "分配",
       "assign_tooltip": "分配给未完成工作最少的区域成员",
       "toast": {

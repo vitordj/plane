@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "Žiadne zodpovedajúce oblasti",
+      "routing": {
+        "queued": "Vo fronte",
+        "assigned": "Spracúva {name}",
+        "assigned_unknown": "Spracúva člen oblasti",
+        "allocation_failed": "Nikto nie je k dispozícii",
+        "suspended": "Pozastavené"
+      },
       "assign": "Priradiť",
       "assign_tooltip": "Priradiť členovi oblasti s najmenším počtom otvorených pracovných položiek",
       "toast": {

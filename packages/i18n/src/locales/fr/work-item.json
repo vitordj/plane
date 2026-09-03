@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "Aucun domaine ne correspond",
+      "routing": {
+        "queued": "En file d’attente",
+        "assigned": "En cours par {name}",
+        "assigned_unknown": "En cours par un membre de la zone",
+        "allocation_failed": "Personne de disponible",
+        "suspended": "En pause"
+      },
       "assign": "Assigner",
       "assign_tooltip": "Assigner au membre du domaine ayant le moins de travail en cours",
       "toast": {

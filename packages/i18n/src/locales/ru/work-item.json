@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "Нет подходящих областей",
+      "routing": {
+        "queued": "В очереди",
+        "assigned": "Выполняет {name}",
+        "assigned_unknown": "Выполняет участник области",
+        "allocation_failed": "Никого нет",
+        "suspended": "Приостановлено"
+      },
       "assign": "Назначить",
       "assign_tooltip": "Назначить участнику области с наименьшим числом открытых рабочих элементов",
       "toast": {

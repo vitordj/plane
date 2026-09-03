@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "Brak pasujących obszarów",
+      "routing": {
+        "queued": "W kolejce",
+        "assigned": "Realizowane przez {name}",
+        "assigned_unknown": "Realizowane przez członka obszaru",
+        "allocation_failed": "Nikt niedostępny",
+        "suspended": "Wstrzymane"
+      },
       "assign": "Przypisz",
       "assign_tooltip": "Przypisz członkowi obszaru z najmniejszą liczbą otwartych elementów pracy",
       "toast": {

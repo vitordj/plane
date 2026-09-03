@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "Nicio zonă nu corespunde",
+      "routing": {
+        "queued": "În coadă",
+        "assigned": "În lucru de către {name}",
+        "assigned_unknown": "În lucru de către un membru al zonei",
+        "allocation_failed": "Nimeni disponibil",
+        "suspended": "În pauză"
+      },
       "assign": "Atribuiți",
       "assign_tooltip": "Atribuiți membrului zonei cu cele mai puține activități deschise",
       "toast": {

@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "Keine passenden Bereiche",
+      "routing": {
+        "queued": "In der Warteschlange",
+        "assigned": "Wird von {name} bearbeitet",
+        "assigned_unknown": "Wird von einem Mitglied des Bereichs bearbeitet",
+        "allocation_failed": "Niemand verfügbar",
+        "suspended": "Pausiert"
+      },
       "assign": "Zuweisen",
       "assign_tooltip": "Dem Bereichsmitglied mit den wenigsten offenen Arbeitselementen zuweisen",
       "toast": {

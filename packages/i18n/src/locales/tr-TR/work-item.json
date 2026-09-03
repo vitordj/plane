@@ -269,6 +269,13 @@
     },
     "organizational_unit": {
       "no_match": "Eşleşen alan yok",
+      "routing": {
+        "queued": "Sırada",
+        "assigned": "{name} tarafından yürütülüyor",
+        "assigned_unknown": "Alandan bir kişi tarafından yürütülüyor",
+        "allocation_failed": "Uygun kimse yok",
+        "suspended": "Duraklatıldı"
+      },
       "assign": "Ata",
       "assign_tooltip": "En az açık işi olan alan üyesine ata",
       "toast": {

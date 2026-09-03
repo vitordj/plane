@@ -13,6 +13,9 @@ import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import { CustomSearchSelect } from "@plane/ui";
 // hooks
+import type { IIssueRouting } from "@plane/types";
+// hooks
+import { useMember } from "@/hooks/store/use-member";
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 
 type Props = {
@@ -35,9 +38,13 @@ const TRY_AGAIN = "workspace_settings.settings.organizational_units.try_again";
 export const IssueOrganizationalUnitProperty = observer(function IssueOrganizationalUnitProperty(props: Props) {
   const { workspaceSlug, projectId, issueId, disabled, onAssigned } = props;
   const store = useOrganizationalUnit();
+  const {
+    workspace: { getWorkspaceMemberDetails },
+  } = useMember();
   const { t } = useTranslation();
 
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  const [routing, setRouting] = useState<IIssueRouting | null>(null);
   const [isAssigning, setIsAssigning] = useState(false);
 
   useEffect(() => {
@@ -49,9 +56,16 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
     const loadResponsibleUnit = async () => {
       try {
         const unit = await store.fetchIssueUnit(workspaceSlug, projectId, issueId);
-        if (!cancelled) setSelectedUnitId(unit?.id ?? null);
+        const state = await store.fetchIssueRouting(workspaceSlug, projectId, issueId);
+        if (!cancelled) {
+          setSelectedUnitId(unit?.id ?? null);
+          setRouting(state);
+        }
       } catch {
-        if (!cancelled) setSelectedUnitId(null);
+        if (!cancelled) {
+          setSelectedUnitId(null);
+          setRouting(null);
+        }
       }
     };
     void loadResponsibleUnit();
@@ -97,6 +111,7 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
           message: t(`${KEY}.toast.assigned`),
         });
         onAssigned?.();
+        setRouting(await store.fetchIssueRouting(workspaceSlug, projectId, issueId));
       } else if (result.reason === "already_assigned") {
         setToast({
           type: TOAST_TYPE.INFO,
@@ -121,7 +136,22 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
 
   const selectedUnit = selectedUnitId ? store.getUnitById(selectedUnitId) : undefined;
 
+  // Where the work stands in the area's queue. "This area owns it" and
+  // "somebody is doing it" are different facts, and only the second one tells
+  // you whether to expect movement.
+  const executorName = routing?.primary_executor
+    ? getWorkspaceMemberDetails(routing.primary_executor)?.member.display_name
+    : undefined;
+  const routingLabel = !routing
+    ? null
+    : routing.routing_state !== "assigned"
+      ? t(`${KEY}.routing.${routing.routing_state}`)
+      : executorName
+        ? t(`${KEY}.routing.assigned`, { name: executorName })
+        : t(`${KEY}.routing.assigned_unknown`);
+
   return (
+    <div className="flex w-full min-w-0 flex-col gap-1">
     <div className="flex w-full min-w-0 items-center gap-1">
       <CustomSearchSelect
         value={selectedUnitId}
@@ -147,6 +177,8 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
           {t(`${KEY}.assign`)}
         </Button>
       )}
+    </div>
+    {routingLabel && <span className="text-body-2xs-regular text-custom-text-300">{routingLabel}</span>}
     </div>
   );
 });
