@@ -14,6 +14,15 @@ from plane.app.views import (
     OrganizationalUnitViewSet,
     OrganizationalUnitMemberViewSet,
     OrganizationalUnitPolicyEndpoint,
+    IssueAssignToEndpoint,
+    IssueCandidatesEndpoint,
+    IssueClaimEndpoint,
+    IssueReturnToQueueEndpoint,
+    IssueTransferUnitEndpoint,
+    UnitCoordinatorEndpoint,
+    UnitPolicyWriteEndpoint,
+    UnitQueueDecisionsEndpoint,
+    UnitQueueEndpoint,
     OrganizationalUnitProjectViewSet,
     OrganizationalUnitEffectiveAccessEndpoint,
     OrganizationalUnitWorkloadEndpoint,
@@ -268,5 +277,61 @@ urlpatterns = [
         "orca/scim/v2/workspaces/<str:slug>/Groups/<uuid:unit_id>/",
         SCIMGroupDetailEndpoint.as_view(),
         name="scim-group-slash",
+    ),
+    # --- the area's queue, and the people who run it ------------------------
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/queue/",
+        UnitQueueEndpoint.as_view(),
+        name="organizational-unit-queue",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/decisions/",
+        UnitQueueDecisionsEndpoint.as_view(),
+        name="organizational-unit-decisions",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/policy/write/",
+        UnitPolicyWriteEndpoint.as_view(),
+        name="organizational-unit-policy-write",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/projects/<uuid:pk>/policy/write/",
+        UnitPolicyWriteEndpoint.as_view(),
+        name="organizational-unit-project-policy-write",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/coordinators/",
+        UnitCoordinatorEndpoint.as_view(),
+        name="organizational-unit-coordinators",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/coordinators/<uuid:pk>/",
+        UnitCoordinatorEndpoint.as_view(),
+        name="organizational-unit-coordinator",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/claim/",
+        IssueClaimEndpoint.as_view(),
+        name="issue-organizational-unit-claim",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/assign-to/",
+        IssueAssignToEndpoint.as_view(),
+        name="issue-organizational-unit-assign-to",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/return/",
+        IssueReturnToQueueEndpoint.as_view(),
+        name="issue-organizational-unit-return",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/transfer/",
+        IssueTransferUnitEndpoint.as_view(),
+        name="issue-organizational-unit-transfer",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/candidates/",
+        IssueCandidatesEndpoint.as_view(),
+        name="issue-organizational-unit-candidates",
     ),
 ]

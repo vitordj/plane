@@ -262,6 +262,17 @@ from .organizational_unit import (
     OrcaConfigEndpoint,
 )
 from .orca_language import UserLanguagePreferenceEndpoint
+from .organizational_queue import (
+    IssueAssignToEndpoint,
+    IssueCandidatesEndpoint,
+    IssueClaimEndpoint,
+    IssueReturnToQueueEndpoint,
+    IssueTransferUnitEndpoint,
+    UnitCoordinatorEndpoint,
+    UnitPolicyWriteEndpoint,
+    UnitQueueDecisionsEndpoint,
+    UnitQueueEndpoint,
+)
 from .organizational_directory import (
     OrganizationalDirectoryConnectionEndpoint,
     OrganizationalDirectoryResyncEndpoint,

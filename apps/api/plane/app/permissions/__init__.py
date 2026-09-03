@@ -21,3 +21,14 @@ from .project import (
 )
 from .base import allow_permission, ROLE
 from .page import ProjectPagePermission
+
+# ORCA CUSTOM FEATURE: area-scoped roles (see organizational_unit.py).
+from .organizational_unit import (  # noqa: E402
+    ROLE_COORDINATOR,
+    ROLE_UNIT_MEMBER,
+    allow_unit_role,
+    is_unit_coordinator,
+    is_unit_member,
+    is_workspace_admin,
+    unit_roles_of,
+)

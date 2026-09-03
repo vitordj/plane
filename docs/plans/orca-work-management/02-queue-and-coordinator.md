@@ -20,7 +20,7 @@ decisões. O **Gate 2-mínimo** é o que libera a API pública em produção.
 
 ---
 
-## 2.2 — Permissão de coordenador e endpoints internos `[ ]`
+## 2.2 — Permissão de coordenador e endpoints internos `[x]`
 
 - `apps/api/plane/app/permissions/organizational_unit.py` (novo): `is_unit_coordinator(user, unit)`, `is_unit_member(user, unit)`; decorator `allow_unit_role(["coordinator", "member"], unit_kwarg="unit_id")` no espírito de `allow_permission`, que também aceita Workspace Admin sempre.
 - Endpoints (RFC §8.1): `claim/`, `reassign/`, `return/`, `transfer/`, `queue/`, `decisions/`, `policy PUT` (área e projeto), `coordinators/` CRUD. Todos usam o serviço D0.5 com `trigger` correto (`ui_claim`, `ui_coordinator`, `reassign`, `return_to_queue`).
