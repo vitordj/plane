@@ -13,7 +13,7 @@ localmente; a sessão de agente não executa builds nem migrações (AGENTS.md).
 
 ---
 
-## P0.1 — Build em pull request não publica imagem `[ ]`
+## P0.1 — Build em pull request não publica imagem `[x]`
 
 **Problema.** `.github/workflows/stage.yml`, job `build-push`, passo
 `docker/build-push-action` tem `push: true` incondicional e o workflow roda em
@@ -34,7 +34,7 @@ revisado.
 
 ---
 
-## P0.2 — Publicar tag imutável por SHA e registrar digests `[ ]`
+## P0.2 — Publicar tag imutável por SHA e registrar digests `[x]`
 
 **Mudança.**
 - Em push para `stage`, `tags:` passa a duas linhas: `:stage` e `:sha-${{ github.sha }}`.
@@ -49,7 +49,7 @@ revisado.
 
 ---
 
-## P0.3 — Promoção para produção por SHA, não por `:stage` `[ ]`
+## P0.3 — Promoção para produção por SHA, não por `:stage` `[x]`
 
 **Problema.** `.github/workflows/prod.yml` (job "Promote Images", ~l.81) faz
 `docker pull <img>:stage` e retagueia. A promoção não está vinculada ao commit
@@ -69,7 +69,7 @@ revisado.
 
 ---
 
-## P0.4 — Job `promote-rc` não pode ficar verde sem PR `[ ]`
+## P0.4 — Job `promote-rc` não pode ficar verde sem PR `[x]`
 
 **Problema.** `stage.yml`, job "Ensure Release Candidate PR": `curl -sS` sem
 `-f`, `python3 ... || true`, e `exit 0` em caminhos que não confirmam a
@@ -89,7 +89,7 @@ criação. O job passa mesmo sem PR.
 
 ---
 
-## P0.5 — Lockfile congelado e permissões mínimas `[ ]`
+## P0.5 — Lockfile congelado e permissões mínimas `[x]`
 
 **Mudança.**
 - `pnpm install --no-frozen-lockfile` → `pnpm install --frozen-lockfile` em todos os jobs.
@@ -103,7 +103,7 @@ criação. O job passa mesmo sem PR.
 
 ---
 
-## P0.6 — Remover a senha fixa da migração de usuários `[ ]`
+## P0.6 — Remover a senha fixa da migração de usuários `[x]`
 
 **Problema.** `tools/migration/create_users.py` l.23 define
 `DEFAULT_PASSWORD = "TemporaryOrca123!"` e l.84 aplica a todos os usuários
@@ -123,7 +123,7 @@ criados. Nenhuma troca forçada.
 
 ---
 
-## P0.7 — `TRUSTED_PROXIES` sem fallback aberto `[ ]`
+## P0.7 — `TRUSTED_PROXIES` sem fallback aberto `[x]`
 
 **Problema.** `apps/proxy/Caddyfile.ce` l.8: `trusted_proxies static {$TRUSTED_PROXIES:0.0.0.0/0}`; `.env.example` l.44 repete `0.0.0.0/0`.
 
@@ -142,7 +142,7 @@ criados. Nenhuma troca forçada.
 
 ---
 
-## P0.8 — Suíte upstream no CI `[ ]`
+## P0.8 — Suíte upstream no CI `[x]`
 
 **Problema.** `stage.yml`, job `api_tests`, roda só
 `pytest plane/tests/unit/orca/ -q`.
@@ -159,7 +159,7 @@ criados. Nenhuma troca forçada.
 
 ---
 
-## P0.9 — Ruff obrigatório `[ ]`
+## P0.9 — Ruff obrigatório `[x]`
 
 **Situação.** Nenhum workflow roda ruff. `apps/api/pyproject.toml` já exclui
 `**/migrations/*`, seleciona `E`, `F`, linha 120. `ruff check .` em `apps/api`
@@ -181,7 +181,7 @@ hoje reporta 31 findings (arquivos de `serializers/project.py`,
 
 ---
 
-## P0.10 — Validação completa do `id_token` do Entra e timeouts `[ ]`
+## P0.10 — Validação completa do `id_token` do Entra e timeouts `[x]`
 
 **Situação.** `apps/api/plane/authentication/provider/oauth/entra.py`:
 `decode_id_token_claims` lê o payload sem verificar assinatura; só `tid` é
@@ -233,7 +233,7 @@ já mesclados.
 
 ---
 
-## P0.13 — Versão 1.5.0, Release Please e runbook `[ ]`
+## P0.13 — Versão 1.5.0, Release Please e runbook `[x]`
 
 **Situação.** `package.json` em `1.4.0-plane.1.4.1`;
 `.github/release-please-manifest.json` e `.github/release-please-config.json`

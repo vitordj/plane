@@ -43,8 +43,8 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 
 | Fase | Arquivo | Itens | Estado | Gate fechado em |
 | --- | --- | --- | --- | --- |
-| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 13 | `[ ]` 0/13 | — |
-| D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 10 | `[ ]` 0/10 | — |
+| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 13 | `[~]` 11/13 | — |
+| D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 10 | `[~]` 9/10 | — |
 | 1 Contrato público | [01-public-contract.md](./01-public-contract.md) | 8 | `[ ]` 0/8 | — |
 | 2 Fila e coordenador | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6 | — |
 | 3 Disponibilidade | [03-availability.md](./03-availability.md) | 6 | `[ ]` 0/6 | — |
@@ -53,10 +53,11 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 
 ## Próximo item recomendado
 
-Comece por **P0.6** (senha fixa na migração) e **D0.1** (cobertura
-área↔projeto). Os dois são pequenos, independentes, fecham um risco real
-cada, e servem de aquecimento nas convenções do repositório. Depois siga a
-ordem dos arquivos.
+**D0.9** (fechar a matriz de testes de D0), depois a Fase 1.
+
+Pendentes de P0 que não são de código: **P0.11** (sync com Plane CE 1.4.2) e
+**P0.12** (apagar branches remotos obsoletos) — os dois exigem acesso ao
+remoto upstream e decisão humana sobre o que descartar.
 
 ## Pendências externas (não bloqueiam P0/D0)
 
@@ -73,3 +74,5 @@ ordem dos arquivos.
 | Data | Evento |
 | --- | --- |
 | 2026-09-03 | Plano criado a partir do RFC rev. 2. Nenhum item iniciado. |
+| 2026-09-03 | P0.1–P0.10 e P0.13 entregues na branch `feat/orca-work-management`. |
+| 2026-09-03 | D0.1–D0.8 e D0.10 entregues na mesma branch. |

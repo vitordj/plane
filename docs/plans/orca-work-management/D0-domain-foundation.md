@@ -18,7 +18,7 @@ suíte completa (AGENTS.md).
 
 ---
 
-## D0.1 — Área precisa cobrir o projeto (defeito D1) `[ ]`
+## D0.1 — Área precisa cobrir o projeto (defeito D1) `[x]`
 
 **Onde está o defeito.**
 - `apps/api/plane/app/views/organizational_unit.py`, `IssueOrganizationalUnitEndpoint.post`: valida só `workspace_id`.
@@ -42,7 +42,7 @@ suíte completa (AGENTS.md).
 
 ---
 
-## D0.2 — Remover herança implícita de assignees na API pública (defeito D2) `[ ]`
+## D0.2 — Remover herança implícita de assignees na API pública (defeito D2) `[x]`
 
 **Onde.** `apps/api/plane/api/serializers/issue.py` ~l.188 (bloco
 `# ORCA CUSTOM FEATURE: Default to assignees of user's last created issue`).
@@ -59,7 +59,7 @@ suíte completa (AGENTS.md).
 
 ---
 
-## D0.3 — Migração 0135: estado de fila e executor principal `[ ]`
+## D0.3 — Migração 0135: estado de fila e executor principal `[x]`
 
 **Modelo.** `apps/api/plane/db/models/organizational_unit.py`,
 `IssueOrganizationalUnit`, campos e constraints do RFC §5.1:
@@ -89,7 +89,7 @@ Choices como `TextChoices` no mesmo arquivo: `RoutingState`, `QueueReason`.
 
 ---
 
-## D0.4 — Migrações 0136 e 0137: política, decisão e evento de responsabilidade `[ ]`
+## D0.4 — Migrações 0136 e 0137: política, decisão e evento de responsabilidade `[x]`
 
 **Modelos.** Novo arquivo `apps/api/plane/db/models/organizational_assignment.py`
 (exportar em `db/models/__init__.py`, na seção Orca, com header de copyright):
@@ -120,7 +120,7 @@ Choices como `TextChoices`: `AssignmentMode` (`manual`, `self_claim`,
 
 ---
 
-## D0.5 — `assignment_service.py`: resolução, ranking `lb-1`, alocação, claim, reatribuição, devolução, transferência `[ ]`
+## D0.5 — `assignment_service.py`: resolução, ranking `lb-1`, alocação, claim, reatribuição, devolução, transferência `[x]`
 
 **Arquivo novo.** `apps/api/plane/app/services/orca/assignment_service.py`.
 `assignment_engine.py` passa a delegar (`assign_from_unit` chama
@@ -197,7 +197,7 @@ alocações → 5/5/5/5; 10 claims → 1 sucesso e 9 `AlreadyClaimed`.
 
 ---
 
-## D0.6 — Endpoints internos passam a usar o serviço; GET de política `[ ]`
+## D0.6 — Endpoints internos passam a usar o serviço; GET de política `[x]`
 
 **Mudança** em `apps/api/plane/app/views/organizational_unit.py` e
 `apps/api/plane/app/urls/orca.py`:
@@ -219,7 +219,7 @@ alocações → 5/5/5/5; 10 claims → 1 sucesso e 9 `AlreadyClaimed`.
 
 ---
 
-## D0.7 — Comando `audit_organizational_routing` `[ ]`
+## D0.7 — Comando `audit_organizational_routing` `[x]`
 
 **Arquivo.** `apps/api/plane/db/management/commands/audit_organizational_routing.py`,
 mesmo esqueleto de `reconcile_organizational_access.py` (flags `--workspace`,
@@ -240,7 +240,7 @@ queue_reason="executor_unavailable", trigger="command")`.
 
 ---
 
-## D0.8 — Observabilidade mínima `[ ]`
+## D0.8 — Observabilidade mínima `[x]`
 
 **Mudança.** Módulo `services/orca/metrics.py` com funções
 `record_assignment_outcome(mode, outcome, trigger)`,
@@ -269,7 +269,7 @@ concorrência" com o padrão usado.
 
 ---
 
-## D0.10 — Documentação `[ ]`
+## D0.10 — Documentação `[x]`
 
 - `docs/organizational-units.md` §Assignment reescrita: estados, políticas,
   executor principal, decisões, comando de auditoria, o que mudou em relação
