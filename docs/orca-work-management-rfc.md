@@ -7,6 +7,9 @@ marcada como "proposta" está implementada.
 [organizational-units.md](./organizational-units.md),
 [entra-directory-sync.md](./entra-directory-sync.md).
 
+**Plano de execução:** [`docs/plans/orca-work-management/`](./plans/orca-work-management/README.md)
+(quadro de estado, um arquivo por fase com itens marcáveis, prompt de handoff).
+
 Este documento foi escrito para ser entregue a outra sessão de trabalho sem
 contexto prévio. A seção 0 diz como usá-lo. A seção 13 lista as convenções do
 repositório que qualquer implementação precisa seguir. O apêndice A mapeia
