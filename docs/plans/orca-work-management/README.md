@@ -46,14 +46,15 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 13 | `[~]` 11/13 | — |
 | D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 10 | `[x]` 10/10 | — |
 | 1 Contrato público | [01-public-contract.md](./01-public-contract.md) | 8 | `[x]` 8/8 | — |
-| 2 Fila e coordenador | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[~]` 4/6 | — |
+| 2 Fila e coordenador | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[x]` 6/6 | — |
 | 3 Disponibilidade | [03-availability.md](./03-availability.md) | 6 | `[ ]` 0/6 | — |
 | 4 Processos | [04-processes.md](./04-processes.md) | 7 | `[ ]` 0/7 | — |
 | 5 Visão executiva | [05-executive-view.md](./05-executive-view.md) | 4 | `[ ]` 0/4 | — |
 
 ## Próximo item recomendado
 
-**D0.9** (fechar a matriz de testes de D0), depois a Fase 1.
+**Fase 3** (disponibilidade). Os gates das fases 1 e 2 continuam abertos:
+dependem de deploy em staging e de verificação humana, não de código.
 
 Pendentes de P0 que não são de código: **P0.11** (sync com Plane CE 1.4.2) e
 **P0.12** (apagar branches remotos obsoletos) — os dois exigem acesso ao

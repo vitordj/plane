@@ -13,6 +13,14 @@ Design and rationale: [`docs/orca-work-management-rfc.md`](./orca-work-managemen
 > able to discover the endpoints, and switching it off during an incident
 > should make it gone rather than merely refusing.
 
+> **Cleared for production from Gate 2-minimum.** Until the coordinator
+> screens existed, work this API queued had nowhere to be seen: an area with
+> `manual` policy would accept a work item and nobody would ever look at it.
+> That is why the flag stayed `0` in production while Phase 1 shipped. With
+> the area queue, the SLA alert and the coordinator role in place, turning it
+> on is a deployment decision rather than a risk — the checklist is in
+> [`docs/plans/orca-work-management/02-queue-and-coordinator.md`](./plans/orca-work-management/02-queue-and-coordinator.md).
+
 ---
 
 ## Authentication

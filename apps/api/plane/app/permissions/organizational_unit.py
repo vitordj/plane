@@ -35,6 +35,11 @@ ROLE_COORDINATOR = "coordinator"
 ROLE_UNIT_MEMBER = "member"
 
 WORKSPACE_ADMIN = 20
+# A workspace Guest holds no area role, whatever the area's own rows say. The
+# assignment engine already refuses to hand them work (a Guest cannot be an
+# assignable project member), so letting one read or move an area's queue
+# would give them a say over work they can never be given.
+WORKSPACE_MEMBER = 15
 
 
 def is_unit_coordinator(user, unit) -> bool:
@@ -46,6 +51,7 @@ def is_unit_coordinator(user, unit) -> bool:
         is_active=True,
         workspace_member__member=user,
         workspace_member__is_active=True,
+        workspace_member__role__gte=WORKSPACE_MEMBER,
     ).exists()
 
 
@@ -58,6 +64,7 @@ def is_unit_member(user, unit) -> bool:
         is_active=True,
         workspace_member__member=user,
         workspace_member__is_active=True,
+        workspace_member__role__gte=WORKSPACE_MEMBER,
     ).exists()
 
 

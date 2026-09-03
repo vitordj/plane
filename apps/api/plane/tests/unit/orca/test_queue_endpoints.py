@@ -320,3 +320,184 @@ class TestCoordinatorsAndPolicy:
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.unit
+@pytest.mark.django_db
+class TestTheNegativeMatrix:
+    """
+    Every cell of RFC §10 that must answer "no". A permission test that only
+    checks the yes cases proves nothing: the whole point of the coordinator
+    role is what it keeps people out of.
+    """
+
+    def test_a_guest_cannot_read_the_queue(
+        self, guest_client, workspace_with_members, covered_unit, queued_issue, guest_user, add_member
+    ):
+        """Even inside the area: a guest is not somebody the area can hand work to."""
+        add_member(covered_unit, guest_user)
+
+        response = guest_client.get(queue_url(workspace_with_members.slug, covered_unit.id))
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_somebody_from_another_workspace_does_not_learn_the_area_exists(
+        self, outsider_client, workspace_with_members, covered_unit, queued_issue
+    ):
+        response = outsider_client.get(queue_url(workspace_with_members.slug, covered_unit.id))
+
+        assert response.status_code in (status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND)
+
+    def test_the_coordinator_of_another_area_is_a_stranger_here(
+        self,
+        member_client,
+        workspace_with_members,
+        covered_unit,
+        second_unit,
+        queued_issue,
+        plain_user,
+        workspace_member_of,
+    ):
+        OrganizationalUnitCoordinator.objects.create(
+            organizational_unit=second_unit,
+            workspace_member=workspace_member_of(plain_user),
+            workspace=workspace_with_members,
+        )
+
+        response = member_client.get(queue_url(workspace_with_members.slug, covered_unit.id))
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_the_lead_of_the_area_does_not_coordinate_it(
+        self,
+        member_client,
+        workspace_with_members,
+        project,
+        covered_unit,
+        queued_issue,
+        add_member,
+        grant_manual_access,
+        in_area,
+        plain_user,
+        second_user,
+    ):
+        """
+        Leading an area and running its queue are different jobs. The lead is
+        who the SLA sweep falls back to, not somebody who may move work — that
+        has to be granted on purpose.
+        """
+        add_member(covered_unit, plain_user, role="lead")
+        grant_manual_access(project, plain_user)
+        in_area(second_user)
+
+        response = member_client.post(
+            action_url(workspace_with_members.slug, project.id, queued_issue.id, "assign-to"),
+            {"primary_executor": str(second_user.id)},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_a_member_cannot_claim_when_the_area_assigns_manually(
+        self, member_client, workspace_with_members, project, covered_unit, queued_issue, in_area, plain_user
+    ):
+        OrganizationalUnitAssignmentPolicy.objects.create(
+            organizational_unit=covered_unit,
+            workspace=workspace_with_members,
+            default_mode="manual",
+            allowed_modes=["manual"],
+        )
+        in_area(plain_user)
+
+        response = member_client.post(
+            action_url(workspace_with_members.slug, project.id, queued_issue.id, "claim"), {}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert IssueOrganizationalUnit.objects.get(issue=queued_issue).primary_executor_id is None
+
+    def test_a_member_of_another_project_cannot_claim(
+        self,
+        member_client,
+        workspace_with_members,
+        project,
+        second_project,
+        covered_unit,
+        queued_issue,
+        grant_manual_access,
+        plain_user,
+    ):
+        """Access to some project in the workspace is not access to this one."""
+        OrganizationalUnitAssignmentPolicy.objects.create(
+            organizational_unit=covered_unit,
+            workspace=workspace_with_members,
+            default_mode="self_claim",
+            allowed_modes=["self_claim"],
+        )
+        grant_manual_access(second_project, plain_user)
+
+        response = member_client.post(
+            action_url(workspace_with_members.slug, project.id, queued_issue.id, "claim"), {}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_a_plain_member_cannot_move_work_to_another_area(
+        self,
+        member_client,
+        workspace_with_members,
+        project,
+        covered_unit,
+        second_unit,
+        link_project,
+        queued_issue,
+        in_area,
+        plain_user,
+    ):
+        link_project(second_unit, project)
+        in_area(plain_user)
+
+        response = member_client.post(
+            action_url(workspace_with_members.slug, project.id, queued_issue.id, "transfer"),
+            {"organizational_unit_id": str(second_unit.id)},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_work_cannot_be_moved_to_an_area_that_does_not_cover_the_project(
+        self,
+        member_client,
+        workspace_with_members,
+        project,
+        covered_unit,
+        second_unit,
+        queued_issue,
+        make_coordinator,
+        plain_user,
+    ):
+        """`second_unit` is real and active — it just is not linked to this project."""
+        make_coordinator(plain_user)
+
+        response = member_client.post(
+            action_url(workspace_with_members.slug, project.id, queued_issue.id, "transfer"),
+            {"organizational_unit_id": str(second_unit.id)},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert IssueOrganizationalUnit.objects.get(issue=queued_issue).organizational_unit_id == covered_unit.id
+
+    def test_a_member_cannot_rewrite_the_areas_rules(
+        self, member_client, workspace_with_members, covered_unit, make_coordinator, plain_user
+    ):
+        """Not even its coordinator: the rules are the admin's, the queue is theirs."""
+        make_coordinator(plain_user)
+
+        response = member_client.put(
+            f"/api/orca/workspaces/{workspace_with_members.slug}/organizational-units/{covered_unit.id}/policy/write/",
+            {"default_mode": "self_claim", "allowed_modes": ["self_claim"]},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN

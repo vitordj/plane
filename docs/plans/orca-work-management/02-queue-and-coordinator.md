@@ -82,19 +82,45 @@ tarefa sair sem efeito (padrão da `organizational_directory_task`).
 
 ---
 
-## 2.5 — i18n completo e documentação `[ ]`
+## 2.5 — i18n completo e documentação `[x]`
 
 - Todas as strings novas em todas as locales; revisar plurais com CLDR (skill `translate`).
 - `docs/organizational-units.md`: seções "Fila da área", "Coordenador", "Minha Área".
 - `docs/orca-public-api.md`: nota de que a API está liberada em produção a partir deste gate.
 
+**Entregue.** As 19 locales recebem as chaves novas de
+`workspace-settings.json` e `sidebar.my_areas` em `navigation.json` (paridade
+conferida por script); `docs/organizational-units.md` ganha "The area's
+queue" (com a subseção do sweep de SLA), "Coordinators" e "My areas", mais a
+tabela dos endpoints de fila; `docs/orca-public-api.md` traz a nota do gate.
+A frase "`fill_empty`/`append` saem na Fase 2" foi corrigida: nada no quadro
+os remove, e há chamadores fora deste repositório que ainda os enviam —
+removê-los precisa de um item próprio e de janela combinada.
+
 ---
 
-## 2.6 — Testes de fechamento `[ ]`
+## 2.6 — Testes de fechamento `[x]`
 
 - Teste de integração: coordenador esvazia uma fila de 30 itens só pelos endpoints da aba; ao final, `ProjectMember` idêntico ao início (comparar `values_list` antes/depois).
 - Matriz de permissões negativa completa (2.2).
 - Cada ação da aba gera exatamente uma `AssignmentDecision`.
+
+**Entregue.** Os dois primeiros em `test_routing_invariants.py`
+(`TestI10AccessIsNotWrittenByTheQueue`, `TestEveryActionWritesOneDecision`) e
+a matriz negativa em `test_queue_endpoints.py` (`TestTheNegativeMatrix`:
+Guest, workspace vizinho, coordenador de outra área, lead sem coordenação,
+membro sob `manual`, membro de outro projeto, encaminhamento por não
+coordenador, destino que não cobre o projeto, política escrita por
+coordenador).
+
+A matriz expôs um buraco: um Guest que fosse membro da área passava por
+`allow_unit_role` e lia a fila, mesmo sem poder receber trabalho nenhum
+(`eligible_user_ids` exige papel de projeto ≥ 15). `is_unit_member` e
+`is_unit_coordinator` passaram a exigir papel de workspace ≥ 15 — Guest não
+tem papel de área, seja o que for que as tabelas da área digam.
+
+**Rodar antes do merge** (precisa de banco; o agente não roda):
+`docker compose -f docker-compose-test.yml run --rm api-tests pytest plane/tests/unit/orca/ -m unit`
 
 ---
 

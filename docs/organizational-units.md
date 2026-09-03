@@ -143,6 +143,29 @@ Admin; reads are open to workspace members.
 | `GET` `POST` `DELETE`  | `projects/<project_id>/issues/<issue_id>/organizational-unit/`        |
 | `POST`                 | `projects/<project_id>/issues/<issue_id>/organizational-unit-assign/` |
 
+The queue and its actions, added with the coordinator screens:
+
+| Method        | Path (under `/api/orca/workspaces/<slug>/`)                                  |
+| ------------- | ---------------------------------------------------------------------------- |
+| `GET`         | `organizational-units/<id>/queue/`                                           |
+| `GET`         | `organizational-units/<id>/decisions/`                                       |
+| `GET`         | `organizational-units/<id>/policy/`                                          |
+| `PUT`         | `organizational-units/<id>/policy/write/`                                    |
+| `GET`         | `organizational-units/<id>/projects/<project_id>/policy/`                    |
+| `PUT`         | `organizational-units/<id>/projects/<project_id>/policy/write/`              |
+| `GET` `POST`  | `organizational-units/<id>/coordinators/`                                    |
+| `DELETE`      | `organizational-units/<id>/coordinators/<coordinator_id>/`                   |
+| `GET`         | `projects/<project_id>/issues/<issue_id>/organizational-unit/candidates/`    |
+| `POST`        | `projects/<project_id>/issues/<issue_id>/organizational-unit/claim/`         |
+| `POST`        | `projects/<project_id>/issues/<issue_id>/organizational-unit/assign-to/`     |
+| `POST`        | `projects/<project_id>/issues/<issue_id>/organizational-unit/return/`        |
+| `POST`        | `projects/<project_id>/issues/<issue_id>/organizational-unit/transfer/`      |
+
+Reading a queue is open to that area's members and coordinators (and workspace
+admins); the four actions are checked one by one against what the reader may
+actually do, which is the same answer the `can_*` flags on each queue row
+carry. Policy writes and coordinator changes are workspace Admin only.
+
 `effective-access/` is strictly read-only: it runs the same resolver the
 reconciler uses and reports current state, desired state and provenance
 without writing anything.
@@ -246,7 +269,110 @@ no record of why that person, and no way to tell "nobody was available" from
 "nobody has looked at it yet". Its `mode=fill_empty` and `mode=append` are
 still accepted by the assign endpoint and both now mean automatic allocation —
 `append` is what the service always does, since it never replaces an existing
-assignee. They are deprecated and go away in Phase 2.
+assignee. They are deprecated; nothing removes them yet, because callers
+outside this repository still send them.
+
+## The area's queue
+
+Everything an area owes is on one screen: **Settings → Areas → the area →
+Work**, and the same tab is what **My areas** shows to somebody who is not an
+admin. It is split into sections that answer different questions, because a
+single list sorted by date hides the half that has nobody on it.
+
+| Section | What is in it |
+| --- | --- |
+| Needs attention | Late to be taken, past the work item's own target date, parked, or `allocation_failed`. A lens, not a bucket: rows here appear again below. |
+| Inbox | `queued` and `allocation_failed` — the area owns it, nobody is executing it. |
+| In progress | `assigned`, grouped by primary executor, so "who is carrying what" is one glance. |
+| Decisions | The area's recent `AssignmentDecision` records, newest first, with what each replaced. |
+
+Each row says why it is waiting (`queue_reason`), how long it has been waiting,
+and whether it is past the area's assignment SLA. Waiting ten minutes to be
+claimed is normal; waiting two days past the promised date is the thing
+somebody opened this screen to find.
+
+**The row carries its own permissions.** `can_claim`, `can_assign`,
+`can_return` and `can_transfer` come from the server with each row, and the
+interface renders the actions it is given. It never decides for itself whether
+somebody may claim a work item — doing that would mean reimplementing the
+policy in TypeScript, and the two copies would drift.
+
+The actions are the ones the service already has:
+
+- **Take it** — for a member of the area, when the effective mode is
+  `self_claim` (a coordinator may always take work from an area they are in).
+- **Assign to…** — the ranked candidate list with each person's open work
+  beside their name, and the people who *cannot* take it listed greyed with
+  the reason. The decision the coordinator was looking at travels with the
+  request, so if somebody moved the work while the dialog was open the server
+  refuses instead of undoing them.
+- **Return to the queue** — a coordinator, or the executor themself. The
+  previous executor stays on the work item as a collaborator.
+- **Move to another area** — only areas linked to this work item's project are
+  offered, the same rule the server enforces. From the work item itself, the
+  area selector does the same thing: changing an area that already owns the
+  work runs a transfer, not a silent re-point.
+
+Every one of those writes exactly one `AssignmentDecision`, and none of them
+touches `ProjectMember` — access comes from the area's project links and is
+written only by the reconciler.
+
+The rules of an area live in the **Rules** tab beside it (workspace admins
+only): default mode, which modes a caller may ask for, how long something may
+wait before the coordinators hear about it, and the most open work one person
+may be given automatically. Per project overrides sit on the same form.
+
+### When nobody takes it
+
+`assignment_sla_seconds` is the area's own promise about how long something may
+sit unclaimed. A Celery beat task sweeps every 15 minutes and, for each
+`queued` or `allocation_failed` work item past its `assignment_due_at`, sends a
+native Plane notification to the area's coordinators — or to its lead when
+there is no coordinator. `last_alerted_at` on the link holds a four-hour
+cooldown, so a queue that stays late does not become a stream of the same
+alert; the sweep does nothing at all when `ORCA_ORG_UNITS_ENABLED=0`.
+
+`allocation_failed` does not wait for the sweep: the service alerts as soon as
+automatic allocation finds nobody, because that almost always means the area's
+membership or its project links are wrong, and it will not fix itself.
+
+## Coordinators
+
+A coordinator is the person who runs an area's queue: they see it, they assign,
+they return work, they move it to another area, and they are who the SLA sweep
+tells when something has been waiting too long.
+
+Coordinators are managed on the area's **Coordinators** tab (workspace admins
+only) and are stored in `OrganizationalUnitCoordinator`, separate from
+membership on purpose:
+
+- **A coordinator need not be a member of the area.** A manager may run the
+  queue of an area they do not work in.
+- **Automatic allocation never hands work to somebody for being a coordinator.**
+  Ranking looks at area membership; coordination is not membership. A
+  coordinator who should also be doing the work is added as a member as well,
+  and then they rank like anybody else.
+- **They do get access to the area's projects**, because they cannot triage
+  what they cannot see. That access is reconciled like every other
+  area-derived access — `grant_source` records that it came from coordination
+  rather than membership, so removing the coordinator withdraws it, and
+  `ProjectMember` is still written only by the reconciler.
+
+An area with no coordinator is not stuck: workspace admins can do everything a
+coordinator can, and the SLA sweep falls back to the area's lead when there is
+no coordinator to tell.
+
+## My areas
+
+`/<workspace>/my-areas` is the queue for people who are not workspace admins —
+the sidebar entry appears once somebody belongs to at least one area. It lists
+the areas the current user is in and opens the same Work tab for the one they
+pick, with the same server-decided permissions: a member sees what they may
+claim, a coordinator sees the whole queue and can assign it.
+
+It exists because the settings screen is the wrong door for this. Somebody who
+does the work should not have to walk through workspace settings — nor be
+given admin — to find out what their area owes.
 
 ## Directory sync
 
@@ -295,6 +421,13 @@ reverted, manual demotions below the inherited floor being restored,
 workspace-role capping, idempotency, the read-only guarantee of `plan_access`,
 cross-workspace rejection, and the assignment engine's ranking and
 no-replacement rules.
+
+The queue and coordinator layer is in `test_queue_endpoints.py` (the queue
+read, its `can_*` flags, and the four actions against the permission matrix),
+`test_queue_sla_sweep.py` (the alert, the cooldown, the fallback to the lead,
+and the kill switch) and `test_routing_invariants.py` (a coordinator emptying
+a queue leaves `ProjectMember` untouched, and every action writes exactly one
+decision).
 
 They also cover the hardening invariants: that the reconciliation task is
 registered on worker startup, that a responsible unit can be set, cleared and
