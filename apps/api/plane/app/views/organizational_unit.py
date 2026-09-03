@@ -238,9 +238,7 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
         # through a serializer on this path, and a second active lead would
         # otherwise abort the transaction with an IntegrityError from the
         # single-lead partial index instead of returning a 400.
-        payload = OrganizationalUnitMembershipCreateSerializer(
-            data=request.data, context={"organizational_unit": unit}
-        )
+        payload = OrganizationalUnitMembershipCreateSerializer(data=request.data, context={"organizational_unit": unit})
         if not payload.is_valid():
             return Response(payload.errors, status=status.HTTP_400_BAD_REQUEST)
 

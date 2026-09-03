@@ -230,6 +230,41 @@ jobs:
         run: pnpm check:types
 
   # ---------------------------------------------------------------------------
+  # Python lint and format. Nothing enforced ruff before, so the API drifted
+  # from its own pyproject: 31 lint findings and 66 unformatted files. Both are
+  # clean now, and this job keeps them that way. The ruff version is the one
+  # pinned in requirements/local.txt, so a developer's local run and this job
+  # agree — formatters disagree across versions, and a CI that formats
+  # differently from the team is worse than no CI at all.
+  # ---------------------------------------------------------------------------
+  api_lint:
+    name: API Lint (ruff)
+    needs: changes
+    if: ${{ needs.changes.outputs.api == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install ruff
+        run: pip install "ruff==0.9.7"
+
+      - name: Run ruff check
+        working-directory: ./apps/api
+        run: ruff check .
+
+      - name: Run ruff format check
+        working-directory: ./apps/api
+        run: ruff format --check .
+
+  # ---------------------------------------------------------------------------
   # Backend tests. The Orca organizational layer materializes native
   # ProjectMember rows, so its tests assert against real rows in a real
   # PostgreSQL database — partial unique indexes and soft-delete behavior do not
@@ -309,7 +344,7 @@ jobs:
 
   build-push:
     name: Build & Push ${{ matrix.service }}
-    needs: [ci, api_tests, changes]
+    needs: [ci, api_lint, api_tests, changes]
     # `ci` and `api_tests` are each scoped to the paths they cover, so either
     # may legitimately be skipped — a web-only change skips api_tests, and a
     # config-only change skips ci. A skipped dependency would normally skip

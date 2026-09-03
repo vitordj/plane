@@ -217,7 +217,10 @@ class IssueCreateSerializer(BaseSerializer):
 
         project_id = self.context["project_id"]
         workspace_id = self.context["workspace_id"]
-        default_assignee_id = self.context["default_assignee_id"]
+        # ORCA CUSTOM FEATURE: the web app reuses the assignees of your last work
+        # item in this project instead of the project's default assignee, so
+        # context["default_assignee_id"] is deliberately not read here. The
+        # public API (plane/api/serializers/issue.py) keeps upstream's rule.
 
         # Create Issue
         issue = Issue.objects.create(**validated_data, project_id=project_id)
@@ -318,6 +321,7 @@ class IssueCreateSerializer(BaseSerializer):
 
         # Auto-apply conventional commit label if enabled for the project
         from plane.utils.conventional_commits import apply_conventional_commit_label
+
         apply_conventional_commit_label(issue)
 
         return issue
@@ -385,6 +389,7 @@ class IssueCreateSerializer(BaseSerializer):
         # Auto-apply conventional commit label only when the work item title was actually changed
         if name_updated:
             from plane.utils.conventional_commits import apply_conventional_commit_label
+
             apply_conventional_commit_label(updated_issue, old_title=old_name)
 
         return updated_issue

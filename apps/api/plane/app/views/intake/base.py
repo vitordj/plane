@@ -349,8 +349,6 @@ class IntakeIssueViewSet(BaseViewSet):
         if not intake_issue:
             return Response({"error": "Intake issue not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        intake_id = intake_issue.intake
-
         project_member = ProjectMember.objects.filter(
             workspace__slug=slug,
             project_id=project_id,

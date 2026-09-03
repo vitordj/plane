@@ -627,9 +627,7 @@ class TestFeatureFlagClosesProvisioning:
         # a healthy endpoint for a layer that is off.
         settings.ORCA_ORG_UNITS_ENABLED = False
 
-        response = scim_client.get(
-            f"/api/orca/scim/v2/workspaces/{workspace_with_members.slug}/ServiceProviderConfig"
-        )
+        response = scim_client.get(f"/api/orca/scim/v2/workspaces/{workspace_with_members.slug}/ServiceProviderConfig")
 
         assert response.status_code == 404
 

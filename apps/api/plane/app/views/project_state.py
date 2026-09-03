@@ -6,7 +6,15 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import SAFE_METHODS
 
-from plane.db.models import Workspace, Project, ProjectState, WorkspaceProjectStateSettings, ProjectStateProperty, DEFAULT_PROJECT_STATES
+from django.utils.text import slugify
+from plane.db.models import (
+    Workspace,
+    Project,
+    ProjectState,
+    WorkspaceProjectStateSettings,
+    ProjectStateProperty,
+    DEFAULT_PROJECT_STATES,
+)
 from plane.app.permissions import (
     WorkSpaceAdminPermission,
     WorkspaceAdminOnlyPermission,
@@ -37,8 +45,7 @@ class WorkspaceProjectStateSettingsEndpoint(BaseAPIView):
     def get(self, request, slug):
         workspace = Workspace.objects.get(slug=slug)
         settings_obj, created = WorkspaceProjectStateSettings.objects.get_or_create(
-            workspace=workspace,
-            defaults={"is_enabled": False}
+            workspace=workspace, defaults={"is_enabled": False}
         )
 
         # Seed default project states if it is a new workspace or if there are no states
@@ -59,8 +66,7 @@ class WorkspaceProjectStateSettingsEndpoint(BaseAPIView):
     def patch(self, request, slug):
         workspace = Workspace.objects.get(slug=slug)
         settings_obj, _ = WorkspaceProjectStateSettings.objects.get_or_create(
-            workspace=workspace,
-            defaults={"is_enabled": False}
+            workspace=workspace, defaults={"is_enabled": False}
         )
         serializer = WorkspaceProjectStateSettingsSerializer(settings_obj, data=request.data, partial=True)
         if serializer.is_valid():
@@ -69,10 +75,9 @@ class WorkspaceProjectStateSettingsEndpoint(BaseAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-from django.utils.text import slugify
-
 def propagate_workspace_state_change(workspace_state, action="save"):
     from plane.db.models import ProjectStateProperty, State, Issue, ProjectState
+
     workspace = workspace_state.workspace
     enabled_project_ids = ProjectStateProperty.objects.filter(
         project__workspace=workspace, is_enabled=True
@@ -92,7 +97,7 @@ def propagate_workspace_state_change(workspace_state, action="save"):
                     "sequence": workspace_state.sequence,
                     "description": workspace_state.description or "",
                     "workspace": workspace,
-                }
+                },
             )
         elif action == "delete":
             ps = State.objects.filter(project_id=project_id, slug=state_slug).first()
@@ -107,6 +112,7 @@ def propagate_workspace_state_change(workspace_state, action="save"):
 
 def sync_workspace_states_to_project(workspace, project):
     from plane.db.models import ProjectState, State, Issue
+
     workspace_states = ProjectState.objects.filter(workspace=workspace)
     project_states = State.objects.filter(project=project)
 
@@ -178,9 +184,7 @@ class ProjectStateViewSet(BaseViewSet):
         return super().get_permissions()
 
     def get_queryset(self):
-        return ProjectState.objects.filter(
-            workspace__slug=self.workspace_slug
-        )
+        return ProjectState.objects.filter(workspace__slug=self.workspace_slug)
 
     def perform_create(self, serializer):
         workspace = Workspace.objects.get(slug=self.workspace_slug)
@@ -208,8 +212,7 @@ class ProjectStatePropertyEndpoint(BaseAPIView):
         project = Project.objects.get(id=project_id, workspace__slug=slug)
         default_state = ProjectState.objects.filter(workspace__slug=slug, default=True).first()
         prop, _ = ProjectStateProperty.objects.get_or_create(
-            project=project,
-            defaults={"state": default_state, "is_enabled": False}
+            project=project, defaults={"state": default_state, "is_enabled": False}
         )
         serializer = ProjectStatePropertySerializer(prop)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -218,8 +221,7 @@ class ProjectStatePropertyEndpoint(BaseAPIView):
         project = Project.objects.get(id=project_id, workspace__slug=slug)
         default_state = ProjectState.objects.filter(workspace__slug=slug, default=True).first()
         prop, _ = ProjectStateProperty.objects.get_or_create(
-            project=project,
-            defaults={"state": default_state, "is_enabled": False}
+            project=project, defaults={"state": default_state, "is_enabled": False}
         )
         was_enabled = prop.is_enabled
         serializer = ProjectStatePropertySerializer(prop, data=request.data, partial=True)

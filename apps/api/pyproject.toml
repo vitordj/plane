@@ -35,6 +35,55 @@ line-length = 120
 indent-width = 4
 
 [tool.ruff.format]
+# ORCA CUSTOM FEATURE: files below are upstream Plane code that this fork has
+# never touched, and that upstream does not format with ruff. Formatting them
+# would rewrite hundreds of lines the next upstream merge has to reconcile, so
+# `ruff format --check` skips them and CI can be strict about everything else.
+# Delete an entry the moment the fork edits that file, and delete the whole
+# list at the next upstream sync if upstream has adopted the same formatter.
+exclude = [
+    "plane/api/views/asset.py",
+    "plane/api/views/intake.py",
+    "plane/api/views/module.py",
+    "plane/app/serializers/workspace.py",
+    "plane/app/views/asset/v2.py",
+    "plane/app/views/issue/attachment.py",
+    "plane/authentication/provider/credentials/email.py",
+    "plane/authentication/provider/credentials/magic_code.py",
+    "plane/authentication/provider/oauth/github.py",
+    "plane/bgtasks/page_version_task.py",
+    "plane/db/management/commands/create_project_member.py",
+    "plane/db/models/estimate.py",
+    "plane/db/models/state.py",
+    "plane/license/api/serializers/workspace.py",
+    "plane/license/bgtasks/telemetry_metrics.py",
+    "plane/space/views/asset.py",
+    "plane/tests/contract/api/test_authentication.py",
+    "plane/tests/contract/api/test_project_members_roster_scope.py",
+    "plane/tests/contract/app/test_authentication.py",
+    "plane/tests/contract/app/test_cycle_issue_app.py",
+    "plane/tests/contract/app/test_deploy_board_project_scope_app.py",
+    "plane/tests/contract/app/test_issue_list_guest_scope_app.py",
+    "plane/tests/contract/app/test_page_version_project_scope_app.py",
+    "plane/tests/contract/app/test_project_member_is_active_authz.py",
+    "plane/tests/contract/app/test_workspace_cycles_modules_project_scope_app.py",
+    "plane/tests/contract/app/test_workspace_file_asset_project_scope_app.py",
+    "plane/tests/contract/app/test_workspace_user_preference_app.py",
+    "plane/tests/unit/bg_tasks/test_ssrf_advisories.py",
+    "plane/tests/unit/bg_tasks/test_url_security.py",
+    "plane/tests/unit/bg_tasks/test_work_item_link_task.py",
+    "plane/tests/unit/middleware/test_api_authentication.py",
+    "plane/tests/unit/middleware/test_logger.py",
+    "plane/tests/unit/utils/test_order_by_sanitize.py",
+    "plane/utils/ip_address.py",
+    "plane/utils/issue_relation_mapper.py",
+    "plane/utils/openapi/decorators.py",
+    "plane/utils/order_queryset.py",
+    "plane/utils/porters/exporter.py",
+    "plane/utils/porters/serializers/issue.py",
+    "plane/utils/url_security.py",
+]
+
 # Use double quotes for strings.
 quote-style = "double"
 
