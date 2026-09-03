@@ -686,6 +686,14 @@
           "work_item_already_claimed": "Altcineva a preluat primul acest element de lucru.",
           "decision_stale": "Acest element de lucru s-a schimbat de când l-ai deschis. Reîncarcă și încearcă din nou.",
           "invalid_routing_transition": "Acest element de lucru nu este într-o stare care să permită asta.",
+          "idempotency_key_required": "Din cerere lipsește antetul Idempotency-Key.",
+          "idempotency_payload_mismatch": "Acea cheie de idempotență a fost deja folosită cu altă cerere.",
+          "operation_in_progress": "O cerere identică este încă în curs. Așteaptă puțin și încearcă din nou.",
+          "external_binding_conflict": "Acea referință externă indică deja alt element de lucru.",
+          "assignees_not_allowed_here": "Responsabilii se stabilesc din zonă, nu pe elementul de lucru.",
+          "if_match_required": "Cererea trebuie să spună asupra cărei decizii acționează (If-Match).",
+          "internal_error": "Operațiunea a eșuat neașteptat și a fost înregistrată ca eșuată.",
+          "process_projection_disabled": "Proiecția proceselor nu este activată pe această instanță.",
           "directory_workspace_not_found": "Acest spațiu de lucru nu mai există.",
           "directory_token_required": "Emiteți un token SCIM înainte de a activa provizionarea din director."
         }

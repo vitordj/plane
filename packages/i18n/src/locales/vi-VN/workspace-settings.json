@@ -686,6 +686,14 @@
           "work_item_already_claimed": "Người khác đã nhận mục công việc này trước.",
           "decision_stale": "Mục công việc này đã thay đổi kể từ khi bạn mở. Hãy tải lại và thử lại.",
           "invalid_routing_transition": "Mục công việc này không ở trạng thái cho phép điều đó.",
+          "idempotency_key_required": "Yêu cầu thiếu tiêu đề Idempotency-Key.",
+          "idempotency_payload_mismatch": "Khoá idempotency đó đã được dùng cho một yêu cầu khác.",
+          "operation_in_progress": "Một yêu cầu giống hệt vẫn đang chạy. Hãy đợi một lát rồi thử lại.",
+          "external_binding_conflict": "Tham chiếu bên ngoài đó đã trỏ tới một mục công việc khác.",
+          "assignees_not_allowed_here": "Người phụ trách được đặt qua khu vực, không đặt trên chính mục công việc.",
+          "if_match_required": "Yêu cầu phải nêu rõ nó đang tác động lên quyết định nào (If-Match).",
+          "internal_error": "Thao tác thất bại ngoài dự kiến và đã được ghi nhận là thất bại.",
+          "process_projection_disabled": "Chiếu quy trình chưa được bật trên máy chủ này.",
           "directory_workspace_not_found": "Không gian làm việc đó không còn tồn tại.",
           "directory_token_required": "Hãy cấp token SCIM trước khi bật cấp phát từ thư mục."
         }

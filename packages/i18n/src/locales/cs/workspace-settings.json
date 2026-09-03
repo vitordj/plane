@@ -686,6 +686,14 @@
           "work_item_already_claimed": "Tuto pracovní položku si už převzal někdo jiný.",
           "decision_stale": "Tato pracovní položka se od otevření změnila. Načtěte ji znovu a zkuste to znovu.",
           "invalid_routing_transition": "Tato pracovní položka není ve stavu, který to umožňuje.",
+          "idempotency_key_required": "V požadavku chybí hlavička Idempotency-Key.",
+          "idempotency_payload_mismatch": "Tento idempotentní klíč už byl použit s jiným požadavkem.",
+          "operation_in_progress": "Shodný požadavek stále probíhá. Chvíli počkejte a zkuste to znovu.",
+          "external_binding_conflict": "Tento externí odkaz už ukazuje na jinou pracovní položku.",
+          "assignees_not_allowed_here": "Odpovědné osoby se nastavují přes oblast, ne u samotné pracovní položky.",
+          "if_match_required": "Požadavek musí uvést, na které rozhodnutí reaguje (If-Match).",
+          "internal_error": "Operace nečekaně selhala a byla zaznamenána jako neúspěšná.",
+          "process_projection_disabled": "Projekce procesů není v této instanci zapnutá.",
           "directory_workspace_not_found": "Tento pracovní prostor už neexistuje.",
           "directory_token_required": "Před zapnutím provisioningu z adresáře vydejte token SCIM."
         }

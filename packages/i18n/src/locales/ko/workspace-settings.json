@@ -686,6 +686,14 @@
           "work_item_already_claimed": "다른 사람이 먼저 이 작업 항목을 맡았습니다.",
           "decision_stale": "이 작업 항목은 연 뒤에 변경되었습니다. 새로 고친 뒤 다시 시도하세요.",
           "invalid_routing_transition": "이 작업 항목은 그렇게 할 수 있는 상태가 아닙니다.",
+          "idempotency_key_required": "요청에 Idempotency-Key 헤더가 없습니다.",
+          "idempotency_payload_mismatch": "그 멱등 키는 이미 다른 요청에 사용되었습니다.",
+          "operation_in_progress": "동일한 요청이 아직 처리 중입니다. 잠시 후 다시 시도하세요.",
+          "external_binding_conflict": "그 외부 참조는 이미 다른 작업 항목을 가리킵니다.",
+          "assignees_not_allowed_here": "담당자는 영역을 통해 정해지며, 작업 항목에서 직접 지정하지 않습니다.",
+          "if_match_required": "요청은 어떤 결정에 대해 작업하는지 밝혀야 합니다(If-Match).",
+          "internal_error": "작업이 예기치 않게 실패했고 실패로 기록되었습니다.",
+          "process_projection_disabled": "이 인스턴스에서는 프로세스 투영이 활성화되어 있지 않습니다.",
           "directory_workspace_not_found": "해당 작업 공간이 더 이상 없습니다.",
           "directory_token_required": "디렉터리 프로비저닝을 켜기 전에 SCIM 토큰을 발급하십시오."
         }

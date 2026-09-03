@@ -46,6 +46,7 @@ from plane.app.services.orca import (
     unit_covers_project,
     workload_snapshot,
 )
+from plane.api.views.orca.base import orca_public_api_enabled
 from plane.app.services.orca.errors import OrcaDomainError
 from plane.db.models import (
     AssignmentMode,
@@ -118,7 +119,12 @@ class OrcaConfigEndpoint(BaseAPIView):
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
     def get(self, request, slug):
         return Response(
-            {"organizational_units_enabled": organizational_units_enabled()},
+            {
+                "organizational_units_enabled": organizational_units_enabled(),
+                # So the interface can show integration instructions only where
+                # they would actually work.
+                "public_api_enabled": orca_public_api_enabled(),
+            },
             status=status.HTTP_200_OK,
         )
 

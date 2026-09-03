@@ -686,6 +686,14 @@
           "work_item_already_claimed": "Ktoś inny przejął ten element pracy wcześniej.",
           "decision_stale": "Ten element pracy zmienił się od czasu otwarcia. Odśwież i spróbuj ponownie.",
           "invalid_routing_transition": "Ten element pracy nie jest w stanie, który na to pozwala.",
+          "idempotency_key_required": "W żądaniu brakuje nagłówka Idempotency-Key.",
+          "idempotency_payload_mismatch": "Ten klucz idempotencji został już użyty z innym żądaniem.",
+          "operation_in_progress": "Identyczne żądanie jest wciąż przetwarzane. Poczekaj chwilę i spróbuj ponownie.",
+          "external_binding_conflict": "To odwołanie zewnętrzne wskazuje już inny element pracy.",
+          "assignees_not_allowed_here": "Osoby odpowiedzialne ustawia się w obszarze, a nie w samym elemencie pracy.",
+          "if_match_required": "Żądanie musi wskazać, na której decyzji działa (If-Match).",
+          "internal_error": "Operacja nieoczekiwanie się nie powiodła i została zapisana jako nieudana.",
+          "process_projection_disabled": "Projekcja procesów nie jest włączona w tej instancji.",
           "directory_workspace_not_found": "Ta przestrzeń robocza już nie istnieje.",
           "directory_token_required": "Wydaj token SCIM, zanim włączysz udostępnianie z katalogu."
         }

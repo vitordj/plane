@@ -462,6 +462,14 @@
           "work_item_already_claimed": "Somebody else took this work item first.",
           "decision_stale": "This work item has moved since you opened it. Reload and try again.",
           "invalid_routing_transition": "This work item is not in a state that allows that.",
+          "idempotency_key_required": "The request is missing its Idempotency-Key header.",
+          "idempotency_payload_mismatch": "That idempotency key was already used with a different request.",
+          "operation_in_progress": "An identical request is still running. Wait a moment and try again.",
+          "external_binding_conflict": "That external reference already points at another work item.",
+          "assignees_not_allowed_here": "Assignees are set through the area, not on the work item itself.",
+          "if_match_required": "The request must say which decision it is acting on (If-Match).",
+          "internal_error": "The operation failed unexpectedly and was recorded as failed.",
+          "process_projection_disabled": "Process projection is not enabled on this instance.",
           "directory_workspace_not_found": "That workspace no longer exists.",
           "directory_token_required": "Issue a SCIM token before turning directory provisioning on."
         }

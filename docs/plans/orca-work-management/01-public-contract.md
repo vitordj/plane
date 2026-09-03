@@ -27,7 +27,7 @@ chars; `status` inválido rejeitado.
 
 ---
 
-## 1.2 — Flag, mixin e throttle da API pública `[ ]`
+## 1.2 — Flag, mixin e throttle da API pública `[x]`
 
 - `apps/api/plane/settings/common.py`: `ORCA_PUBLIC_API_ENABLED = os.environ.get("ORCA_PUBLIC_API_ENABLED", "0") == "1"` e `ORCA_PUBLIC_API_RATE_LIMIT = os.environ.get(..., "300/minute")`; entrada `"orca_public"` em `DEFAULT_THROTTLE_RATES`; comentários no padrão dos existentes.
 - `.env.example` e `apps/api/.env.example`: as duas variáveis com comentário.
@@ -41,7 +41,7 @@ teste (fixture `clear_throttle_history` já existe no conftest).
 
 ---
 
-## 1.3 — Serviço de operação idempotente `[ ]`
+## 1.3 — Serviço de operação idempotente `[x]`
 
 **Arquivo.** `apps/api/plane/app/services/orca/automation_operation.py`.
 

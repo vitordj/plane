@@ -686,6 +686,14 @@
           "work_item_already_claimed": "この作業アイテムは、すでに別の人が引き受けました。",
           "decision_stale": "開いてから、この作業アイテムは変更されています。再読み込みしてやり直してください。",
           "invalid_routing_transition": "この作業アイテムは、その操作ができる状態ではありません。",
+          "idempotency_key_required": "リクエストに Idempotency-Key ヘッダーがありません。",
+          "idempotency_payload_mismatch": "その冪等キーは、別のリクエストで既に使われています。",
+          "operation_in_progress": "同じリクエストがまだ処理中です。少し待ってからやり直してください。",
+          "external_binding_conflict": "その外部参照は、すでに別の作業アイテムを指しています。",
+          "assignees_not_allowed_here": "担当者はエリアを通じて決まります。作業アイテム側では指定できません。",
+          "if_match_required": "リクエストは、どの決定に対する操作かを示す必要があります（If-Match）。",
+          "internal_error": "操作が予期せず失敗し、失敗として記録されました。",
+          "process_projection_disabled": "このインスタンスではプロセス投影が有効になっていません。",
           "directory_workspace_not_found": "そのワークスペースは存在しません。",
           "directory_token_required": "ディレクトリからのプロビジョニングを有効にする前に、SCIM トークンを発行してください。"
         }

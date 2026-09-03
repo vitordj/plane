@@ -145,6 +145,7 @@ REST_FRAMEWORK = {
         "anon": "30/minute",
         "asset_id": "5/minute",
         "scim": SCIM_RATE_LIMIT,
+        "orca_public": os.environ.get("ORCA_PUBLIC_API_RATE_LIMIT", "300/minute"),
     },
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
@@ -579,6 +580,13 @@ SEED_DIR = os.path.join(BASE_DIR, "seeds")
 # (members x projects) reconcile synchronously; wider ones go to Celery.
 ORCA_ORG_UNITS_ENABLED = os.environ.get("ORCA_ORG_UNITS_ENABLED", "1") == "1"
 ORCA_ORG_SYNC_MAX_EDGES = int(os.environ.get("ORCA_ORG_SYNC_MAX_EDGES", 100))
+
+# The public automation API under /api/v1/orca/. Off by default, and stays off
+# in production until an area has a coordinator watching its queue: it lets a
+# robot create work and hand it to a person, and work created into a queue
+# nobody reads is work nobody does.
+ORCA_PUBLIC_API_ENABLED = os.environ.get("ORCA_PUBLIC_API_ENABLED", "0") == "1"
+ORCA_PUBLIC_API_RATE_LIMIT = os.environ.get("ORCA_PUBLIC_API_RATE_LIMIT", "300/minute")
 
 ENABLE_DRF_SPECTACULAR = os.environ.get("ENABLE_DRF_SPECTACULAR", "0") == "1"
 

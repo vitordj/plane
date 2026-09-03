@@ -686,6 +686,14 @@
           "work_item_already_claimed": "Bu iş öğesini önce başka biri üstlendi.",
           "decision_stale": "Bu iş öğesi siz açtıktan sonra değişti. Sayfayı yenileyip tekrar deneyin.",
           "invalid_routing_transition": "Bu iş öğesi buna izin veren bir durumda değil.",
+          "idempotency_key_required": "İstekte Idempotency-Key başlığı eksik.",
+          "idempotency_payload_mismatch": "Bu idempotency anahtarı başka bir istekle zaten kullanıldı.",
+          "operation_in_progress": "Aynı istek hâlâ işleniyor. Biraz bekleyip tekrar deneyin.",
+          "external_binding_conflict": "Bu dış referans zaten başka bir iş öğesine işaret ediyor.",
+          "assignees_not_allowed_here": "Sorumlular alan üzerinden belirlenir, iş öğesinin kendisinde değil.",
+          "if_match_required": "İstek, hangi karar üzerinde işlem yaptığını belirtmeli (If-Match).",
+          "internal_error": "İşlem beklenmedik şekilde başarısız oldu ve başarısız olarak kaydedildi.",
+          "process_projection_disabled": "Süreç yansıtma bu sunucuda etkin değil.",
           "directory_workspace_not_found": "Bu çalışma alanı artık yok.",
           "directory_token_required": "Dizin sağlamayı açmadan önce bir SCIM belirteci oluşturun."
         }

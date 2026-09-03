@@ -462,6 +462,14 @@
           "work_item_already_claimed": "Outra pessoa assumiu este item de trabalho antes.",
           "decision_stale": "Este item de trabalho mudou depois que você o abriu. Recarregue e tente de novo.",
           "invalid_routing_transition": "Este item de trabalho não está em um estado que permita isso.",
+          "idempotency_key_required": "Falta o cabeçalho Idempotency-Key na requisição.",
+          "idempotency_payload_mismatch": "Essa chave de idempotência já foi usada com outra requisição.",
+          "operation_in_progress": "Uma requisição idêntica ainda está em andamento. Espere um momento e tente de novo.",
+          "external_binding_conflict": "Essa referência externa já aponta para outro item de trabalho.",
+          "assignees_not_allowed_here": "Os responsáveis são definidos pela área, não no item de trabalho.",
+          "if_match_required": "A requisição precisa dizer sobre qual decisão está agindo (If-Match).",
+          "internal_error": "A operação falhou de forma inesperada e foi registrada como falha.",
+          "process_projection_disabled": "A projeção de processos não está habilitada nesta instância.",
           "directory_workspace_not_found": "Esse espaço de trabalho não existe mais.",
           "directory_token_required": "Emita um token SCIM antes de ativar o provisionamento por diretório."
         }

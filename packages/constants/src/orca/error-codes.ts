@@ -42,6 +42,15 @@ export const ORCA_ERROR_CODE_KEYS: Record<number, string> = {
   4919: "workspace_settings.settings.organizational_units.errors.work_item_already_claimed",
   4920: "workspace_settings.settings.organizational_units.errors.decision_stale",
   4921: "workspace_settings.settings.organizational_units.errors.invalid_routing_transition",
+  // public automation API
+  4922: "workspace_settings.settings.organizational_units.errors.idempotency_key_required",
+  4923: "workspace_settings.settings.organizational_units.errors.idempotency_payload_mismatch",
+  4924: "workspace_settings.settings.organizational_units.errors.operation_in_progress",
+  4925: "workspace_settings.settings.organizational_units.errors.external_binding_conflict",
+  4926: "workspace_settings.settings.organizational_units.errors.assignees_not_allowed_here",
+  4927: "workspace_settings.settings.organizational_units.errors.if_match_required",
+  4928: "workspace_settings.settings.organizational_units.errors.internal_error",
+  4929: "workspace_settings.settings.organizational_units.errors.process_projection_disabled",
   // directory provisioning
   4914: "workspace_settings.settings.organizational_units.errors.directory_workspace_not_found",
   4915: "workspace_settings.settings.organizational_units.errors.directory_token_required",

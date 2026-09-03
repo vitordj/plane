@@ -70,3 +70,67 @@ class InvalidTransition(OrcaDomainError):
 
     error_code = "ORG_INVALID_ROUTING_TRANSITION"
     http_status = status.HTTP_409_CONFLICT
+
+
+class IdempotencyKeyRequired(OrcaDomainError):
+    """A mutation arrived with no ``Idempotency-Key``."""
+
+    error_code = "ORG_IDEMPOTENCY_KEY_REQUIRED"
+
+
+class IdempotencyPayloadMismatch(OrcaDomainError):
+    """
+    The same key, a different request.
+
+    @description Almost always a bug in the caller — a key derived from
+    something that varies, a timestamp inside the payload. Refused rather than
+    treated as a new request, because the alternative silently does the work
+    twice under one receipt.
+    """
+
+    error_code = "ORG_IDEMPOTENCY_PAYLOAD_MISMATCH"
+    http_status = status.HTTP_409_CONFLICT
+
+
+class OperationInProgress(OrcaDomainError):
+    """An identical call is still running; the caller should wait and retry."""
+
+    error_code = "ORG_OPERATION_IN_PROGRESS"
+    http_status = status.HTTP_409_CONFLICT
+
+
+class ExternalBindingConflict(OrcaDomainError):
+    """That external reference already points at a different work item (I8)."""
+
+    error_code = "ORG_EXTERNAL_BINDING_CONFLICT"
+    http_status = status.HTTP_409_CONFLICT
+
+
+class IfMatchRequired(OrcaDomainError):
+    """
+    A reassignment arrived without saying which decision it was acting on.
+
+    @description 428 Precondition Required, the status invented for exactly
+    this: the request is fine, but this endpoint refuses to act blindly.
+    """
+
+    error_code = "ORG_IF_MATCH_REQUIRED"
+    http_status = status.HTTP_428_PRECONDITION_REQUIRED
+
+
+class AssigneesNotAllowedHere(OrcaDomainError):
+    """
+    The caller put assignees on the work item block.
+
+    @description Refused rather than honoured: assignment through this API is
+    the area's decision, recorded and explainable, and a native assignee list
+    smuggled in beside it would be neither.
+    """
+
+    error_code = "ORG_ASSIGNEES_NOT_ALLOWED_HERE"
+
+
+class ProcessProjectionDisabled(OrcaDomainError):
+    """The request carried a ``process`` block and the instance has it off."""
+
+    error_code = "ORG_PROCESS_PROJECTION_DISABLED"

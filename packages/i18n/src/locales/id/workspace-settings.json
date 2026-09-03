@@ -686,6 +686,14 @@
           "work_item_already_claimed": "Orang lain sudah mengambil item kerja ini lebih dulu.",
           "decision_stale": "Item kerja ini berubah sejak Anda membukanya. Muat ulang dan coba lagi.",
           "invalid_routing_transition": "Item kerja ini tidak dalam keadaan yang memungkinkan hal itu.",
+          "idempotency_key_required": "Header Idempotency-Key tidak ada pada permintaan.",
+          "idempotency_payload_mismatch": "Kunci idempotensi itu sudah dipakai untuk permintaan lain.",
+          "operation_in_progress": "Permintaan yang sama masih berjalan. Tunggu sebentar lalu coba lagi.",
+          "external_binding_conflict": "Referensi eksternal itu sudah menunjuk ke item kerja lain.",
+          "assignees_not_allowed_here": "Penanggung jawab ditentukan lewat area, bukan pada item kerjanya.",
+          "if_match_required": "Permintaan harus menyebut keputusan mana yang sedang ditindaklanjuti (If-Match).",
+          "internal_error": "Operasi gagal tak terduga dan tercatat sebagai gagal.",
+          "process_projection_disabled": "Proyeksi proses tidak diaktifkan di instans ini.",
           "directory_workspace_not_found": "Ruang kerja itu sudah tidak ada.",
           "directory_token_required": "Terbitkan token SCIM sebelum mengaktifkan penyediaan dari direktori."
         }
