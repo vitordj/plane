@@ -701,7 +701,8 @@
           "availability_interval_invalid": "O absență trebuie să se termine după ce începe.",
           "availability_not_found": "Absența aceea nu mai există.",
           "workspace_member_not_found": "Persoana aceea nu este membru activ al acestui spațiu.",
-          "allocation_limit_forbidden": "Cât de multă muncă primește cineva stabilește doar un coordonator."
+          "allocation_limit_forbidden": "Cât de multă muncă primește cineva stabilește doar un coordonator.",
+          "invalid_executive_period": "Alege una dintre perioadele pe care le oferă acest raport."
         },
         "queue": {
           "inbox": "Primite",
@@ -841,6 +842,46 @@
           "not_saved": "Nu s-a putut salva",
           "limit_invalid": "Trebuie un număr întreg de la 1 în sus.",
           "open_aria": "Setări de lucru pentru {name}"
+        },
+        "executive": {
+          "title": "Peste zone",
+          "help": "Unde se adună munca și unde se mișcă. Doar administrator.",
+          "empty": "Încă nicio zonă.",
+          "area": "Zonă",
+          "period": {
+            "7d": "7 zile",
+            "30d": "30 de zile",
+            "90d": "90 de zile"
+          },
+          "backlog": "Deschise",
+          "backlog_help": "Munca zonei care nu e nici gata, nici anulată.",
+          "queued": "Așteaptă",
+          "queued_help": "Încă nu o face nimeni.",
+          "assignment_overdue": "Preluat târziu",
+          "assignment_overdue_help": "Așteaptă peste timpul promis de zonă.",
+          "target_overdue": "Peste dată",
+          "target_overdue_help": "Data proprie a trecut și nu e gata.",
+          "queue_age": "A așteptat (p50 / p90)",
+          "queue_age_help": "De cât timp așteaptă ce așteaptă. Mediana și cea mai lentă zecime.",
+          "throughput": "Terminate",
+          "throughput_help": "Elemente ajunse într-o stare terminată în perioadă.",
+          "cycle_time": "A durat (p50 / p90)",
+          "cycle_time_help": "De la creare la închidere, pentru ce s-a terminat în perioadă.",
+          "concentration": "Primii 3 duc",
+          "concentration_help": "Partea din munca deschisă pe care o duc cei mai încărcați trei oameni. Mare nu înseamnă automat greșit — o echipă de trei e mereu 100%.",
+          "concentration_of": "{open, plural, one{# element deschis} few{# elemente deschise} other{# de elemente deschise}} la {people, plural, one{# persoană} few{# persoane} other{# de persoane}}",
+          "auto_kept": "Auto păstrate",
+          "auto_kept_help": "Repartizări automate pe care nu le-a desfăcut nimeni. O parte mică e cea mai bună dovadă că clasamentul nu se potrivește zonei.",
+          "auto_kept_of": "din {count, plural, one{# decizie} few{# decizii} other{# de decizii}}",
+          "processes": "Procese",
+          "running": "{count, plural, one{# în curs} few{# în curs} other{# în curs}}",
+          "completed": "{count, plural, one{# terminat} few{# terminate} other{# terminate}}",
+          "lead_time": "cap-coadă {p50} / {p90}",
+          "slowest_steps": "Cei mai lenți pași",
+          "definitions_note": "Fiecare număr de aici e definit, cu interogarea care îl reproduce, în docs/orca-executive-metrics.md.",
+          "minutes": "{count, plural, one{# min} few{# min} other{# min}}",
+          "hours": "{count, plural, one{# h} few{# h} other{# h}}",
+          "days": "{count, plural, one{# zi} few{# zile} other{# de zile}}"
         }
       }
     },

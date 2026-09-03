@@ -341,3 +341,43 @@ export interface IMembershipAllocation {
   /** Null means the area's policy decides alone. */
   max_open_items: number | null;
 }
+
+/** The window an executive report covers. */
+export type TExecutivePeriod = "7d" | "30d" | "90d";
+
+/** A pair of percentiles, in seconds. Null when there was nothing to measure. */
+export interface IPercentilePair {
+  p50: number | null;
+  p90: number | null;
+}
+
+/** Every indicator for one area over one window. */
+export interface IExecutiveUnitMetrics {
+  unit: { id: string; slug: string; name: string };
+  backlog: number;
+  queued: number;
+  assignment_overdue: number;
+  target_overdue: number;
+  queue_age: IPercentilePair;
+  throughput: number;
+  cycle_time: IPercentilePair;
+  /** Share of open work its three busiest people carry, with the sample size. */
+  concentration_top3: { ratio: number | null; open_items: number; executors: number };
+  /** Automatic assignments nobody overrode, with the count they are out of. */
+  auto_assign_kept: { ratio: number | null; decisions: number; kept: number };
+}
+
+/** How the workspace's process runs are going. */
+export interface IExecutiveProcessMetrics {
+  running: number;
+  completed: number;
+  lead_time: IPercentilePair;
+  slowest_steps: { step_key: string; waiting: number }[];
+}
+
+export interface IExecutiveSummary {
+  period: TExecutivePeriod;
+  generated_at: string;
+  units: IExecutiveUnitMetrics[];
+  processes: IExecutiveProcessMetrics;
+}

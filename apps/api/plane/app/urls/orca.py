@@ -5,6 +5,7 @@
 from django.urls import path
 from plane.app.views import (
     MemberAvailabilityEndpoint,
+    OrganizationalExecutiveEndpoint,
     MembershipAllocationEndpoint,
     MyAvailabilityEndpoint,
     WorkspaceProjectStateSettingsEndpoint,
@@ -362,5 +363,11 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/members/<uuid:pk>/allocation/",
         MembershipAllocationEndpoint.as_view(),
         name="orca-membership-allocation",
+    ),
+    # --- executive view -----------------------------------------------------
+    path(
+        "orca/workspaces/<str:slug>/executive/",
+        OrganizationalExecutiveEndpoint.as_view(),
+        name="orca-executive",
     ),
 ]

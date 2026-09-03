@@ -477,7 +477,8 @@
           "availability_interval_invalid": "An absence has to end after it starts.",
           "availability_not_found": "That absence is no longer there.",
           "workspace_member_not_found": "That person is not an active member of this workspace.",
-          "allocation_limit_forbidden": "Only a coordinator can set how much work somebody is given."
+          "allocation_limit_forbidden": "Only a coordinator can set how much work somebody is given.",
+          "invalid_executive_period": "Choose one of the periods this report offers."
         },
         "queue": {
           "inbox": "Inbox",
@@ -617,6 +618,46 @@
           "not_saved": "Could not save it",
           "limit_invalid": "That has to be a whole number of one or more.",
           "open_aria": "Work settings for {name}"
+        },
+        "executive": {
+          "title": "Across the areas",
+          "help": "Where the work is piling up, and where it is moving. Admin only.",
+          "empty": "No areas yet.",
+          "area": "Area",
+          "period": {
+            "7d": "7 days",
+            "30d": "30 days",
+            "90d": "90 days"
+          },
+          "backlog": "Open",
+          "backlog_help": "Work an area owns that is neither done nor cancelled.",
+          "queued": "Waiting",
+          "queued_help": "Nobody is executing it yet.",
+          "assignment_overdue": "Late to be taken",
+          "assignment_overdue_help": "Waiting past the time the area promised somebody would take it.",
+          "target_overdue": "Past its date",
+          "target_overdue_help": "Its own target date has passed and it is not done.",
+          "queue_age": "Waited (p50 / p90)",
+          "queue_age_help": "How long the waiting work has been waiting. The median, and the slowest tenth.",
+          "throughput": "Finished",
+          "throughput_help": "Work items that reached a completed state in this period.",
+          "cycle_time": "Took (p50 / p90)",
+          "cycle_time_help": "From creation to completion, for the work finished in this period.",
+          "concentration": "Top 3 carry",
+          "concentration_help": "Share of open work the three busiest people in the area are carrying. High is not automatically wrong — a team of three is always 100%.",
+          "concentration_of": "{open, plural, one{# open item} other{# open items}} across {people, plural, one{# person} other{# people}}",
+          "auto_kept": "Auto kept",
+          "auto_kept_help": "Automatic assignments nobody overrode. A low share is the best evidence there is that the ranking is wrong for this area.",
+          "auto_kept_of": "out of {count, plural, one{# decision} other{# decisions}}",
+          "processes": "Processes",
+          "running": "{count, plural, one{# running} other{# running}}",
+          "completed": "{count, plural, one{# finished} other{# finished}}",
+          "lead_time": "lead time {p50} / {p90}",
+          "slowest_steps": "Slowest steps",
+          "definitions_note": "Every number here is defined, with the query that reproduces it, in docs/orca-executive-metrics.md.",
+          "minutes": "{count, plural, one{# min} other{# min}}",
+          "hours": "{count, plural, one{# h} other{# h}}",
+          "days": "{count, plural, one{# day} other{# days}}"
         }
       },
       "projects": {

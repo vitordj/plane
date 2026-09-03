@@ -701,7 +701,8 @@
           "availability_interval_invalid": "Bir yokluk, başladıktan sonra bitmeli.",
           "availability_not_found": "O yokluk kaydı artık yok.",
           "workspace_member_not_found": "O kişi bu çalışma alanının etkin bir üyesi değil.",
-          "allocation_limit_forbidden": "Kime ne kadar iş verileceğini yalnızca koordinatör belirler."
+          "allocation_limit_forbidden": "Kime ne kadar iş verileceğini yalnızca koordinatör belirler.",
+          "invalid_executive_period": "Bu raporun sunduğu dönemlerden birini seç."
         },
         "queue": {
           "inbox": "Gelen kutusu",
@@ -841,6 +842,46 @@
           "not_saved": "Kaydedilemedi",
           "limit_invalid": "1 veya daha büyük bir tam sayı olmalı.",
           "open_aria": "{name} için iş ayarları"
+        },
+        "executive": {
+          "title": "Alanlar arası",
+          "help": "İşin nerede biriktiği ve nerede aktığı. Sadece yönetici.",
+          "empty": "Henüz alan yok.",
+          "area": "Alan",
+          "period": {
+            "7d": "7 gün",
+            "30d": "30 gün",
+            "90d": "90 gün"
+          },
+          "backlog": "Açık",
+          "backlog_help": "Alanın ne biten ne iptal edilen işi.",
+          "queued": "Bekliyor",
+          "queued_help": "Henüz kimse yapmıyor.",
+          "assignment_overdue": "Geç üstlenildi",
+          "assignment_overdue_help": "Alanın söz verdiği süreyi aşarak bekliyor.",
+          "target_overdue": "Tarihi geçti",
+          "target_overdue_help": "Kendi tarihi geçti ve iş bitmedi.",
+          "queue_age": "Bekledi (p50 / p90)",
+          "queue_age_help": "Bekleyen ne kadar süredir bekliyor. Ortanca ve en yavaş onda bir.",
+          "throughput": "Bitti",
+          "throughput_help": "Dönem içinde biten duruma ulaşan işler.",
+          "cycle_time": "Sürdü (p50 / p90)",
+          "cycle_time_help": "Açılıştan kapanışa, dönemde biten işler için.",
+          "concentration": "İlk 3 taşıyor",
+          "concentration_help": "Alanın en yüklü üç kişisinin taşıdığı açık iş payı. Yüksek olması otomatik olarak kötü değil — üç kişilik ekip her zaman %100'dür.",
+          "concentration_of": "{people, plural, one{# kişide} other{# kişide}} {open, plural, one{# açık iş} other{# açık iş}}",
+          "auto_kept": "Otomatik korundu",
+          "auto_kept_help": "Kimsenin bozmadığı otomatik dağıtımlar. Düşük pay, sıralamanın bu alana uymadığının en iyi kanıtıdır.",
+          "auto_kept_of": "{count, plural, one{# karar} other{# karar}} içinden",
+          "processes": "Süreçler",
+          "running": "{count, plural, one{# sürüyor} other{# sürüyor}}",
+          "completed": "{count, plural, one{# bitti} other{# bitti}}",
+          "lead_time": "uçtan uca {p50} / {p90}",
+          "slowest_steps": "En yavaş adımlar",
+          "definitions_note": "Buradaki her sayı, onu üreten sorguyla birlikte docs/orca-executive-metrics.md içinde tanımlı.",
+          "minutes": "{count, plural, one{# dk} other{# dk}}",
+          "hours": "{count, plural, one{# sa} other{# sa}}",
+          "days": "{count, plural, one{# gün} other{# gün}}"
         }
       }
     },

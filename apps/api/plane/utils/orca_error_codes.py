@@ -61,6 +61,8 @@ ORCA_ERROR_CODES = {
     "ORG_AVAILABILITY_NOT_FOUND": 4931,
     "ORG_WORKSPACE_MEMBER_NOT_FOUND": 4932,
     "ORG_ALLOCATION_LIMIT_FORBIDDEN": 4933,
+    # executive view
+    "ORG_INVALID_EXECUTIVE_PERIOD": 4934,
     # directory provisioning
     "ORG_DIRECTORY_WORKSPACE_NOT_FOUND": 4914,
     "ORG_DIRECTORY_TOKEN_REQUIRED": 4915,
@@ -102,6 +104,7 @@ ORCA_ERROR_MESSAGES = {
     "ORG_AVAILABILITY_NOT_FOUND": "Absence not found",
     "ORG_WORKSPACE_MEMBER_NOT_FOUND": "That person is not an active member of this workspace",
     "ORG_ALLOCATION_LIMIT_FORBIDDEN": "Only a coordinator can set how much work somebody is given",
+    "ORG_INVALID_EXECUTIVE_PERIOD": "Choose one of the periods this report offers",
     "ORG_DIRECTORY_WORKSPACE_NOT_FOUND": "Workspace not found",
     "ORG_DIRECTORY_TOKEN_REQUIRED": "Issue a SCIM token before enabling directory provisioning",
 }

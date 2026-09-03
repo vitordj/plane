@@ -302,6 +302,10 @@ export const coreRoutes: RouteConfigEntry[] = [
             ":workspaceSlug/settings/organizational-units",
             "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/organizational-units/page.tsx"
           ),
+          route(
+            ":workspaceSlug/settings/organizational-units/executive",
+            "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/organizational-units/executive/page.tsx"
+          ),
         ]),
 
         // --------------------------------------------------------------------

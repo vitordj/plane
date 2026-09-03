@@ -9,6 +9,7 @@ import type {
   IAssignmentCandidate,
   IAssignmentDecision,
   IIssueRouting,
+  IExecutiveSummary,
   IMemberAvailability,
   IMembershipAllocation,
   IUnitQueueRow,
@@ -158,6 +159,7 @@ export interface IOrganizationalUnitStore {
     membershipId: string,
     payload: Partial<IMembershipAllocation>
   ) => Promise<IMembershipAllocation>;
+  fetchExecutiveSummary: (workspaceSlug: string, period: string, unitId?: string) => Promise<IExecutiveSummary>;
   setIssueUnit: (
     workspaceSlug: string,
     projectId: string,
@@ -229,6 +231,7 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       addAvailability: action,
       removeAvailability: action,
       setAllocationSettings: action,
+      fetchExecutiveSummary: action,
     });
 
     this.rootStore = _rootStore;
@@ -574,4 +577,12 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
     await this.fetchMembers(workspaceSlug, unitId);
     return response;
   };
+
+  /**
+   * @description Not cached in the store: the server caches it for five
+   * minutes, and a second copy here would only make "why is this stale?" have
+   * two possible answers.
+   */
+  fetchExecutiveSummary = async (workspaceSlug: string, period: string, unitId?: string) =>
+    this.service.getExecutiveSummary(workspaceSlug, period, unitId);
 }

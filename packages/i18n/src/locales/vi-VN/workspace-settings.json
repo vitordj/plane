@@ -701,7 +701,8 @@
           "availability_interval_invalid": "Một kỳ vắng mặt phải kết thúc sau khi bắt đầu.",
           "availability_not_found": "Kỳ vắng mặt đó không còn nữa.",
           "workspace_member_not_found": "Người đó không phải thành viên đang hoạt động của không gian này.",
-          "allocation_limit_forbidden": "Chỉ điều phối viên mới đặt được khối lượng việc giao cho ai đó."
+          "allocation_limit_forbidden": "Chỉ điều phối viên mới đặt được khối lượng việc giao cho ai đó.",
+          "invalid_executive_period": "Chọn một trong các khoảng thời gian mà báo cáo này có."
         },
         "queue": {
           "inbox": "Hộp đến",
@@ -841,6 +842,46 @@
           "not_saved": "Không lưu được",
           "limit_invalid": "Phải là số nguyên từ 1 trở lên.",
           "open_aria": "Thiết lập công việc của {name}"
+        },
+        "executive": {
+          "title": "Giữa các khu vực",
+          "help": "Việc dồn ở đâu và chạy ở đâu. Chỉ quản trị viên.",
+          "empty": "Chưa có khu vực nào.",
+          "area": "Khu vực",
+          "period": {
+            "7d": "7 ngày",
+            "30d": "30 ngày",
+            "90d": "90 ngày"
+          },
+          "backlog": "Đang mở",
+          "backlog_help": "Việc của khu vực chưa xong và chưa huỷ.",
+          "queued": "Đang chờ",
+          "queued_help": "Chưa ai làm.",
+          "assignment_overdue": "Nhận trễ",
+          "assignment_overdue_help": "Chờ quá thời gian khu vực đã hứa.",
+          "target_overdue": "Quá hạn",
+          "target_overdue_help": "Hạn của chính nó đã qua mà chưa xong.",
+          "queue_age": "Đã chờ (p50 / p90)",
+          "queue_age_help": "Việc đang chờ đã chờ bao lâu. Trung vị và một phần mười chậm nhất.",
+          "throughput": "Đã xong",
+          "throughput_help": "Các mục đạt trạng thái hoàn tất trong kỳ.",
+          "cycle_time": "Mất (p50 / p90)",
+          "cycle_time_help": "Từ lúc tạo đến lúc xong, cho những việc xong trong kỳ.",
+          "concentration": "Top 3 gánh",
+          "concentration_help": "Phần việc đang mở do ba người bận nhất khu vực gánh. Cao không mặc nhiên là xấu — nhóm ba người luôn là 100%.",
+          "concentration_of": "{open, plural, other{# việc đang mở}} trên {people, plural, other{# người}}",
+          "auto_kept": "Auto giữ nguyên",
+          "auto_kept_help": "Giao việc tự động không ai đổi lại. Tỷ lệ thấp là bằng chứng rõ nhất rằng cách xếp hạng không hợp với khu vực này.",
+          "auto_kept_of": "trên {count, plural, other{# quyết định}}",
+          "processes": "Quy trình",
+          "running": "{count, plural, other{# đang chạy}}",
+          "completed": "{count, plural, other{# đã xong}}",
+          "lead_time": "toàn trình {p50} / {p90}",
+          "slowest_steps": "Bước chậm nhất",
+          "definitions_note": "Mọi con số ở đây đều có định nghĩa, kèm truy vấn tái lập, trong docs/orca-executive-metrics.md.",
+          "minutes": "{count, plural, other{# phút}}",
+          "hours": "{count, plural, other{# giờ}}",
+          "days": "{count, plural, other{# ngày}}"
         }
       }
     },

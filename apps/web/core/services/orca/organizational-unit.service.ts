@@ -10,6 +10,7 @@ import type {
   IAssignmentDecision,
   IAssignmentPolicy,
   IIssueRouting,
+  IExecutiveSummary,
   IMemberAvailability,
   IMembershipAllocation,
   IUnitCoordinator,
@@ -555,6 +556,19 @@ export class OrganizationalUnitService extends APIService {
       `/api/orca/workspaces/${workspaceSlug}/organizational-units/${unitId}/members/${membershipId}/allocation/`,
       payload
     )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  // --- executive view -----------------------------------------------------
+
+  /** @description Aggregates by area and by process. Workspace Admin only. */
+  async getExecutiveSummary(workspaceSlug: string, period: string, unitId?: string): Promise<IExecutiveSummary> {
+    return this.get(`/api/orca/workspaces/${workspaceSlug}/executive/`, {
+      params: { period, ...(unitId ? { unit: unitId } : {}) },
+    })
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response;

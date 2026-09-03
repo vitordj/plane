@@ -701,7 +701,8 @@
           "availability_interval_invalid": "Ketidakhadiran harus berakhir setelah dimulai.",
           "availability_not_found": "Ketidakhadiran itu sudah tidak ada.",
           "workspace_member_not_found": "Orang itu bukan anggota aktif ruang kerja ini.",
-          "allocation_limit_forbidden": "Hanya koordinator yang bisa menentukan seberapa banyak pekerjaan diberikan."
+          "allocation_limit_forbidden": "Hanya koordinator yang bisa menentukan seberapa banyak pekerjaan diberikan.",
+          "invalid_executive_period": "Pilih salah satu periode yang tersedia di laporan ini."
         },
         "queue": {
           "inbox": "Kotak masuk",
@@ -841,6 +842,46 @@
           "not_saved": "Tidak bisa disimpan",
           "limit_invalid": "Harus bilangan bulat 1 atau lebih.",
           "open_aria": "Pengaturan kerja untuk {name}"
+        },
+        "executive": {
+          "title": "Antar area",
+          "help": "Di mana pekerjaan menumpuk dan di mana bergerak. Admin saja.",
+          "empty": "Belum ada area.",
+          "area": "Area",
+          "period": {
+            "7d": "7 hari",
+            "30d": "30 hari",
+            "90d": "90 hari"
+          },
+          "backlog": "Terbuka",
+          "backlog_help": "Pekerjaan area yang belum selesai dan belum dibatalkan.",
+          "queued": "Menunggu",
+          "queued_help": "Belum ada yang mengerjakan.",
+          "assignment_overdue": "Telat diambil",
+          "assignment_overdue_help": "Menunggu melewati waktu yang dijanjikan area.",
+          "target_overdue": "Lewat tanggal",
+          "target_overdue_help": "Tanggalnya sendiri sudah lewat dan belum selesai.",
+          "queue_age": "Menunggu (p50 / p90)",
+          "queue_age_help": "Sudah berapa lama yang menunggu itu menunggu. Median dan sepersepuluh terlambat.",
+          "throughput": "Selesai",
+          "throughput_help": "Item yang mencapai status selesai pada periode ini.",
+          "cycle_time": "Butuh (p50 / p90)",
+          "cycle_time_help": "Dari dibuat sampai selesai, untuk yang selesai pada periode ini.",
+          "concentration": "Tiga teratas",
+          "concentration_help": "Porsi pekerjaan terbuka yang dipegang tiga orang tersibuk di area. Tinggi belum tentu salah — tim bertiga selalu 100%.",
+          "concentration_of": "{open, plural, other{# item terbuka}} pada {people, plural, other{# orang}}",
+          "auto_kept": "Auto bertahan",
+          "auto_kept_help": "Pembagian otomatis yang tidak dibatalkan siapa pun. Porsi rendah adalah bukti terbaik bahwa peringkat tidak cocok untuk area ini.",
+          "auto_kept_of": "dari {count, plural, other{# keputusan}}",
+          "processes": "Proses",
+          "running": "{count, plural, other{# berjalan}}",
+          "completed": "{count, plural, other{# selesai}}",
+          "lead_time": "waktu ujung ke ujung {p50} / {p90}",
+          "slowest_steps": "Langkah paling lambat",
+          "definitions_note": "Setiap angka di sini punya definisi, lengkap dengan kuerinya, di docs/orca-executive-metrics.md.",
+          "minutes": "{count, plural, other{# mnt}}",
+          "hours": "{count, plural, other{# jam}}",
+          "days": "{count, plural, other{# hari}}"
         }
       }
     },

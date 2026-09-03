@@ -701,7 +701,8 @@
           "availability_interval_invalid": "Nepřítomnost musí skončit až poté, co začne.",
           "availability_not_found": "Tato nepřítomnost už tam není.",
           "workspace_member_not_found": "Tato osoba není aktivním členem tohoto prostoru.",
-          "allocation_limit_forbidden": "Kolik práce kdo dostane, může nastavit jen koordinátor."
+          "allocation_limit_forbidden": "Kolik práce kdo dostane, může nastavit jen koordinátor.",
+          "invalid_executive_period": "Vyberte jedno z období, která tento přehled nabízí."
         },
         "queue": {
           "inbox": "Došlé",
@@ -841,6 +842,46 @@
           "not_saved": "Nepodařilo se uložit",
           "limit_invalid": "Musí to být celé číslo od 1 výš.",
           "open_aria": "Nastavení práce pro: {name}"
+        },
+        "executive": {
+          "title": "Napříč oblastmi",
+          "help": "Kde se práce hromadí a kde se hýbe. Jen správce.",
+          "empty": "Zatím žádné oblasti.",
+          "area": "Oblast",
+          "period": {
+            "7d": "7 dní",
+            "30d": "30 dní",
+            "90d": "90 dní"
+          },
+          "backlog": "Otevřené",
+          "backlog_help": "Práce oblasti, která není hotová ani zrušená.",
+          "queued": "Čeká",
+          "queued_help": "Zatím ji nikdo nedělá.",
+          "assignment_overdue": "Pozdě převzato",
+          "assignment_overdue_help": "Čeká déle, než oblast slíbila.",
+          "target_overdue": "Po termínu",
+          "target_overdue_help": "Vlastní termín uplynul a hotové to není.",
+          "queue_age": "Čekalo (p50 / p90)",
+          "queue_age_help": "Jak dlouho čeká to, co čeká. Medián a nejpomalejší desetina.",
+          "throughput": "Dokončené",
+          "throughput_help": "Položky, které v období dosáhly dokončeného stavu.",
+          "cycle_time": "Trvalo (p50 / p90)",
+          "cycle_time_help": "Od založení k dokončení, pro to, co se v období dokončilo.",
+          "concentration": "Tři nejvytíženější",
+          "concentration_help": "Podíl otevřené práce, který nesou tři nejvytíženější lidé oblasti. Vysoká hodnota není automaticky chyba — tým tří má vždy 100 %.",
+          "concentration_of": "{open, plural, one{# otevřená položka} few{# otevřené položky} other{# otevřených položek}} na {people, plural, one{# člověka} few{# lidi} other{# lidí}}",
+          "auto_kept": "Auto ponecháno",
+          "auto_kept_help": "Automatická přidělení, která nikdo nepřepsal. Nízký podíl je nejlepší důkaz, že ranking této oblasti nesedí.",
+          "auto_kept_of": "z {count, plural, one{# rozhodnutí} few{# rozhodnutí} other{# rozhodnutí}}",
+          "processes": "Procesy",
+          "running": "{count, plural, one{# běží} few{# běží} other{# běží}}",
+          "completed": "{count, plural, one{# dokončen} few{# dokončeny} other{# dokončeno}}",
+          "lead_time": "průběžná doba {p50} / {p90}",
+          "slowest_steps": "Nejpomalejší kroky",
+          "definitions_note": "Každé číslo tady je definované, i s dotazem, který ho reprodukuje, v docs/orca-executive-metrics.md.",
+          "minutes": "{count, plural, one{# min} few{# min} other{# min}}",
+          "hours": "{count, plural, one{# h} few{# h} other{# h}}",
+          "days": "{count, plural, one{# den} few{# dny} other{# dní}}"
         }
       }
     },

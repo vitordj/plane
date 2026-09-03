@@ -49,12 +49,15 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | 2 Fila e coordenador | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[x]` 6/6 | — |
 | 3 Disponibilidade | [03-availability.md](./03-availability.md) | 6 | `[x]` 6/6 | — |
 | 4 Processos | [04-processes.md](./04-processes.md) | 7 | `[~]` 5/7 | — |
-| 5 Visão executiva | [05-executive-view.md](./05-executive-view.md) | 4 | `[ ]` 0/4 | — |
+| 5 Visão executiva | [05-executive-view.md](./05-executive-view.md) | 4 | `[x]` 3/4 + 1 `[-]` | — |
 
 ## Próximo item recomendado
 
-**Fase 5** (visão executiva). Da Fase 4 restam dois itens que não são código
-deste repositório: **4.4** (o orquestrador em si, que FORK.md §1.B manda pôr
+**Nada de código.** Todas as cinco fases estão construídas. O que resta são
+decisões e verificações humanas — os gates de cada fase, listados nos próprios
+arquivos.
+
+Da Fase 4 restam dois itens que não são código deste repositório: **4.4** (o orquestrador em si, que FORK.md §1.B manda pôr
 em repositório próprio — o contrato dele está entregue aqui) e **4.6/A6**
 (criar `Module` nativo por instância é decisão de produto, e o RFC marca A6
 como "decidir na Fase 4").
@@ -87,3 +90,4 @@ remoto upstream e decisão humana sobre o que descartar.
 | 2026-09-03 | Fase 2 inteira (2.1–2.6) entregue: fila, coordenador, alertas de SLA, UI completa. |
 | 2026-09-03 | Fase 3 inteira (3.1–3.6) entregue: disponibilidade, `lb-2`, sweep horário, sugestão. |
 | 2026-09-03 | Fase 4: 4.1, 4.2, 4.3, 4.5 e 4.7 entregues; 4.4 e 4.6 parciais (orquestrador é outro repo; A6 é decisão de produto). |
+| 2026-09-03 | Fase 5: 5.1, 5.3 e 5.4 entregues; 5.2 descartado até haver medição em staging. |

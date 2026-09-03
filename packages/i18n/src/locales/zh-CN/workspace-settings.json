@@ -701,7 +701,8 @@
           "availability_interval_invalid": "请假必须在开始之后结束。",
           "availability_not_found": "这条请假记录已经不在了。",
           "workspace_member_not_found": "该用户不是这个工作空间的有效成员。",
-          "allocation_limit_forbidden": "一个人能接多少工作，只有协调人能设定。"
+          "allocation_limit_forbidden": "一个人能接多少工作，只有协调人能设定。",
+          "invalid_executive_period": "请从这份报表提供的时间段里选一个。"
         },
         "queue": {
           "inbox": "收件箱",
@@ -841,6 +842,46 @@
           "not_saved": "保存失败",
           "limit_invalid": "要填 1 或更大的整数。",
           "open_aria": "{name} 的工作设置"
+        },
+        "executive": {
+          "title": "各领域概览",
+          "help": "活堆在哪儿，又在哪儿往前走。仅管理员可见。",
+          "empty": "还没有领域。",
+          "area": "领域",
+          "period": {
+            "7d": "7 天",
+            "30d": "30 天",
+            "90d": "90 天"
+          },
+          "backlog": "未完成",
+          "backlog_help": "领域名下既没完成也没取消的活。",
+          "queued": "等待中",
+          "queued_help": "还没有人在做。",
+          "assignment_overdue": "接手太晚",
+          "assignment_overdue_help": "已经超过领域承诺的接手时间。",
+          "target_overdue": "过了日期",
+          "target_overdue_help": "自己的日期已过，事情还没做完。",
+          "queue_age": "等了（p50 / p90）",
+          "queue_age_help": "等着的事等了多久。中位数，以及最慢的十分之一。",
+          "throughput": "完成数",
+          "throughput_help": "这段时间内到达完成状态的事项。",
+          "cycle_time": "耗时（p50 / p90）",
+          "cycle_time_help": "从创建到完成，针对这段时间内完成的事。",
+          "concentration": "前 3 人占比",
+          "concentration_help": "领域里最忙的三个人手上未完成事项的占比。高不一定是坏事——三个人的领域永远是 100%。",
+          "concentration_of": "{people, plural, other{# 人}}共 {open, plural, other{# 项}}",
+          "auto_kept": "自动保留",
+          "auto_kept_help": "没人推翻的自动分派占比。占比低，是这个领域不适合当前排序方式的最好证据。",
+          "auto_kept_of": "共 {count, plural, other{# 次决定}}",
+          "processes": "流程",
+          "running": "{count, plural, other{# 个进行中}}",
+          "completed": "{count, plural, other{# 个已完成}}",
+          "lead_time": "端到端 {p50} / {p90}",
+          "slowest_steps": "最慢的步骤",
+          "definitions_note": "这里每个数字都有定义和可复现的查询，写在 docs/orca-executive-metrics.md。",
+          "minutes": "{count, plural, other{# 分钟}}",
+          "hours": "{count, plural, other{# 小时}}",
+          "days": "{count, plural, other{# 天}}"
         }
       }
     },

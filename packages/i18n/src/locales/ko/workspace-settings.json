@@ -701,7 +701,8 @@
           "availability_interval_invalid": "부재는 시작한 뒤에 끝나야 합니다.",
           "availability_not_found": "그 부재는 이제 없습니다.",
           "workspace_member_not_found": "그 사람은 이 워크스페이스의 활성 멤버가 아닙니다.",
-          "allocation_limit_forbidden": "누구에게 얼마나 맡길지는 코디네이터만 정할 수 있습니다."
+          "allocation_limit_forbidden": "누구에게 얼마나 맡길지는 코디네이터만 정할 수 있습니다.",
+          "invalid_executive_period": "이 보고서가 제공하는 기간 중에서 고르세요."
         },
         "queue": {
           "inbox": "수신함",
@@ -841,6 +842,46 @@
           "not_saved": "저장하지 못했습니다",
           "limit_invalid": "1 이상의 정수여야 합니다.",
           "open_aria": "{name} 님의 업무 설정"
+        },
+        "executive": {
+          "title": "영역 전체",
+          "help": "일이 쌓이는 곳과 흐르는 곳. 관리자만.",
+          "empty": "아직 영역이 없습니다.",
+          "area": "영역",
+          "period": {
+            "7d": "7일",
+            "30d": "30일",
+            "90d": "90일"
+          },
+          "backlog": "열린 일",
+          "backlog_help": "완료도 취소도 아닌, 그 영역의 일.",
+          "queued": "대기",
+          "queued_help": "아직 아무도 하고 있지 않습니다.",
+          "assignment_overdue": "늦게 맡음",
+          "assignment_overdue_help": "영역이 약속한 시간을 넘겨 기다리고 있습니다.",
+          "target_overdue": "기한 넘김",
+          "target_overdue_help": "자기 기한이 지났고 아직 끝나지 않았습니다.",
+          "queue_age": "대기 시간(p50 / p90)",
+          "queue_age_help": "기다리는 일이 얼마나 기다렸는지. 중앙값과 느린 쪽 10%.",
+          "throughput": "완료 수",
+          "throughput_help": "이 기간에 완료 상태에 이른 항목.",
+          "cycle_time": "소요(p50 / p90)",
+          "cycle_time_help": "생성부터 완료까지. 이 기간에 끝난 일 기준.",
+          "concentration": "상위 3인 비중",
+          "concentration_help": "영역에서 가장 많이 맡은 세 사람이 가진 열린 일의 비중. 높다고 무조건 나쁜 건 아닙니다(세 명이면 언제나 100%).",
+          "concentration_of": "{people, plural, other{#명}}에 {open, plural, other{#건}}",
+          "auto_kept": "자동 유지",
+          "auto_kept_help": "아무도 뒤집지 않은 자동 배정 비율. 낮을수록 이 영역에 순위 매기기가 맞지 않는다는 가장 확실한 증거입니다.",
+          "auto_kept_of": "{count, plural, other{#건}} 중",
+          "processes": "프로세스",
+          "running": "{count, plural, other{#건 진행 중}}",
+          "completed": "{count, plural, other{#건 완료}}",
+          "lead_time": "전체 소요 {p50} / {p90}",
+          "slowest_steps": "가장 느린 단계",
+          "definitions_note": "여기 숫자는 모두 재현 가능한 쿼리와 함께 docs/orca-executive-metrics.md에 정의돼 있습니다.",
+          "minutes": "{count, plural, other{#분}}",
+          "hours": "{count, plural, other{#시간}}",
+          "days": "{count, plural, other{#일}}"
         }
       }
     },

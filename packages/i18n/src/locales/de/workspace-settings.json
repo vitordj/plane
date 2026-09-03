@@ -701,7 +701,8 @@
           "availability_interval_invalid": "Eine Abwesenheit muss nach ihrem Beginn enden.",
           "availability_not_found": "Diese Abwesenheit gibt es nicht mehr.",
           "workspace_member_not_found": "Diese Person ist kein aktives Mitglied dieses Workspace.",
-          "allocation_limit_forbidden": "Wie viel Arbeit jemand bekommt, legt nur die Koordination fest."
+          "allocation_limit_forbidden": "Wie viel Arbeit jemand bekommt, legt nur die Koordination fest.",
+          "invalid_executive_period": "Wählen Sie einen der Zeiträume, die dieser Bericht anbietet."
         },
         "queue": {
           "inbox": "Eingang",
@@ -841,6 +842,46 @@
           "not_saved": "Konnte nicht gespeichert werden",
           "limit_invalid": "Das muss eine ganze Zahl ab 1 sein.",
           "open_aria": "Arbeitseinstellungen von {name}"
+        },
+        "executive": {
+          "title": "Über die Bereiche",
+          "help": "Wo sich Arbeit staut und wo sie läuft. Nur Admin.",
+          "empty": "Noch keine Bereiche.",
+          "area": "Bereich",
+          "period": {
+            "7d": "7 Tage",
+            "30d": "30 Tage",
+            "90d": "90 Tage"
+          },
+          "backlog": "Offen",
+          "backlog_help": "Arbeit des Bereichs, die weder erledigt noch abgebrochen ist.",
+          "queued": "Wartet",
+          "queued_help": "Noch macht sie niemand.",
+          "assignment_overdue": "Zu spät übernommen",
+          "assignment_overdue_help": "Wartet länger, als der Bereich zugesagt hatte.",
+          "target_overdue": "Termin überschritten",
+          "target_overdue_help": "Der eigene Termin ist vorbei und sie ist nicht fertig.",
+          "queue_age": "Gewartet (p50 / p90)",
+          "queue_age_help": "Wie lange das Wartende schon wartet. Der Median und das langsamste Zehntel.",
+          "throughput": "Fertig",
+          "throughput_help": "Vorgänge, die im Zeitraum einen erledigten Status erreicht haben.",
+          "cycle_time": "Dauer (p50 / p90)",
+          "cycle_time_help": "Von der Anlage bis zum Abschluss, für das im Zeitraum Erledigte.",
+          "concentration": "Top 3 tragen",
+          "concentration_help": "Anteil der offenen Arbeit, den die drei am stärksten belasteten Personen tragen. Hoch ist nicht automatisch falsch — ein Team von dreien ist immer 100 %.",
+          "concentration_of": "{open, plural, one{# offener Vorgang} other{# offene Vorgänge}} auf {people, plural, one{# Person} other{# Personen}}",
+          "auto_kept": "Auto behalten",
+          "auto_kept_help": "Automatische Zuteilungen, die niemand überschrieben hat. Ein niedriger Anteil ist der beste Hinweis darauf, dass das Ranking für diesen Bereich nicht passt.",
+          "auto_kept_of": "von {count, plural, one{# Entscheidung} other{# Entscheidungen}}",
+          "processes": "Prozesse",
+          "running": "{count, plural, one{# laufend} other{# laufend}}",
+          "completed": "{count, plural, one{# abgeschlossen} other{# abgeschlossen}}",
+          "lead_time": "Durchlaufzeit {p50} / {p90}",
+          "slowest_steps": "Langsamste Schritte",
+          "definitions_note": "Jede Zahl hier ist definiert, mit der Abfrage, die sie reproduziert, in docs/orca-executive-metrics.md.",
+          "minutes": "{count, plural, one{# Min.} other{# Min.}}",
+          "hours": "{count, plural, one{# Std.} other{# Std.}}",
+          "days": "{count, plural, one{# Tag} other{# Tage}}"
         }
       }
     },

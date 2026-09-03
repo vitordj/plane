@@ -6,8 +6,8 @@
 
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "react-router";
-import { Plus } from "lucide-react";
+import { Link, useParams } from "react-router";
+import { BarChart3, Plus } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
@@ -83,9 +83,21 @@ const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
                 <h3 className="text-xl text-custom-text-100 font-medium">{heading}</h3>
                 <p className="text-sm text-custom-text-300">{description}</p>
               </div>
-              <Button variant="primary" size="sm" onClick={() => setIsCreating(true)} prependIcon={<Plus />}>
-                {t(`${OU}.add`)}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                {/* The aggregate view lives one click away rather than as a
+                    tab: it answers a different question from this page, and
+                    mixing the two makes both harder to find. */}
+                <Link
+                  to={`/${workspaceSlug}/settings/organizational-units/executive`}
+                  className="text-body-xs-medium text-custom-text-300 hover:text-custom-text-100 flex items-center gap-1"
+                >
+                  <BarChart3 className="size-3.5" />
+                  {t(`${OU}.executive.title`)}
+                </Link>
+                <Button variant="primary" size="sm" onClick={() => setIsCreating(true)} prependIcon={<Plus />}>
+                  {t(`${OU}.add`)}
+                </Button>
+              </div>
             </div>
 
             {isLoading ? (

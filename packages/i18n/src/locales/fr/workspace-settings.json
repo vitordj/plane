@@ -701,7 +701,8 @@
           "availability_interval_invalid": "Une absence doit se terminer après son début.",
           "availability_not_found": "Cette absence n'existe plus.",
           "workspace_member_not_found": "Cette personne n'est pas membre actif de cet espace.",
-          "allocation_limit_forbidden": "Seul un coordinateur peut fixer la charge confiée à quelqu'un."
+          "allocation_limit_forbidden": "Seul un coordinateur peut fixer la charge confiée à quelqu'un.",
+          "invalid_executive_period": "Choisissez l'une des périodes que ce rapport propose."
         },
         "queue": {
           "inbox": "Boîte de réception",
@@ -841,6 +842,46 @@
           "not_saved": "Impossible d'enregistrer",
           "limit_invalid": "Il faut un nombre entier supérieur ou égal à 1.",
           "open_aria": "Paramètres de travail de {name}"
+        },
+        "executive": {
+          "title": "Entre les domaines",
+          "help": "Où le travail s'accumule et où il avance. Admin uniquement.",
+          "empty": "Aucun domaine pour l'instant.",
+          "area": "Domaine",
+          "period": {
+            "7d": "7 jours",
+            "30d": "30 jours",
+            "90d": "90 jours"
+          },
+          "backlog": "Ouvert",
+          "backlog_help": "Travail du domaine qui n'est ni terminé ni annulé.",
+          "queued": "En attente",
+          "queued_help": "Personne ne s'en occupe encore.",
+          "assignment_overdue": "Pris en retard",
+          "assignment_overdue_help": "En attente au-delà du délai que le domaine avait promis.",
+          "target_overdue": "Date dépassée",
+          "target_overdue_help": "Sa propre date est passée et il n'est pas terminé.",
+          "queue_age": "Attendu (p50 / p90)",
+          "queue_age_help": "Depuis combien de temps ce qui attend attend. La médiane et le dixième le plus lent.",
+          "throughput": "Terminés",
+          "throughput_help": "Éléments arrivés à un état terminé sur la période.",
+          "cycle_time": "Durée (p50 / p90)",
+          "cycle_time_help": "De la création à la clôture, pour ce qui a été terminé sur la période.",
+          "concentration": "Top 3 porte",
+          "concentration_help": "Part du travail ouvert que portent les trois personnes les plus chargées. Élevé n'est pas automatiquement mauvais : une équipe de trois fait toujours 100 %.",
+          "concentration_of": "{open, plural, one{# élément ouvert} other{# éléments ouverts}} entre {people, plural, one{# personne} other{# personnes}}",
+          "auto_kept": "Auto conservée",
+          "auto_kept_help": "Attributions automatiques que personne n'a défaites. Une part faible est la meilleure preuve que le classement ne convient pas à ce domaine.",
+          "auto_kept_of": "sur {count, plural, one{# décision} other{# décisions}}",
+          "processes": "Processus",
+          "running": "{count, plural, one{# en cours} other{# en cours}}",
+          "completed": "{count, plural, one{# terminé} other{# terminés}}",
+          "lead_time": "bout en bout {p50} / {p90}",
+          "slowest_steps": "Étapes les plus lentes",
+          "definitions_note": "Chaque chiffre ici est défini, avec la requête qui le reproduit, dans docs/orca-executive-metrics.md.",
+          "minutes": "{count, plural, one{# min} other{# min}}",
+          "hours": "{count, plural, one{# h} other{# h}}",
+          "days": "{count, plural, one{# jour} other{# jours}}"
         }
       }
     },

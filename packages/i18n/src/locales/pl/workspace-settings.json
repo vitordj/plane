@@ -701,7 +701,8 @@
           "availability_interval_invalid": "Nieobecność musi kończyć się po rozpoczęciu.",
           "availability_not_found": "Tej nieobecności już nie ma.",
           "workspace_member_not_found": "Ta osoba nie jest aktywnym członkiem tej przestrzeni.",
-          "allocation_limit_forbidden": "Ile pracy ktoś dostaje, ustala tylko koordynator."
+          "allocation_limit_forbidden": "Ile pracy ktoś dostaje, ustala tylko koordynator.",
+          "invalid_executive_period": "Wybierz jeden z okresów, które oferuje ten raport."
         },
         "queue": {
           "inbox": "Skrzynka",
@@ -841,6 +842,46 @@
           "not_saved": "Nie udało się zapisać",
           "limit_invalid": "To musi być liczba całkowita od 1 wzwyż.",
           "open_aria": "Ustawienia pracy: {name}"
+        },
+        "executive": {
+          "title": "Wszystkie obszary",
+          "help": "Gdzie praca się piętrzy, a gdzie idzie. Tylko administrator.",
+          "empty": "Jeszcze nie ma obszarów.",
+          "area": "Obszar",
+          "period": {
+            "7d": "7 dni",
+            "30d": "30 dni",
+            "90d": "90 dni"
+          },
+          "backlog": "Otwarte",
+          "backlog_help": "Praca obszaru, która nie jest ani zrobiona, ani anulowana.",
+          "queued": "Czeka",
+          "queued_help": "Nikt jej jeszcze nie robi.",
+          "assignment_overdue": "Późno wzięte",
+          "assignment_overdue_help": "Czeka dłużej, niż obszar obiecał.",
+          "target_overdue": "Po terminie",
+          "target_overdue_help": "Własny termin minął, a to nie jest zrobione.",
+          "queue_age": "Czekało (p50 / p90)",
+          "queue_age_help": "Jak długo czeka to, co czeka. Mediana i najwolniejsza dziesiąta.",
+          "throughput": "Zrobione",
+          "throughput_help": "Pozycje, które w okresie doszły do stanu zrobionego.",
+          "cycle_time": "Zajęło (p50 / p90)",
+          "cycle_time_help": "Od utworzenia do zamknięcia, dla tego, co zrobiono w okresie.",
+          "concentration": "Trójka niesie",
+          "concentration_help": "Udział otwartej pracy, który niosą trzy najbardziej obciążone osoby. Wysoko nie znaczy automatycznie źle — zespół trzech to zawsze 100%.",
+          "concentration_of": "{open, plural, one{# otwarta pozycja} few{# otwarte pozycje} other{# otwartych pozycji}} na {people, plural, one{# osobę} few{# osoby} other{# osób}}",
+          "auto_kept": "Auto zostawione",
+          "auto_kept_help": "Automatyczne przydziały, których nikt nie cofnął. Niski udział to najlepszy dowód, że ranking nie pasuje do tego obszaru.",
+          "auto_kept_of": "z {count, plural, one{# decyzji} few{# decyzji} other{# decyzji}}",
+          "processes": "Procesy",
+          "running": "{count, plural, one{# trwa} few{# trwają} other{# trwa}}",
+          "completed": "{count, plural, one{# zakończony} few{# zakończone} other{# zakończonych}}",
+          "lead_time": "czas przelotu {p50} / {p90}",
+          "slowest_steps": "Najwolniejsze kroki",
+          "definitions_note": "Każda liczba tutaj jest zdefiniowana, wraz z zapytaniem, które ją odtwarza, w docs/orca-executive-metrics.md.",
+          "minutes": "{count, plural, one{# min} few{# min} other{# min}}",
+          "hours": "{count, plural, one{# h} few{# h} other{# h}}",
+          "days": "{count, plural, one{# dzień} few{# dni} other{# dni}}"
         }
       }
     },

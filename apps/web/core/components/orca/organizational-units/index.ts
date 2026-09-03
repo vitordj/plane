@@ -24,3 +24,4 @@ export * from "./availability-form";
 export * from "./member-work-settings";
 export * from "./queue-suggestion";
 export * from "./queue-process-group";
+export * from "./executive-dashboard";

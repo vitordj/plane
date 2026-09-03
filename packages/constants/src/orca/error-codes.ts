@@ -56,6 +56,8 @@ export const ORCA_ERROR_CODE_KEYS: Record<number, string> = {
   4931: "workspace_settings.settings.organizational_units.errors.availability_not_found",
   4932: "workspace_settings.settings.organizational_units.errors.workspace_member_not_found",
   4933: "workspace_settings.settings.organizational_units.errors.allocation_limit_forbidden",
+  // executive view
+  4934: "workspace_settings.settings.organizational_units.errors.invalid_executive_period",
   // directory provisioning
   4914: "workspace_settings.settings.organizational_units.errors.directory_workspace_not_found",
   4915: "workspace_settings.settings.organizational_units.errors.directory_token_required",

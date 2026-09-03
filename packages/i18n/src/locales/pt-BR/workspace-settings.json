@@ -477,7 +477,8 @@
           "availability_interval_invalid": "Uma ausência tem que terminar depois de começar.",
           "availability_not_found": "Essa ausência não está mais lá.",
           "workspace_member_not_found": "Essa pessoa não é membro ativo deste espaço.",
-          "allocation_limit_forbidden": "Só um coordenador define quanto trabalho alguém recebe."
+          "allocation_limit_forbidden": "Só um coordenador define quanto trabalho alguém recebe.",
+          "invalid_executive_period": "Escolha um dos períodos que este relatório oferece."
         },
         "queue": {
           "inbox": "Caixa de entrada",
@@ -617,6 +618,46 @@
           "not_saved": "Não foi possível salvar",
           "limit_invalid": "Precisa ser um número inteiro de 1 para cima.",
           "open_aria": "Configurações de trabalho de {name}"
+        },
+        "executive": {
+          "title": "Entre as áreas",
+          "help": "Onde o trabalho está acumulando e onde está andando. Só admin.",
+          "empty": "Nenhuma área ainda.",
+          "area": "Área",
+          "period": {
+            "7d": "7 dias",
+            "30d": "30 dias",
+            "90d": "90 dias"
+          },
+          "backlog": "Em aberto",
+          "backlog_help": "Trabalho da área que não está concluído nem cancelado.",
+          "queued": "Esperando",
+          "queued_help": "Ninguém está executando ainda.",
+          "assignment_overdue": "Atrasado para assumir",
+          "assignment_overdue_help": "Esperando além do prazo que a área prometeu para alguém assumir.",
+          "target_overdue": "Passou da data",
+          "target_overdue_help": "A data do próprio item passou e ele não está concluído.",
+          "queue_age": "Esperou (p50 / p90)",
+          "queue_age_help": "Há quanto tempo o que está esperando espera. A mediana e o décimo mais lento.",
+          "throughput": "Concluídos",
+          "throughput_help": "Itens que chegaram a um estado concluído no período.",
+          "cycle_time": "Levou (p50 / p90)",
+          "cycle_time_help": "Da criação à conclusão, para o que foi concluído no período.",
+          "concentration": "Top 3 carrega",
+          "concentration_help": "Fatia do trabalho aberto que as três pessoas mais carregadas da área estão tocando. Alto não é automaticamente errado — time de três é sempre 100%.",
+          "concentration_of": "{open, plural, one{# item aberto} other{# itens abertos}} entre {people, plural, one{# pessoa} other{# pessoas}}",
+          "auto_kept": "Auto mantida",
+          "auto_kept_help": "Atribuições automáticas que ninguém desfez. Fatia baixa é a melhor evidência de que o ranking está errado para esta área.",
+          "auto_kept_of": "de {count, plural, one{# decisão} other{# decisões}}",
+          "processes": "Processos",
+          "running": "{count, plural, one{# em andamento} other{# em andamento}}",
+          "completed": "{count, plural, one{# concluída} other{# concluídas}}",
+          "lead_time": "tempo de ponta a ponta {p50} / {p90}",
+          "slowest_steps": "Etapas mais lentas",
+          "definitions_note": "Cada número daqui está definido, com a consulta que o reproduz, em docs/orca-executive-metrics.md.",
+          "minutes": "{count, plural, one{# min} other{# min}}",
+          "hours": "{count, plural, one{# h} other{# h}}",
+          "days": "{count, plural, one{# dia} other{# dias}}"
         }
       },
       "projects": {

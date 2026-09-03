@@ -701,7 +701,8 @@
           "availability_interval_invalid": "不在は開始より後に終わる必要があります。",
           "availability_not_found": "その不在はもうありません。",
           "workspace_member_not_found": "その人はこのワークスペースの有効なメンバーではありません。",
-          "allocation_limit_forbidden": "誰にどれだけ渡すかは、コーディネーターだけが決められます。"
+          "allocation_limit_forbidden": "誰にどれだけ渡すかは、コーディネーターだけが決められます。",
+          "invalid_executive_period": "このレポートにある期間から選んでください。"
         },
         "queue": {
           "inbox": "受信トレイ",
@@ -841,6 +842,46 @@
           "not_saved": "保存できませんでした",
           "limit_invalid": "1 以上の整数を入れてください。",
           "open_aria": "{name} の仕事の設定"
+        },
+        "executive": {
+          "title": "領域を横断して",
+          "help": "仕事がたまっている場所と、動いている場所。管理者のみ。",
+          "empty": "まだ領域がありません。",
+          "area": "領域",
+          "period": {
+            "7d": "7日",
+            "30d": "30日",
+            "90d": "90日"
+          },
+          "backlog": "未完了",
+          "backlog_help": "完了でも取り消しでもない、その領域の仕事。",
+          "queued": "待ち",
+          "queued_help": "まだ誰も手をつけていません。",
+          "assignment_overdue": "引き受けが遅い",
+          "assignment_overdue_help": "領域が約束した時間を過ぎても待っています。",
+          "target_overdue": "期日超過",
+          "target_overdue_help": "自身の期日を過ぎ、まだ終わっていません。",
+          "queue_age": "待ち時間（p50 / p90）",
+          "queue_age_help": "待っているものがどれだけ待っているか。中央値と、遅いほうの1割。",
+          "throughput": "完了数",
+          "throughput_help": "この期間に完了状態に達した作業項目。",
+          "cycle_time": "所要（p50 / p90）",
+          "cycle_time_help": "作成から完了まで。この期間に完了したものについて。",
+          "concentration": "上位3人の割合",
+          "concentration_help": "領域で最も抱えている3人が持つ未完了の割合。高い＝悪いとは限りません（3人の領域は常に100%）。",
+          "concentration_of": "{people, plural, other{# 人}}で{open, plural, other{# 件}}",
+          "auto_kept": "自動のまま",
+          "auto_kept_help": "誰も上書きしなかった自動割り当ての割合。低いほど、この領域には順位付けが合っていない証拠になります。",
+          "auto_kept_of": "{count, plural, other{# 件}}中",
+          "processes": "プロセス",
+          "running": "{count, plural, other{# 件進行中}}",
+          "completed": "{count, plural, other{# 件完了}}",
+          "lead_time": "全体所要 {p50} / {p90}",
+          "slowest_steps": "遅い工程",
+          "definitions_note": "ここの数字はすべて、再現できるクエリつきで docs/orca-executive-metrics.md に定義されています。",
+          "minutes": "{count, plural, other{# 分}}",
+          "hours": "{count, plural, other{# 時間}}",
+          "days": "{count, plural, other{# 日}}"
         }
       }
     },
