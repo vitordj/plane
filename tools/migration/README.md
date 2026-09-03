@@ -53,7 +53,43 @@ If you are already inside the container shell (`docker exec -it <container> sh`)
 4. Run `python3 create_users.py`.
 5. Remove the temp file when done: `rm create_users.py`.
 
-_Note: Pre-created users are set with a temporary password `TemporaryOrca123!`. They can change this password under their profile settings upon logging in._
+### First sign-in
+
+Pre-created accounts have **no usable password**. They exist so that issues,
+leads and roles can point at a real user; the person gets in through Microsoft
+Entra ID, or through a magic link sent to the address the account was created
+with. Both verify the address before granting the session, so there is no
+shared secret to distribute — or to rotate later.
+
+### If this script ran before this version
+
+Earlier revisions of `create_users.py` set every created account to the same
+hard-coded password, which was committed to this repository. Any environment
+where that version ran has accounts an outsider can sign into. Invalidate them:
+
+```bash
+docker exec -it <plane-api-container> python3 manage.py shell
+```
+
+```python
+from plane.db.models import User
+
+# The accounts the script created — filter by the migrated addresses, or by the
+# window in which you ran it.
+emails = ["someone@example.com", "another@example.com"]
+affected = User.objects.filter(email__in=emails)
+# Alternatively: User.objects.filter(created_at__date="2026-08-30")
+
+for user in affected:
+    user.set_unusable_password()
+    user.is_password_autoset = True
+    user.save(update_fields=["password", "is_password_autoset"])
+print(f"invalidated {affected.count()} accounts")
+```
+
+Then review the authentication logs for the period between the migration and
+this change, looking for sign-ins to those accounts that the person themselves
+does not recognize.
 
 ---
 
