@@ -37,6 +37,44 @@ class DirectorySyncSource(models.TextChoices):
     SCIM = "scim", "SCIM"
 
 
+class RoutingState(models.TextChoices):
+    """
+    Where a work item stands in its area's queue.
+
+    @description The native ``State`` says how the work is going; this says
+    whether the area has found somebody to do it. The two are independent on
+    purpose — a work item can be in progress natively and still be queued here
+    if the area's own executor stepped away.
+
+    QUEUED — the area owns it, nobody is executing it yet.
+    ASSIGNED — somebody is the primary executor (and is a native assignee).
+    ALLOCATION_FAILED — automatic allocation ran and found nobody eligible.
+    SUSPENDED — a coordinator parked it; it is nobody's queue until resumed.
+    """
+
+    QUEUED = "queued", "Queued"
+    ASSIGNED = "assigned", "Assigned"
+    ALLOCATION_FAILED = "allocation_failed", "Allocation failed"
+    SUSPENDED = "suspended", "Suspended"
+
+
+class QueueReason(models.TextChoices):
+    """
+    Why a work item is sitting in the queue.
+
+    @description What a coordinator looking at an inbox needs first: "waiting
+    for me" and "the automatic allocation found nobody" are the same state but
+    completely different problems.
+    """
+
+    NEW_ITEM = "new_item", "New item"
+    AWAITING_COORDINATOR = "awaiting_coordinator", "Awaiting coordinator"
+    AWAITING_CLAIM = "awaiting_claim", "Awaiting claim"
+    NO_ELIGIBLE_MEMBER = "no_eligible_member", "No eligible member"
+    EXECUTOR_UNAVAILABLE = "executor_unavailable", "Executor unavailable"
+    MANUALLY_RETURNED = "manually_returned", "Manually returned"
+
+
 class DirectoryIdentityState(models.TextChoices):
     """
     Whether a directory identity could be matched to a workspace member.
@@ -452,13 +490,64 @@ class IssueOrganizationalUnit(BaseModel):
         related_name="issue_organizational_units",
     )
 
+    # --- queue state -------------------------------------------------------
+    # Marking an area responsible is one thing; somebody actually doing the
+    # work is another. These four fields are the second half, and they are
+    # only ever written by the assignment service, never by a view.
+    routing_state = models.CharField(
+        max_length=16,
+        choices=RoutingState.choices,
+        default=RoutingState.QUEUED,
+    )
+    queue_reason = models.CharField(
+        max_length=32,
+        choices=QueueReason.choices,
+        blank=True,
+        default="",
+    )
+    queued_at = models.DateTimeField(null=True, blank=True)
+    # Effective assignment SLA: when somebody should have picked this up by.
+    assignment_due_at = models.DateTimeField(null=True, blank=True)
+    # The one person answerable for the work. Others can be native assignees
+    # (collaborators); exactly one of them is the executor.
+    primary_executor = models.ForeignKey(
+        "db.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orca_primary_executions",
+    )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=["issue"],
                 condition=Q(deleted_at__isnull=True),
                 name="issue_org_unit_unique_issue_when_deleted_at_null",
-            )
+            ),
+            # "assigned" and "has an executor" are the same statement said
+            # twice; the database is where that stays true, because the
+            # service is not the only thing that will ever write these rows.
+            models.CheckConstraint(
+                condition=~Q(routing_state=RoutingState.ASSIGNED) | Q(primary_executor__isnull=False),
+                name="issue_org_unit_assigned_requires_executor",
+            ),
+            models.CheckConstraint(
+                condition=Q(routing_state=RoutingState.ASSIGNED) | Q(primary_executor__isnull=True),
+                name="issue_org_unit_executor_requires_assigned",
+            ),
+        ]
+        indexes = [
+            # The area's queue, which is the read this table exists for.
+            models.Index(
+                fields=["workspace", "organizational_unit", "routing_state"],
+                name="issue_org_unit_queue_idx",
+            ),
+            # One person's open work, for the load the ranking counts.
+            models.Index(
+                fields=["primary_executor", "routing_state"],
+                name="issue_org_unit_executor_idx",
+            ),
         ]
         verbose_name = "Issue Organizational Unit"
         verbose_name_plural = "Issue Organizational Units"
