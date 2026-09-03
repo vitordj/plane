@@ -517,6 +517,16 @@ class IssueOrganizationalUnit(BaseModel):
         blank=True,
         related_name="orca_primary_executions",
     )
+    # The decision currently in force. Callers pass it back as an If-Match when
+    # they reassign, so two coordinators acting on the same stale view of the
+    # queue cannot both win.
+    current_assignment_decision = models.ForeignKey(
+        "db.AssignmentDecision",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="current_for_links",
+    )
 
     class Meta:
         constraints = [

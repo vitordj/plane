@@ -60,6 +60,17 @@ from .project import (
     ProjectUserProperty,
 )
 from .project_custom_settings import ProjectCustomSettings
+from .organizational_assignment import (
+    AssignmentDecision,
+    AssignmentMode,
+    DecisionOutcome,
+    DecisionTrigger,
+    IssueResponsibilityEvent,
+    OrganizationalUnitAssignmentPolicy,
+    PolicySource,
+    RequestedAssignmentMode,
+    ResponsibilitySource,
+)
 from .organizational_unit import (
     DirectoryIdentityState,
     DirectorySyncSource,
@@ -70,6 +81,8 @@ from .organizational_unit import (
     OrganizationalUnitMemberRole,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
+    QueueReason,
+    RoutingState,
 )
 from .organizational_directory import (
     OrganizationalDirectoryConnection,
