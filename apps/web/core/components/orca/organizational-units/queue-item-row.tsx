@@ -5,7 +5,7 @@
  */
 
 import { observer } from "mobx-react";
-import { AlertTriangle, Clock, UserPlus } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, Clock, UserPlus } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
@@ -18,6 +18,7 @@ type Props = {
   onClaim: (row: IUnitQueueRow) => void;
   onAssign: (row: IUnitQueueRow) => void;
   onReturn: (row: IUnitQueueRow) => void;
+  onTransfer: (row: IUnitQueueRow) => void;
   busy?: boolean;
 };
 
@@ -30,7 +31,7 @@ const OU = "workspace_settings.settings.organizational_units";
  * days past its assignment date is the thing they came here to find.
  */
 export const QueueItemRow = observer(function QueueItemRow(props: Props) {
-  const { workspaceSlug, row, onClaim, onAssign, onReturn, busy } = props;
+  const { workspaceSlug, row, onClaim, onAssign, onReturn, onTransfer, busy } = props;
   const { t } = useTranslation();
 
   const age = row.age_seconds ?? 0;
@@ -90,6 +91,18 @@ export const QueueItemRow = observer(function QueueItemRow(props: Props) {
           >
             {t(`${OU}.queue.assign_to`)}
           </Button>
+        )}
+        {row.can_transfer && (
+          <Tooltip tooltipContent={t(`${OU}.queue.transfer`)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={busy}
+              prependIcon={<ArrowRightLeft />}
+              onClick={() => onTransfer(row)}
+              aria-label={t(`${OU}.queue.transfer`)}
+            />
+          </Tooltip>
         )}
         {row.can_return && (
           <Button variant="link-neutral" size="sm" loading={busy} onClick={() => onReturn(row)}>

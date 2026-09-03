@@ -34,7 +34,7 @@ coordenador de outra área, lead sem coordenação, membro da área em
 
 ---
 
-## 2.3 — Interface `[~]`
+## 2.3 — Interface `[x]`
 
 Padrão: reutilizar componentes de `@plane/ui` e `@plane/propel`; nenhum CSS
 novo fora do tema. Todas as strings no catálogo i18n
@@ -54,11 +54,14 @@ novo fora do tema. Todas as strings no catálogo i18n
 - `policy-form.tsx` (Admin): `default_mode`, `allowed_modes`, `assignment_sla_seconds`, `max_open_items_per_member`, por área e por projeto.
 - `coordinators-tab.tsx` (Admin).
 - Página **Minha Área**: rota `:workspaceSlug/my-areas` em `apps/web/app/routes/core.ts`, página em `apps/web/app/(all)/[workspaceSlug]/(projects)/my-areas/page.tsx` que lista as áreas de `organizational-units/me/` e monta `unit-work-tab.tsx` para a selecionada; entrada na sidebar do workspace visível quando o usuário tem ao menos uma área.
-- Transferir para outra área a partir do item (modal com áreas que cobrem o projeto).
+- Transferir para outra área: `transfer-unit-modal.tsx` na linha da fila (capacidade `can_transfer` vinda da API) e, a partir do próprio item, o seletor de área de `issue-unit-property.tsx` — ambos só oferecem áreas que cobrem o projeto, e o `POST` de responsabilidade cai em `transfer_unit` quando a área muda.
 
 **Aceite.**
-- [ ] `pnpm --filter web check:lint` e `check:types` limpos (local).
-- [ ] `check:sync` do i18n verde.
+- [ ] `pnpm --filter web check:lint` e `check:types` limpos (local) — pendente:
+  o agente não roda build da web (AGENTS.md); rodar antes do merge.
+- [x] Paridade de chaves i18n verificada por script nas 19 locales
+  (`workspace-settings.json` e `navigation.json`); `check:sync` a rodar junto
+  do item acima.
 - [-] Teste de store (vitest) e teste de componente: **`apps/web` não tem
   runner de teste configurado** (sem vitest, sem config, sem dependência).
   Introduzir um é uma decisão própria, não um detalhe deste item — abrir como

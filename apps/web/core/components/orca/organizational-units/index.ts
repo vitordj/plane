@@ -15,3 +15,8 @@ export * from "./assign-member-modal";
 export * from "./queue-item-row";
 export * from "./queue-list";
 export * from "./unit-work-tab";
+export * from "./coordinators-tab";
+export * from "./decision-timeline";
+export * from "./my-areas-root";
+export * from "./policy-form";
+export * from "./transfer-unit-modal";

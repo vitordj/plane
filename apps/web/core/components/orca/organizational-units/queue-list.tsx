@@ -21,6 +21,7 @@ type Props = {
   onClaim: (row: IUnitQueueRow) => void;
   onAssign: (row: IUnitQueueRow) => void;
   onReturn: (row: IUnitQueueRow) => void;
+  onTransfer: (row: IUnitQueueRow) => void;
 };
 
 /**
@@ -29,7 +30,7 @@ type Props = {
  * to load.
  */
 export const QueueList = observer(function QueueList(props: Props) {
-  const { workspaceSlug, rows, isLoading, emptyLabel, busyIssueId, onClaim, onAssign, onReturn } = props;
+  const { workspaceSlug, rows, isLoading, emptyLabel, busyIssueId, onClaim, onAssign, onReturn, onTransfer } = props;
   const { t } = useTranslation();
 
   if (isLoading) {
@@ -57,6 +58,7 @@ export const QueueList = observer(function QueueList(props: Props) {
           onClaim={onClaim}
           onAssign={onAssign}
           onReturn={onReturn}
+          onTransfer={onTransfer}
         />
       ))}
     </div>

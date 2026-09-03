@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "Personen",
           "back_aria": "Zurück zu allen Bereichen",
-          "tab_work": "Arbeit"
+          "tab_work": "Arbeit",
+          "tab_rules": "Regeln"
         },
         "members": {
           "select_person": "Person auswählen",
@@ -738,8 +739,69 @@
             "claimed": "Gehört dir",
             "not_claimed": "Konnte nicht übernommen werden",
             "returned": "Zurück in der Warteschlange",
-            "not_returned": "Konnte nicht zurückgegeben werden"
+            "not_returned": "Konnte nicht zurückgegeben werden",
+            "transferred": "Verschoben",
+            "not_transferred": "Konnte nicht verschoben werden"
+          },
+          "attention": "Braucht Aufmerksamkeit",
+          "mode": {
+            "manual": "Eine Koordinatorin oder ein Koordinator verteilt",
+            "self_claim": "Wer Zeit hat, nimmt es",
+            "least_loaded": "Automatisch, zuerst die geringste Auslastung",
+            "explicit": "Von der aufrufenden Stelle benannt"
+          },
+          "transfer": "In einen anderen Bereich verschieben",
+          "transfer_modal": {
+            "title": "In einen anderen Bereich verschieben",
+            "help": "Aufgeführt sind nur Bereiche, die mit dem Projekt dieses Vorgangs verknüpft sind: in den übrigen kann ihn niemand sehen.",
+            "nobody": "Kein anderer Bereich deckt dieses Projekt ab.",
+            "reason_placeholder": "Warum (optional)"
           }
+        },
+        "decisions": {
+          "title": "Entscheidungen",
+          "empty": "Hier wurde noch nichts entschieden.",
+          "outcome": {
+            "assigned": "An {name} gegeben",
+            "queued": "In die Warteschlange gestellt",
+            "allocation_failed": "Niemand war verfügbar",
+            "rejected": "Abgelehnt"
+          },
+          "replacing": "ersetzt {name}",
+          "by": "von {name}",
+          "by_system": "automatisch"
+        },
+        "policy": {
+          "title": "Wie Arbeit verteilt wird",
+          "default_mode": "Standardmäßig",
+          "default_mode_help": "Was mit Arbeit passiert, die ohne besonderen Wunsch ankommt.",
+          "allowed_modes": "Darf angefordert werden",
+          "allowed_modes_help": "Eine Automatisierung, die einen nicht angehakten Modus anfordert, wird abgelehnt und nicht stillschweigend heruntergestuft.",
+          "sla_minutes": "Jemand sollte es übernehmen innerhalb von (Minuten)",
+          "sla_help": "Danach erfahren es die Koordinierenden des Bereichs.",
+          "max_open": "Höchstzahl offener Vorgänge pro Person",
+          "max_open_help": "Die automatische Zuteilung überspringt alle, die diese Zahl bereits erreicht haben.",
+          "no_limit": "Kein Limit",
+          "saved": "Gespeichert",
+          "not_saved": "Konnte nicht gespeichert werden",
+          "default_must_be_allowed": "Der Standard muss einer der Modi sein, die angefordert werden dürfen."
+        },
+        "coordinators": {
+          "title": "Koordination",
+          "help": "Die Koordination führt die Warteschlange dieses Bereichs. Sie erhält Zugriff auf dessen Projekte, und die automatische Zuteilung gibt ihr wegen dieser Rolle nie Arbeit.",
+          "pick": "Jemanden auswählen",
+          "add": "Hinzufügen",
+          "added": "Hinzugefügt",
+          "not_added": "Konnte nicht hinzugefügt werden",
+          "removed": "Entfernt",
+          "not_removed": "Konnte nicht entfernt werden",
+          "empty": "Diese Warteschlange führt noch niemand.",
+          "remove_aria": "{name} aus der Koordination entfernen"
+        },
+        "my_areas": {
+          "title": "Meine Bereiche",
+          "empty_title": "Sie sind noch in keinem Bereich.",
+          "empty_message": "Bereiche bündeln die Arbeit, die ein Team verantwortet. Eine Workspace-Administration kann Sie zu einem hinzufügen."
         }
       }
     },

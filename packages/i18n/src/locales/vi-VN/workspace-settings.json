@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "Mọi người",
           "back_aria": "Quay lại tất cả khu vực",
-          "tab_work": "Công việc"
+          "tab_work": "Công việc",
+          "tab_rules": "Quy tắc"
         },
         "members": {
           "select_person": "Chọn một người",
@@ -738,8 +739,69 @@
             "claimed": "Việc của bạn",
             "not_claimed": "Không nhận được",
             "returned": "Đã về hàng đợi",
-            "not_returned": "Không trả lại được"
+            "not_returned": "Không trả lại được",
+            "transferred": "Đã chuyển",
+            "not_transferred": "Không chuyển được"
+          },
+          "attention": "Cần để ý",
+          "mode": {
+            "manual": "Điều phối viên giao",
+            "self_claim": "Ai rảnh thì nhận",
+            "least_loaded": "Tự động, ai ít việc nhất trước",
+            "explicit": "Bên gửi chỉ định"
+          },
+          "transfer": "Chuyển sang khu vực khác",
+          "transfer_modal": {
+            "title": "Chuyển sang khu vực khác",
+            "help": "Chỉ hiện những khu vực gắn với dự án của mục này: ở các khu vực khác không ai nhìn thấy nó.",
+            "nobody": "Không có khu vực nào khác phụ trách dự án này.",
+            "reason_placeholder": "Lý do (không bắt buộc)"
           }
+        },
+        "decisions": {
+          "title": "Quyết định",
+          "empty": "Ở đây chưa có gì được quyết.",
+          "outcome": {
+            "assigned": "Giao cho {name}",
+            "queued": "Đưa vào hàng chờ",
+            "allocation_failed": "Không có ai rảnh",
+            "rejected": "Bị từ chối"
+          },
+          "replacing": "thay cho {name}",
+          "by": "bởi {name}",
+          "by_system": "tự động"
+        },
+        "policy": {
+          "title": "Cách chia việc",
+          "default_mode": "Mặc định",
+          "default_mode_help": "Việc đến mà không yêu cầu gì riêng thì xử lý ra sao.",
+          "allowed_modes": "Được phép yêu cầu",
+          "allowed_modes_help": "Tự động hoá yêu cầu một cách chưa được tick sẽ bị từ chối, không âm thầm hạ xuống cách khác.",
+          "sla_minutes": "Cần có người nhận trong vòng (phút)",
+          "sla_help": "Quá thời gian này, điều phối viên của khu vực sẽ được báo.",
+          "max_open": "Số việc đang mở tối đa mỗi người",
+          "max_open_help": "Giao việc tự động bỏ qua ai đã chạm tới con số này.",
+          "no_limit": "Không giới hạn",
+          "saved": "Đã lưu",
+          "not_saved": "Không lưu được",
+          "default_must_be_allowed": "Cách mặc định phải nằm trong những cách được phép yêu cầu."
+        },
+        "coordinators": {
+          "title": "Điều phối viên",
+          "help": "Điều phối viên trông hàng chờ của khu vực này. Họ được truy cập các dự án của khu vực, và việc giao tự động không bao giờ đẩy việc cho họ vì vai trò này.",
+          "pick": "Chọn một người",
+          "add": "Thêm",
+          "added": "Đã thêm",
+          "not_added": "Không thêm được",
+          "removed": "Đã bỏ",
+          "not_removed": "Không bỏ được",
+          "empty": "Chưa ai trông hàng chờ này.",
+          "remove_aria": "Bỏ {name} khỏi vai trò điều phối viên"
+        },
+        "my_areas": {
+          "title": "Khu vực của tôi",
+          "empty_title": "Bạn chưa thuộc khu vực nào.",
+          "empty_message": "Khu vực gom lại phần việc mà một nhóm chịu trách nhiệm. Quản trị viên không gian làm việc có thể thêm bạn vào một khu vực."
         }
       }
     },

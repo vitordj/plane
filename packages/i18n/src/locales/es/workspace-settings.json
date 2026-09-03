@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "Personas",
           "back_aria": "Volver a todas las áreas",
-          "tab_work": "Trabajo"
+          "tab_work": "Trabajo",
+          "tab_rules": "Reglas"
         },
         "members": {
           "select_person": "Seleccione una persona",
@@ -738,8 +739,69 @@
             "claimed": "Es tuyo",
             "not_claimed": "No se pudo asumir",
             "returned": "De vuelta en la cola",
-            "not_returned": "No se pudo devolver"
+            "not_returned": "No se pudo devolver",
+            "transferred": "Movido",
+            "not_transferred": "No se pudo mover"
+          },
+          "attention": "Necesita atención",
+          "mode": {
+            "manual": "Lo asigna un coordinador",
+            "self_claim": "Lo toma quien esté libre",
+            "least_loaded": "Automático, primero quien tiene menos carga",
+            "explicit": "Lo indica quien lo envía"
+          },
+          "transfer": "Mover a otra área",
+          "transfer_modal": {
+            "title": "Mover a otra área",
+            "help": "Solo aparecen las áreas vinculadas al proyecto de este elemento: en las demás no hay nadie que pueda verlo.",
+            "nobody": "Ninguna otra área cubre este proyecto.",
+            "reason_placeholder": "Por qué (opcional)"
           }
+        },
+        "decisions": {
+          "title": "Decisiones",
+          "empty": "Aquí todavía no se ha decidido nada.",
+          "outcome": {
+            "assigned": "Entregado a {name}",
+            "queued": "Puesto en la cola",
+            "allocation_failed": "No había nadie disponible",
+            "rejected": "Rechazado"
+          },
+          "replacing": "en lugar de {name}",
+          "by": "por {name}",
+          "by_system": "automáticamente"
+        },
+        "policy": {
+          "title": "Cómo se reparte el trabajo",
+          "default_mode": "Por defecto",
+          "default_mode_help": "Qué pasa con el trabajo que llega sin pedir nada en concreto.",
+          "allowed_modes": "Se puede pedir",
+          "allowed_modes_help": "Una automatización que pida un modo sin marcar es rechazada, no degradada en silencio.",
+          "sla_minutes": "Alguien debería asumirlo en (minutos)",
+          "sla_help": "Pasado ese tiempo, los coordinadores del área se enteran.",
+          "max_open": "Máximo de elementos abiertos por persona",
+          "max_open_help": "La asignación automática salta a quien ya haya llegado a esa cifra.",
+          "no_limit": "Sin límite",
+          "saved": "Guardado",
+          "not_saved": "No se pudo guardar",
+          "default_must_be_allowed": "El modo por defecto tiene que ser uno de los que se pueden pedir."
+        },
+        "coordinators": {
+          "title": "Coordinadores",
+          "help": "Los coordinadores llevan la cola de esta área. Reciben acceso a sus proyectos, y la asignación automática nunca les da trabajo por serlo.",
+          "pick": "Elige a alguien",
+          "add": "Añadir",
+          "added": "Añadido",
+          "not_added": "No se pudo añadir",
+          "removed": "Quitado",
+          "not_removed": "No se pudo quitar",
+          "empty": "Todavía nadie lleva esta cola.",
+          "remove_aria": "Quitar a {name} como coordinador"
+        },
+        "my_areas": {
+          "title": "Mis áreas",
+          "empty_title": "Aún no estás en ningún área.",
+          "empty_message": "Las áreas agrupan el trabajo del que responde un equipo. Un administrador del espacio puede añadirte a una."
         }
       }
     },

@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "成员",
           "back_aria": "返回所有区域",
-          "tab_work": "工作"
+          "tab_work": "工作",
+          "tab_rules": "规则"
         },
         "members": {
           "select_person": "选择成员",
@@ -738,8 +739,69 @@
             "claimed": "已归你负责",
             "not_claimed": "接手失败",
             "returned": "已回到队列",
-            "not_returned": "退回失败"
+            "not_returned": "退回失败",
+            "transferred": "已转出",
+            "not_transferred": "转出失败"
+          },
+          "attention": "需要留意",
+          "mode": {
+            "manual": "由协调人分派",
+            "self_claim": "谁有空谁接",
+            "least_loaded": "自动，手上最少的人优先",
+            "explicit": "由发起方指定"
+          },
+          "transfer": "转到其他领域",
+          "transfer_modal": {
+            "title": "转到其他领域",
+            "help": "只列出与该事项所属项目关联的领域：其他领域里没有人能看到它。",
+            "nobody": "没有别的领域负责这个项目。",
+            "reason_placeholder": "原因（可选）"
           }
+        },
+        "decisions": {
+          "title": "决定",
+          "empty": "这里还没有做过任何决定。",
+          "outcome": {
+            "assigned": "交给了 {name}",
+            "queued": "放进了队列",
+            "allocation_failed": "当时没人有空",
+            "rejected": "已拒绝"
+          },
+          "replacing": "接替 {name}",
+          "by": "由 {name} 操作",
+          "by_system": "自动"
+        },
+        "policy": {
+          "title": "工作怎么分",
+          "default_mode": "默认情况下",
+          "default_mode_help": "没有特别要求就送来的工作会怎么处理。",
+          "allowed_modes": "允许指定的方式",
+          "allowed_modes_help": "自动化若指定了没有勾选的方式，会被拒绝，而不是悄悄换成别的方式。",
+          "sla_minutes": "应在多久内有人接手（分钟）",
+          "sla_help": "超过之后，这个领域的协调人会收到提醒。",
+          "max_open": "每人最多的未完成事项",
+          "max_open_help": "自动分派会跳过已经达到这个数量的人。",
+          "no_limit": "不限",
+          "saved": "已保存",
+          "not_saved": "保存失败",
+          "default_must_be_allowed": "默认方式必须是允许指定的方式之一。"
+        },
+        "coordinators": {
+          "title": "协调人",
+          "help": "协调人负责这个领域的队列。他们能访问领域下的项目，而自动分派不会因为这个身份把工作交给他们。",
+          "pick": "选一个人",
+          "add": "添加",
+          "added": "已添加",
+          "not_added": "添加失败",
+          "removed": "已移除",
+          "not_removed": "移除失败",
+          "empty": "还没有人负责这个队列。",
+          "remove_aria": "把 {name} 从协调人中移除"
+        },
+        "my_areas": {
+          "title": "我的领域",
+          "empty_title": "你还不属于任何领域。",
+          "empty_message": "领域把一个团队负责的工作聚在一起。工作空间管理员可以把你加进某个领域。"
         }
       }
     },

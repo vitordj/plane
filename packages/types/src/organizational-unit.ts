@@ -243,6 +243,7 @@ export interface IUnitQueueRow {
   can_claim: boolean;
   can_assign: boolean;
   can_return: boolean;
+  can_transfer: boolean;
 }
 
 /** Somebody an area could hand a work item to, with the load that ranks them. */

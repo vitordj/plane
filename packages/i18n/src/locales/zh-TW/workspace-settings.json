@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "人員",
           "back_aria": "返回所有區域",
-          "tab_work": "工作"
+          "tab_work": "工作",
+          "tab_rules": "規則"
         },
         "members": {
           "select_person": "選擇人員",
@@ -738,8 +739,69 @@
             "claimed": "已歸你負責",
             "not_claimed": "接手失敗",
             "returned": "已回到佇列",
-            "not_returned": "退回失敗"
+            "not_returned": "退回失敗",
+            "transferred": "已轉出",
+            "not_transferred": "轉出失敗"
+          },
+          "attention": "需要留意",
+          "mode": {
+            "manual": "由協調人分派",
+            "self_claim": "誰有空誰接",
+            "least_loaded": "自動，手上最少的人優先",
+            "explicit": "由發起方指定"
+          },
+          "transfer": "轉到其他領域",
+          "transfer_modal": {
+            "title": "轉到其他領域",
+            "help": "只列出與該事項所屬專案關聯的領域：其他領域裡沒有人能看到它。",
+            "nobody": "沒有別的領域負責這個專案。",
+            "reason_placeholder": "原因（選填）"
           }
+        },
+        "decisions": {
+          "title": "決定",
+          "empty": "這裡還沒有做過任何決定。",
+          "outcome": {
+            "assigned": "交給了 {name}",
+            "queued": "放進了佇列",
+            "allocation_failed": "當時沒人有空",
+            "rejected": "已拒絕"
+          },
+          "replacing": "接替 {name}",
+          "by": "由 {name} 操作",
+          "by_system": "自動"
+        },
+        "policy": {
+          "title": "工作怎麼分",
+          "default_mode": "預設情況下",
+          "default_mode_help": "沒有特別要求就送來的工作會怎麼處理。",
+          "allowed_modes": "允許指定的方式",
+          "allowed_modes_help": "自動化若指定了沒有勾選的方式，會被拒絕，而不是悄悄換成別的方式。",
+          "sla_minutes": "應在多久內有人接手（分鐘）",
+          "sla_help": "超過之後，這個領域的協調人會收到提醒。",
+          "max_open": "每人最多的未完成事項",
+          "max_open_help": "自動分派會跳過已經達到這個數量的人。",
+          "no_limit": "不限",
+          "saved": "已儲存",
+          "not_saved": "儲存失敗",
+          "default_must_be_allowed": "預設方式必須是允許指定的方式之一。"
+        },
+        "coordinators": {
+          "title": "協調人",
+          "help": "協調人負責這個領域的佇列。他們能存取領域下的專案，而自動分派不會因為這個身分把工作交給他們。",
+          "pick": "選一個人",
+          "add": "新增",
+          "added": "已新增",
+          "not_added": "新增失敗",
+          "removed": "已移除",
+          "not_removed": "移除失敗",
+          "empty": "還沒有人負責這個佇列。",
+          "remove_aria": "把 {name} 從協調人中移除"
+        },
+        "my_areas": {
+          "title": "我的領域",
+          "empty_title": "你還不屬於任何領域。",
+          "empty_message": "領域把一個團隊負責的工作聚在一起。工作區管理員可以把你加進某個領域。"
         }
       }
     },

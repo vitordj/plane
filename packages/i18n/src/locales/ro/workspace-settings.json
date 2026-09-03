@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "Persoane",
           "back_aria": "Înapoi la toate zonele",
-          "tab_work": "Lucru"
+          "tab_work": "Lucru",
+          "tab_rules": "Reguli"
         },
         "members": {
           "select_person": "Selectați o persoană",
@@ -738,8 +739,69 @@
             "claimed": "Este al tău",
             "not_claimed": "Nu s-a putut prelua",
             "returned": "Înapoi în coadă",
-            "not_returned": "Nu s-a putut returna"
+            "not_returned": "Nu s-a putut returna",
+            "transferred": "Mutat",
+            "not_transferred": "Nu s-a putut muta"
+          },
+          "attention": "Necesită atenție",
+          "mode": {
+            "manual": "Repartizează un coordonator",
+            "self_claim": "Îl ia cine este liber",
+            "least_loaded": "Automat, întâi cel mai puțin încărcat",
+            "explicit": "Indicat de cel care trimite"
+          },
+          "transfer": "Mută în altă zonă",
+          "transfer_modal": {
+            "title": "Mută în altă zonă",
+            "help": "Apar doar zonele legate de proiectul acestui element: în celelalte nu îl poate vedea nimeni.",
+            "nobody": "Nicio altă zonă nu acoperă acest proiect.",
+            "reason_placeholder": "De ce (opțional)"
           }
+        },
+        "decisions": {
+          "title": "Decizii",
+          "empty": "Aici nu s-a decis încă nimic.",
+          "outcome": {
+            "assigned": "Dat lui {name}",
+            "queued": "Pus în coadă",
+            "allocation_failed": "Nu era nimeni disponibil",
+            "rejected": "Refuzat"
+          },
+          "replacing": "în locul lui {name}",
+          "by": "de {name}",
+          "by_system": "automat"
+        },
+        "policy": {
+          "title": "Cum se împarte munca",
+          "default_mode": "În mod implicit",
+          "default_mode_help": "Ce se întâmplă cu munca ce vine fără să ceară ceva anume.",
+          "allowed_modes": "Se poate cere",
+          "allowed_modes_help": "O automatizare care cere un mod nebifat este refuzată, nu coborâtă în tăcere.",
+          "sla_minutes": "Cineva ar trebui să îl preia în (minute)",
+          "sla_help": "După acest interval, coordonatorii zonei află de el.",
+          "max_open": "Cel mult elemente deschise de persoană",
+          "max_open_help": "Repartizarea automată sare peste oricine a ajuns deja la acest număr.",
+          "no_limit": "Fără limită",
+          "saved": "Salvat",
+          "not_saved": "Nu s-a putut salva",
+          "default_must_be_allowed": "Modul implicit trebuie să fie unul dintre cele care pot fi cerute."
+        },
+        "coordinators": {
+          "title": "Coordonatori",
+          "help": "Coordonatorii țin coada acestei zone. Primesc acces la proiectele ei, iar repartizarea automată nu le dă niciodată de lucru pentru acest rol.",
+          "pick": "Alege pe cineva",
+          "add": "Adaugă",
+          "added": "Adăugat",
+          "not_added": "Nu s-a putut adăuga",
+          "removed": "Eliminat",
+          "not_removed": "Nu s-a putut elimina",
+          "empty": "Coada aceasta nu o ține încă nimeni.",
+          "remove_aria": "Elimină-l pe {name} dintre coordonatori"
+        },
+        "my_areas": {
+          "title": "Zonele mele",
+          "empty_title": "Nu ești încă în nicio zonă.",
+          "empty_message": "Zonele adună munca de care răspunde o echipă. Un administrator al spațiului te poate adăuga într-una."
         }
       }
     },

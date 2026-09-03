@@ -346,7 +346,8 @@
         "detail": {
           "tab_people": "People",
           "back_aria": "Back to all areas",
-          "tab_work": "Work"
+          "tab_work": "Work",
+          "tab_rules": "Rules"
         },
         "members": {
           "select_person": "Select a person",
@@ -514,8 +515,69 @@
             "claimed": "It is yours",
             "not_claimed": "Could not take it",
             "returned": "Back in the queue",
-            "not_returned": "Could not return it"
+            "not_returned": "Could not return it",
+            "transferred": "Moved",
+            "not_transferred": "Could not move it"
+          },
+          "attention": "Needs attention",
+          "mode": {
+            "manual": "A coordinator assigns",
+            "self_claim": "Whoever is free takes it",
+            "least_loaded": "Automatic, least loaded first",
+            "explicit": "Named by the caller"
+          },
+          "transfer": "Move to another area",
+          "transfer_modal": {
+            "title": "Move to another area",
+            "help": "Only areas linked to this work item's project are listed: the others have nobody who can see it.",
+            "nobody": "No other area covers this project.",
+            "reason_placeholder": "Why (optional)"
           }
+        },
+        "decisions": {
+          "title": "Decisions",
+          "empty": "Nothing has been decided here yet.",
+          "outcome": {
+            "assigned": "Given to {name}",
+            "queued": "Put in the queue",
+            "allocation_failed": "Nobody was available",
+            "rejected": "Refused"
+          },
+          "replacing": "replacing {name}",
+          "by": "by {name}",
+          "by_system": "automatically"
+        },
+        "policy": {
+          "title": "How work is assigned",
+          "default_mode": "By default",
+          "default_mode_help": "What happens to work that arrives without asking for anything in particular.",
+          "allowed_modes": "May be asked for",
+          "allowed_modes_help": "An automation asking for a mode that is not ticked is refused, not quietly downgraded.",
+          "sla_minutes": "Somebody should take it within (minutes)",
+          "sla_help": "Past this, the area's coordinators hear about it.",
+          "max_open": "Most open items per person",
+          "max_open_help": "Automatic assignment skips anybody already at this number.",
+          "no_limit": "No limit",
+          "saved": "Saved",
+          "not_saved": "Could not save it",
+          "default_must_be_allowed": "The default has to be one of the modes that may be asked for."
+        },
+        "coordinators": {
+          "title": "Coordinators",
+          "help": "Coordinators run this area's queue. They get access to its projects, and the automatic assignment never hands work to them for being one.",
+          "pick": "Pick somebody",
+          "add": "Add",
+          "added": "Added",
+          "not_added": "Could not add them",
+          "removed": "Removed",
+          "not_removed": "Could not remove them",
+          "empty": "Nobody runs this queue yet.",
+          "remove_aria": "Remove {name} as coordinator"
+        },
+        "my_areas": {
+          "title": "My areas",
+          "empty_title": "You are not in any area yet.",
+          "empty_message": "Areas group the work a team owns. A workspace admin can add you to one."
         }
       },
       "projects": {

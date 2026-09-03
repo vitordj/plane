@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "Kişiler",
           "back_aria": "Tüm alanlara dön",
-          "tab_work": "İş"
+          "tab_work": "İş",
+          "tab_rules": "Kurallar"
         },
         "members": {
           "select_person": "Bir kişi seçin",
@@ -738,8 +739,69 @@
             "claimed": "Sizin oldu",
             "not_claimed": "Üstlenilemedi",
             "returned": "Sıraya döndü",
-            "not_returned": "Geri gönderilemedi"
+            "not_returned": "Geri gönderilemedi",
+            "transferred": "Taşındı",
+            "not_transferred": "Taşınamadı"
+          },
+          "attention": "İlgi bekliyor",
+          "mode": {
+            "manual": "Koordinatör dağıtır",
+            "self_claim": "Boşta olan üstlenir",
+            "least_loaded": "Otomatik, önce en az yüklü olan",
+            "explicit": "Gönderen kişi belirtir"
+          },
+          "transfer": "Başka bir alana taşı",
+          "transfer_modal": {
+            "title": "Başka bir alana taşı",
+            "help": "Yalnızca bu işin projesine bağlı alanlar listelenir: diğerlerinde onu görebilecek kimse yok.",
+            "nobody": "Bu projeyi üstlenen başka bir alan yok.",
+            "reason_placeholder": "Neden (isteğe bağlı)"
           }
+        },
+        "decisions": {
+          "title": "Kararlar",
+          "empty": "Burada henüz bir karar verilmedi.",
+          "outcome": {
+            "assigned": "{name} kişisine verildi",
+            "queued": "Kuyruğa alındı",
+            "allocation_failed": "Uygun kimse yoktu",
+            "rejected": "Geri çevrildi"
+          },
+          "replacing": "{name} yerine",
+          "by": "{name} tarafından",
+          "by_system": "otomatik olarak"
+        },
+        "policy": {
+          "title": "İş nasıl dağıtılır",
+          "default_mode": "Varsayılan olarak",
+          "default_mode_help": "Özel bir istek olmadan gelen işe ne olacağı.",
+          "allowed_modes": "İstenebilir",
+          "allowed_modes_help": "İşaretlenmemiş bir yöntemi isteyen otomasyon sessizce düşürülmez, geri çevrilir.",
+          "sla_minutes": "Birinin üstlenmesi gereken süre (dakika)",
+          "sla_help": "Bu süre geçince alanın koordinatörleri haberdar olur.",
+          "max_open": "Kişi başına en fazla açık iş",
+          "max_open_help": "Otomatik dağıtım, bu sayıya ulaşmış olan herkesi atlar.",
+          "no_limit": "Sınır yok",
+          "saved": "Kaydedildi",
+          "not_saved": "Kaydedilemedi",
+          "default_must_be_allowed": "Varsayılan yöntem, istenebilecek yöntemlerden biri olmalı."
+        },
+        "coordinators": {
+          "title": "Koordinatörler",
+          "help": "Koordinatörler bu alanın kuyruğunu yürütür. Alanın projelerine erişirler ve otomatik dağıtım bu görev yüzünden onlara hiç iş vermez.",
+          "pick": "Birini seç",
+          "add": "Ekle",
+          "added": "Eklendi",
+          "not_added": "Eklenemedi",
+          "removed": "Çıkarıldı",
+          "not_removed": "Çıkarılamadı",
+          "empty": "Bu kuyruğu henüz kimse yürütmüyor.",
+          "remove_aria": "{name} kişisini koordinatörlükten çıkar"
+        },
+        "my_areas": {
+          "title": "Alanlarım",
+          "empty_title": "Henüz hiçbir alanda değilsin.",
+          "empty_message": "Alanlar, bir ekibin sorumlu olduğu işi bir araya getirir. Çalışma alanı yöneticisi seni birine ekleyebilir."
         }
       }
     },

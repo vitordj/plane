@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "メンバー",
           "back_aria": "すべてのエリアに戻る",
-          "tab_work": "作業"
+          "tab_work": "作業",
+          "tab_rules": "ルール"
         },
         "members": {
           "select_person": "メンバーを選択",
@@ -738,8 +739,69 @@
             "claimed": "あなたの担当になりました",
             "not_claimed": "引き受けられませんでした",
             "returned": "キューに戻しました",
-            "not_returned": "戻せませんでした"
+            "not_returned": "戻せませんでした",
+            "transferred": "移しました",
+            "not_transferred": "移せませんでした"
+          },
+          "attention": "要対応",
+          "mode": {
+            "manual": "コーディネーターが割り当てる",
+            "self_claim": "手が空いた人が取る",
+            "least_loaded": "自動、負荷の少ない人から",
+            "explicit": "依頼元が指名する"
+          },
+          "transfer": "別の領域へ移す",
+          "transfer_modal": {
+            "title": "別の領域へ移す",
+            "help": "この作業項目のプロジェクトに紐づく領域だけを表示しています。ほかの領域では誰にも見えません。",
+            "nobody": "このプロジェクトを受け持つ別の領域はありません。",
+            "reason_placeholder": "理由（任意）"
           }
+        },
+        "decisions": {
+          "title": "決定",
+          "empty": "ここではまだ何も決まっていません。",
+          "outcome": {
+            "assigned": "{name} に渡しました",
+            "queued": "キューに入れました",
+            "allocation_failed": "対応できる人がいませんでした",
+            "rejected": "断りました"
+          },
+          "replacing": "{name} と交代",
+          "by": "実行: {name}",
+          "by_system": "自動"
+        },
+        "policy": {
+          "title": "仕事の割り当て方",
+          "default_mode": "既定では",
+          "default_mode_help": "特に指定なく届いた仕事をどう扱うか。",
+          "allowed_modes": "指定できる方式",
+          "allowed_modes_help": "チェックのない方式を指定した自動処理は、黙って別の方式に落とさず拒否します。",
+          "sla_minutes": "誰かが引き取るまでの目安（分）",
+          "sla_help": "これを過ぎると、この領域のコーディネーターに知らせます。",
+          "max_open": "1人あたりの未完了件数の上限",
+          "max_open_help": "自動割り当ては、この件数に達している人を飛ばします。",
+          "no_limit": "上限なし",
+          "saved": "保存しました",
+          "not_saved": "保存できませんでした",
+          "default_must_be_allowed": "既定の方式は、指定できる方式のいずれかである必要があります。"
+        },
+        "coordinators": {
+          "title": "コーディネーター",
+          "help": "コーディネーターはこの領域のキューを回します。領域のプロジェクトにアクセスできますが、自動割り当てがこの役割を理由に仕事を渡すことはありません。",
+          "pick": "人を選ぶ",
+          "add": "追加",
+          "added": "追加しました",
+          "not_added": "追加できませんでした",
+          "removed": "外しました",
+          "not_removed": "外せませんでした",
+          "empty": "このキューを回す人はまだいません。",
+          "remove_aria": "{name} をコーディネーターから外す"
+        },
+        "my_areas": {
+          "title": "自分の領域",
+          "empty_title": "まだどの領域にも入っていません。",
+          "empty_message": "領域は、チームが受け持つ仕事をまとめたものです。ワークスペースの管理者が追加できます。"
         }
       }
     },

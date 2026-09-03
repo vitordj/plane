@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "멤버",
           "back_aria": "모든 영역으로 돌아가기",
-          "tab_work": "작업"
+          "tab_work": "작업",
+          "tab_rules": "규칙"
         },
         "members": {
           "select_person": "멤버 선택",
@@ -738,8 +739,69 @@
             "claimed": "이제 담당자입니다",
             "not_claimed": "맡지 못했습니다",
             "returned": "대기열로 돌아갔습니다",
-            "not_returned": "되돌리지 못했습니다"
+            "not_returned": "되돌리지 못했습니다",
+            "transferred": "옮겼습니다",
+            "not_transferred": "옮기지 못했습니다"
+          },
+          "attention": "확인 필요",
+          "mode": {
+            "manual": "코디네이터가 배정",
+            "self_claim": "여유 있는 사람이 가져감",
+            "least_loaded": "자동, 부담이 적은 사람부터",
+            "explicit": "요청한 쪽이 지정"
+          },
+          "transfer": "다른 영역으로 옮기기",
+          "transfer_modal": {
+            "title": "다른 영역으로 옮기기",
+            "help": "이 항목의 프로젝트에 연결된 영역만 보여 줍니다. 다른 영역에서는 아무도 이 항목을 볼 수 없습니다.",
+            "nobody": "이 프로젝트를 맡는 다른 영역이 없습니다.",
+            "reason_placeholder": "이유(선택)"
           }
+        },
+        "decisions": {
+          "title": "결정",
+          "empty": "여기서 아직 결정된 것이 없습니다.",
+          "outcome": {
+            "assigned": "{name} 님에게 넘김",
+            "queued": "대기열에 넣음",
+            "allocation_failed": "가능한 사람이 없었음",
+            "rejected": "거절함"
+          },
+          "replacing": "{name} 님 대신",
+          "by": "{name} 님이 함",
+          "by_system": "자동으로"
+        },
+        "policy": {
+          "title": "일을 나누는 방식",
+          "default_mode": "기본값",
+          "default_mode_help": "특별한 요청 없이 들어온 일을 어떻게 처리할지.",
+          "allowed_modes": "요청할 수 있는 방식",
+          "allowed_modes_help": "선택하지 않은 방식을 요청한 자동화는 조용히 낮추지 않고 거절합니다.",
+          "sla_minutes": "누군가 맡기까지 (분)",
+          "sla_help": "이 시간을 넘기면 영역의 코디네이터에게 알립니다.",
+          "max_open": "1인당 열린 항목 최대 수",
+          "max_open_help": "자동 배정은 이 수에 이미 도달한 사람을 건너뜁니다.",
+          "no_limit": "제한 없음",
+          "saved": "저장했습니다",
+          "not_saved": "저장하지 못했습니다",
+          "default_must_be_allowed": "기본 방식은 요청할 수 있는 방식 중 하나여야 합니다."
+        },
+        "coordinators": {
+          "title": "코디네이터",
+          "help": "코디네이터는 이 영역의 대기열을 운영합니다. 영역의 프로젝트에 접근할 수 있지만, 자동 배정이 이 역할 때문에 일을 주는 일은 없습니다.",
+          "pick": "사람 고르기",
+          "add": "추가",
+          "added": "추가했습니다",
+          "not_added": "추가하지 못했습니다",
+          "removed": "제외했습니다",
+          "not_removed": "제외하지 못했습니다",
+          "empty": "아직 이 대기열을 운영하는 사람이 없습니다.",
+          "remove_aria": "{name} 님을 코디네이터에서 제외"
+        },
+        "my_areas": {
+          "title": "내 영역",
+          "empty_title": "아직 어떤 영역에도 속해 있지 않습니다.",
+          "empty_message": "영역은 한 팀이 맡은 일을 묶어 둔 것입니다. 워크스페이스 관리자가 추가해 줄 수 있습니다."
         }
       }
     },

@@ -143,6 +143,11 @@ class UnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
             "can_assign": bool(may_coordinate),
             "can_return": bool(may_coordinate and link.routing_state == RoutingState.ASSIGNED)
             or bool(executor and executor.id == user.id),
+            # Same answer as can_assign today, and still its own key: moving
+            # work to another area is a different question from picking who
+            # takes it here, and the interface should not have to assume the
+            # two rules stay married.
+            "can_transfer": bool(may_coordinate),
         }
 
 

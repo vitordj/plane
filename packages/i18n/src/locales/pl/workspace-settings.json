@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "Osoby",
           "back_aria": "Powrót do wszystkich obszarów",
-          "tab_work": "Praca"
+          "tab_work": "Praca",
+          "tab_rules": "Zasady"
         },
         "members": {
           "select_person": "Wybierz osobę",
@@ -738,8 +739,69 @@
             "claimed": "Jest twoje",
             "not_claimed": "Nie udało się wziąć",
             "returned": "Z powrotem w kolejce",
-            "not_returned": "Nie udało się zwrócić"
+            "not_returned": "Nie udało się zwrócić",
+            "transferred": "Przeniesiono",
+            "not_transferred": "Nie udało się przenieść"
+          },
+          "attention": "Wymaga uwagi",
+          "mode": {
+            "manual": "Przydziela koordynator",
+            "self_claim": "Bierze ten, kto ma czas",
+            "least_loaded": "Automatycznie, najpierw najmniej obciążeni",
+            "explicit": "Wskazuje ten, kto zgłasza"
+          },
+          "transfer": "Przenieś do innego obszaru",
+          "transfer_modal": {
+            "title": "Przenieś do innego obszaru",
+            "help": "Pokazujemy tylko obszary powiązane z projektem tej pozycji: w pozostałych nikt jej nie zobaczy.",
+            "nobody": "Żaden inny obszar nie obejmuje tego projektu.",
+            "reason_placeholder": "Dlaczego (opcjonalnie)"
           }
+        },
+        "decisions": {
+          "title": "Decyzje",
+          "empty": "Tutaj nic jeszcze nie zapadło.",
+          "outcome": {
+            "assigned": "Przekazano: {name}",
+            "queued": "Wstawiono do kolejki",
+            "allocation_failed": "Nikt nie był dostępny",
+            "rejected": "Odrzucono"
+          },
+          "replacing": "zamiast: {name}",
+          "by": "wykonał(a) {name}",
+          "by_system": "automatycznie"
+        },
+        "policy": {
+          "title": "Jak rozdzielamy pracę",
+          "default_mode": "Domyślnie",
+          "default_mode_help": "Co dzieje się z pracą, która przychodzi bez żadnego szczególnego żądania.",
+          "allowed_modes": "Można poprosić o",
+          "allowed_modes_help": "Automat, który poprosi o niezaznaczony tryb, dostaje odmowę, a nie po cichu gorszy tryb.",
+          "sla_minutes": "Ktoś powinien to wziąć w ciągu (minut)",
+          "sla_help": "Po tym czasie dowiadują się o tym koordynatorzy obszaru.",
+          "max_open": "Najwięcej otwartych pozycji na osobę",
+          "max_open_help": "Automatyczny przydział pomija każdego, kto już osiągnął tę liczbę.",
+          "no_limit": "Bez limitu",
+          "saved": "Zapisano",
+          "not_saved": "Nie udało się zapisać",
+          "default_must_be_allowed": "Tryb domyślny musi być jednym z tych, o które można poprosić."
+        },
+        "coordinators": {
+          "title": "Koordynatorzy",
+          "help": "Koordynatorzy prowadzą kolejkę tego obszaru. Dostają dostęp do jego projektów, a automatyczny przydział nigdy nie daje im pracy z tytułu tej roli.",
+          "pick": "Wybierz kogoś",
+          "add": "Dodaj",
+          "added": "Dodano",
+          "not_added": "Nie udało się dodać",
+          "removed": "Usunięto",
+          "not_removed": "Nie udało się usunąć",
+          "empty": "Tej kolejki nikt jeszcze nie prowadzi.",
+          "remove_aria": "Usuń {name} z koordynatorów"
+        },
+        "my_areas": {
+          "title": "Moje obszary",
+          "empty_title": "Nie należysz jeszcze do żadnego obszaru.",
+          "empty_message": "Obszary grupują pracę, za którą odpowiada zespół. Administrator przestrzeni może Cię do któregoś dodać."
         }
       }
     },

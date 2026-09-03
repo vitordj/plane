@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "Lidé",
           "back_aria": "Zpět na všechny oblasti",
-          "tab_work": "Práce"
+          "tab_work": "Práce",
+          "tab_rules": "Pravidla"
         },
         "members": {
           "select_person": "Vyberte osobu",
@@ -738,8 +739,69 @@
             "claimed": "Je to vaše",
             "not_claimed": "Nepodařilo se vzít",
             "returned": "Zpět ve frontě",
-            "not_returned": "Nepodařilo se vrátit"
+            "not_returned": "Nepodařilo se vrátit",
+            "transferred": "Přesunuto",
+            "not_transferred": "Nepodařilo se přesunout"
+          },
+          "attention": "Vyžaduje pozornost",
+          "mode": {
+            "manual": "Přiděluje koordinátor",
+            "self_claim": "Vezme si to, kdo má čas",
+            "least_loaded": "Automaticky, nejméně vytíženému",
+            "explicit": "Určí ten, kdo práci posílá"
+          },
+          "transfer": "Přesunout do jiné oblasti",
+          "transfer_modal": {
+            "title": "Přesunout do jiné oblasti",
+            "help": "Nabízíme jen oblasti spojené s projektem této položky: v ostatních ji nikdo neuvidí.",
+            "nobody": "Tento projekt nepokrývá žádná další oblast.",
+            "reason_placeholder": "Proč (nepovinné)"
           }
+        },
+        "decisions": {
+          "title": "Rozhodnutí",
+          "empty": "Zatím se tu nic nerozhodlo.",
+          "outcome": {
+            "assigned": "Předáno: {name}",
+            "queued": "Zařazeno do fronty",
+            "allocation_failed": "Nikdo nebyl k dispozici",
+            "rejected": "Odmítnuto"
+          },
+          "replacing": "nahrazuje: {name}",
+          "by": "provedl(a) {name}",
+          "by_system": "automaticky"
+        },
+        "policy": {
+          "title": "Jak se práce přiděluje",
+          "default_mode": "Ve výchozím stavu",
+          "default_mode_help": "Co se stane s prací, která přijde bez zvláštního požadavku.",
+          "allowed_modes": "Lze si vyžádat",
+          "allowed_modes_help": "Automatizace, která si vyžádá nezaškrtnutý režim, je odmítnuta, ne potichu snížena.",
+          "sla_minutes": "Někdo si to má vzít do (minut)",
+          "sla_help": "Po této době se to dozvědí koordinátoři oblasti.",
+          "max_open": "Nejvíc otevřených položek na osobu",
+          "max_open_help": "Automatické přidělení přeskočí každého, kdo už tohoto počtu dosáhl.",
+          "no_limit": "Bez limitu",
+          "saved": "Uloženo",
+          "not_saved": "Nepodařilo se uložit",
+          "default_must_be_allowed": "Výchozí režim musí být jedním z těch, které si lze vyžádat."
+        },
+        "coordinators": {
+          "title": "Koordinátoři",
+          "help": "Koordinátoři vedou frontu této oblasti. Dostanou přístup k jejím projektům a automatické přidělování jim kvůli této roli práci nikdy nedá.",
+          "pick": "Vyberte někoho",
+          "add": "Přidat",
+          "added": "Přidáno",
+          "not_added": "Nepodařilo se přidat",
+          "removed": "Odebráno",
+          "not_removed": "Nepodařilo se odebrat",
+          "empty": "Tuto frontu zatím nikdo nevede.",
+          "remove_aria": "Odebrat {name} z koordinátorů"
+        },
+        "my_areas": {
+          "title": "Moje oblasti",
+          "empty_title": "Zatím nejste v žádné oblasti.",
+          "empty_message": "Oblasti sdružují práci, kterou má na starosti tým. Správce prostoru vás do některé může přidat."
         }
       }
     },

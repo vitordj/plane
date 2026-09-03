@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "Personnes",
           "back_aria": "Retour à tous les domaines",
-          "tab_work": "Travail"
+          "tab_work": "Travail",
+          "tab_rules": "Règles"
         },
         "members": {
           "select_person": "Sélectionner une personne",
@@ -738,8 +739,69 @@
             "claimed": "C’est à vous",
             "not_claimed": "Impossible de le prendre",
             "returned": "De retour dans la file",
-            "not_returned": "Impossible de le rendre"
+            "not_returned": "Impossible de le rendre",
+            "transferred": "Déplacé",
+            "not_transferred": "Impossible de le déplacer"
+          },
+          "attention": "Demande attention",
+          "mode": {
+            "manual": "Un coordinateur attribue",
+            "self_claim": "Celui qui est libre le prend",
+            "least_loaded": "Automatique, au moins chargé d'abord",
+            "explicit": "Désigné par l'appelant"
+          },
+          "transfer": "Déplacer vers un autre domaine",
+          "transfer_modal": {
+            "title": "Déplacer vers un autre domaine",
+            "help": "Seuls les domaines liés au projet de cet élément apparaissent : dans les autres, personne ne peut le voir.",
+            "nobody": "Aucun autre domaine ne couvre ce projet.",
+            "reason_placeholder": "Pourquoi (facultatif)"
           }
+        },
+        "decisions": {
+          "title": "Décisions",
+          "empty": "Rien n'a encore été décidé ici.",
+          "outcome": {
+            "assigned": "Confié à {name}",
+            "queued": "Mis dans la file",
+            "allocation_failed": "Personne n'était disponible",
+            "rejected": "Refusé"
+          },
+          "replacing": "à la place de {name}",
+          "by": "par {name}",
+          "by_system": "automatiquement"
+        },
+        "policy": {
+          "title": "Comment le travail est réparti",
+          "default_mode": "Par défaut",
+          "default_mode_help": "Ce qui arrive au travail qui se présente sans rien demander de particulier.",
+          "allowed_modes": "Peut être demandé",
+          "allowed_modes_help": "Une automatisation qui demande un mode non coché est refusée, pas rétrogradée en silence.",
+          "sla_minutes": "Quelqu'un devrait le prendre en (minutes)",
+          "sla_help": "Passé ce délai, les coordinateurs du domaine en sont informés.",
+          "max_open": "Nombre maximal d'éléments ouverts par personne",
+          "max_open_help": "L'attribution automatique passe son tour pour quiconque a déjà atteint ce nombre.",
+          "no_limit": "Sans limite",
+          "saved": "Enregistré",
+          "not_saved": "Impossible d'enregistrer",
+          "default_must_be_allowed": "Le mode par défaut doit faire partie de ceux qui peuvent être demandés."
+        },
+        "coordinators": {
+          "title": "Coordinateurs",
+          "help": "Les coordinateurs tiennent la file de ce domaine. Ils obtiennent l'accès à ses projets, et l'attribution automatique ne leur confie jamais de travail à ce titre.",
+          "pick": "Choisir quelqu'un",
+          "add": "Ajouter",
+          "added": "Ajouté",
+          "not_added": "Impossible d'ajouter",
+          "removed": "Retiré",
+          "not_removed": "Impossible de retirer",
+          "empty": "Personne ne tient encore cette file.",
+          "remove_aria": "Retirer {name} des coordinateurs"
+        },
+        "my_areas": {
+          "title": "Mes domaines",
+          "empty_title": "Vous n'êtes encore dans aucun domaine.",
+          "empty_message": "Les domaines regroupent le travail dont une équipe répond. Un administrateur de l'espace peut vous en ajouter un."
         }
       }
     },

@@ -4,13 +4,15 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
+import React, { useEffect } from "react";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 // plane imports
+import { Boxes } from "lucide-react";
 import { DraftIcon, HomeIcon, PiChatLogo, YourWorkIcon, DashboardIcon } from "@plane/propel/icons";
 import { EUserWorkspaceRoles } from "@plane/types";
 // hooks
+import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 import { useUserPermissions, useUser } from "@/hooks/store/user";
 // local imports
 import { SidebarUserMenuItem } from "./user-menu-item";
@@ -21,6 +23,18 @@ export const SidebarUserMenu = observer(function SidebarUserMenu() {
   // store hooks
   const { workspaceUserInfo } = useUserPermissions();
   const { data: currentUser } = useUser();
+  // ORCA CUSTOM FEATURE: "My areas" only appears for people who are actually
+  // in one. A workspace that does not use areas should not grow a menu entry
+  // leading to an empty page.
+  const organizationalUnits = useOrganizationalUnit();
+  const hasAreas = (organizationalUnits.myUnits?.length ?? 0) > 0;
+
+  useEffect(() => {
+    // Cheap and cached in the store: one call per workspace, and it decides
+    // whether the entry below exists at all.
+    if (!workspaceSlug) return;
+    organizationalUnits.fetchMyUnits(workspaceSlug.toString()).catch(() => undefined);
+  }, [workspaceSlug, organizationalUnits]);
 
   const SIDEBAR_USER_MENU_ITEMS = [
     {
@@ -51,6 +65,17 @@ export const SidebarUserMenu = observer(function SidebarUserMenu() {
       access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
       Icon: DraftIcon,
     },
+    ...(hasAreas
+      ? [
+          {
+            key: "my-areas",
+            labelTranslationKey: "sidebar.my_areas",
+            href: `/${workspaceSlug.toString()}/my-areas/`,
+            access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
+            Icon: Boxes,
+          },
+        ]
+      : []),
     {
       key: "pi-chat",
       labelTranslationKey: "sidebar.pi_chat",

@@ -15,6 +15,8 @@ import type { IOrganizationalUnit } from "@plane/types";
 import { OrganizationalUnitFormModal } from "./unit-form-modal";
 import { OrganizationalUnitMembersTab } from "./unit-members-tab";
 import { OrganizationalUnitProjectsTab } from "./unit-projects-tab";
+import { AssignmentPolicyForm } from "./policy-form";
+import { CoordinatorsTab } from "./coordinators-tab";
 import { OrganizationalUnitWorkTab } from "./unit-work-tab";
 
 type Props = {
@@ -23,7 +25,7 @@ type Props = {
   onBack: () => void;
 };
 
-type TTab = "members" | "projects" | "work";
+type TTab = "members" | "projects" | "work" | "rules";
 
 const OU = "workspace_settings.settings.organizational_units";
 
@@ -39,6 +41,7 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
     { key: "work", label: t(`${OU}.detail.tab_work`) },
     { key: "members", label: t(`${OU}.detail.tab_people`), count: unit.member_count },
     { key: "projects", label: t("common.projects"), count: unit.project_count },
+    { key: "rules", label: t(`${OU}.detail.tab_rules`) },
   ];
 
   return (
@@ -85,7 +88,18 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
         ))}
       </div>
 
-      {activeTab === "work" ? (
+      {activeTab === "rules" ? (
+        <div className="space-y-8">
+          <section className="space-y-3">
+            <h4 className="text-body-sm-medium text-custom-text-100">{t(`${OU}.policy.title`)}</h4>
+            <AssignmentPolicyForm workspaceSlug={workspaceSlug} unitId={unit.id} />
+          </section>
+          <section className="space-y-3">
+            <h4 className="text-body-sm-medium text-custom-text-100">{t(`${OU}.coordinators.title`)}</h4>
+            <CoordinatorsTab workspaceSlug={workspaceSlug} unitId={unit.id} />
+          </section>
+        </div>
+      ) : activeTab === "work" ? (
         <OrganizationalUnitWorkTab workspaceSlug={workspaceSlug} unitId={unit.id} />
       ) : activeTab === "members" ? (
         <OrganizationalUnitMembersTab workspaceSlug={workspaceSlug} unitId={unit.id} />

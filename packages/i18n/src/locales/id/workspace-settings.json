@@ -570,7 +570,8 @@
         "detail": {
           "tab_people": "Orang",
           "back_aria": "Kembali ke semua area",
-          "tab_work": "Pekerjaan"
+          "tab_work": "Pekerjaan",
+          "tab_rules": "Aturan"
         },
         "members": {
           "select_person": "Pilih seseorang",
@@ -738,8 +739,69 @@
             "claimed": "Jadi milik Anda",
             "not_claimed": "Tidak bisa diambil",
             "returned": "Kembali ke antrean",
-            "not_returned": "Tidak bisa dikembalikan"
+            "not_returned": "Tidak bisa dikembalikan",
+            "transferred": "Dipindahkan",
+            "not_transferred": "Tidak bisa dipindahkan"
+          },
+          "attention": "Perlu perhatian",
+          "mode": {
+            "manual": "Koordinator yang membagi",
+            "self_claim": "Siapa yang senggang, dia ambil",
+            "least_loaded": "Otomatis, yang paling ringan dulu",
+            "explicit": "Ditunjuk oleh pengirim"
+          },
+          "transfer": "Pindahkan ke area lain",
+          "transfer_modal": {
+            "title": "Pindahkan ke area lain",
+            "help": "Hanya area yang terhubung ke proyek item ini yang ditampilkan: di area lain tidak ada yang bisa melihatnya.",
+            "nobody": "Tidak ada area lain yang mencakup proyek ini.",
+            "reason_placeholder": "Alasan (opsional)"
           }
+        },
+        "decisions": {
+          "title": "Keputusan",
+          "empty": "Belum ada yang diputuskan di sini.",
+          "outcome": {
+            "assigned": "Diberikan ke {name}",
+            "queued": "Dimasukkan ke antrean",
+            "allocation_failed": "Tidak ada yang tersedia",
+            "rejected": "Ditolak"
+          },
+          "replacing": "menggantikan {name}",
+          "by": "oleh {name}",
+          "by_system": "otomatis"
+        },
+        "policy": {
+          "title": "Cara pekerjaan dibagi",
+          "default_mode": "Secara bawaan",
+          "default_mode_help": "Apa yang terjadi pada pekerjaan yang datang tanpa permintaan khusus.",
+          "allowed_modes": "Boleh diminta",
+          "allowed_modes_help": "Otomatisasi yang meminta mode yang tidak dicentang akan ditolak, bukan diturunkan diam-diam.",
+          "sla_minutes": "Harus ada yang mengambil dalam (menit)",
+          "sla_help": "Lewat dari itu, koordinator area akan diberi tahu.",
+          "max_open": "Item terbuka terbanyak per orang",
+          "max_open_help": "Pembagian otomatis melewati siapa pun yang sudah mencapai angka ini.",
+          "no_limit": "Tanpa batas",
+          "saved": "Tersimpan",
+          "not_saved": "Tidak bisa disimpan",
+          "default_must_be_allowed": "Mode bawaan harus salah satu mode yang boleh diminta."
+        },
+        "coordinators": {
+          "title": "Koordinator",
+          "help": "Koordinator mengurus antrean area ini. Mereka mendapat akses ke proyeknya, dan pembagian otomatis tidak pernah memberi mereka pekerjaan karena peran ini.",
+          "pick": "Pilih seseorang",
+          "add": "Tambahkan",
+          "added": "Ditambahkan",
+          "not_added": "Tidak bisa ditambahkan",
+          "removed": "Dihapus",
+          "not_removed": "Tidak bisa dihapus",
+          "empty": "Belum ada yang mengurus antrean ini.",
+          "remove_aria": "Hapus {name} sebagai koordinator"
+        },
+        "my_areas": {
+          "title": "Area saya",
+          "empty_title": "Anda belum berada di area mana pun.",
+          "empty_message": "Area mengelompokkan pekerjaan yang menjadi tanggung jawab sebuah tim. Admin ruang kerja bisa menambahkan Anda ke salah satunya."
         }
       }
     },

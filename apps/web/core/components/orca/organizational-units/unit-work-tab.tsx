@@ -12,7 +12,9 @@ import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { IUnitQueueRow } from "@plane/types";
 // components
 import { AssignMemberModal } from "./assign-member-modal";
+import { DecisionTimeline } from "./decision-timeline";
 import { QueueList } from "./queue-list";
+import { TransferUnitModal } from "./transfer-unit-modal";
 // hooks
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 
@@ -37,6 +39,7 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
   const [isLoading, setIsLoading] = useState(true);
   const [busyIssueId, setBusyIssueId] = useState<string | null>(null);
   const [rowToAssign, setRowToAssign] = useState<IUnitQueueRow | null>(null);
+  const [rowToTransfer, setRowToTransfer] = useState<IUnitQueueRow | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,6 +63,21 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
     [rows]
   );
   const inProgress = useMemo(() => rows.filter((row) => row.routing_state === "assigned"), [rows]);
+
+  // Things somebody should look at, whichever half of the queue they are in:
+  // late to be taken, past the date the work item itself promised, parked, or
+  // with no date at all. Rows can appear here and below — that is the point,
+  // this section is a lens rather than a bucket.
+  const needsAttention = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return rows.filter(
+      (row) =>
+        row.assignment_overdue ||
+        row.routing_state === "suspended" ||
+        row.routing_state === "allocation_failed" ||
+        (row.target_date !== null && row.target_date < today)
+    );
+  }, [rows]);
 
   const byExecutor = useMemo(() => {
     const groups = new Map<string, { name: string; rows: IUnitQueueRow[] }>();
@@ -102,6 +120,25 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
 
   return (
     <div className="space-y-6">
+      {needsAttention.length > 0 && (
+        <section className="space-y-2">
+          <h4 className="text-body-xs-medium text-danger-primary">
+            {t(`${OU}.queue.attention`)}
+            <span className="text-custom-text-400 ml-1.5">{needsAttention.length}</span>
+          </h4>
+          <QueueList
+            workspaceSlug={workspaceSlug}
+            rows={needsAttention}
+            emptyLabel={`${OU}.queue.inbox_empty`}
+            busyIssueId={busyIssueId}
+            onClaim={handleClaim}
+            onAssign={setRowToAssign}
+            onReturn={handleReturn}
+            onTransfer={setRowToTransfer}
+          />
+        </section>
+      )}
+
       <section className="space-y-2">
         <h4 className="text-body-xs-medium text-custom-text-200">
           {t(`${OU}.queue.inbox`)}
@@ -116,6 +153,7 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
           onClaim={handleClaim}
           onAssign={setRowToAssign}
           onReturn={handleReturn}
+          onTransfer={setRowToTransfer}
         />
       </section>
 
@@ -140,9 +178,15 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
               onClaim={handleClaim}
               onAssign={setRowToAssign}
               onReturn={handleReturn}
+              onTransfer={setRowToTransfer}
             />
           </div>
         ))}
+      </section>
+
+      <section className="space-y-2">
+        <h4 className="text-body-xs-medium text-custom-text-200">{t(`${OU}.decisions.title`)}</h4>
+        <DecisionTimeline workspaceSlug={workspaceSlug} unitId={unitId} />
       </section>
 
       <AssignMemberModal
@@ -151,6 +195,14 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
         workspaceSlug={workspaceSlug}
         unitId={unitId}
         row={rowToAssign}
+      />
+
+      <TransferUnitModal
+        isOpen={rowToTransfer !== null}
+        onClose={() => setRowToTransfer(null)}
+        workspaceSlug={workspaceSlug}
+        unitId={unitId}
+        row={rowToTransfer}
       />
     </div>
   );

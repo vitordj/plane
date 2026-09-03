@@ -82,6 +82,14 @@ export const coreRoutes: RouteConfigEntry[] = [
           route(":workspaceSlug/drafts", "./(all)/[workspaceSlug]/(projects)/drafts/page.tsx"),
         ]),
 
+        // My areas: the work the areas this person belongs to or coordinates
+        // has to get done. Sits beside Notifications rather than under
+        // settings, because it is somewhere people work, not somewhere they
+        // configure.
+        layout("./(all)/[workspaceSlug]/(projects)/my-areas/layout.tsx", [
+          route(":workspaceSlug/my-areas", "./(all)/[workspaceSlug]/(projects)/my-areas/page.tsx"),
+        ]),
+
         // Notifications
         layout("./(all)/[workspaceSlug]/(projects)/notifications/layout.tsx", [
           route(":workspaceSlug/notifications", "./(all)/[workspaceSlug]/(projects)/notifications/page.tsx"),

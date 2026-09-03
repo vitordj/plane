@@ -74,7 +74,14 @@ export const AssignMemberModal = observer(function AssignMemberModal(props: Prop
       // The decision the coordinator was looking at travels with the request,
       // so if somebody moved the work while this modal was open the server
       // refuses instead of undoing them.
-      await store.assignTo(workspaceSlug, unitId, row.project_id, row.issue_id, candidate.user_id, row.current_decision);
+      await store.assignTo(
+        workspaceSlug,
+        unitId,
+        row.project_id,
+        row.issue_id,
+        candidate.user_id,
+        row.current_decision
+      );
       setToast({ type: TOAST_TYPE.SUCCESS, title: t(`${OU}.queue.toast.assigned`) });
       onClose();
     } catch {
