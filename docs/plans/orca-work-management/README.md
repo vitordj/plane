@@ -23,7 +23,9 @@ aceite** e **como provar**.
 
 Convenções do repositório (branch, commits, o que não rodar, migrações,
 i18n, códigos de erro, copyright): RFC §13. Prompt para iniciar uma sessão
-de agente: [`HANDOFF-PROMPT.md`](./HANDOFF-PROMPT.md).
+de agente: [`HANDOFF-PROMPT.md`](./HANDOFF-PROMPT.md). Prompt pronto para
+cada um dos itens, para despachar ao Codex: [`codex/`](./codex/) — comece
+por [`codex/README.md`](./codex/README.md).
 
 ## Ordem das fases
 
