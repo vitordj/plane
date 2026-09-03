@@ -157,35 +157,67 @@ def assign_from_unit(issue: Issue, unit: OrganizationalUnit, mode=MODE_FILL_EMPT
     """
     Assign a work item to the least-loaded eligible member of a unit.
 
-    @description Never replaces existing assignees. In the default
-    ``fill_empty`` mode an item that already has an assignee is left alone; in
-    ``append`` mode a unit member is added alongside the current ones. Automatic
-    replacement is deliberately not implemented: it needs a clearer policy on
-    who owns a task.
+    @description Legacy entry point, kept for the callers that already use it.
+    It now delegates to ``assignment_service.allocate``, so an assignment made
+    this way moves the queue state and writes an ``AssignmentDecision`` like
+    every other assignment — before this, work assigned through here was
+    invisible to the queue.
+
+    ``fill_empty`` (the default) still leaves a work item that already has an
+    assignee alone, and ``append`` still adds somebody alongside the current
+    ones. Both are the v1 vocabulary: ``append`` means "add a collaborator",
+    which the service says with ``collaborators``. Remove in Phase 2, once the
+    interface speaks the service's own vocabulary.
 
     @param issue: The work item to assign.
     @param unit: The responsible organizational unit.
     @param mode: ``fill_empty`` (default) or ``append``.
     @returns: Tuple of (assigned candidate or ``None``, reason string).
     """
+    # Imported here rather than at module scope: the service imports this
+    # module's coverage helper, and the pair would otherwise import in a cycle.
+    from .assignment_service import allocate
+
     existing = list(IssueAssignee.objects.filter(issue=issue).values_list("assignee_id", flat=True))
 
     if existing and mode == MODE_FILL_EMPTY:
         return None, "already_assigned"
 
-    ranked = candidates_for(unit, issue.project_id)
-    available = [candidate for candidate in ranked if candidate.user_id not in existing]
-    if not available:
+    result = allocate(
+        issue,
+        unit,
+        requested_mode="least_loaded",
+        trigger="internal_api",
+    )
+    if result.executor_id is None:
         return None, "no_eligible_member"
 
-    chosen = available[0]
-    IssueAssignee.objects.create(
-        issue=issue,
-        assignee_id=chosen.user_id,
-        project_id=issue.project_id,
-        workspace_id=issue.workspace_id,
+    chosen = AssignmentCandidate(
+        user_id=result.executor_id,
+        workspace_member_id=_workspace_member_id(unit, result.executor_id),
+        open_issues=_open_count(result.executor_id),
+        last_assigned_at=None,
     )
     return chosen, "assigned"
+
+
+def _workspace_member_id(unit, user_id):
+    """@description The unit membership id for a user, for the legacy response shape."""
+    membership = OrganizationalUnitMembership.objects.filter(
+        organizational_unit=unit, workspace_member__member_id=user_id, is_active=True
+    ).first()
+    return membership.workspace_member_id if membership else None
+
+
+def _open_count(user_id):
+    """@description Open work items this person is the primary executor of."""
+    from plane.db.models import IssueOrganizationalUnit, RoutingState
+
+    return (
+        IssueOrganizationalUnit.objects.filter(primary_executor_id=user_id, routing_state=RoutingState.ASSIGNED)
+        .exclude(issue__state__group__in=CLOSED_STATE_GROUPS)
+        .count()
+    )
 
 
 def workload_snapshot(unit: OrganizationalUnit) -> list[dict]:

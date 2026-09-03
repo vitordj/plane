@@ -681,6 +681,11 @@
           "work_item_has_no_unit": "沒有區域負責此工作事項。",
           "invalid_assignment_mode": "這不是一種指派模式。",
           "unit_not_covering_project": "該領域未涵蓋此工作項目所屬的專案。",
+          "assignment_mode_not_allowed": "該領域不允許這種指派方式。",
+          "executor_not_eligible": "該成員無法代表這個領域承接此工作項目。",
+          "work_item_already_claimed": "已有其他人先領取了此工作項目。",
+          "decision_stale": "自你開啟後，此工作項目已變更。請重新載入後再試。",
+          "invalid_routing_transition": "此工作項目目前的狀態不允許該操作。",
           "directory_workspace_not_found": "該工作區已不存在。",
           "directory_token_required": "請先簽發 SCIM 權杖，再開啟目錄佈建。"
         }

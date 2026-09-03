@@ -681,6 +681,11 @@
           "work_item_has_no_unit": "Za ten element pracy nie odpowiada żaden obszar.",
           "invalid_assignment_mode": "To nie jest tryb przydzielania.",
           "unit_not_covering_project": "Ten obszar nie obejmuje projektu tego elementu pracy.",
+          "assignment_mode_not_allowed": "Ten obszar nie pozwala na taki sposób przydzielania pracy.",
+          "executor_not_eligible": "Ta osoba nie może przejąć tego elementu pracy w tym obszarze.",
+          "work_item_already_claimed": "Ktoś inny przejął ten element pracy wcześniej.",
+          "decision_stale": "Ten element pracy zmienił się od czasu otwarcia. Odśwież i spróbuj ponownie.",
+          "invalid_routing_transition": "Ten element pracy nie jest w stanie, który na to pozwala.",
           "directory_workspace_not_found": "Ta przestrzeń robocza już nie istnieje.",
           "directory_token_required": "Wydaj token SCIM, zanim włączysz udostępnianie z katalogu."
         }

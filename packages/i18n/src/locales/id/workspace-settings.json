@@ -681,6 +681,11 @@
           "work_item_has_no_unit": "Tidak ada area yang bertanggung jawab atas item kerja ini.",
           "invalid_assignment_mode": "Itu bukan mode penugasan.",
           "unit_not_covering_project": "Area tersebut tidak mencakup proyek item kerja ini.",
+          "assignment_mode_not_allowed": "Area ini tidak mengizinkan cara penugasan tersebut.",
+          "executor_not_eligible": "Orang tersebut tidak dapat mengambil item kerja ini untuk area ini.",
+          "work_item_already_claimed": "Orang lain sudah mengambil item kerja ini lebih dulu.",
+          "decision_stale": "Item kerja ini berubah sejak Anda membukanya. Muat ulang dan coba lagi.",
+          "invalid_routing_transition": "Item kerja ini tidak dalam keadaan yang memungkinkan hal itu.",
           "directory_workspace_not_found": "Ruang kerja itu sudah tidak ada.",
           "directory_token_required": "Terbitkan token SCIM sebelum mengaktifkan penyediaan dari direktori."
         }

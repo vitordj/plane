@@ -681,6 +681,11 @@
           "work_item_has_no_unit": "この作業項目を担当するエリアがありません。",
           "invalid_assignment_mode": "それは割り当てモードではありません。",
           "unit_not_covering_project": "そのエリアは、この作業アイテムのプロジェクトを担当していません。",
+          "assignment_mode_not_allowed": "このエリアでは、その割り当て方法は許可されていません。",
+          "executor_not_eligible": "その人は、このエリアの担当としてこの作業アイテムを引き受けられません。",
+          "work_item_already_claimed": "この作業アイテムは、すでに別の人が引き受けました。",
+          "decision_stale": "開いてから、この作業アイテムは変更されています。再読み込みしてやり直してください。",
+          "invalid_routing_transition": "この作業アイテムは、その操作ができる状態ではありません。",
           "directory_workspace_not_found": "そのワークスペースは存在しません。",
           "directory_token_required": "ディレクトリからのプロビジョニングを有効にする前に、SCIM トークンを発行してください。"
         }

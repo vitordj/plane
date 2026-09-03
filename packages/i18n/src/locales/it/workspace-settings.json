@@ -681,6 +681,11 @@
           "work_item_has_no_unit": "Nessuna area è responsabile di questo elemento di lavoro.",
           "invalid_assignment_mode": "Quella non è una modalità di assegnazione.",
           "unit_not_covering_project": "Quell’area non copre il progetto di questo elemento di lavoro.",
+          "assignment_mode_not_allowed": "Quest’area non consente questo modo di assegnare il lavoro.",
+          "executor_not_eligible": "Quella persona non può prendere questo elemento di lavoro per quest’area.",
+          "work_item_already_claimed": "Qualcun altro ha preso prima questo elemento di lavoro.",
+          "decision_stale": "Questo elemento di lavoro è cambiato da quando l’hai aperto. Ricarica e riprova.",
+          "invalid_routing_transition": "Questo elemento di lavoro non è in uno stato che lo consenta.",
           "directory_workspace_not_found": "Quello spazio di lavoro non esiste più.",
           "directory_token_required": "Emetta un token SCIM prima di attivare il provisioning da directory."
         }
