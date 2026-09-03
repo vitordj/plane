@@ -149,3 +149,42 @@ python -m pytest -m unit --cov=plane
 5. **Don't test the framework** - Focus on testing your business logic, not Django/DRF itself.
 6. **Write readable assertions** - Use plain `assert` statements with clear messaging.
 7. **Focus on coverage** - Aim for ≥90% code coverage for critical components.
+## Concurrency tests
+
+The allocation layer reads a load and then writes to it. Two requests that
+read the same load hand the same person both work items — exactly what
+least-loaded allocation exists to prevent. That only shows up with real
+threads and real transactions, so those tests follow their own pattern
+(`plane/tests/unit/orca/test_assignment_concurrency.py`):
+
+```python
+@pytest.mark.django_db(transaction=True)   # real transactions, not the test's
+def test_...(...):
+    barrier = threading.Barrier(n)          # everybody starts at the same instant
+
+    def work(item):
+        barrier.wait()
+        return allocate(...)
+
+    with ThreadPoolExecutor(max_workers=n) as pool:
+        list(pool.map(in_own_connection(work), items))
+```
+
+Three rules, each learned the hard way:
+
+- **`transaction=True`.** Without it pytest wraps the test in one transaction
+  and the threads cannot see each other's writes: the test passes and the bug
+  is still there.
+- **One connection per thread, closed at the end** (`in_own_connection`).
+  Django's connection is thread-local; one left open holds its transaction,
+  and the next test blocks on a lock nobody is holding on purpose.
+- **A barrier, never `sleep`.** `sleep` turns the test into a race against the
+  machine's clock: green on a laptop, red in CI, and the other way round too.
+
+Run them on the Docker runner, which is Postgres — the per-area advisory lock
+does not exist on any other backend:
+
+```bash
+docker compose -f docker-compose-test.yml run --rm api-tests \
+  pytest plane/tests/unit/orca/test_assignment_concurrency.py -q
+```
