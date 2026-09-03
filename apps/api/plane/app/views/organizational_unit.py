@@ -37,6 +37,7 @@ from plane.app.services.orca import (
     MODE_APPEND,
     MODE_FILL_EMPTY,
     allocate,
+    availability_enabled,
     resolve_policy,
     set_responsibility,
     plan_access,
@@ -124,6 +125,9 @@ class OrcaConfigEndpoint(BaseAPIView):
                 # So the interface can show integration instructions only where
                 # they would actually work.
                 "public_api_enabled": orca_public_api_enabled(),
+                # With this off the availability forms are pointless: nothing
+                # reads what they would save.
+                "availability_enabled": availability_enabled(),
             },
             status=status.HTTP_200_OK,
         )

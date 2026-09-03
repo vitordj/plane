@@ -78,9 +78,12 @@ from .organizational_assignment import (
     ResponsibilitySource,
 )
 from .organizational_unit import (
+    AvailabilityReason,
+    AvailabilitySource,
     DirectoryIdentityState,
     DirectorySyncSource,
     IssueOrganizationalUnit,
+    MembershipAllocationSettings,
     OrganizationalProjectAccessState,
     OrganizationalUnit,
     OrganizationalUnitGrant,
@@ -90,6 +93,7 @@ from .organizational_unit import (
     OrganizationalUnitProject,
     QueueReason,
     RoutingState,
+    WorkspaceMemberAvailability,
 )
 from .organizational_directory import (
     OrganizationalDirectoryConnection,

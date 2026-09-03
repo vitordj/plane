@@ -55,6 +55,7 @@ from plane.db.models import (
 )
 
 from . import metrics
+from .availability import allocation_settings_for, unavailable_member_ids
 from .coverage import unit_covers_project
 from .errors import (
     AlreadyClaimed,
@@ -70,9 +71,10 @@ logger = logging.getLogger("plane.orca.assignment")
 # Work in these states no longer counts toward anybody's load.
 CLOSED_STATE_GROUPS = [StateGroup.COMPLETED.value, StateGroup.CANCELLED.value]
 
-# The ranking this module implements. Phase 3 adds availability and becomes
-# "lb-2"; decisions already written keep saying which one decided them.
-ALGORITHM_VERSION = "lb-1"
+# The ranking this module implements. "lb-2" reads availability and the two
+# kinds of ceiling on top of what "lb-1" did; decisions already written keep
+# saying which one decided them, which is the point of recording it.
+ALGORITHM_VERSION = "lb-2"
 
 # Minimum project role that may be handed work.
 PROJECT_MEMBER_ROLE = 15
@@ -294,6 +296,13 @@ def rank_candidates(unit, project_id, policy=None) -> RankedCandidates:
     Order: fewest open items, then fewest in this area, then whoever was
     picked automatically longest ago (never, first), then user id — so the
     same inputs always produce the same choice.
+
+    Four things take somebody out of the running, and each is reported by
+    name: they are away (``unavailable``), they have switched off new work
+    from this area (``opted_out``), they are at their own ceiling
+    (``member_limit``), or at the area's (``policy_limit``). Being excluded is
+    never the same as being removed — they keep what they are carrying, and a
+    coordinator can still hand them something by name.
     @param unit: The area.
     @param project_id: The project the work item belongs to.
     @param policy: The resolved policy, for its per-member limit.
@@ -303,6 +312,21 @@ def rank_candidates(unit, project_id, policy=None) -> RankedCandidates:
     user_ids = eligible_user_ids(unit, project_id)
     if not user_ids:
         return RankedCandidates()
+
+    # The area membership behind each candidate: availability is asked of the
+    # person (a holiday is workspace-wide), the per-area settings of the
+    # membership. Both are read in one query rather than one per candidate,
+    # because this runs on the hot path of every automatic allocation.
+    membership_rows = OrganizationalUnitMembership.objects.filter(
+        organizational_unit=unit,
+        is_active=True,
+        workspace_member__member_id__in=user_ids,
+    ).values_list("workspace_member__member_id", "id", "workspace_member_id")
+    membership_of = {user_id: membership_id for user_id, membership_id, _ in membership_rows}
+    workspace_member_of = {user_id: member_id for user_id, _, member_id in membership_rows}
+
+    away_member_ids = unavailable_member_ids(workspace_member_of.values())
+    settings_by_membership = allocation_settings_for(membership_of.values())
 
     open_links = IssueOrganizationalUnit.objects.filter(
         primary_executor_id__in=user_ids,
@@ -330,7 +354,7 @@ def rank_candidates(unit, project_id, policy=None) -> RankedCandidates:
     for user_id, created_at in automatic:
         last_auto.setdefault(user_id, created_at)
 
-    limit = policy.max_open_items_per_member if policy else None
+    policy_limit = policy.max_open_items_per_member if policy else None
 
     elected, excluded = [], []
     for user_id in user_ids:
@@ -340,8 +364,14 @@ def rank_candidates(unit, project_id, policy=None) -> RankedCandidates:
             "unit_open": unit_open.get(user_id, 0),
             "last_auto_at": last_auto.get(user_id).isoformat() if last_auto.get(user_id) else None,
         }
-        if limit is not None and row["total_open"] >= limit:
-            excluded.append({**row, "excluded_reason": "policy_limit"})
+        reason = _exclusion_reason(
+            row["total_open"],
+            away=workspace_member_of.get(user_id) in away_member_ids,
+            member_settings=settings_by_membership.get(membership_of.get(user_id)),
+            policy_limit=policy_limit,
+        )
+        if reason is not None:
+            excluded.append({**row, "excluded_reason": reason})
             continue
         elected.append(row)
 
@@ -352,6 +382,35 @@ def rank_candidates(unit, project_id, policy=None) -> RankedCandidates:
 
 
 # --- helpers -----------------------------------------------------------------
+
+
+def _exclusion_reason(total_open, *, away, member_settings, policy_limit):
+    """
+    Why the ranking will not pick somebody, or ``None`` when it will.
+
+    @description Named reasons rather than one "not eligible", because they
+    call for completely different actions: an area where everybody is away
+    needs cover, and an area where everybody is at their ceiling needs the
+    ceiling looked at. The order is most-specific-first, so the reason shown
+    is the one closest to the person.
+    @param total_open: Their open work, counted workspace-wide.
+    @param away: Whether an availability interval covers now.
+    @param member_settings: Their ``MembershipAllocationSettings``, or None.
+    @param policy_limit: The area's per-member ceiling, or None.
+    @returns: ``unavailable`` / ``opted_out`` / ``member_limit`` /
+        ``policy_limit``, or ``None``.
+    """
+    if away:
+        return "unavailable"
+    if member_settings is not None and not member_settings.accepts_new_work:
+        return "opted_out"
+
+    personal_limit = getattr(member_settings, "max_open_items", None)
+    if personal_limit is not None and total_open >= personal_limit:
+        return "member_limit"
+    if policy_limit is not None and total_open >= policy_limit:
+        return "policy_limit"
+    return None
 
 
 def _locked_link(issue):

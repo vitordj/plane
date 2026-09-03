@@ -590,6 +590,12 @@ ORCA_ORG_SYNC_MAX_EDGES = int(os.environ.get("ORCA_ORG_SYNC_MAX_EDGES", 100))
 ORCA_PUBLIC_API_ENABLED = os.environ.get("ORCA_PUBLIC_API_ENABLED", "0") == "1"
 ORCA_PUBLIC_API_RATE_LIMIT = os.environ.get("ORCA_PUBLIC_API_RATE_LIMIT", "300/minute")
 
+# Holidays, leave and "no new work from this area for now". Off by default:
+# with it off, everybody counts as available and the ranking behaves exactly
+# as it did before the feature existed, so switching it off is a way back
+# rather than a way into a different set of bugs.
+ORCA_AVAILABILITY_ENABLED = os.environ.get("ORCA_AVAILABILITY_ENABLED", "0") == "1"
+
 ENABLE_DRF_SPECTACULAR = os.environ.get("ENABLE_DRF_SPECTACULAR", "0") == "1"
 
 if ENABLE_DRF_SPECTACULAR:

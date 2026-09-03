@@ -653,3 +653,148 @@ class IssueOrganizationalUnit(BaseModel):
 
     def __str__(self):
         return f"{self.issue_id} -> {self.organizational_unit_id}"
+
+
+class AvailabilityReason(models.TextChoices):
+    """Why somebody is away. Enough to read a queue, not an HR record."""
+
+    VACATION = "vacation", "Vacation"
+    LEAVE = "leave", "Leave"
+    OTHER = "other", "Other"
+
+
+class AvailabilitySource(models.TextChoices):
+    """
+    Who put this interval here.
+
+    @description Only ``manual`` is written in v1. The other two exist so that
+    importing from a directory or an HR system later is a new writer against
+    the same table rather than a migration — and so that an imported interval
+    can be told apart from one somebody typed, which matters the first time
+    the two disagree.
+    """
+
+    MANUAL = "manual", "Entered by hand"
+    HR = "hr", "HR system"
+    DIRECTORY = "directory", "Directory"
+
+
+class WorkspaceMemberAvailability(BaseModel):
+    """
+    A stretch of time somebody is not available for work.
+
+    @description Global to the workspace, not per area: somebody on holiday is
+    on holiday everywhere, and asking a person to record the same fortnight in
+    each of their areas is how a feature stops being used. Being unavailable
+    only keeps the automatic ranking from picking them — it never takes work
+    away by itself, and it never touches project access.
+
+    Intervals are kept rather than edited into one another: two overlapping
+    rows are a legitimate way to say "away all week, and the medical leave
+    inside it is a different thing". Anything that asks "are they available?"
+    reads whether *any* row covers the moment.
+
+    Attributes:
+        workspace_member (WorkspaceMember): The person.
+        workspace (Workspace): Denormalized for cheap querying.
+        unavailable_from (datetime): When it starts.
+        unavailable_until (datetime): When it ends; null means open-ended.
+        reason (str): vacation, leave, other.
+        source (str): Where the row came from.
+        external_id (str): The row's id in that source, when it has one.
+    """
+
+    workspace_member = models.ForeignKey(
+        "db.WorkspaceMember",
+        on_delete=models.CASCADE,
+        related_name="orca_availability",
+    )
+    workspace = models.ForeignKey(
+        "db.Workspace",
+        on_delete=models.CASCADE,
+        related_name="orca_member_availability",
+    )
+    unavailable_from = models.DateTimeField()
+    unavailable_until = models.DateTimeField(null=True, blank=True)
+    reason = models.CharField(max_length=16, choices=AvailabilityReason.choices, default=AvailabilityReason.OTHER)
+    source = models.CharField(max_length=16, choices=AvailabilitySource.choices, default=AvailabilitySource.MANUAL)
+    external_id = models.CharField(max_length=255, blank=True, default="")
+
+    class Meta:
+        constraints = [
+            # An interval that ends before it starts is not a shorter absence,
+            # it is a row nothing can interpret. The database refuses it,
+            # because the API is not the only thing that will ever write here.
+            models.CheckConstraint(
+                condition=Q(unavailable_until__isnull=True) | Q(unavailable_until__gt=models.F("unavailable_from")),
+                name="orca_availability_interval_ordered",
+            ),
+        ]
+        indexes = [
+            # "Is this person away right now?", asked once per candidate on
+            # every automatic allocation.
+            models.Index(
+                fields=["workspace_member", "unavailable_from"],
+                name="orca_availability_member_idx",
+            ),
+        ]
+        verbose_name = "Workspace Member Availability"
+        verbose_name_plural = "Workspace Member Availability"
+        db_table = "orca_member_availability"
+        ordering = ("-unavailable_from",)
+
+    def __str__(self):
+        return f"{self.workspace_member_id} away from {self.unavailable_from}"
+
+
+class MembershipAllocationSettings(BaseModel):
+    """
+    How much work one person will take from one area.
+
+    @description Per membership, not per person: somebody can be at capacity
+    in the area they mostly work for and still take the occasional thing from
+    another. Two settings, both narrow on purpose — a switch for "no new work
+    from this area for now", and a ceiling on how much automatic allocation
+    may pile on.
+
+    Neither is a way to hide: the person keeps whatever they are already
+    carrying, stays in the area, and a coordinator can still hand them
+    something by name. It is automatic allocation that respects these.
+
+    Attributes:
+        membership (OrganizationalUnitMembership): The person in that area.
+        accepts_new_work (bool): False keeps automatic allocation away.
+        max_open_items (int): Ceiling on open work counted workspace-wide;
+            null means the area's policy decides alone.
+    """
+
+    membership = models.OneToOneField(
+        OrganizationalUnitMembership,
+        on_delete=models.CASCADE,
+        related_name="allocation_settings",
+    )
+    workspace = models.ForeignKey(
+        "db.Workspace",
+        on_delete=models.CASCADE,
+        related_name="orca_allocation_settings",
+    )
+    accepts_new_work = models.BooleanField(default=True)
+    max_open_items = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            # Zero would mean "never give this person anything", which is what
+            # accepts_new_work says, and says reversibly. Two ways to express
+            # one state is how the two end up disagreeing.
+            models.CheckConstraint(
+                condition=Q(max_open_items__isnull=True) | Q(max_open_items__gt=0),
+                name="orca_allocation_max_open_positive",
+            ),
+        ]
+        verbose_name = "Membership Allocation Settings"
+        verbose_name_plural = "Membership Allocation Settings"
+        db_table = "orca_membership_allocation_settings"
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.membership_id} accepts_new_work={self.accepts_new_work}"

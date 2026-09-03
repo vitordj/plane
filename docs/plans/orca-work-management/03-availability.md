@@ -11,9 +11,10 @@ sincronização com Entra/RH (A3), peso por estimativa (A7).
 
 ---
 
-## 3.1 — Migração 0139 e flag `[ ]`
+## 3.1 — Migração 0141 e flag `[x]`
 
 - Modelos `WorkspaceMemberAvailability` e `MembershipAllocationSettings` (RFC §5.2) em `organizational_unit.py`; CHECK de intervalo.
+- **Numeração:** o RFC dizia `0139`, que a Fase 2 usou para coordenadores; a migração real é `0141_orca_availability`.
 - `ORCA_AVAILABILITY_ENABLED` em `settings/common.py` e `.env.example`; exposto em `OrcaConfigEndpoint`.
 - Helper `is_available(workspace_member, at=None)` e `accepts_new_work(membership)` em `services/orca/availability.py`.
 
@@ -23,7 +24,7 @@ alterar o ranking se a fase for desligada).
 
 ---
 
-## 3.2 — Ranking respeita disponibilidade e limites `[ ]`
+## 3.2 — Ranking respeita disponibilidade e limites `[x]`
 
 - `rank_candidates` (D0.5) exclui indisponíveis (`excluded_reason="unavailable"`), `accepts_new_work=false` (`"opted_out"`), acima de `MembershipAllocationSettings.max_open_items` (`"member_limit"`) e acima de `policy.max_open_items_per_member` (`"policy_limit"`).
 - `algorithm_version` passa a `"lb-2"` (o snapshot registra qual versão decidiu).
@@ -31,6 +32,12 @@ alterar o ranking se a fase for desligada).
 **Testes:** cada exclusão aparece no `candidates_snapshot`; item existente de
 pessoa indisponível continua contando na carga dos outros? Não: a carga é
 por executor; a pessoa indisponível simplesmente sai do ranking.
+
+**Entregue.** `_exclusion_reason` decide na ordem mais-específica-primeiro
+(`unavailable` → `opted_out` → `member_limit` → `policy_limit`): quando duas
+valem, a mostrada é a que diz quando deixa de valer. `open_item_limit` toma o
+menor entre o teto pessoal e o da política — um limite que outra
+configuração afrouxa não é limite. Testes em `test_availability.py`.
 
 ---
 
