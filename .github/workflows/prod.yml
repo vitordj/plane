@@ -6,8 +6,11 @@
 # Where: Runs on GitHub Actions runners (ubuntu-latest).
 #
 # What happens:
-#   • Promote Images: Avoids recompiling code by pulling the validated :stage
-#     images from GHCR, tagging them as :latest, and pushing them back to GHCR.
+#   • Promote Images: Avoids recompiling code by promoting the images GHCR
+#     already holds — resolved by the digest built from the stage commit this
+#     release contains, not by the mutable :stage tag — and retagging them
+#     :latest and :v<version>. Promotion aborts before any retag if a service's
+#     :stage tag no longer points at the image built from that commit.
 #   • Deploy: Triggers Coolify production deployment, polls state until completion,
 #     and outputs step summaries or issues cancellations.
 #
@@ -38,9 +41,9 @@ concurrency:
   group: prod-${{ github.ref }}
   cancel-in-progress: false
 
+# Read-only by default; promote and sync-stage widen it themselves.
 permissions:
-  contents: write
-  packages: write
+  contents: read
 
 env:
   REGISTRY: ghcr.io
@@ -74,18 +77,115 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # ORCA CUSTOM FEATURE: production promotes by digest, not by the :stage
+      # tag. :stage is mutable — it points at whatever built last — so promoting
+      # it means production runs whatever happened to be pushed, not the commit
+      # that was reviewed in the release candidate. Here the workflow resolves
+      # the newest stage commit this release actually contains, finds the image
+      # built for it (services are built on a path filter, so the tag may sit a
+      # few commits back for a service that did not change), and refuses to
+      # promote if :stage has since drifted away from that image.
+      - name: Resolve Images To Promote
+        id: resolve
+        run: |
+          set -euo pipefail
+
+          git fetch --no-tags --quiet origin stage
+
+          # Newest stage commit that is an ancestor of this release commit,
+          # plus the ones behind it: a service unchanged in the tip commit was
+          # not rebuilt there and keeps the tag from its last real change.
+          ANCESTORS=()
+          for sha in $(git rev-list --max-count=300 origin/stage); do
+            if git merge-base --is-ancestor "$sha" HEAD; then
+              ANCESTORS+=("$sha")
+            fi
+            if [ "${#ANCESTORS[@]}" -ge 50 ]; then
+              break
+            fi
+          done
+
+          if [ "${#ANCESTORS[@]}" -eq 0 ]; then
+            echo "::error::No stage commit is an ancestor of this release commit; nothing can be promoted"
+            exit 1
+          fi
+          echo "Release contains stage commit ${ANCESTORS[0]}"
+
+          digest_of() {
+            docker manifest inspect -v "$1" 2>/dev/null \
+              | jq -r 'if type == "array" then .[0].Descriptor.digest else .Descriptor.digest end' \
+              | head -n 1
+          }
+
+          : > promotion-plan.txt
+          failed=0
+          for app in web admin api space live proxy; do
+            image="${REGISTRY}/${IMAGE_NAME}/${app}"
+
+            stage_digest="$(digest_of "${image}:stage" || true)"
+            if [ -z "$stage_digest" ] || [ "$stage_digest" = "null" ]; then
+              echo "::error::${app}:stage does not exist in the registry"
+              failed=1
+              continue
+            fi
+
+            built_sha=""
+            built_digest=""
+            for sha in "${ANCESTORS[@]}"; do
+              candidate="$(digest_of "${image}:sha-${sha}" || true)"
+              if [ -n "$candidate" ] && [ "$candidate" != "null" ]; then
+                built_sha="$sha"
+                built_digest="$candidate"
+                break
+              fi
+            done
+
+            if [ -z "$built_digest" ]; then
+              echo "::error::${app} has no :sha-<commit> image in the promoted history; it did not pass stage CI"
+              failed=1
+              continue
+            fi
+
+            if [ "$built_digest" != "$stage_digest" ]; then
+              echo "::error::${app}:stage ($stage_digest) is not the image built for ${built_sha} ($built_digest); staging moved after the release candidate"
+              failed=1
+              continue
+            fi
+
+            echo "${app} ${built_digest} ${built_sha}" >> promotion-plan.txt
+            echo "${app}: ${built_digest} (built from ${built_sha})"
+          done
+
+          # Every service is verified before the first retag: a partial
+          # promotion would leave production running two different releases.
+          if [ "$failed" -ne 0 ]; then
+            echo "::error::Refusing to promote; nothing has been retagged"
+            exit 1
+          fi
+
       - name: Promote Docker Images
         run: |
-          for app in web admin api space live proxy; do
-            echo "Promoting ${app} image..."
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:stage
-            docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:stage ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:latest
-            docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:stage ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:${{ env.VERSION }}
-            docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:stage ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:v${{ env.VERSION }}
-            docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:latest
-            docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:${{ env.VERSION }}
-            docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:v${{ env.VERSION }}
-          done
+          set -euo pipefail
+
+          while read -r app digest sha; do
+            image="${REGISTRY}/${IMAGE_NAME}/${app}"
+            echo "Promoting ${app} from ${digest} (stage commit ${sha})..."
+            docker pull "${image}@${digest}"
+            for tag in latest "${VERSION}" "v${VERSION}"; do
+              docker tag "${image}@${digest}" "${image}:${tag}"
+              docker push "${image}:${tag}"
+            done
+          done < promotion-plan.txt
+
+          {
+            echo "## Promoted images"
+            echo ""
+            echo "| Service | Digest | Stage commit |"
+            echo "|---|---|---|"
+            while read -r app digest sha; do
+              echo "| ${app} | \`${digest}\` | \`${sha:0:7}\` |"
+            done < promotion-plan.txt
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Update GitHub Releases with Official Container Artifacts
         env:
@@ -103,12 +203,43 @@ jobs:
             gh release edit "$TAG" --notes "$COMBINED_NOTES" || true
           fi
 
+      # The digests are the record of what production is running: without them
+      # a rollback has to guess which image the previous release used.
+      - name: Record Promoted Digests In Release Notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          CLEAN_VER="${VERSION#v}"
+          TAG="v${CLEAN_VER}"
+
+          NOTES=$(gh release view "$TAG" --json body --jq '.body' 2>/dev/null || true)
+          if [ -z "$NOTES" ]; then
+            echo "No release ${TAG} to annotate yet."
+            exit 0
+          fi
+          if printf '%s' "$NOTES" | grep -q "Promoted image digests"; then
+            echo "Digests already recorded on ${TAG}."
+            exit 0
+          fi
+
+          TABLE=$(
+            printf '### 🔒 Promoted image digests\n\n| Service | Digest | Stage commit |\n|---|---|---|\n'
+            while read -r app digest sha; do
+              printf '| %s | `%s` | `%s` |\n' "$app" "$digest" "$sha"
+            done < promotion-plan.txt
+          )
+          gh release edit "$TAG" --notes "$(printf '%s\n\n---\n\n%s' "$TABLE" "$NOTES")"
+
   deploy:
     name: Deploy to Production (Coolify)
     needs: promote
     if: ${{ vars.COOLIFY_DEPLOY_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     environment: prod
+    permissions:
+      contents: read
     steps:
       - name: Trigger Coolify deploy
         id: deploy
