@@ -5,7 +5,10 @@
 	servers {
 		max_header_size 25MB
 		client_ip_headers X-Forwarded-For X-Real-IP
-		trusted_proxies static {$TRUSTED_PROXIES:0.0.0.0/0}
+		# ORCA CUSTOM FEATURE: no default range. An unset TRUSTED_PROXIES stops
+		# Caddy at boot instead of trusting every client's X-Forwarded-For,
+		# which would let anyone choose the IP the application sees.
+		trusted_proxies static {$TRUSTED_PROXIES}
 	}
 }
 

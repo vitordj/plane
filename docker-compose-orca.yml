@@ -314,6 +314,9 @@ services:
       FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT:-5242880}
       BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
       SITE_ADDRESS: :80
+      # Fail the deploy rather than trust every client's X-Forwarded-For: this
+      # stack always sits behind Coolify, whose network range belongs here.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:?TRUSTED_PROXIES is required - CIDR of the proxy in front of Plane}
     depends_on:
       - web
       - api

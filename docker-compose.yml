@@ -164,6 +164,9 @@ services:
     environment:
       FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT:-5242880}
       BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
+      # Caddy is the edge in this stack, so only loopback and the Docker bridge
+      # may set X-Forwarded-For. Behind another proxy, set TRUSTED_PROXIES to its range.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1/32,172.16.0.0/12}
     depends_on:
       - web
       - api

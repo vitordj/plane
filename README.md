@@ -38,6 +38,7 @@ Plane Orca is pre-configured for self-hosting on low-spec VPS instances (<3GB RA
 | Variable                                      | Required | Description                     | Default                                    |
 | :-------------------------------------------- | :------: | :------------------------------ | :----------------------------------------- |
 | `SECRET_KEY`                                  | **Yes**  | Django session cryptography key | _User-provided (64-char hex)_              |
+| `TRUSTED_PROXIES`                             | **Yes**  | CIDR of the proxy allowed to set `X-Forwarded-For` | _None — the proxy will not start without it_ |
 | `LIVE_SERVER_SECRET_KEY`                      | **Yes**  | WebSocket encryption key        | _User-provided (64-char hex)_              |
 | `DOMAIN_NAME`                                 |    No    | Public application domain       | Auto-resolved from `${SERVICE_FQDN_PROXY}` |
 | `POSTGRES_USER` / `POSTGRES_PASSWORD`         |    No    | PostgreSQL credentials          | `plane` / `plane123`                       |
