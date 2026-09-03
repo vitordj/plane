@@ -152,15 +152,101 @@ already active members of the workspace — a unit never sends invitations.
 
 ## Assignment
 
-A unit can be marked responsible for a work item. Because Plane requires an
-assignee to be a person who is an active project member, the engine turns that
-responsibility into a real assignee: it ranks the unit's members by open work
-across the unit's own live projects, least loaded first, breaking ties by
-whoever was assigned longest ago and then by user id.
+An area can be marked responsible for a work item. Because Plane assigns work
+to people — an assignee has to be an active project member — that
+responsibility has to become a person, and that is what the assignment service
+does. Everything that assigns goes through it: the app, the management
+commands, and (from Phase 1) the public API.
 
-Existing assignees are never replaced. The default mode assigns only when
-nobody holds the item; `mode=append` adds a unit member alongside the current
-ones. Triggering is manual in v1.
+**An area only owns work in the projects it covers.** Marking an area
+responsible for a work item in a project it is not linked to is refused: its
+members inherit project access from that link, so work routed anywhere else
+either has nobody eligible or lands on somebody who cannot see it.
+
+### Queue state
+
+Marking an area responsible and somebody executing the work are two different
+facts, and the work item carries both:
+
+| State | What it means |
+| --- | --- |
+| `queued` | The area owns it; nobody is executing it yet. `queue_reason` says whether it is waiting for a coordinator, waiting to be claimed, or newly arrived. |
+| `assigned` | Somebody is the **primary executor** — the one person answerable — and is a native assignee. |
+| `allocation_failed` | Automatic allocation ran and found nobody eligible. Different from `queued`: it usually means the area's membership or its project links are wrong, not that everybody is busy. |
+| `suspended` | A coordinator parked it. It is in nobody's queue until they resume it. |
+
+Other people can be on the work item as native assignees — collaborators. They
+carry no responsibility and no load: only the primary executor does.
+
+### Policies
+
+An area has one default policy, and may override it per project. Two levels,
+deliberately: enough to say "this area works manually, except in the onboarding
+project, where whoever is free takes it", and no more, because a third level is
+a rule nobody can predict the result of.
+
+| Mode | Who ends up with the work |
+| --- | --- |
+| `manual` | Nobody, until a coordinator assigns it. The default when an area has no policy at all. |
+| `self_claim` | Any eligible member of the area may take it. |
+| `least_loaded` | The service picks whoever currently carries the least open work. |
+| `explicit` | The caller named the person. Still checked for eligibility. |
+
+`allowed_modes` is what a caller may ask for. A request outside it is
+**refused, never quietly downgraded** — an automation that asked for automatic
+allocation and silently got a manual queue looks like it worked, and the work
+sits there.
+
+Automatic allocation counts open work as primary executions, workspace-wide
+first and then within the area, breaking ties by whoever was picked
+automatically longest ago and finally by user id, so the same inputs always
+produce the same choice. Concurrent automatic allocations in one area
+serialize, so two requests cannot read the same load and hand the same person
+both work items.
+
+### Decisions
+
+Every change of executor or queue state writes an `AssignmentDecision`: the
+policy that applied, its version, the ranking that was in front of the service
+(ids only, no names), who decided, and what it replaced. The question a
+coordinator asks about an automatic choice is "why them and not me?", and this
+is what answers it.
+
+Reassigning **keeps the previous executor on the work item** as a collaborator
+— they have context somebody will want — and so does returning work to the
+queue. Clearing the area removes the link and records the event, and leaves
+the native assignees alone: the work item goes back to being an ordinary Plane
+work item, with the same people on it.
+
+### Auditing
+
+Nothing outside the service maintains those invariants, and things drift:
+somebody clears an assignee in the app, a person leaves a project, an area's
+project links change. The audit reports it:
+
+```bash
+# Report (default; writes nothing)
+python manage.py audit_organizational_routing --workspace <slug>
+
+# Return work with an unusable executor to the queue
+python manage.py audit_organizational_routing --workspace <slug> --write
+```
+
+It checks four things: an executor who is no longer an assignee, an executor
+who is no longer able to do the work, something queued that somebody is
+already assigned to, and a policy whose default mode is not in its own allowed
+list. `--write` repairs only the first two — the third may be a collaborator
+somebody added on purpose, and taking that away would be worse than the drift.
+Worth running daily in report mode.
+
+### What changed from v1
+
+The first version created a native assignee and nothing else: no queue state,
+no record of why that person, and no way to tell "nobody was available" from
+"nobody has looked at it yet". Its `mode=fill_empty` and `mode=append` are
+still accepted by the assign endpoint and both now mean automatic allocation —
+`append` is what the service always does, since it never replaces an existing
+assignee. They are deprecated and go away in Phase 2.
 
 ## Directory sync
 
