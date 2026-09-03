@@ -170,19 +170,30 @@ Once you merge the PR into the **`stage`** branch, the **`stage.yml`** workflow 
 
 ### Phase 4: Release Candidate & Production Promotion
 
-When staging is verified and you are ready to release to production:
+Step by step, with the commands and the failure modes:
+[docs/release-runbook.md](./docs/release-runbook.md). In outline, and note that
+the deploy happens on the **second** merge, not the first:
 
-1. **Open the PR**: Create a PR from **`stage`** targeting the **`prod`** branch.
-2. **PR Creation**: Do **NOT** edit the title or description when creating. Just click **"Create pull request"**.
-3. **Auto-Templating & PR Naming**: The automation workflow will:
-   - Label the PR with `release-candidate`.
-   - Inspect `package.json`, read the new version number, and rename the PR title to: `orca-release: Promote Release Candidate v[Version]`.
-   - Replace the description with the **`release_candidate.md`** QA checklist.
-4. **Verify release**: Reviewers verify staging builds, check off database migration safety, confirm production environment variables are updated, and sign off on the QA items.
-5. **Production Deploy**: Merging the PR into **`prod`** triggers the **`prod.yml`** workflow:
-   - Pulls the built `:stage` images from GHCR.
-   - Retags all images to `:latest` and the release version tag `:[Version]`.
-   - Pushes them to GHCR and triggers Coolify to redeploy the production server.
+1. **The release candidate opens itself**: every push to `stage` runs the
+   `Ensure Release Candidate PR` job, which opens (or reuses) a PR from
+   **`stage`** to **`prod`**, titles it `release: Promote Release Candidate from
+   v[Version]`, applies the **`release_candidate.md`** checklist and assigns it.
+   Open one by hand only if that job is disabled.
+2. **Verify the release**: reviewers confirm the staging build, read the
+   database migrations for safety, and make sure any new environment variable
+   already exists in Coolify production.
+3. **Merge the candidate into `prod`**: this deploys nothing. It runs
+   **Release Please**, which opens a second PR against `prod` carrying the
+   version bump and the changelog.
+4. **Squash-merge that release PR**: this is the deploy. Its title
+   (`chore(prod): release [Version]`) becomes the commit message, and
+   `prod.yml` promotes only on that message — an ordinary merge commit reads
+   "Merge pull request #N …" and nothing is promoted.
+5. **`prod.yml` then**: resolves each service's image by the digest built from
+   the `stage` commit this release contains (refusing, before any retag, if
+   `:stage` has since drifted), retags those digests `:latest`, `:[Version]`
+   and `:v[Version]`, records them in the GitHub Release, redeploys Coolify,
+   and merges `prod` back into `stage`.
 
 ---
 

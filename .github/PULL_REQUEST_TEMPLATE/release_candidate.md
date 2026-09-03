@@ -18,9 +18,17 @@ This pull request promotes tested code changes from the **`stage`** branch to th
 
 ---
 
-> [!NOTE]
-> **Post-Merge Automation:**
+> [!IMPORTANT]
+> **Merging this PR does not deploy anything.** The release happens in two
+> steps, and this is the first one. See [docs/release-runbook.md](../../docs/release-runbook.md).
 >
-> 1. Merging this PR triggers the `prod.yml` workflow, promoting staging Docker images to `latest` and triggering the production deployment in Coolify.
-> 2. `release-please` will automatically trigger to generate the correct version tag and changelog entries.
-> 3. Staging (`stage`) will be automatically synced with `prod` via background GitHub Actions.
+> 1. Merging this PR into `prod` runs `release-please`, which opens a **second**
+>    PR against `prod` with the version bump and the changelog.
+> 2. **Squash-merging that release PR** is what deploys: its title
+>    (`chore(prod): release <version>`) becomes the commit message, and
+>    `prod.yml` promotes only on that message. An ordinary merge commit says
+>    "Merge pull request #N …" and nothing is promoted.
+> 3. Promotion resolves each image by the digest built from the `stage` commit
+>    this release contains, and refuses — before retagging anything — if
+>    `:stage` has drifted from it.
+> 4. Coolify then redeploys production, and `prod` is merged back into `stage`.
