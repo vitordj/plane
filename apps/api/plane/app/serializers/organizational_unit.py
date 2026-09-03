@@ -15,6 +15,8 @@ from plane.db.models import (
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
 )
+
+from plane.app.services.orca.coverage import covered_project_ids
 from plane.db.models.organizational_unit import OrganizationalUnitMemberRole
 
 from .base import BaseSerializer
@@ -25,6 +27,24 @@ class OrganizationalUnitSerializer(BaseSerializer):
 
     member_count = serializers.IntegerField(read_only=True)
     project_count = serializers.IntegerField(read_only=True)
+    project_ids = serializers.SerializerMethodField()
+
+    def get_project_ids(self, obj):
+        """
+        The projects this area may own work in.
+
+        @description The interface needs it to offer only the areas that cover
+        the work item's project — the same rule the API enforces, so the
+        dropdown cannot offer something the save will reject. Reads the
+        prefetched links when the view provided them (``covered_links``) and
+        falls back to a query for single-object responses.
+        @param obj: The organizational unit.
+        @returns: List of project ids as strings.
+        """
+        links = getattr(obj, "covered_links", None)
+        if links is not None:
+            return [str(link.project_id) for link in links]
+        return [str(project_id) for project_id in covered_project_ids(obj)]
 
     class Meta:
         model = OrganizationalUnit
@@ -38,6 +58,7 @@ class OrganizationalUnitSerializer(BaseSerializer):
             "workspace",
             "member_count",
             "project_count",
+            "project_ids",
             "sync_source",
             "external_id",
             "directory_synced_at",

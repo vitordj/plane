@@ -680,6 +680,7 @@
           "work_item_not_found": "その作業項目は存在しません。",
           "work_item_has_no_unit": "この作業項目を担当するエリアがありません。",
           "invalid_assignment_mode": "それは割り当てモードではありません。",
+          "unit_not_covering_project": "そのエリアは、この作業アイテムのプロジェクトを担当していません。",
           "directory_workspace_not_found": "そのワークスペースは存在しません。",
           "directory_token_required": "ディレクトリからのプロビジョニングを有効にする前に、SCIM トークンを発行してください。"
         }

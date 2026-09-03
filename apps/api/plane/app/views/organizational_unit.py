@@ -14,7 +14,7 @@ at once, so v1 keeps it centralized. Unit leads have read access only.
 # Django imports
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.http import Http404
 from django.utils.text import slugify
 
@@ -38,6 +38,7 @@ from plane.app.services.orca import (
     reconcile_membership,
     reconcile_unit,
     reconcile_unit_project,
+    unit_covers_project,
     workload_snapshot,
 )
 from plane.db.models import (
@@ -119,6 +120,15 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
             .annotate(member_count=Count("memberships", filter=Q(memberships__is_active=True), distinct=True))
             .annotate(project_count=Count("unit_projects", distinct=True))
             .select_related("workspace")
+            # Feeds the serializer's project_ids in one query instead of one
+            # per unit; archived projects are dropped here, as coverage does.
+            .prefetch_related(
+                Prefetch(
+                    "unit_projects",
+                    queryset=OrganizationalUnitProject.objects.filter(project__archived_at__isnull=True),
+                    to_attr="covered_links",
+                )
+            )
         )
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
@@ -532,6 +542,12 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
         if unit is None:
             return orca_error("ORG_UNIT_NOT_IN_WORKSPACE")
 
+        # An area only owns work in the projects it covers: its members inherit
+        # project access from that link, so work routed anywhere else has
+        # nobody eligible to take it — or lands on someone who cannot see it.
+        if not unit_covers_project(unit, issue.project_id):
+            return orca_error("ORG_UNIT_NOT_COVERING_PROJECT")
+
         link, _ = IssueOrganizationalUnit.objects.get_or_create(
             issue=issue,
             defaults={
@@ -579,6 +595,9 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
 
         if unit is None:
             return orca_error("ORG_WORK_ITEM_HAS_NO_UNIT")
+
+        if not unit_covers_project(unit, issue.project_id):
+            return orca_error("ORG_UNIT_NOT_COVERING_PROJECT")
 
         mode = request.data.get("mode", MODE_FILL_EMPTY)
         if mode not in (MODE_FILL_EMPTY, MODE_APPEND):

@@ -680,6 +680,7 @@
           "work_item_not_found": "該工作事項已不存在。",
           "work_item_has_no_unit": "沒有區域負責此工作事項。",
           "invalid_assignment_mode": "這不是一種指派模式。",
+          "unit_not_covering_project": "該領域未涵蓋此工作項目所屬的專案。",
           "directory_workspace_not_found": "該工作區已不存在。",
           "directory_token_required": "請先簽發 SCIM 權杖，再開啟目錄佈建。"
         }

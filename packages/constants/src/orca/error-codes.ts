@@ -35,6 +35,7 @@ export const ORCA_ERROR_CODE_KEYS: Record<number, string> = {
   4911: "workspace_settings.settings.organizational_units.errors.work_item_not_found",
   4912: "workspace_settings.settings.organizational_units.errors.work_item_has_no_unit",
   4913: "workspace_settings.settings.organizational_units.errors.invalid_assignment_mode",
+  4916: "workspace_settings.settings.organizational_units.errors.unit_not_covering_project",
   // directory provisioning
   4914: "workspace_settings.settings.organizational_units.errors.directory_workspace_not_found",
   4915: "workspace_settings.settings.organizational_units.errors.directory_token_required",

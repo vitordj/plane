@@ -680,6 +680,7 @@
           "work_item_not_found": "Cet élément de travail n’existe plus.",
           "work_item_has_no_unit": "Aucune zone n’est responsable de cet élément de travail.",
           "invalid_assignment_mode": "Ce n’est pas un mode d’attribution.",
+          "unit_not_covering_project": "Cette zone ne couvre pas le projet de cet élément de travail.",
           "directory_workspace_not_found": "Cet espace de travail n’existe plus.",
           "directory_token_required": "Émettez un jeton SCIM avant d’activer le provisionnement par annuaire."
         }

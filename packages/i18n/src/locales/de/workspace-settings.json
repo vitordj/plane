@@ -680,6 +680,7 @@
           "work_item_not_found": "Dieses Arbeitselement gibt es nicht mehr.",
           "work_item_has_no_unit": "Kein Bereich ist für dieses Arbeitselement zuständig.",
           "invalid_assignment_mode": "Das ist kein Zuweisungsmodus.",
+          "unit_not_covering_project": "Dieser Bereich deckt das Projekt dieses Arbeitselements nicht ab.",
           "directory_workspace_not_found": "Diesen Arbeitsbereich gibt es nicht mehr.",
           "directory_token_required": "Erst ein SCIM-Token ausstellen, dann die Verzeichnisbereitstellung einschalten."
         }

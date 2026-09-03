@@ -680,6 +680,7 @@
           "work_item_not_found": "Această activitate nu mai există.",
           "work_item_has_no_unit": "Nicio zonă nu răspunde de această activitate.",
           "invalid_assignment_mode": "Acesta nu este un mod de atribuire.",
+          "unit_not_covering_project": "Acea zonă nu acoperă proiectul acestui element de lucru.",
           "directory_workspace_not_found": "Acest spațiu de lucru nu mai există.",
           "directory_token_required": "Emiteți un token SCIM înainte de a activa provizionarea din director."
         }

@@ -37,6 +37,11 @@ export interface IOrganizationalUnit {
   workspace: string;
   member_count: number;
   project_count: number;
+  /**
+   * Projects this unit covers, and therefore may own work in. Archived
+   * projects are left out, exactly as the API's coverage rule does.
+   */
+  project_ids: string[];
   /** Whether the unit was created by hand or pushed by the directory. */
   sync_source: TDirectorySyncSource;
   /** The directory group this unit mirrors; empty when it is not bound. */

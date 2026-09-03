@@ -28,10 +28,11 @@ from plane.db.models import (
     IssueAssignee,
     OrganizationalUnit,
     OrganizationalUnitMembership,
-    OrganizationalUnitProject,
     ProjectMember,
     StateGroup,
 )
+
+from .coverage import covered_project_ids, unit_covers_project
 
 # Work that no longer counts toward someone's load.
 CLOSED_STATE_GROUPS = [StateGroup.COMPLETED.value, StateGroup.CANCELLED.value]
@@ -73,6 +74,13 @@ def candidates_for(unit: OrganizationalUnit, project_id) -> list[AssignmentCandi
     @returns: Candidates ordered best-first; empty when the unit has nobody
         eligible on that project.
     """
+    # An area that does not cover the project has no candidates for it. This
+    # used to be papered over by adding the project to the area's own list,
+    # which handed the work to someone with no access to it — the defect this
+    # guard exists for (invariant I2).
+    if not unit_covers_project(unit, project_id):
+        return []
+
     member_user_ids = list(
         OrganizationalUnitMembership.objects.filter(
             organizational_unit=unit,
@@ -96,14 +104,7 @@ def candidates_for(unit: OrganizationalUnit, project_id) -> list[AssignmentCandi
         return []
 
     # Load is measured over the unit's live projects only.
-    unit_project_ids = list(
-        OrganizationalUnitProject.objects.filter(
-            organizational_unit=unit,
-            project__archived_at__isnull=True,
-        ).values_list("project_id", flat=True)
-    )
-    if project_id not in unit_project_ids:
-        unit_project_ids.append(project_id)
+    unit_project_ids = covered_project_ids(unit)
 
     load = (
         IssueAssignee.objects.filter(
@@ -194,11 +195,7 @@ def workload_snapshot(unit: OrganizationalUnit) -> list[dict]:
     @description Backs the workload view in the UI and makes the engine's
     ranking inspectable before anyone relies on it.
     """
-    unit_project_ids = list(
-        OrganizationalUnitProject.objects.filter(
-            organizational_unit=unit, project__archived_at__isnull=True
-        ).values_list("project_id", flat=True)
-    )
+    unit_project_ids = covered_project_ids(unit)
     memberships = OrganizationalUnitMembership.objects.filter(
         organizational_unit=unit, is_active=True, workspace_member__is_active=True
     ).select_related("workspace_member", "workspace_member__member")

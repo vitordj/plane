@@ -60,17 +60,18 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
     };
   }, [workspaceSlug, projectId, issueId, store]);
 
-  // Only areas that actually cover this project can own work in it.
+  // Only areas that actually cover this project can own work in it: the API
+  // refuses the rest, so offering them would only produce a failed save.
   const options = useMemo(
     () =>
       store.units
-        .filter((unit) => unit.is_active)
+        .filter((unit) => unit.is_active && (unit.project_ids ?? []).includes(projectId))
         .map((unit) => ({
           value: unit.id,
           query: unit.name,
           content: <span className="truncate">{unit.name}</span>,
         })),
-    [store.units]
+    [store.units, projectId]
   );
 
   const handleChange = async (unitId: string) => {

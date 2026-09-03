@@ -680,6 +680,7 @@
           "work_item_not_found": "Ten element pracy już nie istnieje.",
           "work_item_has_no_unit": "Za ten element pracy nie odpowiada żaden obszar.",
           "invalid_assignment_mode": "To nie jest tryb przydzielania.",
+          "unit_not_covering_project": "Ten obszar nie obejmuje projektu tego elementu pracy.",
           "directory_workspace_not_found": "Ta przestrzeń robocza już nie istnieje.",
           "directory_token_required": "Wydaj token SCIM, zanim włączysz udostępnianie z katalogu."
         }

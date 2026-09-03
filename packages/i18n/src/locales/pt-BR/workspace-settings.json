@@ -456,6 +456,7 @@
           "work_item_not_found": "Esse item de trabalho não existe mais.",
           "work_item_has_no_unit": "Nenhuma área é responsável por este item de trabalho.",
           "invalid_assignment_mode": "Esse não é um modo de atribuição.",
+          "unit_not_covering_project": "Essa área não atende ao projeto deste item de trabalho.",
           "directory_workspace_not_found": "Esse espaço de trabalho não existe mais.",
           "directory_token_required": "Emita um token SCIM antes de ativar o provisionamento por diretório."
         }

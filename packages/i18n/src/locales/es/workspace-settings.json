@@ -680,6 +680,7 @@
           "work_item_not_found": "Ese elemento de trabajo ya no existe.",
           "work_item_has_no_unit": "Ningún área es responsable de este elemento de trabajo.",
           "invalid_assignment_mode": "Ese no es un modo de asignación.",
+          "unit_not_covering_project": "Esa área no cubre el proyecto de este elemento de trabajo.",
           "directory_workspace_not_found": "Ese espacio de trabajo ya no existe.",
           "directory_token_required": "Emite un token SCIM antes de activar el aprovisionamiento por directorio."
         }
