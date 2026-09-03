@@ -254,7 +254,7 @@ módulo muda. Chamado por `assignment_service.py`.
 
 ---
 
-## D0.9 — Fechar a matriz de testes da fase `[ ]`
+## D0.9 — Fechar a matriz de testes da fase `[x]`
 
 Percorrer RFC §10 linhas: I2 cobertura, Resolução de política, Ranking,
 Estados, Decisões, Concorrência, Encaminhamento, Kill switches, Permissões
@@ -291,14 +291,24 @@ concorrência" com o padrão usado.
 
 Data do gate: ____
 
-### Testes por invariante (preencher)
+### Testes por invariante
+
+Arquivos em `apps/api/plane/tests/unit/orca/`.
 
 | Invariante | Testes |
 | --- | --- |
-| I1 | |
-| I2 | |
-| I3 | |
-| I4 | |
-| I5 | |
-| I6 | |
-| I7 | |
+| I1 | `test_routing_invariants.py::test_i1_taking_responsibility_twice_leaves_one_live_link`, `::test_i1_clearing_and_setting_again_works` |
+| I2 | `test_issue_unit_coverage.py::test_i2_an_area_covering_the_project_is_accepted`, `::test_i2_unit_not_covering_project_rejected`, `test_assignment_service.py::test_i2_an_area_that_does_not_cover_the_project_is_refused` |
+| I3 | `test_routing_invariants.py::test_i3_an_assigned_item_has_an_executor_who_is_an_assignee`, `::test_i3_a_queued_item_has_no_executor`, `test_routing_state.py::TestTheStateConstraints` (os dois CHECKs) |
+| I4 | `test_assignment_service.py::test_i4_an_explicit_executor_outside_the_area_is_refused`, `test_audit_routing_command.py::test_an_executor_who_left_the_project_is_reported` |
+| I5 | `test_assignment_service.py::test_i5_every_allocation_writes_one_decision`, `::test_the_snapshot_records_who_was_considered` |
+| I6 | `test_assignment_service.py::test_i6_a_transfer_records_where_it_came_from`, `::test_taking_responsibility_the_first_time_records_an_event` |
+| I7 | `test_assignment_service.py::test_i7_a_disallowed_mode_is_refused_not_downgraded` |
+| I10 | `test_assignment_service.py::test_i10_assignment_never_writes_project_membership` |
+
+Kill switch: `test_routing_invariants.py::TestTheKillSwitch` (rotas de área,
+de work item e de política respondem 404 com `ORCA_ORG_UNITS_ENABLED=0`).
+
+Concorrência: `test_assignment_concurrency.py` — 20 alocações → 5/5/5/5,
+10 claims → 1 vencedor, 2 reatribuições com o mesmo `expected_decision_id` →
+1 vencedor e 1 `DecisionStale`.
