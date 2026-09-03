@@ -150,6 +150,8 @@ export enum EAuthErrorCodes {
   // provider upstream adds later cannot collide.
   ENTRA_NOT_CONFIGURED = "5113",
   ENTRA_OAUTH_PROVIDER_ERROR = "5126",
+  ENTRA_ID_TOKEN_INVALID = "5127",
+  ENTRA_NONCE_MISMATCH = "5128",
   // Reset Password
   INVALID_PASSWORD_TOKEN = "5125",
   EXPIRED_PASSWORD_TOKEN = "5130",

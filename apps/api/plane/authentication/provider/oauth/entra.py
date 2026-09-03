@@ -20,12 +20,16 @@ this provider at the multi-tenant ``common`` endpoint would let anyone with
 their own Azure tenant assert any address. Pinning a tenant id — and verifying
 the ``tid`` claim of the returned token against it — is what makes the asserted
 email trustworthy, so the configuration deliberately has no ``common`` default.
+
+That argument only holds if the ``tid`` claim itself can be trusted, which is
+why the id token is verified against Microsoft's published signing key before
+any claim is read (``plane.authentication.utils.entra_id_token``), and why the
+flow carries a nonce that ties the token to the browser that started it.
 """
 
 # Python imports
-import base64
-import json
 import os
+import uuid
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
@@ -37,32 +41,16 @@ from plane.authentication.adapter.error import (
     AuthenticationException,
 )
 from plane.authentication.adapter.oauth import OauthAdapter
+from plane.authentication.utils.entra_id_token import verify_id_token
 from plane.license.utils.instance_value import get_configuration_value
 
 # Tenant placeholders Microsoft accepts that defeat the guarantee above.
 MULTI_TENANT_AUTHORITIES = {"common", "organizations", "consumers"}
 
 
-def decode_id_token_claims(id_token: str) -> dict:
-    """
-    Read the claims of an OIDC id token without verifying its signature.
-
-    @description Safe in this flow, and only in this flow: the token was
-    fetched by Plane itself from Microsoft's token endpoint over TLS in direct
-    response to the authorization code, which OpenID Connect Core §3.1.3.7
-    accepts as sufficient. The claims are used for one purpose — confirming the
-    token came from the configured tenant — never to authenticate the user.
-
-    @param id_token: The compact JWS from the token response.
-    @returns: The decoded payload, or an empty dict when it cannot be read.
-    """
-    try:
-        payload = id_token.split(".")[1]
-        # JWT uses unpadded base64url; restore the padding before decoding.
-        payload += "=" * (-len(payload) % 4)
-        return json.loads(base64.urlsafe_b64decode(payload).decode("utf-8"))
-    except (AttributeError, IndexError, ValueError, TypeError, UnicodeDecodeError):
-        return {}
+# Where the nonce for an in-flight sign-in lives, alongside the ``state`` the
+# views already keep. Single use: the callback consumes it.
+NONCE_SESSION_KEY = "entra_nonce"
 
 
 class EntraOAuthProvider(OauthAdapter):
@@ -120,6 +108,17 @@ class EntraOAuthProvider(OauthAdapter):
             "response_mode": "query",
             "state": state,
         }
+
+        # A nonce is minted when the sign-in starts and stored next to `state`;
+        # Microsoft echoes it inside the id token, and the callback refuses a
+        # token that carries a different one. `state` protects the redirect,
+        # the nonce protects the token: without it a token minted for another
+        # session of the same tenant would pass every other check.
+        self.nonce = None
+        if code is None:
+            self.nonce = uuid.uuid4().hex
+            request.session[NONCE_SESSION_KEY] = self.nonce
+            url_params["nonce"] = self.nonce
         auth_url = f"https://login.microsoftonline.com/{self.tenant_id}/oauth2/v2.0/authorize?{urlencode(url_params)}"
 
         super().__init__(
@@ -149,7 +148,14 @@ class EntraOAuthProvider(OauthAdapter):
         token_response = self.get_user_token(data=data, headers=headers)
 
         id_token = token_response.get("id_token", "")
-        self.id_token_claims = decode_id_token_claims(id_token)
+        # Single use: whether the token verifies or not, this nonce is spent.
+        expected_nonce = self.request.session.pop(NONCE_SESSION_KEY, None)
+        self.id_token_claims = verify_id_token(
+            id_token,
+            tenant_id=self.tenant_id,
+            audience=self.client_id,
+            expected_nonce=expected_nonce,
+        )
         self.verify_tenant()
 
         super().set_token_data(

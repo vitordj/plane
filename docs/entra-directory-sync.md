@@ -50,8 +50,17 @@ whose `mail` is `ceo@yourcompany.com`, and sign in as them. So:
 
 - a specific tenant id is **required**, and `common`, `organizations` and
   `consumers` are rejected outright;
+- the id token is **verified** before any claim is read — Microsoft's published
+  signing key for the tenant, the audience this registration owns, the issuer
+  the tenant mints under, and the token's lifetime — so the `tid` claim below
+  is something Microsoft said rather than something the response merely
+  contained;
 - every returned token's `tid` claim is checked against it, and a mismatch
   fails the sign-in;
+- each sign-in carries a **nonce**, minted when it starts and stored with the
+  session, which the token has to echo back: that ties the token to the browser
+  that began the flow, so a token minted for a different session of the same
+  tenant is refused;
 - guest accounts are refused, because a guest's UPN
   (`someone_other.com#EXT#@tenant.onmicrosoft.com`) is an internal identifier
   rather than a mailbox. Guests who need Plane should get a mailbox in your
@@ -184,6 +193,22 @@ unauthenticated caller cannot use the response to discover which workspaces
 exist. Anything other than `200` or `401` is a routing or proxy problem: the
 SCIM paths are capitalized and carry **no trailing slash**, and a proxy that
 rewrites either will break provisioning.
+
+**Sign-in fails with "could not be verified" (error 5127).** The id token did
+not pass verification. In order of likelihood: the `ENTRA_CLIENT_ID` in Plane is
+not the application the tenant issued the token for; the tenant id is wrong;
+the server's clock has drifted far enough that `exp`/`nbf` do not hold; or the
+instance cannot reach `https://login.microsoftonline.com/<tenant>/discovery/v2.0/keys`
+to fetch the signing keys (check egress from the API container). The response
+deliberately does not say which — the API log records it.
+
+**Sign-in fails with "did not match this browser" (error 5128).** The nonce
+stored when the sign-in started is missing or different. Usual causes: the
+person started the sign-in in one browser and finished it in another; the
+session cookie was dropped between the two requests (a proxy stripping cookies,
+or `SameSite` blocking the redirect back); or the sign-in was resumed from an
+old tab after a deploy. Starting again from the same browser is the fix; if it
+recurs for everyone, look at session cookie handling in the proxy.
 
 **Entra provisioned people but they got no access.** Check, in order: the area
 has projects linked; the people are in the unresolved report (then they are not

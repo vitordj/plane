@@ -5,31 +5,88 @@
 """
 Tests for the Microsoft Entra ID sign-in provider.
 
-The provider's security rests on two decisions, and both are tested here
-because getting either wrong is an account-takeover path rather than a bug:
-the tenant is pinned and verified against the token's ``tid`` claim, and the
-email is taken only from attributes the tenant actually vouches for.
+The provider's security rests on decisions that are account-takeover paths
+rather than bugs when they go wrong, so each is tested here: the id token is
+verified against Microsoft's signing key before any claim is read, the tenant
+is pinned and checked against the token's ``tid``, the nonce ties the token to
+the browser that began the sign-in, and the email is taken only from
+attributes the tenant actually vouches for.
 """
 
-import base64
-import json
+import time
 
+import jwt
 import pytest
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 from plane.authentication.adapter.error import AuthenticationException
 from plane.authentication.provider.oauth.entra import (
     MULTI_TENANT_AUTHORITIES,
     EntraOAuthProvider,
-    decode_id_token_claims,
 )
+from plane.authentication.utils import entra_id_token
+from plane.authentication.utils.entra_id_token import verify_id_token
 
 TENANT = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+CLIENT_ID = "d1c2b3a4-0000-4444-8888-abcdefabcdef"
+ISSUER = f"https://login.microsoftonline.com/{TENANT}/v2.0"
+NONCE = "3f7c1c0a9b2e4d5f8a1b2c3d4e5f6071"
 
 
-def make_id_token(claims: dict) -> str:
-    """Build a token whose payload decodes to the given claims."""
-    payload = base64.urlsafe_b64encode(json.dumps(claims).encode("utf-8")).decode("utf-8").rstrip("=")
-    return f"header.{payload}.signature"
+@pytest.fixture(scope="module")
+def signing_key():
+    """A throwaway RSA key standing in for Microsoft's."""
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
+
+
+@pytest.fixture(scope="module")
+def other_key():
+    """A second key, for the token nobody should accept."""
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
+
+
+@pytest.fixture
+def as_microsoft(monkeypatch, signing_key):
+    """
+    Answer key lookups with the test key instead of reaching Microsoft.
+
+    @description The real client fetches the tenant's JWKS over the network.
+    What is under test is the verification, not the fetch, so the lookup is
+    replaced and the token really is signed and really is verified.
+    """
+
+    class StubKey:
+        key = signing_key.public_key()
+
+    class StubClient:
+        def get_signing_key_from_jwt(self, token):
+            return StubKey()
+
+    monkeypatch.setattr(entra_id_token, "jwks_client", lambda tenant_id: StubClient())
+
+
+def claims(**overrides):
+    now = int(time.time())
+    payload = {
+        "aud": CLIENT_ID,
+        "iss": ISSUER,
+        "iat": now,
+        "nbf": now,
+        "exp": now + 600,
+        "tid": TENANT,
+        "oid": "9c6f2e11-1111-2222-3333-444455556666",
+        "nonce": NONCE,
+    }
+    payload.update(overrides)
+    return payload
+
+
+def make_id_token(payload, key):
+    return jwt.encode(payload, key, algorithm="RS256")
+
+
+def verify(token, expected_nonce=NONCE):
+    return verify_id_token(token, tenant_id=TENANT, audience=CLIENT_ID, expected_nonce=expected_nonce)
 
 
 class StubProvider(EntraOAuthProvider):
@@ -47,17 +104,88 @@ class StubProvider(EntraOAuthProvider):
 
 
 @pytest.mark.unit
-class TestIdTokenClaims:
-    def test_claims_are_decoded_from_an_unpadded_payload(self):
-        """JWT strips base64 padding; decoding has to put it back."""
-        token = make_id_token({"tid": TENANT, "oid": "abc"})
+@pytest.mark.usefixtures("as_microsoft")
+class TestIdTokenVerification:
+    """
+    Each case here was accepted before this verification existed: the payload
+    was read straight off the token with no signature check at all.
+    """
 
-        assert decode_id_token_claims(token)["tid"] == TENANT
+    def test_a_well_formed_token_is_accepted(self, signing_key):
+        verified = verify(make_id_token(claims(), signing_key))
 
-    @pytest.mark.parametrize("token", ["", "not-a-token", "a.!!!.c", None])
-    def test_a_malformed_token_decodes_to_nothing_rather_than_raising(self, token):
-        """A crash here would surface as a 500 in the middle of a sign-in."""
-        assert decode_id_token_claims(token) == {}
+        assert verified["tid"] == TENANT
+        assert verified["oid"] == "9c6f2e11-1111-2222-3333-444455556666"
+
+    def test_a_token_signed_by_someone_else_is_refused(self, other_key):
+        """The forged token: right claims, wrong key."""
+        with pytest.raises(AuthenticationException) as exc:
+            verify(make_id_token(claims(), other_key))
+
+        assert exc.value.error_code == 5127
+
+    def test_a_token_for_another_audience_is_refused(self, signing_key):
+        """A token minted for a different app registration is not ours to trust."""
+        with pytest.raises(AuthenticationException):
+            verify(make_id_token(claims(aud="00000000-0000-0000-0000-000000000000"), signing_key))
+
+    def test_a_token_from_another_issuer_is_refused(self, signing_key):
+        with pytest.raises(AuthenticationException):
+            verify(make_id_token(claims(iss="https://login.microsoftonline.com/somewhere-else/v2.0"), signing_key))
+
+    def test_an_expired_token_is_refused(self, signing_key):
+        past = int(time.time()) - 3600
+        with pytest.raises(AuthenticationException):
+            verify(make_id_token(claims(iat=past, nbf=past, exp=past + 60), signing_key))
+
+    def test_a_token_that_is_not_valid_yet_is_refused(self, signing_key):
+        future = int(time.time()) + 3600
+        with pytest.raises(AuthenticationException):
+            verify(make_id_token(claims(nbf=future, exp=future + 600), signing_key))
+
+    def test_a_token_missing_the_tenant_claim_is_refused(self, signing_key):
+        payload = claims()
+        payload.pop("tid")
+        with pytest.raises(AuthenticationException):
+            verify(make_id_token(payload, signing_key))
+
+    @pytest.mark.parametrize("token", ["", "not-a-token", "a.b.c", None])
+    def test_a_malformed_token_is_refused_rather_than_crashing(self, token):
+        """A traceback here would surface as a 500 in the middle of a sign-in."""
+        with pytest.raises(AuthenticationException):
+            verify(token)
+
+
+@pytest.mark.unit
+@pytest.mark.usefixtures("as_microsoft")
+class TestNonce:
+    def test_the_matching_nonce_is_accepted(self, signing_key):
+        assert verify(make_id_token(claims(), signing_key))["nonce"] == NONCE
+
+    def test_a_different_nonce_is_refused(self, signing_key):
+        """A token minted for another sign-in of the same tenant."""
+        with pytest.raises(AuthenticationException) as exc:
+            verify(make_id_token(claims(nonce="0000"), signing_key))
+
+        assert exc.value.error_code == 5128
+
+    def test_a_token_without_a_nonce_is_refused(self, signing_key):
+        payload = claims()
+        payload.pop("nonce")
+        with pytest.raises(AuthenticationException) as exc:
+            verify(make_id_token(payload, signing_key))
+
+        assert exc.value.error_code == 5128
+
+    def test_a_browser_with_no_nonce_in_session_is_refused(self, signing_key):
+        """
+        Fail closed: a sign-in that cannot be tied back to the browser that
+        began it is the case the nonce exists to catch.
+        """
+        with pytest.raises(AuthenticationException) as exc:
+            verify(make_id_token(claims(), signing_key), expected_nonce=None)
+
+        assert exc.value.error_code == 5128
 
 
 @pytest.mark.unit
