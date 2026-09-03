@@ -128,6 +128,7 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
           </h4>
           <QueueList
             workspaceSlug={workspaceSlug}
+            unitId={unitId}
             rows={needsAttention}
             emptyLabel={`${OU}.queue.inbox_empty`}
             busyIssueId={busyIssueId}
@@ -146,6 +147,7 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
         </h4>
         <QueueList
           workspaceSlug={workspaceSlug}
+          unitId={unitId}
           rows={waiting}
           isLoading={isLoading}
           emptyLabel={`${OU}.queue.inbox_empty`}
@@ -172,6 +174,7 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
             <p className="text-custom-text-300 text-body-2xs-medium">{group.name}</p>
             <QueueList
               workspaceSlug={workspaceSlug}
+              unitId={unitId}
               rows={group.rows}
               emptyLabel={`${OU}.queue.in_progress_empty`}
               busyIssueId={busyIssueId}

@@ -697,7 +697,11 @@
           "internal_error": "Operasi gagal tak terduga dan tercatat sebagai gagal.",
           "process_projection_disabled": "Proyeksi proses tidak diaktifkan di instans ini.",
           "directory_workspace_not_found": "Ruang kerja itu sudah tidak ada.",
-          "directory_token_required": "Terbitkan token SCIM sebelum mengaktifkan penyediaan dari direktori."
+          "directory_token_required": "Terbitkan token SCIM sebelum mengaktifkan penyediaan dari direktori.",
+          "availability_interval_invalid": "Ketidakhadiran harus berakhir setelah dimulai.",
+          "availability_not_found": "Ketidakhadiran itu sudah tidak ada.",
+          "workspace_member_not_found": "Orang itu bukan anggota aktif ruang kerja ini.",
+          "allocation_limit_forbidden": "Hanya koordinator yang bisa menentukan seberapa banyak pekerjaan diberikan."
         },
         "queue": {
           "inbox": "Kotak masuk",
@@ -756,7 +760,10 @@
             "help": "Hanya area yang terhubung ke proyek item ini yang ditampilkan: di area lain tidak ada yang bisa melihatnya.",
             "nobody": "Tidak ada area lain yang mencakup proyek ini.",
             "reason_placeholder": "Alasan (opsional)"
-          }
+          },
+          "executor_away": "Sedang tidak ada",
+          "executor_away_tooltip": "Orang ini sedang tidak tersedia. Pekerjaannya tetap miliknya — seseorang harus memutuskan apakah menunggu.",
+          "suggestion": "Saran: {name}"
         },
         "decisions": {
           "title": "Keputusan",
@@ -802,6 +809,37 @@
           "title": "Area saya",
           "empty_title": "Anda belum berada di area mana pun.",
           "empty_message": "Area mengelompokkan pekerjaan yang menjadi tanggung jawab sebuah tim. Admin ruang kerja bisa menambahkan Anda ke salah satunya."
+        },
+        "availability": {
+          "title": "Ketidakhadiran",
+          "help": "Sedang tidak ada membuat pembagian otomatis tidak memilih Anda. Ini tidak pernah mengambil kembali yang sudah Anda pegang.",
+          "empty": "Belum ada yang dicatat.",
+          "from": "Dari",
+          "until": "Sampai",
+          "add": "Tambahkan",
+          "added": "Tercatat",
+          "not_added": "Tidak bisa dicatat",
+          "removed": "Dihapus",
+          "not_removed": "Tidak bisa dihapus",
+          "remove_aria": "Hapus ketidakhadiran ini",
+          "range": "{from} sampai {until}",
+          "open_ended": "Mulai {from}, tanpa tanggal kembali",
+          "reason": {
+            "vacation": "Cuti",
+            "leave": "Izin",
+            "other": "Lainnya"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Menerima pekerjaan baru dari area ini",
+          "accepts_new_work_help": "Kalau mati, pembagian otomatis melewatinya di sini. Yang sudah dipegang tetap, dan masih bisa diberi tugas dengan menyebut namanya.",
+          "max_open_items": "Paling banyak item terbuka sekaligus",
+          "max_open_items_help": "Pembagian otomatis berhenti di angka ini. Kosong berarti batas area yang menentukan.",
+          "no_limit": "Tanpa batas",
+          "saved": "Tersimpan",
+          "not_saved": "Tidak bisa disimpan",
+          "limit_invalid": "Harus bilangan bulat 1 atau lebih.",
+          "open_aria": "Pengaturan kerja untuk {name}"
         }
       }
     },

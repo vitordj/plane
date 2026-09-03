@@ -262,6 +262,11 @@ from .organizational_unit import (
     OrcaConfigEndpoint,
 )
 from .orca_language import UserLanguagePreferenceEndpoint
+from .organizational_availability import (
+    MemberAvailabilityEndpoint,
+    MembershipAllocationEndpoint,
+    MyAvailabilityEndpoint,
+)
 from .organizational_queue import (
     IssueAssignToEndpoint,
     IssueCandidatesEndpoint,

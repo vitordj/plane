@@ -697,7 +697,11 @@
           "internal_error": "Der Vorgang ist unerwartet fehlgeschlagen und wurde als fehlgeschlagen erfasst.",
           "process_projection_disabled": "Die Prozessprojektion ist auf dieser Instanz nicht aktiviert.",
           "directory_workspace_not_found": "Diesen Arbeitsbereich gibt es nicht mehr.",
-          "directory_token_required": "Erst ein SCIM-Token ausstellen, dann die Verzeichnisbereitstellung einschalten."
+          "directory_token_required": "Erst ein SCIM-Token ausstellen, dann die Verzeichnisbereitstellung einschalten.",
+          "availability_interval_invalid": "Eine Abwesenheit muss nach ihrem Beginn enden.",
+          "availability_not_found": "Diese Abwesenheit gibt es nicht mehr.",
+          "workspace_member_not_found": "Diese Person ist kein aktives Mitglied dieses Workspace.",
+          "allocation_limit_forbidden": "Wie viel Arbeit jemand bekommt, legt nur die Koordination fest."
         },
         "queue": {
           "inbox": "Eingang",
@@ -756,7 +760,10 @@
             "help": "Aufgeführt sind nur Bereiche, die mit dem Projekt dieses Vorgangs verknüpft sind: in den übrigen kann ihn niemand sehen.",
             "nobody": "Kein anderer Bereich deckt dieses Projekt ab.",
             "reason_placeholder": "Warum (optional)"
-          }
+          },
+          "executor_away": "Abwesend",
+          "executor_away_tooltip": "Diese Person ist gerade nicht verfügbar. Die Arbeit bleibt bei ihr — jemand muss entscheiden, ob sie wartet.",
+          "suggestion": "Vorschlag: {name}"
         },
         "decisions": {
           "title": "Entscheidungen",
@@ -802,6 +809,37 @@
           "title": "Meine Bereiche",
           "empty_title": "Sie sind noch in keinem Bereich.",
           "empty_message": "Bereiche bündeln die Arbeit, die ein Team verantwortet. Eine Workspace-Administration kann Sie zu einem hinzufügen."
+        },
+        "availability": {
+          "title": "Abwesenheiten",
+          "help": "Abwesenheit verhindert, dass die automatische Zuteilung Sie auswählt. Sie nimmt nie zurück, was Sie schon tragen.",
+          "empty": "Nichts erfasst.",
+          "from": "Von",
+          "until": "Bis",
+          "add": "Hinzufügen",
+          "added": "Erfasst",
+          "not_added": "Konnte nicht erfasst werden",
+          "removed": "Entfernt",
+          "not_removed": "Konnte nicht entfernt werden",
+          "remove_aria": "Diese Abwesenheit entfernen",
+          "range": "{from} bis {until}",
+          "open_ended": "Ab {from}, ohne Enddatum",
+          "reason": {
+            "vacation": "Urlaub",
+            "leave": "Freistellung",
+            "other": "Sonstiges"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Nimmt neue Arbeit aus diesem Bereich",
+          "accepts_new_work_help": "Aus heißt: die automatische Zuteilung überspringt die Person hier. Sie behält, was sie hat, und kann weiterhin namentlich etwas bekommen.",
+          "max_open_items": "Höchstzahl gleichzeitig offener Vorgänge",
+          "max_open_items_help": "Die automatische Zuteilung hört bei dieser Zahl auf. Leer heißt: das Limit des Bereichs entscheidet.",
+          "no_limit": "Kein Limit",
+          "saved": "Gespeichert",
+          "not_saved": "Konnte nicht gespeichert werden",
+          "limit_invalid": "Das muss eine ganze Zahl ab 1 sein.",
+          "open_aria": "Arbeitseinstellungen von {name}"
         }
       }
     },

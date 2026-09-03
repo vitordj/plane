@@ -47,13 +47,13 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 10 | `[x]` 10/10 | — |
 | 1 Contrato público | [01-public-contract.md](./01-public-contract.md) | 8 | `[x]` 8/8 | — |
 | 2 Fila e coordenador | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[x]` 6/6 | — |
-| 3 Disponibilidade | [03-availability.md](./03-availability.md) | 6 | `[ ]` 0/6 | — |
+| 3 Disponibilidade | [03-availability.md](./03-availability.md) | 6 | `[x]` 6/6 | — |
 | 4 Processos | [04-processes.md](./04-processes.md) | 7 | `[ ]` 0/7 | — |
 | 5 Visão executiva | [05-executive-view.md](./05-executive-view.md) | 4 | `[ ]` 0/4 | — |
 
 ## Próximo item recomendado
 
-**Fase 3** (disponibilidade). Os gates das fases 1 e 2 continuam abertos:
+**Fase 4** (processos). Os gates das fases 1, 2 e 3 continuam abertos:
 dependem de deploy em staging e de verificação humana, não de código.
 
 Pendentes de P0 que não são de código: **P0.11** (sync com Plane CE 1.4.2) e
@@ -77,3 +77,6 @@ remoto upstream e decisão humana sobre o que descartar.
 | 2026-09-03 | Plano criado a partir do RFC rev. 2. Nenhum item iniciado. |
 | 2026-09-03 | P0.1–P0.10 e P0.13 entregues na branch `feat/orca-work-management`. |
 | 2026-09-03 | D0.1–D0.8 e D0.10 entregues na mesma branch. |
+| 2026-09-03 | D0.9 e a Fase 1 inteira (1.1–1.8) entregues. |
+| 2026-09-03 | Fase 2 inteira (2.1–2.6) entregue: fila, coordenador, alertas de SLA, UI completa. |
+| 2026-09-03 | Fase 3 inteira (3.1–3.6) entregue: disponibilidade, `lb-2`, sweep horário, sugestão. |

@@ -697,7 +697,11 @@
           "internal_error": "操作意外失敗，已記錄為失敗。",
           "process_projection_disabled": "此執行個體未啟用流程投影。",
           "directory_workspace_not_found": "該工作區已不存在。",
-          "directory_token_required": "請先簽發 SCIM 權杖，再開啟目錄佈建。"
+          "directory_token_required": "請先簽發 SCIM 權杖，再開啟目錄佈建。",
+          "availability_interval_invalid": "請假必須在開始之後結束。",
+          "availability_not_found": "這筆請假紀錄已經不在了。",
+          "workspace_member_not_found": "該使用者不是這個工作區的有效成員。",
+          "allocation_limit_forbidden": "一個人能接多少工作，只有協調人能設定。"
         },
         "queue": {
           "inbox": "收件匣",
@@ -756,7 +760,10 @@
             "help": "只列出與該事項所屬專案關聯的領域：其他領域裡沒有人能看到它。",
             "nobody": "沒有別的領域負責這個專案。",
             "reason_placeholder": "原因（選填）"
-          }
+          },
+          "executor_away": "不在",
+          "executor_away_tooltip": "這個人現在沒空。事情還在他手上——要不要等，得有人拿主意。",
+          "suggestion": "建議：{name}"
         },
         "decisions": {
           "title": "決定",
@@ -802,6 +809,37 @@
           "title": "我的領域",
           "empty_title": "你還不屬於任何領域。",
           "empty_message": "領域把一個團隊負責的工作聚在一起。工作區管理員可以把你加進某個領域。"
+        },
+        "availability": {
+          "title": "不在的時間",
+          "help": "不在的時候，自動分派不會選到你。已經在做的事不會被收走。",
+          "empty": "還沒有紀錄。",
+          "from": "從",
+          "until": "到",
+          "add": "新增",
+          "added": "已紀錄",
+          "not_added": "紀錄失敗",
+          "removed": "已移除",
+          "not_removed": "移除失敗",
+          "remove_aria": "移除這段不在時間",
+          "range": "{from} 至 {until}",
+          "open_ended": "從 {from} 起，未定回來時間",
+          "reason": {
+            "vacation": "休假",
+            "leave": "請假",
+            "other": "其他"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "接這個領域的新工作",
+          "accepts_new_work_help": "關掉後，自動分派在這裡會跳過這個人。手上的事照舊，仍然可以點名交給他。",
+          "max_open_items": "同時最多的未完成事項",
+          "max_open_items_help": "自動分派到這個數就停。留空則按領域自己的上限。",
+          "no_limit": "不限",
+          "saved": "已儲存",
+          "not_saved": "儲存失敗",
+          "limit_invalid": "要填 1 或更大的整數。",
+          "open_aria": "{name} 的工作設定"
         }
       }
     },

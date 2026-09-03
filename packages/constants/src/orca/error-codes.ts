@@ -51,6 +51,11 @@ export const ORCA_ERROR_CODE_KEYS: Record<number, string> = {
   4927: "workspace_settings.settings.organizational_units.errors.if_match_required",
   4928: "workspace_settings.settings.organizational_units.errors.internal_error",
   4929: "workspace_settings.settings.organizational_units.errors.process_projection_disabled",
+  // availability and allocation limits
+  4930: "workspace_settings.settings.organizational_units.errors.availability_interval_invalid",
+  4931: "workspace_settings.settings.organizational_units.errors.availability_not_found",
+  4932: "workspace_settings.settings.organizational_units.errors.workspace_member_not_found",
+  4933: "workspace_settings.settings.organizational_units.errors.allocation_limit_forbidden",
   // directory provisioning
   4914: "workspace_settings.settings.organizational_units.errors.directory_workspace_not_found",
   4915: "workspace_settings.settings.organizational_units.errors.directory_token_required",

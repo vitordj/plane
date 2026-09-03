@@ -363,6 +363,8 @@ CELERY_IMPORTS = (
     "plane.bgtasks.organizational_directory_task",
     # Same reason: the queue's SLA sweep is named by a beat entry.
     "plane.bgtasks.organizational_queue_task",
+    # And the hourly sweep that returns work whose executor is unavailable.
+    "plane.bgtasks.organizational_availability_task",
 )
 
 FILE_SIZE_LIMIT = int(os.environ.get("FILE_SIZE_LIMIT", 5242880))

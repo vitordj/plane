@@ -697,7 +697,11 @@
           "internal_error": "Thao tác thất bại ngoài dự kiến và đã được ghi nhận là thất bại.",
           "process_projection_disabled": "Chiếu quy trình chưa được bật trên máy chủ này.",
           "directory_workspace_not_found": "Không gian làm việc đó không còn tồn tại.",
-          "directory_token_required": "Hãy cấp token SCIM trước khi bật cấp phát từ thư mục."
+          "directory_token_required": "Hãy cấp token SCIM trước khi bật cấp phát từ thư mục.",
+          "availability_interval_invalid": "Một kỳ vắng mặt phải kết thúc sau khi bắt đầu.",
+          "availability_not_found": "Kỳ vắng mặt đó không còn nữa.",
+          "workspace_member_not_found": "Người đó không phải thành viên đang hoạt động của không gian này.",
+          "allocation_limit_forbidden": "Chỉ điều phối viên mới đặt được khối lượng việc giao cho ai đó."
         },
         "queue": {
           "inbox": "Hộp đến",
@@ -756,7 +760,10 @@
             "help": "Chỉ hiện những khu vực gắn với dự án của mục này: ở các khu vực khác không ai nhìn thấy nó.",
             "nobody": "Không có khu vực nào khác phụ trách dự án này.",
             "reason_placeholder": "Lý do (không bắt buộc)"
-          }
+          },
+          "executor_away": "Đang vắng",
+          "executor_away_tooltip": "Người này hiện không rảnh. Việc vẫn là của họ — ai đó phải quyết định có chờ hay không.",
+          "suggestion": "Gợi ý: {name}"
         },
         "decisions": {
           "title": "Quyết định",
@@ -802,6 +809,37 @@
           "title": "Khu vực của tôi",
           "empty_title": "Bạn chưa thuộc khu vực nào.",
           "empty_message": "Khu vực gom lại phần việc mà một nhóm chịu trách nhiệm. Quản trị viên không gian làm việc có thể thêm bạn vào một khu vực."
+        },
+        "availability": {
+          "title": "Thời gian vắng",
+          "help": "Đang vắng thì việc giao tự động sẽ không chọn bạn. Nó không bao giờ lấy lại phần bạn đang làm.",
+          "empty": "Chưa ghi nhận gì.",
+          "from": "Từ",
+          "until": "Đến",
+          "add": "Thêm",
+          "added": "Đã ghi nhận",
+          "not_added": "Không ghi nhận được",
+          "removed": "Đã bỏ",
+          "not_removed": "Không bỏ được",
+          "remove_aria": "Bỏ kỳ vắng mặt này",
+          "range": "{from} đến {until}",
+          "open_ended": "Từ {from}, chưa rõ ngày về",
+          "reason": {
+            "vacation": "Nghỉ phép",
+            "leave": "Nghỉ việc riêng",
+            "other": "Khác"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Nhận việc mới từ khu vực này",
+          "accepts_new_work_help": "Tắt thì việc giao tự động bỏ qua người này ở đây. Họ giữ nguyên phần đang làm, và vẫn có thể được giao đích danh.",
+          "max_open_items": "Nhiều nhất bao nhiêu việc mở cùng lúc",
+          "max_open_items_help": "Giao việc tự động dừng ở con số này. Để trống thì giới hạn của khu vực quyết định.",
+          "no_limit": "Không giới hạn",
+          "saved": "Đã lưu",
+          "not_saved": "Không lưu được",
+          "limit_invalid": "Phải là số nguyên từ 1 trở lên.",
+          "open_aria": "Thiết lập công việc của {name}"
         }
       }
     },

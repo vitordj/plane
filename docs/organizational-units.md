@@ -156,6 +156,11 @@ The queue and its actions, added with the coordinator screens:
 | `GET` `POST`  | `organizational-units/<id>/coordinators/`                                    |
 | `DELETE`      | `organizational-units/<id>/coordinators/<coordinator_id>/`                   |
 | `GET`         | `projects/<project_id>/issues/<issue_id>/organizational-unit/candidates/`    |
+| `GET` `POST`  | `availability/me/`                                                           |
+| `DELETE`      | `availability/me/<availability_id>/`                                         |
+| `GET` `POST`  | `members/<workspace_member_id>/availability/`                                |
+| `DELETE`      | `members/<workspace_member_id>/availability/<availability_id>/`              |
+| `GET` `PUT`   | `organizational-units/<id>/members/<membership_id>/allocation/`               |
 | `POST`        | `projects/<project_id>/issues/<issue_id>/organizational-unit/claim/`         |
 | `POST`        | `projects/<project_id>/issues/<issue_id>/organizational-unit/assign-to/`     |
 | `POST`        | `projects/<project_id>/issues/<issue_id>/organizational-unit/return/`        |
@@ -362,6 +367,79 @@ An area with no coordinator is not stuck: workspace admins can do everything a
 coordinator can, and the SLA sweep falls back to the area's lead when there is
 no coordinator to tell.
 
+## Availability
+
+Off by default (`ORCA_AVAILABILITY_ENABLED`). With it off every helper answers
+permissively, so the ranking behaves exactly as it did before the feature
+existed — switching it off is a way back, not a way into a third behaviour.
+
+Three separate facts, deliberately not merged into one "is this person free":
+
+| Fact | Whose it is | Where |
+| --- | --- | --- |
+| Away between two dates | The person's, workspace-wide — a holiday is a holiday everywhere | **My areas**, or their row in the area's People tab |
+| Takes new work from this area | The person's, per area | The same row |
+| Most open items at once | The **area's**, per membership | The same row, coordinators and admins only |
+
+The ceiling is the coordinator's on purpose: if anybody could set their own,
+they could cap themselves at one and stop being given work while still reading
+as available, and the area's policy limit would mean nothing. The switch is
+theirs, because refusing it would only produce the same effect through a
+fictional absence.
+
+None of the three takes work away. They keep automatic allocation from adding
+to what somebody carries — a coordinator can still hand them a work item by
+name, because sometimes that is exactly right.
+
+### In the ranking (`lb-2`)
+
+Four named exclusions, each in the candidate snapshot the decision keeps,
+because they call for four different actions:
+
+| Reason | What it means | What fixes it |
+| --- | --- | --- |
+| `unavailable` | An availability interval covers now | Time, or a coordinator assigning anyway |
+| `opted_out` | They switched off new work from this area | A conversation |
+| `member_limit` | At their own ceiling | Finishing something, or raising it |
+| `policy_limit` | At the area's ceiling | The area's rules |
+
+When more than one applies, the reason shown is the one closest to the person,
+starting with `unavailable` — it is the only one that also says when it stops
+being true. The applicable ceiling is the **tighter** of the personal and the
+policy limit.
+
+### When an executor goes away
+
+An hourly sweep (`sweep_unavailable_executors`) finds work that is still
+`assigned` to somebody who cannot do it — away, out of the area, out of the
+project, or out of the workspace — and returns it to the area's queue with
+`executor_unavailable`, telling the coordinators. Three things it deliberately
+does not do:
+
+- **It never picks somebody else.** A holiday that silently reassigns three
+  work items surprises three people. The queue shows a suggested next person
+  and one click accepts it, recorded as `accepted_suggestion`.
+- **The native assignee stays.** They see the work item again when they are
+  back, which is what makes two weeks away survivable.
+- **Coming back gives nothing back.** By then somebody may have done it.
+  Returning is a decision too, and it is the coordinator's.
+
+Every return is an `AssignmentDecision` with `trigger=availability`.
+
+```bash
+# What it would move, and why (works with the feature off)
+python manage.py sweep_unavailable_executors --workspace <slug>
+
+# Actually move it
+python manage.py sweep_unavailable_executors --workspace <slug> --write
+```
+
+Removing the executor from a work item natively — clearing the assignee in the
+app — has the same effect where a signal can see it. It cannot see everything:
+updating a work item's assignees runs a queryset delete, which fires no Django
+signal, and that is upstream code this fork does not patch. That gap is what
+`audit_organizational_routing` finds, which is why it is worth running daily.
+
 ## My areas
 
 `/<workspace>/my-areas` is the queue for people who are not workspace admins —
@@ -396,6 +474,7 @@ in [entra-directory-sync.md](./entra-directory-sync.md).
 | Setting                   | Default | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ORCA_ORG_UNITS_ENABLED`  | `1`     | Kill switch. Set to `0` and every `/api/orca/` organizational-unit route answers 404 — the directory connection endpoints and the SCIM provisioning endpoints included — the reconcile management command refuses to run, and the UI hides the layer. Existing inherited `ProjectMember` rows are left exactly as they are — the switch stops the layer acting, it does not withdraw access it already granted. Re-enable and reconcile to resume. |
+| `ORCA_AVAILABILITY_ENABLED` | `0`   | Holidays, leave and per-area "no new work for now". Off means every helper answers permissively and the ranking is exactly `lb-1`'s; the availability routes answer 404, and the hourly sweep does nothing. The dry run of `sweep_unavailable_executors` still reports, so it can be inspected before being switched on. |
 | `ORCA_ORG_SYNC_MAX_EDGES` | `100`   | Fan-out threshold for inline vs. Celery reconciliation.                                                                                                                                                                                                                                                                                                                                                                                            |
 
 Directory provisioning is configured per workspace, not per instance — a
@@ -425,7 +504,9 @@ no-replacement rules.
 The queue and coordinator layer is in `test_queue_endpoints.py` (the queue
 read, its `can_*` flags, and the four actions against the permission matrix),
 `test_queue_sla_sweep.py` (the alert, the cooldown, the fallback to the lead,
-and the kill switch) and `test_routing_invariants.py` (a coordinator emptying
+and the kill switch), `test_availability.py` and `test_availability_sweep.py`
+(the intervals, the four exclusions, the endpoints, and what the sweep refuses
+to do) and `test_routing_invariants.py` (a coordinator emptying
 a queue leaves `ProjectMember` untouched, and every action writes exactly one
 decision).
 

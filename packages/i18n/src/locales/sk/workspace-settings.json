@@ -697,7 +697,11 @@
           "internal_error": "Operácia neočakávane zlyhala a bola zaznamenaná ako neúspešná.",
           "process_projection_disabled": "Projekcia procesov nie je v tejto inštancii zapnutá.",
           "directory_workspace_not_found": "Tento pracovný priestor už neexistuje.",
-          "directory_token_required": "Pred zapnutím provisioningu z adresára vydajte token SCIM."
+          "directory_token_required": "Pred zapnutím provisioningu z adresára vydajte token SCIM.",
+          "availability_interval_invalid": "Neprítomnosť sa musí skončiť až po tom, ako začne.",
+          "availability_not_found": "Táto neprítomnosť už tam nie je.",
+          "workspace_member_not_found": "Táto osoba nie je aktívnym členom tohto priestoru.",
+          "allocation_limit_forbidden": "Koľko práce kto dostane, môže nastaviť len koordinátor."
         },
         "queue": {
           "inbox": "Doručené",
@@ -756,7 +760,10 @@
             "help": "Ponúkame len oblasti spojené s projektom tejto položky: v ostatných ju nikto neuvidí.",
             "nobody": "Tento projekt nepokrýva žiadna ďalšia oblasť.",
             "reason_placeholder": "Prečo (nepovinné)"
-          }
+          },
+          "executor_away": "Neprítomný",
+          "executor_away_tooltip": "Táto osoba teraz nie je k dispozícii. Práca zostáva jej — niekto musí rozhodnúť, či počká.",
+          "suggestion": "Návrh: {name}"
         },
         "decisions": {
           "title": "Rozhodnutia",
@@ -802,6 +809,37 @@
           "title": "Moje oblasti",
           "empty_title": "Zatiaľ nie ste v žiadnej oblasti.",
           "empty_message": "Oblasti združujú prácu, ktorú má na starosti tím. Správca priestoru vás do niektorej môže pridať."
+        },
+        "availability": {
+          "title": "Neprítomnosti",
+          "help": "Neprítomnosť bráni automatickému prideleniu vybrať vás. Nikdy neberie to, čo už máte.",
+          "empty": "Nič zaznamenané.",
+          "from": "Od",
+          "until": "Do",
+          "add": "Pridať",
+          "added": "Zaznamenané",
+          "not_added": "Nepodarilo sa zaznamenať",
+          "removed": "Odobraté",
+          "not_removed": "Nepodarilo sa odobrať",
+          "remove_aria": "Odobrať túto neprítomnosť",
+          "range": "{from} až {until}",
+          "open_ended": "Od {from}, bez dátumu návratu",
+          "reason": {
+            "vacation": "Dovolenka",
+            "leave": "Voľno",
+            "other": "Iné"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Berie z tejto oblasti novú prácu",
+          "accepts_new_work_help": "Vypnuté znamená, že automatické prideľovanie túto osobu tu preskočí. Čo má, si ponecháva, a menom jej stále niečo dať možno.",
+          "max_open_items": "Najviac otvorených položiek naraz",
+          "max_open_items_help": "Automatické prideľovanie sa pri tomto čísle zastaví. Prázdne: rozhoduje limit oblasti.",
+          "no_limit": "Bez limitu",
+          "saved": "Uložené",
+          "not_saved": "Nepodarilo sa uložiť",
+          "limit_invalid": "Musí to byť celé číslo od 1 vyššie.",
+          "open_aria": "Nastavenia práce pre: {name}"
         }
       }
     },

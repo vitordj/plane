@@ -697,7 +697,11 @@
           "internal_error": "Operacja nieoczekiwanie się nie powiodła i została zapisana jako nieudana.",
           "process_projection_disabled": "Projekcja procesów nie jest włączona w tej instancji.",
           "directory_workspace_not_found": "Ta przestrzeń robocza już nie istnieje.",
-          "directory_token_required": "Wydaj token SCIM, zanim włączysz udostępnianie z katalogu."
+          "directory_token_required": "Wydaj token SCIM, zanim włączysz udostępnianie z katalogu.",
+          "availability_interval_invalid": "Nieobecność musi kończyć się po rozpoczęciu.",
+          "availability_not_found": "Tej nieobecności już nie ma.",
+          "workspace_member_not_found": "Ta osoba nie jest aktywnym członkiem tej przestrzeni.",
+          "allocation_limit_forbidden": "Ile pracy ktoś dostaje, ustala tylko koordynator."
         },
         "queue": {
           "inbox": "Skrzynka",
@@ -756,7 +760,10 @@
             "help": "Pokazujemy tylko obszary powiązane z projektem tej pozycji: w pozostałych nikt jej nie zobaczy.",
             "nobody": "Żaden inny obszar nie obejmuje tego projektu.",
             "reason_placeholder": "Dlaczego (opcjonalnie)"
-          }
+          },
+          "executor_away": "Nieobecny",
+          "executor_away_tooltip": "Ta osoba jest teraz niedostępna. Praca nadal należy do niej — ktoś musi zdecydować, czy poczeka.",
+          "suggestion": "Propozycja: {name}"
         },
         "decisions": {
           "title": "Decyzje",
@@ -802,6 +809,37 @@
           "title": "Moje obszary",
           "empty_title": "Nie należysz jeszcze do żadnego obszaru.",
           "empty_message": "Obszary grupują pracę, za którą odpowiada zespół. Administrator przestrzeni może Cię do któregoś dodać."
+        },
+        "availability": {
+          "title": "Nieobecności",
+          "help": "Nieobecność nie pozwala automatycznemu przydziałowi wybrać Ciebie. Nigdy nie odbiera tego, co już masz.",
+          "empty": "Nic nie zapisano.",
+          "from": "Od",
+          "until": "Do",
+          "add": "Dodaj",
+          "added": "Zapisano",
+          "not_added": "Nie udało się zapisać",
+          "removed": "Usunięto",
+          "not_removed": "Nie udało się usunąć",
+          "remove_aria": "Usuń tę nieobecność",
+          "range": "{from} do {until}",
+          "open_ended": "Od {from}, bez daty powrotu",
+          "reason": {
+            "vacation": "Urlop",
+            "leave": "Zwolnienie",
+            "other": "Inne"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Bierze nową pracę z tego obszaru",
+          "accepts_new_work_help": "Wyłączone: automatyczny przydział pomija tu tę osobę. Zostaje jej to, co ma, i nadal można jej coś dać imiennie.",
+          "max_open_items": "Najwięcej otwartych pozycji naraz",
+          "max_open_items_help": "Automatyczny przydział zatrzymuje się na tej liczbie. Puste: decyduje limit obszaru.",
+          "no_limit": "Bez limitu",
+          "saved": "Zapisano",
+          "not_saved": "Nie udało się zapisać",
+          "limit_invalid": "To musi być liczba całkowita od 1 wzwyż.",
+          "open_aria": "Ustawienia pracy: {name}"
         }
       }
     },

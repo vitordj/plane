@@ -11,12 +11,14 @@ from rest_framework import serializers
 from plane.db.models import (
     AssignmentDecision,
     IssueOrganizationalUnit,
+    MembershipAllocationSettings,
     OrganizationalDirectoryConnection,
     OrganizationalDirectoryIdentity,
     OrganizationalUnit,
     OrganizationalUnitAssignmentPolicy,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
+    WorkspaceMemberAvailability,
 )
 
 from plane.app.services.orca.coverage import covered_project_ids
@@ -350,3 +352,46 @@ class IssueRoutingSerializer(BaseSerializer):
             "current_assignment_decision",
         ]
         read_only_fields = fields
+
+
+class WorkspaceMemberAvailabilitySerializer(BaseSerializer):
+    """One stretch of time somebody is away."""
+
+    member_id = serializers.UUIDField(source="workspace_member.member_id", read_only=True)
+    display_name = serializers.CharField(source="workspace_member.member.display_name", read_only=True)
+
+    class Meta:
+        model = WorkspaceMemberAvailability
+        fields = [
+            "id",
+            "workspace_member",
+            "member_id",
+            "display_name",
+            "unavailable_from",
+            "unavailable_until",
+            "reason",
+            "source",
+            "external_id",
+            "created_at",
+        ]
+        # Who the interval is about is the row's identity, and `source` says
+        # which writer owns it — a manual edit that relabelled an imported row
+        # as manual would make the next import unable to take back what it
+        # gave. Both are set by the view, never by the payload.
+        read_only_fields = ["workspace_member", "source", "created_at"]
+
+
+class MembershipAllocationSettingsSerializer(BaseSerializer):
+    """How much work one person takes from one area."""
+
+    class Meta:
+        model = MembershipAllocationSettings
+        fields = [
+            "id",
+            "membership",
+            "accepts_new_work",
+            "max_open_items",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["membership", "created_at", "updated_at"]

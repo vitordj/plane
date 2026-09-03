@@ -697,7 +697,11 @@
           "internal_error": "Operațiunea a eșuat neașteptat și a fost înregistrată ca eșuată.",
           "process_projection_disabled": "Proiecția proceselor nu este activată pe această instanță.",
           "directory_workspace_not_found": "Acest spațiu de lucru nu mai există.",
-          "directory_token_required": "Emiteți un token SCIM înainte de a activa provizionarea din director."
+          "directory_token_required": "Emiteți un token SCIM înainte de a activa provizionarea din director.",
+          "availability_interval_invalid": "O absență trebuie să se termine după ce începe.",
+          "availability_not_found": "Absența aceea nu mai există.",
+          "workspace_member_not_found": "Persoana aceea nu este membru activ al acestui spațiu.",
+          "allocation_limit_forbidden": "Cât de multă muncă primește cineva stabilește doar un coordonator."
         },
         "queue": {
           "inbox": "Primite",
@@ -756,7 +760,10 @@
             "help": "Apar doar zonele legate de proiectul acestui element: în celelalte nu îl poate vedea nimeni.",
             "nobody": "Nicio altă zonă nu acoperă acest proiect.",
             "reason_placeholder": "De ce (opțional)"
-          }
+          },
+          "executor_away": "Absent",
+          "executor_away_tooltip": "Persoana nu este disponibilă acum. Munca rămâne a ei — cineva trebuie să decidă dacă așteaptă.",
+          "suggestion": "Sugestie: {name}"
         },
         "decisions": {
           "title": "Decizii",
@@ -802,6 +809,37 @@
           "title": "Zonele mele",
           "empty_title": "Nu ești încă în nicio zonă.",
           "empty_message": "Zonele adună munca de care răspunde o echipă. Un administrator al spațiului te poate adăuga într-una."
+        },
+        "availability": {
+          "title": "Absențe",
+          "help": "Absența împiedică repartizarea automată să te aleagă. Nu ia niciodată ce duci deja.",
+          "empty": "Nu e nimic înregistrat.",
+          "from": "De la",
+          "until": "Până la",
+          "add": "Adaugă",
+          "added": "Înregistrat",
+          "not_added": "Nu s-a putut înregistra",
+          "removed": "Eliminat",
+          "not_removed": "Nu s-a putut elimina",
+          "remove_aria": "Elimină această absență",
+          "range": "{from} până la {until}",
+          "open_ended": "Din {from}, fără dată de întoarcere",
+          "reason": {
+            "vacation": "Concediu",
+            "leave": "Învoire",
+            "other": "Altceva"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Primește muncă nouă din această zonă",
+          "accepts_new_work_help": "Oprit înseamnă că repartizarea automată o sare aici. Păstrează ce are și tot i se poate da ceva pe nume.",
+          "max_open_items": "Cel mult elemente deschise în același timp",
+          "max_open_items_help": "Repartizarea automată se oprește la acest număr. Gol: decide limita zonei.",
+          "no_limit": "Fără limită",
+          "saved": "Salvat",
+          "not_saved": "Nu s-a putut salva",
+          "limit_invalid": "Trebuie un număr întreg de la 1 în sus.",
+          "open_aria": "Setări de lucru pentru {name}"
         }
       }
     },

@@ -14,6 +14,7 @@ import { QueueItemRow } from "./queue-item-row";
 
 type Props = {
   workspaceSlug: string;
+  unitId: string;
   rows: IUnitQueueRow[];
   isLoading?: boolean;
   emptyLabel: string;
@@ -30,7 +31,8 @@ type Props = {
  * to load.
  */
 export const QueueList = observer(function QueueList(props: Props) {
-  const { workspaceSlug, rows, isLoading, emptyLabel, busyIssueId, onClaim, onAssign, onReturn, onTransfer } = props;
+  const { workspaceSlug, unitId, rows, isLoading, emptyLabel, busyIssueId, onClaim, onAssign, onReturn, onTransfer } =
+    props;
   const { t } = useTranslation();
 
   if (isLoading) {
@@ -53,6 +55,7 @@ export const QueueList = observer(function QueueList(props: Props) {
         <QueueItemRow
           key={row.id}
           workspaceSlug={workspaceSlug}
+          unitId={unitId}
           row={row}
           busy={busyIssueId === row.issue_id}
           onClaim={onClaim}

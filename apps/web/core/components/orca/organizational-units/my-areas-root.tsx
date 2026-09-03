@@ -10,9 +10,12 @@ import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 import { Loader } from "@plane/ui";
 // components
+import { AvailabilityForm } from "./availability-form";
 import { OrganizationalUnitWorkTab } from "./unit-work-tab";
 // hooks
+import { useMember } from "@/hooks/store/use-member";
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
+import { useUser } from "@/hooks/store/user";
 
 type Props = {
   workspaceSlug: string;
@@ -29,6 +32,10 @@ export const MyAreasRoot = observer(function MyAreasRoot(props: Props) {
   const { workspaceSlug } = props;
   const store = useOrganizationalUnit();
   const { t } = useTranslation();
+  const { data: currentUser } = useUser();
+  const {
+    workspace: { getWorkspaceMemberDetails },
+  } = useMember();
 
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
@@ -52,6 +59,7 @@ export const MyAreasRoot = observer(function MyAreasRoot(props: Props) {
   }, [workspaceSlug, store]);
 
   const myUnits = store.myUnits ?? [];
+  const myWorkspaceMemberId = currentUser?.id ? getWorkspaceMemberDetails(currentUser.id)?.id : undefined;
 
   if (isLoading) {
     return (
@@ -95,6 +103,14 @@ export const MyAreasRoot = observer(function MyAreasRoot(props: Props) {
       )}
 
       {selectedUnitId && <OrganizationalUnitWorkTab workspaceSlug={workspaceSlug} unitId={selectedUnitId} />}
+
+      {/* Somebody's own absences live here rather than in profile settings:
+          being away is per workspace, and that route carries no workspace. */}
+      {store.availabilityEnabled && myWorkspaceMemberId && (
+        <section className="border-custom-border-200 border-t pt-5">
+          <AvailabilityForm workspaceSlug={workspaceSlug} workspaceMemberId={myWorkspaceMemberId} forSelf />
+        </section>
+      )}
     </div>
   );
 });

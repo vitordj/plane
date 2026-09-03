@@ -10,12 +10,12 @@ core model gains a column and no upstream call site is patched.
 """
 
 # Django imports
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 
 # Module imports
-from plane.db.models import Profile, UserLanguagePreference
+from plane.db.models import IssueAssignee, Profile, UserLanguagePreference
 from plane.license.models import InstanceConfiguration
 
 from .language import DEFAULT_LANGUAGE_KEY, follower_profiles, get_default_language, normalize_language
@@ -176,3 +176,102 @@ def apply_default_language_to_followers(sender, instance, **kwargs):
         return
 
     follower_profiles(previous).exclude(language=language).update(language=language, updated_at=timezone.now())
+
+
+# --- native assignee removed from a work item the area is tracking -----------
+
+# Where pre_save stashes whether the row was live before this save, so post_save
+# can tell a soft delete from any other write.
+_PREVIOUS_DELETED_AT = "_orca_previous_deleted_at"
+
+
+def _return_if_executor(issue_id, assignee_id):
+    """
+    Put the work back in its area's queue if that person was executing it.
+
+    @description The one case worth acting on: somebody clears the assignee in
+    the app, and the area's link keeps saying "assigned" to a person who is no
+    longer on the work item. Nobody sees it in a queue, nobody sees it in their
+    own list, and it stops moving.
+
+    Anything that goes wrong here is swallowed. A failure to keep the sidecar in
+    step must not roll back the assignee change the person actually made — the
+    audit command finds the divergence, which is worse than fixing it now and
+    much better than a 500 on an ordinary edit.
+    @param issue_id: The work item.
+    @param assignee_id: Who was removed.
+    @returns: None.
+    """
+    from plane.db.models import IssueAssignee, IssueOrganizationalUnit
+    from plane.db.models.organizational_unit import QueueReason, RoutingState
+
+    try:
+        link = (
+            IssueOrganizationalUnit.objects.select_related("issue")
+            .filter(issue_id=issue_id, primary_executor_id=assignee_id, routing_state=RoutingState.ASSIGNED)
+            .first()
+        )
+        if link is None:
+            return
+        # Re-added in the same transaction, or another row still covers them:
+        # nothing has actually been taken away.
+        if IssueAssignee.objects.filter(issue_id=issue_id, assignee_id=assignee_id).exists():
+            return
+
+        from .assignment_service import return_to_queue
+
+        return_to_queue(
+            link.issue,
+            actor=None,
+            reason="the executor was removed from the work item",
+            queue_reason=QueueReason.EXECUTOR_UNAVAILABLE,
+            trigger="availability",
+        )
+    except Exception:  # noqa: BLE001 - never break an ordinary assignee edit
+        from plane.utils.exception_logger import log_exception
+
+        log_exception(Exception(f"orca: could not requeue issue {issue_id} after assignee removal"))
+
+
+@receiver(pre_save, sender=IssueAssignee)
+def stash_previous_deleted_at(sender, instance, **kwargs):
+    """@description Remember whether the row was live, so post_save can see a soft delete."""
+    if instance._state.adding or instance.pk is None:
+        setattr(instance, _PREVIOUS_DELETED_AT, None)
+        return
+    setattr(
+        instance,
+        _PREVIOUS_DELETED_AT,
+        IssueAssignee.all_objects.filter(pk=instance.pk).values_list("deleted_at", flat=True).first(),
+    )
+
+
+@receiver(post_save, sender=IssueAssignee)
+def requeue_on_soft_deleted_assignee(sender, instance, created, **kwargs):
+    """
+    Return work to the queue when its executor is taken off it.
+
+    @description Plane soft-deletes an assignee by stamping ``deleted_at``, so
+    the removal arrives here as a save rather than a delete.
+
+    **This does not see every removal.** Updating a work item's assignees in
+    the app runs ``IssueAssignee.objects.filter(...).delete()``, which is a
+    queryset ``UPDATE`` and fires no signal at all — and that is upstream code
+    the fork does not patch. What this receiver buys is the single-row paths;
+    the bulk one is caught within the hour by
+    ``audit_organizational_routing``, which is why that command exists and is
+    worth running daily.
+    @returns: None.
+    """
+    if created or instance.deleted_at is None:
+        return
+    if getattr(instance, _PREVIOUS_DELETED_AT, None) is not None:
+        return
+
+    _return_if_executor(instance.issue_id, instance.assignee_id)
+
+
+@receiver(post_delete, sender=IssueAssignee)
+def requeue_on_hard_deleted_assignee(sender, instance, **kwargs):
+    """@description The same, for a hard delete — cascades and ``delete(soft=False)``."""
+    _return_if_executor(instance.issue_id, instance.assignee_id)

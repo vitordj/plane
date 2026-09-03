@@ -4,6 +4,9 @@
 
 from django.urls import path
 from plane.app.views import (
+    MemberAvailabilityEndpoint,
+    MembershipAllocationEndpoint,
+    MyAvailabilityEndpoint,
     WorkspaceProjectStateSettingsEndpoint,
     ProjectStateViewSet,
     ProjectStatePropertyEndpoint,
@@ -333,5 +336,31 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/candidates/",
         IssueCandidatesEndpoint.as_view(),
         name="issue-organizational-unit-candidates",
+    ),
+    # --- availability -------------------------------------------------------
+    path(
+        "orca/workspaces/<str:slug>/availability/me/",
+        MyAvailabilityEndpoint.as_view(),
+        name="orca-my-availability",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/availability/me/<uuid:pk>/",
+        MyAvailabilityEndpoint.as_view(),
+        name="orca-my-availability-detail",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/members/<uuid:workspace_member_id>/availability/",
+        MemberAvailabilityEndpoint.as_view(),
+        name="orca-member-availability",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/members/<uuid:workspace_member_id>/availability/<uuid:pk>/",
+        MemberAvailabilityEndpoint.as_view(),
+        name="orca-member-availability-detail",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/members/<uuid:pk>/allocation/",
+        MembershipAllocationEndpoint.as_view(),
+        name="orca-membership-allocation",
     ),
 ]

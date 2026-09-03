@@ -697,7 +697,11 @@
           "internal_error": "İşlem beklenmedik şekilde başarısız oldu ve başarısız olarak kaydedildi.",
           "process_projection_disabled": "Süreç yansıtma bu sunucuda etkin değil.",
           "directory_workspace_not_found": "Bu çalışma alanı artık yok.",
-          "directory_token_required": "Dizin sağlamayı açmadan önce bir SCIM belirteci oluşturun."
+          "directory_token_required": "Dizin sağlamayı açmadan önce bir SCIM belirteci oluşturun.",
+          "availability_interval_invalid": "Bir yokluk, başladıktan sonra bitmeli.",
+          "availability_not_found": "O yokluk kaydı artık yok.",
+          "workspace_member_not_found": "O kişi bu çalışma alanının etkin bir üyesi değil.",
+          "allocation_limit_forbidden": "Kime ne kadar iş verileceğini yalnızca koordinatör belirler."
         },
         "queue": {
           "inbox": "Gelen kutusu",
@@ -756,7 +760,10 @@
             "help": "Yalnızca bu işin projesine bağlı alanlar listelenir: diğerlerinde onu görebilecek kimse yok.",
             "nobody": "Bu projeyi üstlenen başka bir alan yok.",
             "reason_placeholder": "Neden (isteğe bağlı)"
-          }
+          },
+          "executor_away": "Yok",
+          "executor_away_tooltip": "Bu kişi şu anda müsait değil. İş yine onda — birinin beklesin mi diye karar vermesi gerek.",
+          "suggestion": "Öneri: {name}"
         },
         "decisions": {
           "title": "Kararlar",
@@ -802,6 +809,37 @@
           "title": "Alanlarım",
           "empty_title": "Henüz hiçbir alanda değilsin.",
           "empty_message": "Alanlar, bir ekibin sorumlu olduğu işi bir araya getirir. Çalışma alanı yöneticisi seni birine ekleyebilir."
+        },
+        "availability": {
+          "title": "Yokluklar",
+          "help": "Yoklukta olmak, otomatik dağıtımın seni seçmesini engeller. Elindekini asla geri almaz.",
+          "empty": "Kayıtlı bir şey yok.",
+          "from": "Başlangıç",
+          "until": "Bitiş",
+          "add": "Ekle",
+          "added": "Kaydedildi",
+          "not_added": "Kaydedilemedi",
+          "removed": "Kaldırıldı",
+          "not_removed": "Kaldırılamadı",
+          "remove_aria": "Bu yokluğu kaldır",
+          "range": "{from} – {until}",
+          "open_ended": "{from} tarihinden itibaren, bitiş yok",
+          "reason": {
+            "vacation": "İzin",
+            "leave": "Rapor",
+            "other": "Diğer"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Bu alandan yeni iş alır",
+          "accepts_new_work_help": "Kapalıyken otomatik dağıtım bu kişiyi burada atlar. Elindekini korur, adıyla yine iş verilebilir.",
+          "max_open_items": "Aynı anda en fazla açık iş",
+          "max_open_items_help": "Otomatik dağıtım bu sayıda durur. Boşsa alanın kendi sınırı geçerli.",
+          "no_limit": "Sınır yok",
+          "saved": "Kaydedildi",
+          "not_saved": "Kaydedilemedi",
+          "limit_invalid": "1 veya daha büyük bir tam sayı olmalı.",
+          "open_aria": "{name} için iş ayarları"
         }
       }
     },

@@ -697,7 +697,11 @@
           "internal_error": "L’opération a échoué de façon inattendue et a été enregistrée comme telle.",
           "process_projection_disabled": "La projection des processus n’est pas activée sur cette instance.",
           "directory_workspace_not_found": "Cet espace de travail n’existe plus.",
-          "directory_token_required": "Émettez un jeton SCIM avant d’activer le provisionnement par annuaire."
+          "directory_token_required": "Émettez un jeton SCIM avant d’activer le provisionnement par annuaire.",
+          "availability_interval_invalid": "Une absence doit se terminer après son début.",
+          "availability_not_found": "Cette absence n'existe plus.",
+          "workspace_member_not_found": "Cette personne n'est pas membre actif de cet espace.",
+          "allocation_limit_forbidden": "Seul un coordinateur peut fixer la charge confiée à quelqu'un."
         },
         "queue": {
           "inbox": "Boîte de réception",
@@ -756,7 +760,10 @@
             "help": "Seuls les domaines liés au projet de cet élément apparaissent : dans les autres, personne ne peut le voir.",
             "nobody": "Aucun autre domaine ne couvre ce projet.",
             "reason_placeholder": "Pourquoi (facultatif)"
-          }
+          },
+          "executor_away": "Absent",
+          "executor_away_tooltip": "Cette personne n'est pas disponible en ce moment. Le travail reste le sien : quelqu'un doit décider s'il attend.",
+          "suggestion": "Suggestion : {name}"
         },
         "decisions": {
           "title": "Décisions",
@@ -802,6 +809,37 @@
           "title": "Mes domaines",
           "empty_title": "Vous n'êtes encore dans aucun domaine.",
           "empty_message": "Les domaines regroupent le travail dont une équipe répond. Un administrateur de l'espace peut vous en ajouter un."
+        },
+        "availability": {
+          "title": "Absences",
+          "help": "Être absent empêche l'attribution automatique de vous choisir. Elle ne reprend jamais ce que vous portez déjà.",
+          "empty": "Rien d'enregistré.",
+          "from": "Du",
+          "until": "Au",
+          "add": "Ajouter",
+          "added": "Enregistré",
+          "not_added": "Impossible d'enregistrer",
+          "removed": "Retiré",
+          "not_removed": "Impossible de retirer",
+          "remove_aria": "Retirer cette absence",
+          "range": "{from} au {until}",
+          "open_ended": "À partir du {from}, sans date de retour",
+          "reason": {
+            "vacation": "Congés",
+            "leave": "Arrêt",
+            "other": "Autre"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Reçoit du travail de ce domaine",
+          "accepts_new_work_help": "Désactivé, l'attribution automatique passe son tour ici. La personne garde ce qu'elle a et peut toujours recevoir quelque chose nommément.",
+          "max_open_items": "Nombre maximal d'éléments ouverts à la fois",
+          "max_open_items_help": "L'attribution automatique s'arrête à ce nombre. Vide, la limite du domaine décide.",
+          "no_limit": "Sans limite",
+          "saved": "Enregistré",
+          "not_saved": "Impossible d'enregistrer",
+          "limit_invalid": "Il faut un nombre entier supérieur ou égal à 1.",
+          "open_aria": "Paramètres de travail de {name}"
         }
       }
     },

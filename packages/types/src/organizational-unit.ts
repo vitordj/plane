@@ -233,7 +233,7 @@ export interface IUnitQueueRow {
   assignment_due_at: string | null;
   assignment_overdue: boolean;
   target_date: string | null;
-  primary_executor: { id: string; display_name: string; avatar_url: string } | null;
+  primary_executor: { id: string; display_name: string; avatar_url: string; is_available: boolean } | null;
   current_decision: string | null;
   /**
    * What the person reading may do with this row. Decided by the API, never
@@ -297,4 +297,36 @@ export interface IUnitCoordinator {
   workspace_member: string;
   display_name: string;
   avatar_url: string;
+}
+
+/** Why somebody is away. */
+export type TAvailabilityReason = "vacation" | "leave" | "other";
+
+/**
+ * One stretch of time somebody is not available for work.
+ *
+ * Global to the workspace rather than per area: a holiday is a holiday
+ * everywhere, and asking somebody to record the same fortnight once per area
+ * is how a feature stops being used.
+ */
+export interface IMemberAvailability {
+  id: string;
+  workspace_member: string;
+  member_id: string;
+  display_name: string;
+  unavailable_from: string;
+  /** Null means open-ended — away, and nobody knows until when. */
+  unavailable_until: string | null;
+  reason: TAvailabilityReason;
+  source: "manual" | "hr" | "directory";
+  external_id: string;
+  created_at: string;
+}
+
+/** How much work one area gives one of its people. */
+export interface IMembershipAllocation {
+  membership: string;
+  accepts_new_work: boolean;
+  /** Null means the area's policy decides alone. */
+  max_open_items: number | null;
 }

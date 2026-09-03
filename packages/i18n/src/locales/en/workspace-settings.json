@@ -473,7 +473,11 @@
           "internal_error": "The operation failed unexpectedly and was recorded as failed.",
           "process_projection_disabled": "Process projection is not enabled on this instance.",
           "directory_workspace_not_found": "That workspace no longer exists.",
-          "directory_token_required": "Issue a SCIM token before turning directory provisioning on."
+          "directory_token_required": "Issue a SCIM token before turning directory provisioning on.",
+          "availability_interval_invalid": "An absence has to end after it starts.",
+          "availability_not_found": "That absence is no longer there.",
+          "workspace_member_not_found": "That person is not an active member of this workspace.",
+          "allocation_limit_forbidden": "Only a coordinator can set how much work somebody is given."
         },
         "queue": {
           "inbox": "Inbox",
@@ -532,7 +536,10 @@
             "help": "Only areas linked to this work item's project are listed: the others have nobody who can see it.",
             "nobody": "No other area covers this project.",
             "reason_placeholder": "Why (optional)"
-          }
+          },
+          "executor_away": "Away",
+          "executor_away_tooltip": "This person is not available right now. The work is still theirs — somebody has to decide whether it waits.",
+          "suggestion": "Suggested: {name}"
         },
         "decisions": {
           "title": "Decisions",
@@ -578,6 +585,37 @@
           "title": "My areas",
           "empty_title": "You are not in any area yet.",
           "empty_message": "Areas group the work a team owns. A workspace admin can add you to one."
+        },
+        "availability": {
+          "title": "Time away",
+          "help": "Being away keeps automatic assignment from picking you. It never takes back what you are already carrying.",
+          "empty": "Nothing recorded.",
+          "from": "From",
+          "until": "Until",
+          "add": "Add",
+          "added": "Recorded",
+          "not_added": "Could not record it",
+          "removed": "Removed",
+          "not_removed": "Could not remove it",
+          "remove_aria": "Remove this absence",
+          "range": "{from} to {until}",
+          "open_ended": "From {from}, open-ended",
+          "reason": {
+            "vacation": "Holiday",
+            "leave": "Leave",
+            "other": "Other"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Takes new work from this area",
+          "accepts_new_work_help": "Off means automatic assignment skips them here. They keep what they have, and can still be given something by name.",
+          "max_open_items": "Most open items at once",
+          "max_open_items_help": "Automatic assignment stops at this number. Blank means the area's own limit decides.",
+          "no_limit": "No limit",
+          "saved": "Saved",
+          "not_saved": "Could not save it",
+          "limit_invalid": "That has to be a whole number of one or more.",
+          "open_aria": "Work settings for {name}"
         }
       },
       "projects": {

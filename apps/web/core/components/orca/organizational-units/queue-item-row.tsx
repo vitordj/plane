@@ -5,15 +5,18 @@
  */
 
 import { observer } from "mobx-react";
-import { AlertTriangle, ArrowRightLeft, Clock, UserPlus } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, CalendarOff, Clock, UserPlus } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import type { IUnitQueueRow } from "@plane/types";
 import { Avatar, Tooltip } from "@plane/ui";
+// components
+import { QueueSuggestion } from "./queue-suggestion";
 
 type Props = {
   workspaceSlug: string;
+  unitId: string;
   row: IUnitQueueRow;
   onClaim: (row: IUnitQueueRow) => void;
   onAssign: (row: IUnitQueueRow) => void;
@@ -31,7 +34,7 @@ const OU = "workspace_settings.settings.organizational_units";
  * days past its assignment date is the thing they came here to find.
  */
 export const QueueItemRow = observer(function QueueItemRow(props: Props) {
-  const { workspaceSlug, row, onClaim, onAssign, onReturn, onTransfer, busy } = props;
+  const { workspaceSlug, unitId, row, onClaim, onAssign, onReturn, onTransfer, busy } = props;
   const { t } = useTranslation();
 
   const age = row.age_seconds ?? 0;
@@ -60,6 +63,11 @@ export const QueueItemRow = observer(function QueueItemRow(props: Props) {
             <Clock className="size-3" />
             {ageLabel}
           </span>
+          {/* Only where somebody has to pick the next person: the rows the
+              availability sweep handed back. */}
+          {row.queue_reason === "executor_unavailable" && row.can_assign && (
+            <QueueSuggestion workspaceSlug={workspaceSlug} unitId={unitId} row={row} />
+          )}
           {row.assignment_overdue && (
             <Tooltip tooltipContent={t(`${OU}.queue.overdue_tooltip`)}>
               <span className="text-danger-primary flex items-center gap-1">
@@ -72,7 +80,19 @@ export const QueueItemRow = observer(function QueueItemRow(props: Props) {
       </div>
 
       {row.primary_executor && (
-        <Avatar name={row.primary_executor.display_name} src={row.primary_executor.avatar_url} size="sm" />
+        <div className="flex shrink-0 items-center gap-1">
+          <Avatar name={row.primary_executor.display_name} src={row.primary_executor.avatar_url} size="sm" />
+          {/* The queue is where somebody notices that the person carrying this
+              is away — which is the whole reason the executor is shown here. */}
+          {row.primary_executor.is_available === false && (
+            <Tooltip tooltipContent={t(`${OU}.queue.executor_away_tooltip`)}>
+              <span className="text-danger-primary flex items-center gap-1 text-body-2xs-regular">
+                <CalendarOff className="size-3" />
+                {t(`${OU}.queue.executor_away`)}
+              </span>
+            </Tooltip>
+          )}
+        </div>
       )}
 
       <div className="flex shrink-0 items-center gap-1">

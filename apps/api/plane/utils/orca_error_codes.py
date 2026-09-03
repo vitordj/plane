@@ -56,6 +56,11 @@ ORCA_ERROR_CODES = {
     "ORG_IF_MATCH_REQUIRED": 4927,
     "ORG_INTERNAL_ERROR": 4928,
     "ORG_PROCESS_PROJECTION_DISABLED": 4929,
+    # availability and allocation limits
+    "ORG_AVAILABILITY_INTERVAL_INVALID": 4930,
+    "ORG_AVAILABILITY_NOT_FOUND": 4931,
+    "ORG_WORKSPACE_MEMBER_NOT_FOUND": 4932,
+    "ORG_ALLOCATION_LIMIT_FORBIDDEN": 4933,
     # directory provisioning
     "ORG_DIRECTORY_WORKSPACE_NOT_FOUND": 4914,
     "ORG_DIRECTORY_TOKEN_REQUIRED": 4915,
@@ -93,6 +98,10 @@ ORCA_ERROR_MESSAGES = {
     "ORG_INTERNAL_ERROR": "The operation failed unexpectedly and was recorded as failed",
     "ORG_PROCESS_PROJECTION_DISABLED": "Process projection is not enabled on this instance",
     "ORG_INVALID_ASSIGNMENT_MODE": "Invalid mode",
+    "ORG_AVAILABILITY_INTERVAL_INVALID": "An absence has to end after it starts",
+    "ORG_AVAILABILITY_NOT_FOUND": "Absence not found",
+    "ORG_WORKSPACE_MEMBER_NOT_FOUND": "That person is not an active member of this workspace",
+    "ORG_ALLOCATION_LIMIT_FORBIDDEN": "Only a coordinator can set how much work somebody is given",
     "ORG_DIRECTORY_WORKSPACE_NOT_FOUND": "Workspace not found",
     "ORG_DIRECTORY_TOKEN_REQUIRED": "Issue a SCIM token before enabling directory provisioning",
 }

@@ -36,6 +36,7 @@ from plane.app.services.orca import (
     resolve_policy,
     return_to_queue,
     transfer_unit,
+    unavailable_member_ids,
     unit_covers_project,
 )
 from plane.db.models import (
@@ -98,14 +99,39 @@ class UnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
 
         roles = unit_roles_of(request.user, unit)
         is_admin = is_workspace_admin(request.user, unit.workspace_id)
-        rows = [self._row(link, request.user, unit, roles, is_admin) for link in links]
+        # Which executors are away, in one query rather than one per row. The
+        # queue is where somebody notices that the person carrying a work item
+        # is on holiday, and noticing is the whole point of showing it.
+        away = self._away_executors(links, unit)
+        rows = [self._row(link, request.user, unit, roles, is_admin, away) for link in links]
 
         # Overdue first: a queue sorted purely by age buries the thing that
         # somebody already promised would be done by now.
         rows.sort(key=lambda row: (not row["assignment_overdue"], row["queued_at"] or ""))
         return Response(rows, status=status.HTTP_200_OK)
 
-    def _row(self, link, user, unit, roles, is_admin):
+    def _away_executors(self, links, unit) -> set:
+        """
+        @description The executors on this queue who are unavailable right now,
+        as user ids. Empty when the feature is off, so the row simply never
+        says anything about availability.
+        @param links: The queue's links.
+        @param unit: The area, for its workspace.
+        @returns: A set of user ids.
+        """
+        executor_ids = {link.primary_executor_id for link in links if link.primary_executor_id}
+        if not executor_ids:
+            return set()
+
+        member_to_user = dict(
+            WorkspaceMember.objects.filter(
+                workspace_id=unit.workspace_id, member_id__in=executor_ids, is_active=True
+            ).values_list("id", "member_id")
+        )
+        away_member_ids = unavailable_member_ids(member_to_user.keys())
+        return {member_to_user[member_id] for member_id in away_member_ids}
+
+    def _row(self, link, user, unit, roles, is_admin, away=frozenset()):
         issue = link.issue
         executor = link.primary_executor
         now = timezone.now()
@@ -129,7 +155,15 @@ class UnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
             "assignment_overdue": bool(link.assignment_due_at and link.assignment_due_at < now),
             "target_date": issue.target_date.isoformat() if issue.target_date else None,
             "primary_executor": (
-                {"id": str(executor.id), "display_name": executor.display_name, "avatar_url": executor.avatar_url}
+                {
+                    "id": str(executor.id),
+                    "display_name": executor.display_name,
+                    "avatar_url": executor.avatar_url,
+                    # False only when the feature is on and something says they
+                    # are away — never "unknown", so the interface has one
+                    # thing to render rather than three.
+                    "is_available": executor.id not in away,
+                }
                 if executor
                 else None
             ),

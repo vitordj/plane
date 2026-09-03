@@ -697,7 +697,11 @@
           "internal_error": "La operación falló de forma inesperada y quedó registrada como fallida.",
           "process_projection_disabled": "La proyección de procesos no está habilitada en esta instancia.",
           "directory_workspace_not_found": "Ese espacio de trabajo ya no existe.",
-          "directory_token_required": "Emite un token SCIM antes de activar el aprovisionamiento por directorio."
+          "directory_token_required": "Emite un token SCIM antes de activar el aprovisionamiento por directorio.",
+          "availability_interval_invalid": "Una ausencia tiene que terminar después de empezar.",
+          "availability_not_found": "Esa ausencia ya no está.",
+          "workspace_member_not_found": "Esa persona no es miembro activo de este espacio.",
+          "allocation_limit_forbidden": "Solo un coordinador puede fijar cuánto trabajo recibe alguien."
         },
         "queue": {
           "inbox": "Bandeja de entrada",
@@ -756,7 +760,10 @@
             "help": "Solo aparecen las áreas vinculadas al proyecto de este elemento: en las demás no hay nadie que pueda verlo.",
             "nobody": "Ninguna otra área cubre este proyecto.",
             "reason_placeholder": "Por qué (opcional)"
-          }
+          },
+          "executor_away": "Ausente",
+          "executor_away_tooltip": "Esta persona no está disponible ahora. El trabajo sigue siendo suyo: alguien tiene que decidir si espera.",
+          "suggestion": "Sugerencia: {name}"
         },
         "decisions": {
           "title": "Decisiones",
@@ -802,6 +809,37 @@
           "title": "Mis áreas",
           "empty_title": "Aún no estás en ningún área.",
           "empty_message": "Las áreas agrupan el trabajo del que responde un equipo. Un administrador del espacio puede añadirte a una."
+        },
+        "availability": {
+          "title": "Ausencias",
+          "help": "Estar ausente impide que la asignación automática te elija. Nunca te quita lo que ya llevas.",
+          "empty": "No hay nada registrado.",
+          "from": "Desde",
+          "until": "Hasta",
+          "add": "Añadir",
+          "added": "Registrado",
+          "not_added": "No se pudo registrar",
+          "removed": "Quitado",
+          "not_removed": "No se pudo quitar",
+          "remove_aria": "Quitar esta ausencia",
+          "range": "{from} a {until}",
+          "open_ended": "Desde {from}, sin fecha de vuelta",
+          "reason": {
+            "vacation": "Vacaciones",
+            "leave": "Baja",
+            "other": "Otro"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Recibe trabajo nuevo de esta área",
+          "accepts_new_work_help": "Apagado, la asignación automática la salta aquí. Conserva lo que tiene y aún se le puede dar algo por su nombre.",
+          "max_open_items": "Máximo de elementos abiertos a la vez",
+          "max_open_items_help": "La asignación automática se detiene en esta cifra. En blanco, decide el límite del área.",
+          "no_limit": "Sin límite",
+          "saved": "Guardado",
+          "not_saved": "No se pudo guardar",
+          "limit_invalid": "Tiene que ser un número entero de 1 o más.",
+          "open_aria": "Ajustes de trabajo de {name}"
         }
       }
     },

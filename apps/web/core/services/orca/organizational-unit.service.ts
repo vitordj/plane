@@ -10,6 +10,8 @@ import type {
   IAssignmentDecision,
   IAssignmentPolicy,
   IIssueRouting,
+  IMemberAvailability,
+  IMembershipAllocation,
   IUnitCoordinator,
   IUnitQueueRow,
   IOrganizationalUnit,
@@ -43,7 +45,9 @@ export class OrganizationalUnitService extends APIService {
    * able to ask whether the layer exists in order to hide it, which it could
    * not do through an endpoint the same switch makes invisible.
    */
-  async getOrcaConfig(workspaceSlug: string): Promise<{ organizational_units_enabled: boolean }> {
+  async getOrcaConfig(
+    workspaceSlug: string
+  ): Promise<{ organizational_units_enabled: boolean; public_api_enabled?: boolean; availability_enabled?: boolean }> {
     return this.get(`/api/orca/workspaces/${workspaceSlug}/config/`)
       .then((response) => response?.data)
       .catch((error) => {
@@ -449,6 +453,107 @@ export class OrganizationalUnitService extends APIService {
   async removeCoordinator(workspaceSlug: string, unitId: string, coordinatorId: string) {
     return this.delete(
       `/api/orca/workspaces/${workspaceSlug}/organizational-units/${unitId}/coordinators/${coordinatorId}/`
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  // --- availability -------------------------------------------------------
+
+  /** @description The requesting person's own absences. */
+  async getMyAvailability(workspaceSlug: string): Promise<IMemberAvailability[]> {
+    return this.get(`/api/orca/workspaces/${workspaceSlug}/availability/me/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /** @description Record an absence for oneself. */
+  async addMyAvailability(
+    workspaceSlug: string,
+    payload: { unavailable_from: string; unavailable_until?: string | null; reason?: string }
+  ): Promise<IMemberAvailability> {
+    return this.post(`/api/orca/workspaces/${workspaceSlug}/availability/me/`, payload)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /** @description Remove one of one's own absences. */
+  async removeMyAvailability(workspaceSlug: string, availabilityId: string): Promise<void> {
+    return this.delete(`/api/orca/workspaces/${workspaceSlug}/availability/me/${availabilityId}/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /** @description Somebody else's absences — coordinator of one of their areas, or admin. */
+  async getMemberAvailability(workspaceSlug: string, workspaceMemberId: string): Promise<IMemberAvailability[]> {
+    return this.get(`/api/orca/workspaces/${workspaceSlug}/members/${workspaceMemberId}/availability/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /** @description Record an absence for somebody else. */
+  async addMemberAvailability(
+    workspaceSlug: string,
+    workspaceMemberId: string,
+    payload: { unavailable_from: string; unavailable_until?: string | null; reason?: string }
+  ): Promise<IMemberAvailability> {
+    return this.post(`/api/orca/workspaces/${workspaceSlug}/members/${workspaceMemberId}/availability/`, payload)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /** @description Remove somebody else's absence. */
+  async removeMemberAvailability(
+    workspaceSlug: string,
+    workspaceMemberId: string,
+    availabilityId: string
+  ): Promise<void> {
+    return this.delete(
+      `/api/orca/workspaces/${workspaceSlug}/members/${workspaceMemberId}/availability/${availabilityId}/`
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /** @description How much work this area gives this person. */
+  async getAllocationSettings(
+    workspaceSlug: string,
+    unitId: string,
+    membershipId: string
+  ): Promise<IMembershipAllocation> {
+    return this.get(
+      `/api/orca/workspaces/${workspaceSlug}/organizational-units/${unitId}/members/${membershipId}/allocation/`
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /** @description Set it. The ceiling is the coordinator's; the switch is the person's own. */
+  async setAllocationSettings(
+    workspaceSlug: string,
+    unitId: string,
+    membershipId: string,
+    payload: Partial<IMembershipAllocation>
+  ): Promise<IMembershipAllocation> {
+    return this.put(
+      `/api/orca/workspaces/${workspaceSlug}/organizational-units/${unitId}/members/${membershipId}/allocation/`,
+      payload
     )
       .then((response) => response?.data)
       .catch((error) => {

@@ -151,10 +151,12 @@ from .organizational_unit import (
     AssignmentDecisionSerializer,
     AssignmentPolicySerializer,
     IssueRoutingSerializer,
+    MembershipAllocationSettingsSerializer,
     OrganizationalDirectoryConnectionSerializer,
     OrganizationalDirectoryIdentitySerializer,
     OrganizationalUnitSerializer,
     OrganizationalUnitMembershipSerializer,
     OrganizationalUnitMembershipCreateSerializer,
     OrganizationalUnitProjectSerializer,
+    WorkspaceMemberAvailabilitySerializer,
 )

@@ -697,7 +697,11 @@
           "internal_error": "Operace nečekaně selhala a byla zaznamenána jako neúspěšná.",
           "process_projection_disabled": "Projekce procesů není v této instanci zapnutá.",
           "directory_workspace_not_found": "Tento pracovní prostor už neexistuje.",
-          "directory_token_required": "Před zapnutím provisioningu z adresáře vydejte token SCIM."
+          "directory_token_required": "Před zapnutím provisioningu z adresáře vydejte token SCIM.",
+          "availability_interval_invalid": "Nepřítomnost musí skončit až poté, co začne.",
+          "availability_not_found": "Tato nepřítomnost už tam není.",
+          "workspace_member_not_found": "Tato osoba není aktivním členem tohoto prostoru.",
+          "allocation_limit_forbidden": "Kolik práce kdo dostane, může nastavit jen koordinátor."
         },
         "queue": {
           "inbox": "Došlé",
@@ -756,7 +760,10 @@
             "help": "Nabízíme jen oblasti spojené s projektem této položky: v ostatních ji nikdo neuvidí.",
             "nobody": "Tento projekt nepokrývá žádná další oblast.",
             "reason_placeholder": "Proč (nepovinné)"
-          }
+          },
+          "executor_away": "Nepřítomen",
+          "executor_away_tooltip": "Tato osoba teď není k dispozici. Práce zůstává její — někdo musí rozhodnout, jestli počká.",
+          "suggestion": "Návrh: {name}"
         },
         "decisions": {
           "title": "Rozhodnutí",
@@ -802,6 +809,37 @@
           "title": "Moje oblasti",
           "empty_title": "Zatím nejste v žádné oblasti.",
           "empty_message": "Oblasti sdružují práci, kterou má na starosti tým. Správce prostoru vás do některé může přidat."
+        },
+        "availability": {
+          "title": "Nepřítomnosti",
+          "help": "Nepřítomnost brání automatickému přidělení vybrat vás. Nikdy nebere to, co už máte.",
+          "empty": "Nic zaznamenáno.",
+          "from": "Od",
+          "until": "Do",
+          "add": "Přidat",
+          "added": "Zaznamenáno",
+          "not_added": "Nepodařilo se zaznamenat",
+          "removed": "Odebráno",
+          "not_removed": "Nepodařilo se odebrat",
+          "remove_aria": "Odebrat tuto nepřítomnost",
+          "range": "{from} až {until}",
+          "open_ended": "Od {from}, bez data návratu",
+          "reason": {
+            "vacation": "Dovolená",
+            "leave": "Volno",
+            "other": "Jiné"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Bere z této oblasti novou práci",
+          "accepts_new_work_help": "Vypnuto znamená, že automatické přidělení tuto osobu tady přeskočí. Co má, si nechává, a jménem jí pořád něco dát lze.",
+          "max_open_items": "Nejvíc otevřených položek naráz",
+          "max_open_items_help": "Automatické přidělení se u tohoto čísla zastaví. Prázdné: rozhoduje limit oblasti.",
+          "no_limit": "Bez limitu",
+          "saved": "Uloženo",
+          "not_saved": "Nepodařilo se uložit",
+          "limit_invalid": "Musí to být celé číslo od 1 výš.",
+          "open_aria": "Nastavení práce pro: {name}"
         }
       }
     },

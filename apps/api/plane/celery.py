@@ -109,6 +109,14 @@ app.conf.beat_schedule = {
         "task": "plane.bgtasks.organizational_queue_task.sweep_assignment_sla",
         "schedule": crontab(minute="*/15"),
     },
+    # Orca: put back in the queue the work whose executor is away, gone from
+    # the area, or gone from the workspace. Hourly rather than every fifteen
+    # minutes because none of those is a minute-scale event, and each pass
+    # asks a coordinator for a decision.
+    "check-every-hour-for-unavailable-executors": {
+        "task": "plane.bgtasks.organizational_availability_task.sweep_unavailable_executors",
+        "schedule": crontab(minute=40),  # Every hour at :40
+    },
 }
 
 
