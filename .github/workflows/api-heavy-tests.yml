@@ -19,7 +19,7 @@ on:
       pytest_args:
         description: 'Arguments passed to pytest inside the test container'
         required: false
-        default: 'plane/tests/contract plane/tests/smoke -q'
+        default: 'plane/tests/contract plane/tests/smoke -q -m "contract or smoke"'
 
 permissions:
   contents: read

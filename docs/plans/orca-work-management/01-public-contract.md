@@ -124,7 +124,7 @@ true` nas respostas de replay. `test_orca_error_codes.py` verde.
 
 ---
 
-## 1.7 — Documentação e cliente de referência `[ ]`
+## 1.7 — Documentação e cliente de referência `[x]`
 
 - `docs/orca-public-api.md`: autenticação, headers obrigatórios, cada endpoint com `curl`, tabela de erros, semântica de replay (RFC §6.7 em linguagem de cliente), exemplos dos três modos e do `explicit`.
 - `tools/orca-client/orca_client.py`: script Python (requests) com funções `create_work_item`, `get_by_external`, `reassign`, `transfer`, `list_queue`, gerando `Idempotency-Key` determinística a partir de `(source, id, operation, event_id)`. README curto. Usado pelos testes de contrato (1.8) contra o servidor de teste.
@@ -132,7 +132,7 @@ true` nas respostas de replay. `test_orca_error_codes.py` verde.
 
 ---
 
-## 1.8 — Testes de contrato e gate `[ ]`
+## 1.8 — Testes de contrato e gate `[x]`
 
 `apps/api/plane/tests/contract/test_orca_public_contract.py` (o diretório
 `contract` já existe): usando o cliente de referência contra o `live_server`
