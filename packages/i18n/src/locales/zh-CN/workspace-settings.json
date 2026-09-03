@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "成员",
-          "back_aria": "返回所有区域"
+          "back_aria": "返回所有区域",
+          "tab_work": "工作"
         },
         "members": {
           "select_person": "选择成员",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "此实例未启用流程投影。",
           "directory_workspace_not_found": "该工作区已不存在。",
           "directory_token_required": "请先签发 SCIM 令牌，再开启目录预配。"
+        },
+        "queue": {
+          "inbox": "收件箱",
+          "inbox_empty": "没有等待处理的事项。该领域的工作都已有人负责。",
+          "in_progress": "进行中",
+          "in_progress_empty": "目前没有人在处理该领域的工作。",
+          "unknown_executor": "无负责人",
+          "claim": "我来做",
+          "assign_to": "指派给…",
+          "return": "退回队列",
+          "overdue": "已逾期",
+          "overdue_tooltip": "在该领域承诺的时间前，没有人接手。",
+          "age_minutes": "{count, plural, other{# 分钟}}",
+          "age_hours": "{count, plural, other{# 小时}}",
+          "age_days": "{count, plural, other{# 天}}",
+          "reason": {
+            "new_item": "刚刚到达",
+            "awaiting_coordinator": "等待协调人",
+            "awaiting_claim": "等待有人接手",
+            "no_eligible_member": "当时没有可用人员",
+            "executor_unavailable": "负责人变为不可用",
+            "manually_returned": "已退回"
+          },
+          "excluded_reason": {
+            "policy_limit": "已达领域上限",
+            "member_limit": "已达个人上限",
+            "unavailable": "不可用",
+            "opted_out": "不接受新工作"
+          },
+          "assign_modal": {
+            "title": "由谁来做？",
+            "nobody": "该领域没有人能承接此项目的工作。",
+            "excluded": "目前无法承接",
+            "open_items": "{count, plural, other{# 个未完成}}"
+          },
+          "toast": {
+            "assigned": "已指派",
+            "not_assigned": "指派失败",
+            "claimed": "已归你负责",
+            "not_claimed": "接手失败",
+            "returned": "已回到队列",
+            "not_returned": "退回失败"
+          }
         }
       }
     },

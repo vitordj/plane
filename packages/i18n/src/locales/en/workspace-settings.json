@@ -345,7 +345,8 @@
         },
         "detail": {
           "tab_people": "People",
-          "back_aria": "Back to all areas"
+          "back_aria": "Back to all areas",
+          "tab_work": "Work"
         },
         "members": {
           "select_person": "Select a person",
@@ -472,6 +473,49 @@
           "process_projection_disabled": "Process projection is not enabled on this instance.",
           "directory_workspace_not_found": "That workspace no longer exists.",
           "directory_token_required": "Issue a SCIM token before turning directory provisioning on."
+        },
+        "queue": {
+          "inbox": "Inbox",
+          "inbox_empty": "Nothing is waiting. Everything this area owns has somebody on it.",
+          "in_progress": "In progress",
+          "in_progress_empty": "Nobody is carrying anything for this area right now.",
+          "unknown_executor": "Unassigned",
+          "claim": "Take it",
+          "assign_to": "Assign to…",
+          "return": "Return to queue",
+          "overdue": "Overdue",
+          "overdue_tooltip": "Nobody took this by the time the area promised.",
+          "age_minutes": "{count, plural, one{# minute} other{# minutes}}",
+          "age_hours": "{count, plural, one{# hour} other{# hours}}",
+          "age_days": "{count, plural, one{# day} other{# days}}",
+          "reason": {
+            "new_item": "Just arrived",
+            "awaiting_coordinator": "Waiting for a coordinator",
+            "awaiting_claim": "Waiting to be taken",
+            "no_eligible_member": "Nobody was available",
+            "executor_unavailable": "The person became unavailable",
+            "manually_returned": "Handed back"
+          },
+          "excluded_reason": {
+            "policy_limit": "at the area's limit",
+            "member_limit": "at their own limit",
+            "unavailable": "unavailable",
+            "opted_out": "not taking new work"
+          },
+          "assign_modal": {
+            "title": "Who takes this?",
+            "nobody": "Nobody in this area can take work in this project.",
+            "excluded": "Cannot take it right now",
+            "open_items": "{count, plural, one{# open item} other{# open items}}"
+          },
+          "toast": {
+            "assigned": "Assigned",
+            "not_assigned": "Could not assign it",
+            "claimed": "It is yours",
+            "not_claimed": "Could not take it",
+            "returned": "Back in the queue",
+            "not_returned": "Could not return it"
+          }
         }
       },
       "projects": {

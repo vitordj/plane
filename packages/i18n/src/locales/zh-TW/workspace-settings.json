@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "人員",
-          "back_aria": "返回所有區域"
+          "back_aria": "返回所有區域",
+          "tab_work": "工作"
         },
         "members": {
           "select_person": "選擇人員",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "此執行個體未啟用流程投影。",
           "directory_workspace_not_found": "該工作區已不存在。",
           "directory_token_required": "請先簽發 SCIM 權杖，再開啟目錄佈建。"
+        },
+        "queue": {
+          "inbox": "收件匣",
+          "inbox_empty": "沒有等待處理的項目。該領域的工作都已有人負責。",
+          "in_progress": "進行中",
+          "in_progress_empty": "目前沒有人在處理該領域的工作。",
+          "unknown_executor": "無負責人",
+          "claim": "我來做",
+          "assign_to": "指派給…",
+          "return": "退回佇列",
+          "overdue": "已逾期",
+          "overdue_tooltip": "在該領域承諾的時間前，沒有人接手。",
+          "age_minutes": "{count, plural, other{# 分鐘}}",
+          "age_hours": "{count, plural, other{# 小時}}",
+          "age_days": "{count, plural, other{# 天}}",
+          "reason": {
+            "new_item": "剛剛送達",
+            "awaiting_coordinator": "等待協調人",
+            "awaiting_claim": "等待有人接手",
+            "no_eligible_member": "當時沒有可用人員",
+            "executor_unavailable": "負責人變為無法處理",
+            "manually_returned": "已退回"
+          },
+          "excluded_reason": {
+            "policy_limit": "已達領域上限",
+            "member_limit": "已達個人上限",
+            "unavailable": "無法處理",
+            "opted_out": "不接受新工作"
+          },
+          "assign_modal": {
+            "title": "由誰來做？",
+            "nobody": "該領域沒有人能承接此專案的工作。",
+            "excluded": "目前無法承接",
+            "open_items": "{count, plural, other{# 個未完成}}"
+          },
+          "toast": {
+            "assigned": "已指派",
+            "not_assigned": "指派失敗",
+            "claimed": "已歸你負責",
+            "not_claimed": "接手失敗",
+            "returned": "已回到佇列",
+            "not_returned": "退回失敗"
+          }
         }
       }
     },

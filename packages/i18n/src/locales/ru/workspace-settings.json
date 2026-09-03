@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "Люди",
-          "back_aria": "Назад ко всем областям"
+          "back_aria": "Назад ко всем областям",
+          "tab_work": "Работа"
         },
         "members": {
           "select_person": "Выберите человека",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "Проекция процессов не включена на этом экземпляре.",
           "directory_workspace_not_found": "Этого пространства больше нет.",
           "directory_token_required": "Выпустите токен SCIM, прежде чем включать провижининг из каталога."
+        },
+        "queue": {
+          "inbox": "Входящие",
+          "inbox_empty": "Ничего не ждёт. У всего, что относится к этой области, есть исполнитель.",
+          "in_progress": "В работе",
+          "in_progress_empty": "Сейчас никто не ведёт задачи этой области.",
+          "unknown_executor": "Без исполнителя",
+          "claim": "Беру",
+          "assign_to": "Назначить…",
+          "return": "Вернуть в очередь",
+          "overdue": "Просрочено",
+          "overdue_tooltip": "Никто не взял это в срок, который пообещала область.",
+          "age_minutes": "{count, plural, one{# минута} few{# минуты} many{# минут} other{# минуты}}",
+          "age_hours": "{count, plural, one{# час} few{# часа} many{# часов} other{# часа}}",
+          "age_days": "{count, plural, one{# день} few{# дня} many{# дней} other{# дня}}",
+          "reason": {
+            "new_item": "Только что поступило",
+            "awaiting_coordinator": "Ждёт координатора",
+            "awaiting_claim": "Ждёт, когда возьмут",
+            "no_eligible_member": "Никого не было доступно",
+            "executor_unavailable": "Исполнитель стал недоступен",
+            "manually_returned": "Возвращено"
+          },
+          "excluded_reason": {
+            "policy_limit": "достигнут лимит области",
+            "member_limit": "достигнут личный лимит",
+            "unavailable": "недоступен",
+            "opted_out": "не берёт новую работу"
+          },
+          "assign_modal": {
+            "title": "Кто возьмёт это?",
+            "nobody": "Никто из этой области не может взять работу в этом проекте.",
+            "excluded": "Сейчас взять не могут",
+            "open_items": "{count, plural, one{# открытая задача} few{# открытые задачи} many{# открытых задач} other{# открытой задачи}}"
+          },
+          "toast": {
+            "assigned": "Назначено",
+            "not_assigned": "Не удалось назначить",
+            "claimed": "Теперь ваше",
+            "not_claimed": "Не удалось взять",
+            "returned": "Снова в очереди",
+            "not_returned": "Не удалось вернуть"
+          }
         }
       }
     },

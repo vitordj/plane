@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "Personas",
-          "back_aria": "Volver a todas las áreas"
+          "back_aria": "Volver a todas las áreas",
+          "tab_work": "Trabajo"
         },
         "members": {
           "select_person": "Seleccione una persona",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "La proyección de procesos no está habilitada en esta instancia.",
           "directory_workspace_not_found": "Ese espacio de trabajo ya no existe.",
           "directory_token_required": "Emite un token SCIM antes de activar el aprovisionamiento por directorio."
+        },
+        "queue": {
+          "inbox": "Bandeja de entrada",
+          "inbox_empty": "No hay nada esperando. Todo lo de esta área tiene responsable.",
+          "in_progress": "En curso",
+          "in_progress_empty": "Ahora mismo nadie lleva nada de esta área.",
+          "unknown_executor": "Sin responsable",
+          "claim": "Asumir",
+          "assign_to": "Asignar a…",
+          "return": "Devolver a la cola",
+          "overdue": "Con retraso",
+          "overdue_tooltip": "Nadie lo asumió dentro del plazo que prometió el área.",
+          "age_minutes": "{count, plural, one{# minuto} other{# minutos}}",
+          "age_hours": "{count, plural, one{# hora} other{# horas}}",
+          "age_days": "{count, plural, one{# día} other{# días}}",
+          "reason": {
+            "new_item": "Acaba de llegar",
+            "awaiting_coordinator": "Esperando al coordinador",
+            "awaiting_claim": "Esperando a que alguien lo tome",
+            "no_eligible_member": "No había nadie disponible",
+            "executor_unavailable": "La persona dejó de estar disponible",
+            "manually_returned": "Devuelto"
+          },
+          "excluded_reason": {
+            "policy_limit": "en el límite del área",
+            "member_limit": "en su propio límite",
+            "unavailable": "no disponible",
+            "opted_out": "no acepta trabajo nuevo"
+          },
+          "assign_modal": {
+            "title": "¿Quién lo asume?",
+            "nobody": "Nadie de esta área puede asumir trabajo en este proyecto.",
+            "excluded": "No pueden asumirlo ahora",
+            "open_items": "{count, plural, one{# elemento abierto} other{# elementos abiertos}}"
+          },
+          "toast": {
+            "assigned": "Asignado",
+            "not_assigned": "No se pudo asignar",
+            "claimed": "Es tuyo",
+            "not_claimed": "No se pudo asumir",
+            "returned": "De vuelta en la cola",
+            "not_returned": "No se pudo devolver"
+          }
         }
       }
     },

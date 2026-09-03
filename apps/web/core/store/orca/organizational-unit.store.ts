@@ -6,7 +6,10 @@
 
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import type {
+  IAssignmentCandidate,
+  IAssignmentDecision,
   IIssueRouting,
+  IUnitQueueRow,
   IOrganizationalUnit,
   IOrganizationalUnitAccessChange,
   IOrganizationalUnitMembership,
@@ -87,6 +90,45 @@ export interface IOrganizationalUnitStore {
   fetchIssueUnit: (workspaceSlug: string, projectId: string, issueId: string) => Promise<IOrganizationalUnit | null>;
   /** The queue state of a work item: who is executing it, and why it waits. */
   fetchIssueRouting: (workspaceSlug: string, projectId: string, issueId: string) => Promise<IIssueRouting | null>;
+  // --- the area's queue --------------------------------------------------
+  /** Rows per area, so a queue survives navigating away and back. */
+  queueByUnit: Record<string, IUnitQueueRow[]>;
+  getQueueByUnitId: (unitId: string) => IUnitQueueRow[];
+  fetchQueue: (
+    workspaceSlug: string,
+    unitId: string,
+    filters?: { routing_state?: string; project?: string; executor?: string; overdue?: boolean }
+  ) => Promise<IUnitQueueRow[]>;
+  fetchDecisions: (workspaceSlug: string, unitId: string, issueId?: string) => Promise<IAssignmentDecision[]>;
+  fetchCandidates: (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string
+  ) => Promise<{ effective_mode: string; candidates: IAssignmentCandidate[]; excluded: IAssignmentCandidate[] }>;
+  claim: (workspaceSlug: string, unitId: string, projectId: string, issueId: string) => Promise<void>;
+  assignTo: (
+    workspaceSlug: string,
+    unitId: string,
+    projectId: string,
+    issueId: string,
+    primaryExecutor: string,
+    expectedDecisionId?: string | null
+  ) => Promise<void>;
+  returnToQueue: (
+    workspaceSlug: string,
+    unitId: string,
+    projectId: string,
+    issueId: string,
+    reason?: string
+  ) => Promise<void>;
+  transferUnit: (
+    workspaceSlug: string,
+    unitId: string,
+    projectId: string,
+    issueId: string,
+    destinationUnitId: string,
+    reason?: string
+  ) => Promise<void>;
   setIssueUnit: (
     workspaceSlug: string,
     projectId: string,
@@ -107,6 +149,7 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
   membershipMap: Record<string, IOrganizationalUnitMembership[]> = {};
   projectMap: Record<string, IOrganizationalUnitProject[]> = {};
   workloadMap: Record<string, IOrganizationalUnitWorkload[]> = {};
+  queueByUnit: Record<string, IUnitQueueRow[]> = {};
   myUnits: IUserOrganizationalUnit[] | null = null;
   loader = false;
   featureEnabled: boolean | null = null;
@@ -120,6 +163,7 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       membershipMap: observable,
       projectMap: observable,
       workloadMap: observable,
+      queueByUnit: observable,
       myUnits: observable,
       loader: observable.ref,
       featureEnabled: observable.ref,
@@ -142,6 +186,11 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       fetchWorkload: action,
       fetchMyUnits: action,
       assignIssueFromUnit: action,
+      fetchQueue: action,
+      claim: action,
+      assignTo: action,
+      returnToQueue: action,
+      transferUnit: action,
     });
 
     this.rootStore = _rootStore;
@@ -343,4 +392,72 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
 
   clearIssueUnit = async (workspaceSlug: string, projectId: string, issueId: string) =>
     this.service.clearIssueOrganizationalUnit(workspaceSlug, projectId, issueId);
+
+  // --- the area's queue ---------------------------------------------------
+
+  getQueueByUnitId = (unitId: string): IUnitQueueRow[] => this.queueByUnit[unitId] ?? [];
+
+  fetchQueue = async (
+    workspaceSlug: string,
+    unitId: string,
+    filters?: { routing_state?: string; project?: string; executor?: string; overdue?: boolean }
+  ) => {
+    const rows = await this.service.getUnitQueue(workspaceSlug, unitId, filters);
+    runInAction(() => {
+      this.queueByUnit[unitId] = rows;
+    });
+    return rows;
+  };
+
+  fetchDecisions = async (workspaceSlug: string, unitId: string, issueId?: string) =>
+    this.service.getUnitDecisions(workspaceSlug, unitId, issueId);
+
+  fetchCandidates = async (workspaceSlug: string, projectId: string, issueId: string) =>
+    this.service.getAssignmentCandidates(workspaceSlug, projectId, issueId);
+
+  /**
+   * @description Every action refetches the queue instead of patching the row.
+   * Assigning changes what everybody else may do with it, and the server is
+   * the only thing that knows — a locally patched row would show a stale set
+   * of actions to whoever is looking at the same queue.
+   */
+  claim = async (workspaceSlug: string, unitId: string, projectId: string, issueId: string) => {
+    await this.service.claimIssue(workspaceSlug, projectId, issueId);
+    await this.fetchQueue(workspaceSlug, unitId);
+  };
+
+  assignTo = async (
+    workspaceSlug: string,
+    unitId: string,
+    projectId: string,
+    issueId: string,
+    primaryExecutor: string,
+    expectedDecisionId?: string | null
+  ) => {
+    await this.service.assignIssueTo(workspaceSlug, projectId, issueId, primaryExecutor, { expectedDecisionId });
+    await this.fetchQueue(workspaceSlug, unitId);
+  };
+
+  returnToQueue = async (
+    workspaceSlug: string,
+    unitId: string,
+    projectId: string,
+    issueId: string,
+    reason = ""
+  ) => {
+    await this.service.returnIssueToQueue(workspaceSlug, projectId, issueId, reason);
+    await this.fetchQueue(workspaceSlug, unitId);
+  };
+
+  transferUnit = async (
+    workspaceSlug: string,
+    unitId: string,
+    projectId: string,
+    issueId: string,
+    destinationUnitId: string,
+    reason = ""
+  ) => {
+    await this.service.transferIssueUnit(workspaceSlug, projectId, issueId, destinationUnitId, reason);
+    await this.fetchQueue(workspaceSlug, unitId);
+  };
 }

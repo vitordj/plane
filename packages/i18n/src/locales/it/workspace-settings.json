@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "Persone",
-          "back_aria": "Torna a tutte le aree"
+          "back_aria": "Torna a tutte le aree",
+          "tab_work": "Lavoro"
         },
         "members": {
           "select_person": "Selezioni una persona",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "La proiezione dei processi non è abilitata su questa istanza.",
           "directory_workspace_not_found": "Quello spazio di lavoro non esiste più.",
           "directory_token_required": "Emetta un token SCIM prima di attivare il provisioning da directory."
+        },
+        "queue": {
+          "inbox": "In arrivo",
+          "inbox_empty": "Non c’è nulla in attesa. Tutto ciò che è di quest’area ha qualcuno.",
+          "in_progress": "In corso",
+          "in_progress_empty": "Al momento nessuno sta portando avanti nulla per quest’area.",
+          "unknown_executor": "Senza responsabile",
+          "claim": "Prendo io",
+          "assign_to": "Assegna a…",
+          "return": "Rimetti in coda",
+          "overdue": "In ritardo",
+          "overdue_tooltip": "Nessuno l’ha preso entro il termine promesso dall’area.",
+          "age_minutes": "{count, plural, one{# minuto} other{# minuti}}",
+          "age_hours": "{count, plural, one{# ora} other{# ore}}",
+          "age_days": "{count, plural, one{# giorno} other{# giorni}}",
+          "reason": {
+            "new_item": "Appena arrivato",
+            "awaiting_coordinator": "In attesa del coordinatore",
+            "awaiting_claim": "In attesa che qualcuno lo prenda",
+            "no_eligible_member": "Non c’era nessuno disponibile",
+            "executor_unavailable": "La persona non è più disponibile",
+            "manually_returned": "Restituito"
+          },
+          "excluded_reason": {
+            "policy_limit": "al limite dell’area",
+            "member_limit": "al proprio limite",
+            "unavailable": "non disponibile",
+            "opted_out": "non accetta nuovo lavoro"
+          },
+          "assign_modal": {
+            "title": "Chi se ne occupa?",
+            "nobody": "Nessuno di quest’area può prendere lavoro in questo progetto.",
+            "excluded": "Non possono prenderlo ora",
+            "open_items": "{count, plural, one{# elemento aperto} other{# elementi aperti}}"
+          },
+          "toast": {
+            "assigned": "Assegnato",
+            "not_assigned": "Impossibile assegnarlo",
+            "claimed": "È tuo",
+            "not_claimed": "Impossibile prenderlo",
+            "returned": "Di nuovo in coda",
+            "not_returned": "Impossibile restituirlo"
+          }
         }
       }
     },

@@ -11,3 +11,7 @@ export * from "./unit-form-modal";
 export * from "./unit-list";
 export * from "./unit-members-tab";
 export * from "./unit-projects-tab";
+export * from "./assign-member-modal";
+export * from "./queue-item-row";
+export * from "./queue-list";
+export * from "./unit-work-tab";

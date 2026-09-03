@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "メンバー",
-          "back_aria": "すべてのエリアに戻る"
+          "back_aria": "すべてのエリアに戻る",
+          "tab_work": "作業"
         },
         "members": {
           "select_person": "メンバーを選択",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "このインスタンスではプロセス投影が有効になっていません。",
           "directory_workspace_not_found": "そのワークスペースは存在しません。",
           "directory_token_required": "ディレクトリからのプロビジョニングを有効にする前に、SCIM トークンを発行してください。"
+        },
+        "queue": {
+          "inbox": "受信トレイ",
+          "inbox_empty": "待っているものはありません。このエリアの作業には、すべて担当者がいます。",
+          "in_progress": "進行中",
+          "in_progress_empty": "現在、このエリアの作業を担当している人はいません。",
+          "unknown_executor": "担当者なし",
+          "claim": "引き受ける",
+          "assign_to": "担当者を指定…",
+          "return": "キューに戻す",
+          "overdue": "期限超過",
+          "overdue_tooltip": "エリアが約束した期限までに、誰も引き受けませんでした。",
+          "age_minutes": "{count, plural, other{#分}}",
+          "age_hours": "{count, plural, other{#時間}}",
+          "age_days": "{count, plural, other{#日}}",
+          "reason": {
+            "new_item": "届いたばかり",
+            "awaiting_coordinator": "コーディネーター待ち",
+            "awaiting_claim": "引き受け待ち",
+            "no_eligible_member": "対応できる人がいませんでした",
+            "executor_unavailable": "担当者が対応できなくなりました",
+            "manually_returned": "差し戻し"
+          },
+          "excluded_reason": {
+            "policy_limit": "エリアの上限に達しています",
+            "member_limit": "本人の上限に達しています",
+            "unavailable": "対応できません",
+            "opted_out": "新しい作業を受け付けていません"
+          },
+          "assign_modal": {
+            "title": "誰が担当しますか？",
+            "nobody": "このエリアには、このプロジェクトの作業を担当できる人がいません。",
+            "excluded": "今は担当できません",
+            "open_items": "{count, plural, other{未完了 #件}}"
+          },
+          "toast": {
+            "assigned": "割り当てました",
+            "not_assigned": "割り当てられませんでした",
+            "claimed": "あなたの担当になりました",
+            "not_claimed": "引き受けられませんでした",
+            "returned": "キューに戻しました",
+            "not_returned": "戻せませんでした"
+          }
         }
       }
     },

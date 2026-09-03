@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "Orang",
-          "back_aria": "Kembali ke semua area"
+          "back_aria": "Kembali ke semua area",
+          "tab_work": "Pekerjaan"
         },
         "members": {
           "select_person": "Pilih seseorang",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "Proyeksi proses tidak diaktifkan di instans ini.",
           "directory_workspace_not_found": "Ruang kerja itu sudah tidak ada.",
           "directory_token_required": "Terbitkan token SCIM sebelum mengaktifkan penyediaan dari direktori."
+        },
+        "queue": {
+          "inbox": "Kotak masuk",
+          "inbox_empty": "Tidak ada yang menunggu. Semua milik area ini sudah ada penanggung jawabnya.",
+          "in_progress": "Sedang dikerjakan",
+          "in_progress_empty": "Saat ini tidak ada yang mengerjakan apa pun untuk area ini.",
+          "unknown_executor": "Belum ada penanggung jawab",
+          "claim": "Saya ambil",
+          "assign_to": "Tugaskan ke…",
+          "return": "Kembalikan ke antrean",
+          "overdue": "Terlambat",
+          "overdue_tooltip": "Tidak ada yang mengambilnya sampai batas waktu yang dijanjikan area ini.",
+          "age_minutes": "{count, plural, other{# menit}}",
+          "age_hours": "{count, plural, other{# jam}}",
+          "age_days": "{count, plural, other{# hari}}",
+          "reason": {
+            "new_item": "Baru masuk",
+            "awaiting_coordinator": "Menunggu koordinator",
+            "awaiting_claim": "Menunggu diambil",
+            "no_eligible_member": "Tidak ada yang tersedia",
+            "executor_unavailable": "Orangnya menjadi tidak tersedia",
+            "manually_returned": "Dikembalikan"
+          },
+          "excluded_reason": {
+            "policy_limit": "sudah di batas area",
+            "member_limit": "sudah di batasnya sendiri",
+            "unavailable": "tidak tersedia",
+            "opted_out": "tidak menerima pekerjaan baru"
+          },
+          "assign_modal": {
+            "title": "Siapa yang mengambil ini?",
+            "nobody": "Tidak ada di area ini yang bisa mengambil pekerjaan di proyek ini.",
+            "excluded": "Tidak bisa mengambil sekarang",
+            "open_items": "{count, plural, other{# item terbuka}}"
+          },
+          "toast": {
+            "assigned": "Ditugaskan",
+            "not_assigned": "Tidak bisa ditugaskan",
+            "claimed": "Jadi milik Anda",
+            "not_claimed": "Tidak bisa diambil",
+            "returned": "Kembali ke antrean",
+            "not_returned": "Tidak bisa dikembalikan"
+          }
         }
       }
     },

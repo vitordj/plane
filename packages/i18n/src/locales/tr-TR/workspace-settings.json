@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "Kişiler",
-          "back_aria": "Tüm alanlara dön"
+          "back_aria": "Tüm alanlara dön",
+          "tab_work": "İş"
         },
         "members": {
           "select_person": "Bir kişi seçin",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "Süreç yansıtma bu sunucuda etkin değil.",
           "directory_workspace_not_found": "Bu çalışma alanı artık yok.",
           "directory_token_required": "Dizin sağlamayı açmadan önce bir SCIM belirteci oluşturun."
+        },
+        "queue": {
+          "inbox": "Gelen kutusu",
+          "inbox_empty": "Bekleyen bir şey yok. Bu alana ait her işin bir sahibi var.",
+          "in_progress": "Devam eden",
+          "in_progress_empty": "Şu anda bu alan için kimse bir şey yürütmüyor.",
+          "unknown_executor": "Sahipsiz",
+          "claim": "Ben alıyorum",
+          "assign_to": "Şuna ata…",
+          "return": "Sıraya geri gönder",
+          "overdue": "Gecikmiş",
+          "overdue_tooltip": "Alanın söz verdiği süre içinde kimse üstlenmedi.",
+          "age_minutes": "{count, plural, one{# dakika} other{# dakika}}",
+          "age_hours": "{count, plural, one{# saat} other{# saat}}",
+          "age_days": "{count, plural, one{# gün} other{# gün}}",
+          "reason": {
+            "new_item": "Yeni geldi",
+            "awaiting_coordinator": "Koordinatör bekleniyor",
+            "awaiting_claim": "Üstlenilmeyi bekliyor",
+            "no_eligible_member": "Uygun kimse yoktu",
+            "executor_unavailable": "Kişi uygun olmaktan çıktı",
+            "manually_returned": "Geri verildi"
+          },
+          "excluded_reason": {
+            "policy_limit": "alan sınırında",
+            "member_limit": "kendi sınırında",
+            "unavailable": "uygun değil",
+            "opted_out": "yeni iş almıyor"
+          },
+          "assign_modal": {
+            "title": "Bunu kim üstlenecek?",
+            "nobody": "Bu alandan kimse bu projede iş üstlenemez.",
+            "excluded": "Şu anda üstlenemezler",
+            "open_items": "{count, plural, one{# açık öğe} other{# açık öğe}}"
+          },
+          "toast": {
+            "assigned": "Atandı",
+            "not_assigned": "Atanamadı",
+            "claimed": "Sizin oldu",
+            "not_claimed": "Üstlenilemedi",
+            "returned": "Sıraya döndü",
+            "not_returned": "Geri gönderilemedi"
+          }
         }
       }
     },

@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "Люди",
-          "back_aria": "Назад до всіх областей"
+          "back_aria": "Назад до всіх областей",
+          "tab_work": "Робота"
         },
         "members": {
           "select_person": "Виберіть людину",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "Проєкція процесів не увімкнена на цьому екземплярі.",
           "directory_workspace_not_found": "Цього робочого простору більше немає.",
           "directory_token_required": "Випустіть токен SCIM, перш ніж вмикати провізіонування з каталогу."
+        },
+        "queue": {
+          "inbox": "Вхідні",
+          "inbox_empty": "Нічого не чекає. Усе, що належить цій області, має виконавця.",
+          "in_progress": "У роботі",
+          "in_progress_empty": "Зараз ніхто не веде задач цієї області.",
+          "unknown_executor": "Без виконавця",
+          "claim": "Беру",
+          "assign_to": "Призначити…",
+          "return": "Повернути в чергу",
+          "overdue": "Прострочено",
+          "overdue_tooltip": "Ніхто не взяв це у строк, який пообіцяла область.",
+          "age_minutes": "{count, plural, one{# хвилина} few{# хвилини} many{# хвилин} other{# хвилини}}",
+          "age_hours": "{count, plural, one{# година} few{# години} many{# годин} other{# години}}",
+          "age_days": "{count, plural, one{# день} few{# дні} many{# днів} other{# дня}}",
+          "reason": {
+            "new_item": "Щойно надійшло",
+            "awaiting_coordinator": "Чекає координатора",
+            "awaiting_claim": "Чекає, доки хтось візьме",
+            "no_eligible_member": "Нікого не було доступно",
+            "executor_unavailable": "Виконавець став недоступним",
+            "manually_returned": "Повернуто"
+          },
+          "excluded_reason": {
+            "policy_limit": "досягнуто ліміт області",
+            "member_limit": "досягнуто власний ліміт",
+            "unavailable": "недоступний",
+            "opted_out": "не бере нову роботу"
+          },
+          "assign_modal": {
+            "title": "Хто це візьме?",
+            "nobody": "Ніхто з цієї області не може взяти роботу в цьому проєкті.",
+            "excluded": "Зараз узяти не можуть",
+            "open_items": "{count, plural, one{# відкрита задача} few{# відкриті задачі} many{# відкритих задач} other{# відкритої задачі}}"
+          },
+          "toast": {
+            "assigned": "Призначено",
+            "not_assigned": "Не вдалося призначити",
+            "claimed": "Тепер ваше",
+            "not_claimed": "Не вдалося взяти",
+            "returned": "Знову в черзі",
+            "not_returned": "Не вдалося повернути"
+          }
         }
       }
     },

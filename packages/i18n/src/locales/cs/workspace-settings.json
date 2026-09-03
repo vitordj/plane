@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "Lidé",
-          "back_aria": "Zpět na všechny oblasti"
+          "back_aria": "Zpět na všechny oblasti",
+          "tab_work": "Práce"
         },
         "members": {
           "select_person": "Vyberte osobu",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "Projekce procesů není v této instanci zapnutá.",
           "directory_workspace_not_found": "Tento pracovní prostor už neexistuje.",
           "directory_token_required": "Před zapnutím provisioningu z adresáře vydejte token SCIM."
+        },
+        "queue": {
+          "inbox": "Došlé",
+          "inbox_empty": "Nic nečeká. Všechno, co patří této oblasti, má svého člověka.",
+          "in_progress": "Probíhá",
+          "in_progress_empty": "Teď nikdo nic za tuto oblast nedělá.",
+          "unknown_executor": "Bez řešitele",
+          "claim": "Beru si",
+          "assign_to": "Přiřadit…",
+          "return": "Vrátit do fronty",
+          "overdue": "Po termínu",
+          "overdue_tooltip": "Nikdo si to nevzal do termínu, který oblast slíbila.",
+          "age_minutes": "{count, plural, one{# minuta} few{# minuty} many{# minuty} other{# minut}}",
+          "age_hours": "{count, plural, one{# hodina} few{# hodiny} many{# hodiny} other{# hodin}}",
+          "age_days": "{count, plural, one{# den} few{# dny} many{# dne} other{# dní}}",
+          "reason": {
+            "new_item": "Právě přišlo",
+            "awaiting_coordinator": "Čeká na koordinátora",
+            "awaiting_claim": "Čeká, až si to někdo vezme",
+            "no_eligible_member": "Nikdo nebyl k dispozici",
+            "executor_unavailable": "Osoba přestala být k dispozici",
+            "manually_returned": "Vráceno"
+          },
+          "excluded_reason": {
+            "policy_limit": "na limitu oblasti",
+            "member_limit": "na vlastním limitu",
+            "unavailable": "nedostupný",
+            "opted_out": "nepřijímá novou práci"
+          },
+          "assign_modal": {
+            "title": "Kdo si to vezme?",
+            "nobody": "Nikdo z této oblasti si nemůže vzít práci v tomto projektu.",
+            "excluded": "Teď si to vzít nemohou",
+            "open_items": "{count, plural, one{# otevřená položka} few{# otevřené položky} many{# otevřené položky} other{# otevřených položek}}"
+          },
+          "toast": {
+            "assigned": "Přiřazeno",
+            "not_assigned": "Nepodařilo se přiřadit",
+            "claimed": "Je to vaše",
+            "not_claimed": "Nepodařilo se vzít",
+            "returned": "Zpět ve frontě",
+            "not_returned": "Nepodařilo se vrátit"
+          }
         }
       }
     },

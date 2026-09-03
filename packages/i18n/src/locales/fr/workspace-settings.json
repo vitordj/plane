@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "Personnes",
-          "back_aria": "Retour à tous les domaines"
+          "back_aria": "Retour à tous les domaines",
+          "tab_work": "Travail"
         },
         "members": {
           "select_person": "Sélectionner une personne",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "La projection des processus n’est pas activée sur cette instance.",
           "directory_workspace_not_found": "Cet espace de travail n’existe plus.",
           "directory_token_required": "Émettez un jeton SCIM avant d’activer le provisionnement par annuaire."
+        },
+        "queue": {
+          "inbox": "Boîte de réception",
+          "inbox_empty": "Rien n’attend. Tout ce qui relève de cette zone a quelqu’un.",
+          "in_progress": "En cours",
+          "in_progress_empty": "Personne ne porte quoi que ce soit pour cette zone en ce moment.",
+          "unknown_executor": "Sans responsable",
+          "claim": "Prendre",
+          "assign_to": "Attribuer à…",
+          "return": "Remettre dans la file",
+          "overdue": "En retard",
+          "overdue_tooltip": "Personne ne l’a pris dans le délai promis par la zone.",
+          "age_minutes": "{count, plural, one{# minute} other{# minutes}}",
+          "age_hours": "{count, plural, one{# heure} other{# heures}}",
+          "age_days": "{count, plural, one{# jour} other{# jours}}",
+          "reason": {
+            "new_item": "Vient d’arriver",
+            "awaiting_coordinator": "En attente du coordinateur",
+            "awaiting_claim": "En attente d’une prise en charge",
+            "no_eligible_member": "Personne n’était disponible",
+            "executor_unavailable": "La personne est devenue indisponible",
+            "manually_returned": "Rendu"
+          },
+          "excluded_reason": {
+            "policy_limit": "à la limite de la zone",
+            "member_limit": "à sa propre limite",
+            "unavailable": "indisponible",
+            "opted_out": "ne prend pas de nouveau travail"
+          },
+          "assign_modal": {
+            "title": "Qui s’en charge ?",
+            "nobody": "Personne de cette zone ne peut prendre de travail dans ce projet.",
+            "excluded": "Ne peuvent pas le prendre maintenant",
+            "open_items": "{count, plural, one{# élément ouvert} other{# éléments ouverts}}"
+          },
+          "toast": {
+            "assigned": "Attribué",
+            "not_assigned": "Impossible d’attribuer",
+            "claimed": "C’est à vous",
+            "not_claimed": "Impossible de le prendre",
+            "returned": "De retour dans la file",
+            "not_returned": "Impossible de le rendre"
+          }
         }
       }
     },

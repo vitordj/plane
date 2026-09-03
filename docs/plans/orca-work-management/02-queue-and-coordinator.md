@@ -34,7 +34,7 @@ coordenador de outra área, lead sem coordenação, membro da área em
 
 ---
 
-## 2.3 — Interface `[ ]`
+## 2.3 — Interface `[~]`
 
 Padrão: reutilizar componentes de `@plane/ui` e `@plane/propel`; nenhum CSS
 novo fora do tema. Todas as strings no catálogo i18n
@@ -59,7 +59,11 @@ novo fora do tema. Todas as strings no catálogo i18n
 **Aceite.**
 - [ ] `pnpm --filter web check:lint` e `check:types` limpos (local).
 - [ ] `check:sync` do i18n verde.
-- [ ] Teste de store para fila e ações (vitest) e um teste de componente para `queue-list.tsx`.
+- [-] Teste de store (vitest) e teste de componente: **`apps/web` não tem
+  runner de teste configurado** (sem vitest, sem config, sem dependência).
+  Introduzir um é uma decisão própria, não um detalhe deste item — abrir como
+  item separado se a equipe quiser. A cobertura da fila hoje é de backend
+  (`test_queue_endpoints.py`), que é onde as regras vivem.
 
 ---
 

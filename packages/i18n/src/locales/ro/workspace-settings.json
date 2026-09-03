@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "Persoane",
-          "back_aria": "Înapoi la toate zonele"
+          "back_aria": "Înapoi la toate zonele",
+          "tab_work": "Lucru"
         },
         "members": {
           "select_person": "Selectați o persoană",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "Proiecția proceselor nu este activată pe această instanță.",
           "directory_workspace_not_found": "Acest spațiu de lucru nu mai există.",
           "directory_token_required": "Emiteți un token SCIM înainte de a activa provizionarea din director."
+        },
+        "queue": {
+          "inbox": "Primite",
+          "inbox_empty": "Nu așteaptă nimic. Tot ce ține de această zonă are pe cineva.",
+          "in_progress": "În lucru",
+          "in_progress_empty": "Acum nimeni nu duce nimic pentru această zonă.",
+          "unknown_executor": "Fără responsabil",
+          "claim": "Preiau eu",
+          "assign_to": "Atribuie lui…",
+          "return": "Trimite înapoi în coadă",
+          "overdue": "Întârziat",
+          "overdue_tooltip": "Nimeni nu l-a preluat până la termenul promis de zonă.",
+          "age_minutes": "{count, plural, one{# minut} few{# minute} other{# de minute}}",
+          "age_hours": "{count, plural, one{# oră} few{# ore} other{# de ore}}",
+          "age_days": "{count, plural, one{# zi} few{# zile} other{# de zile}}",
+          "reason": {
+            "new_item": "Tocmai a sosit",
+            "awaiting_coordinator": "Așteaptă coordonatorul",
+            "awaiting_claim": "Așteaptă să fie preluat",
+            "no_eligible_member": "Nu era nimeni disponibil",
+            "executor_unavailable": "Persoana a devenit indisponibilă",
+            "manually_returned": "Returnat"
+          },
+          "excluded_reason": {
+            "policy_limit": "la limita zonei",
+            "member_limit": "la propria limită",
+            "unavailable": "indisponibil",
+            "opted_out": "nu preia muncă nouă"
+          },
+          "assign_modal": {
+            "title": "Cine îl preia?",
+            "nobody": "Nimeni din această zonă nu poate prelua muncă în acest proiect.",
+            "excluded": "Nu îl pot prelua acum",
+            "open_items": "{count, plural, one{# element deschis} few{# elemente deschise} other{# de elemente deschise}}"
+          },
+          "toast": {
+            "assigned": "Atribuit",
+            "not_assigned": "Nu s-a putut atribui",
+            "claimed": "Este al tău",
+            "not_claimed": "Nu s-a putut prelua",
+            "returned": "Înapoi în coadă",
+            "not_returned": "Nu s-a putut returna"
+          }
         }
       }
     },

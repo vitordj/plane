@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "멤버",
-          "back_aria": "모든 영역으로 돌아가기"
+          "back_aria": "모든 영역으로 돌아가기",
+          "tab_work": "작업"
         },
         "members": {
           "select_person": "멤버 선택",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "이 인스턴스에서는 프로세스 투영이 활성화되어 있지 않습니다.",
           "directory_workspace_not_found": "해당 작업 공간이 더 이상 없습니다.",
           "directory_token_required": "디렉터리 프로비저닝을 켜기 전에 SCIM 토큰을 발급하십시오."
+        },
+        "queue": {
+          "inbox": "수신함",
+          "inbox_empty": "기다리는 항목이 없습니다. 이 영역의 작업에는 모두 담당자가 있습니다.",
+          "in_progress": "진행 중",
+          "in_progress_empty": "지금 이 영역의 작업을 맡고 있는 사람이 없습니다.",
+          "unknown_executor": "담당자 없음",
+          "claim": "제가 맡겠습니다",
+          "assign_to": "담당자 지정…",
+          "return": "대기열로 되돌리기",
+          "overdue": "기한 초과",
+          "overdue_tooltip": "영역이 약속한 기한까지 아무도 맡지 않았습니다.",
+          "age_minutes": "{count, plural, other{#분}}",
+          "age_hours": "{count, plural, other{#시간}}",
+          "age_days": "{count, plural, other{#일}}",
+          "reason": {
+            "new_item": "방금 도착",
+            "awaiting_coordinator": "코디네이터 대기 중",
+            "awaiting_claim": "맡을 사람 대기 중",
+            "no_eligible_member": "가능한 사람이 없었습니다",
+            "executor_unavailable": "담당자가 맡을 수 없게 되었습니다",
+            "manually_returned": "반환됨"
+          },
+          "excluded_reason": {
+            "policy_limit": "영역 한도에 도달",
+            "member_limit": "본인 한도에 도달",
+            "unavailable": "불가능",
+            "opted_out": "새 작업을 받지 않음"
+          },
+          "assign_modal": {
+            "title": "누가 맡을까요?",
+            "nobody": "이 영역에는 이 프로젝트의 작업을 맡을 수 있는 사람이 없습니다.",
+            "excluded": "지금은 맡을 수 없음",
+            "open_items": "{count, plural, other{진행 중 #건}}"
+          },
+          "toast": {
+            "assigned": "배정했습니다",
+            "not_assigned": "배정하지 못했습니다",
+            "claimed": "이제 담당자입니다",
+            "not_claimed": "맡지 못했습니다",
+            "returned": "대기열로 돌아갔습니다",
+            "not_returned": "되돌리지 못했습니다"
+          }
         }
       }
     },

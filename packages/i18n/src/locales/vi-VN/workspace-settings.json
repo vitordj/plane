@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "Mọi người",
-          "back_aria": "Quay lại tất cả khu vực"
+          "back_aria": "Quay lại tất cả khu vực",
+          "tab_work": "Công việc"
         },
         "members": {
           "select_person": "Chọn một người",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "Chiếu quy trình chưa được bật trên máy chủ này.",
           "directory_workspace_not_found": "Không gian làm việc đó không còn tồn tại.",
           "directory_token_required": "Hãy cấp token SCIM trước khi bật cấp phát từ thư mục."
+        },
+        "queue": {
+          "inbox": "Hộp đến",
+          "inbox_empty": "Không có gì đang chờ. Mọi việc của khu vực này đều đã có người.",
+          "in_progress": "Đang thực hiện",
+          "in_progress_empty": "Hiện không ai đang làm việc gì cho khu vực này.",
+          "unknown_executor": "Chưa có người",
+          "claim": "Tôi nhận",
+          "assign_to": "Giao cho…",
+          "return": "Trả lại hàng đợi",
+          "overdue": "Quá hạn",
+          "overdue_tooltip": "Không ai nhận trong thời hạn khu vực đã hứa.",
+          "age_minutes": "{count, plural, other{# phút}}",
+          "age_hours": "{count, plural, other{# giờ}}",
+          "age_days": "{count, plural, other{# ngày}}",
+          "reason": {
+            "new_item": "Vừa đến",
+            "awaiting_coordinator": "Đang chờ điều phối viên",
+            "awaiting_claim": "Đang chờ có người nhận",
+            "no_eligible_member": "Không có ai khả dụng",
+            "executor_unavailable": "Người phụ trách trở nên không khả dụng",
+            "manually_returned": "Đã trả lại"
+          },
+          "excluded_reason": {
+            "policy_limit": "đã tới giới hạn của khu vực",
+            "member_limit": "đã tới giới hạn của họ",
+            "unavailable": "không khả dụng",
+            "opted_out": "không nhận việc mới"
+          },
+          "assign_modal": {
+            "title": "Ai sẽ nhận việc này?",
+            "nobody": "Không ai trong khu vực này có thể nhận việc ở dự án này.",
+            "excluded": "Hiện không thể nhận",
+            "open_items": "{count, plural, other{# mục đang mở}}"
+          },
+          "toast": {
+            "assigned": "Đã giao",
+            "not_assigned": "Không giao được",
+            "claimed": "Việc của bạn",
+            "not_claimed": "Không nhận được",
+            "returned": "Đã về hàng đợi",
+            "not_returned": "Không trả lại được"
+          }
         }
       }
     },

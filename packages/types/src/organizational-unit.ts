@@ -216,3 +216,84 @@ export interface IDirectoryIdentity {
   last_seen_at: string | null;
   created_at: string;
 }
+
+/** One row of an area's queue, as the API returns it. */
+export interface IUnitQueueRow {
+  id: string;
+  issue_id: string;
+  sequence_id: number;
+  identifier: string;
+  name: string;
+  project_id: string;
+  state: { id: string; group: string } | null;
+  routing_state: TRoutingState;
+  queue_reason: TQueueReason;
+  queued_at: string | null;
+  age_seconds: number | null;
+  assignment_due_at: string | null;
+  assignment_overdue: boolean;
+  target_date: string | null;
+  primary_executor: { id: string; display_name: string; avatar_url: string } | null;
+  current_decision: string | null;
+  /**
+   * What the person reading may do with this row. Decided by the API, never
+   * inferred here: the interface would have to reimplement the area's policy,
+   * and the two would drift.
+   */
+  can_claim: boolean;
+  can_assign: boolean;
+  can_return: boolean;
+}
+
+/** Somebody an area could hand a work item to, with the load that ranks them. */
+export interface IAssignmentCandidate {
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  total_open: number;
+  unit_open: number;
+  last_auto_at: string | null;
+  excluded_reason?: string;
+}
+
+/** One recorded decision about who executes a work item. */
+export interface IAssignmentDecision {
+  id: string;
+  issue: string;
+  organizational_unit: string;
+  trigger: string;
+  requested_mode: string | null;
+  effective_mode: TAssignmentMode;
+  policy_source: string;
+  policy_version: number | null;
+  algorithm_version: string;
+  outcome: "assigned" | "queued" | "allocation_failed" | "rejected";
+  candidates_snapshot: IAssignmentCandidate[];
+  chosen_assignee: string | null;
+  previous_primary_executor: string | null;
+  decided_by: string | null;
+  supersedes: IAssignmentDecision | string | null;
+  reason: string;
+  created_at: string;
+}
+
+/** The stored policy of an area, or of one of its projects. */
+export interface IAssignmentPolicy {
+  id: string;
+  organizational_unit: string;
+  unit_project: string | null;
+  default_mode: TAssignmentMode;
+  allowed_modes: TAssignmentMode[];
+  assignment_sla_seconds: number | null;
+  max_open_items_per_member: number | null;
+  is_active: boolean;
+  version: number;
+}
+
+/** Somebody who runs an area's queue. */
+export interface IUnitCoordinator {
+  id: string;
+  workspace_member: string;
+  display_name: string;
+  avatar_url: string;
+}

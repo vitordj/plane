@@ -15,6 +15,7 @@ import type { IOrganizationalUnit } from "@plane/types";
 import { OrganizationalUnitFormModal } from "./unit-form-modal";
 import { OrganizationalUnitMembersTab } from "./unit-members-tab";
 import { OrganizationalUnitProjectsTab } from "./unit-projects-tab";
+import { OrganizationalUnitWorkTab } from "./unit-work-tab";
 
 type Props = {
   workspaceSlug: string;
@@ -22,17 +23,20 @@ type Props = {
   onBack: () => void;
 };
 
-type TTab = "members" | "projects";
+type TTab = "members" | "projects" | "work";
 
 const OU = "workspace_settings.settings.organizational_units";
 
 export const OrganizationalUnitDetail = observer(function OrganizationalUnitDetail(props: Props) {
   const { workspaceSlug, unit, onBack } = props;
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<TTab>("members");
+  const [activeTab, setActiveTab] = useState<TTab>("work");
   const [isEditing, setIsEditing] = useState(false);
 
-  const tabs: { key: TTab; label: string; count: number }[] = [
+  // Work first: somebody opening an area almost always wants to know what it
+  // has to do, not who is in it.
+  const tabs: { key: TTab; label: string; count?: number }[] = [
+    { key: "work", label: t(`${OU}.detail.tab_work`) },
     { key: "members", label: t(`${OU}.detail.tab_people`), count: unit.member_count },
     { key: "projects", label: t("common.projects"), count: unit.project_count },
   ];
@@ -74,12 +78,16 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
             onClick={() => setActiveTab(tab.key)}
           >
             {tab.label}
-            <span className="text-xs text-custom-text-400 ml-1.5">{tab.count}</span>
+            {tab.count !== undefined && (
+              <span className="text-xs text-custom-text-400 ml-1.5">{tab.count}</span>
+            )}
           </button>
         ))}
       </div>
 
-      {activeTab === "members" ? (
+      {activeTab === "work" ? (
+        <OrganizationalUnitWorkTab workspaceSlug={workspaceSlug} unitId={unit.id} />
+      ) : activeTab === "members" ? (
         <OrganizationalUnitMembersTab workspaceSlug={workspaceSlug} unitId={unit.id} />
       ) : (
         <OrganizationalUnitProjectsTab workspaceSlug={workspaceSlug} unitId={unit.id} />

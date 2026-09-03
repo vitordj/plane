@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "Personen",
-          "back_aria": "Zurück zu allen Bereichen"
+          "back_aria": "Zurück zu allen Bereichen",
+          "tab_work": "Arbeit"
         },
         "members": {
           "select_person": "Person auswählen",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "Die Prozessprojektion ist auf dieser Instanz nicht aktiviert.",
           "directory_workspace_not_found": "Diesen Arbeitsbereich gibt es nicht mehr.",
           "directory_token_required": "Erst ein SCIM-Token ausstellen, dann die Verzeichnisbereitstellung einschalten."
+        },
+        "queue": {
+          "inbox": "Eingang",
+          "inbox_empty": "Nichts wartet. Alles, was diesem Bereich gehört, hat jemanden.",
+          "in_progress": "In Arbeit",
+          "in_progress_empty": "Derzeit trägt niemand etwas für diesen Bereich.",
+          "unknown_executor": "Ohne Zuständige",
+          "claim": "Übernehmen",
+          "assign_to": "Zuweisen an…",
+          "return": "Zurück in die Warteschlange",
+          "overdue": "Überfällig",
+          "overdue_tooltip": "Niemand hat es bis zu dem Zeitpunkt übernommen, den der Bereich zugesagt hat.",
+          "age_minutes": "{count, plural, one{# Minute} other{# Minuten}}",
+          "age_hours": "{count, plural, one{# Stunde} other{# Stunden}}",
+          "age_days": "{count, plural, one{# Tag} other{# Tage}}",
+          "reason": {
+            "new_item": "Gerade eingetroffen",
+            "awaiting_coordinator": "Wartet auf die Koordination",
+            "awaiting_claim": "Wartet auf Übernahme",
+            "no_eligible_member": "Niemand war verfügbar",
+            "executor_unavailable": "Die Person wurde nicht verfügbar",
+            "manually_returned": "Zurückgegeben"
+          },
+          "excluded_reason": {
+            "policy_limit": "am Limit des Bereichs",
+            "member_limit": "am eigenen Limit",
+            "unavailable": "nicht verfügbar",
+            "opted_out": "nimmt keine neue Arbeit an"
+          },
+          "assign_modal": {
+            "title": "Wer übernimmt das?",
+            "nobody": "Niemand in diesem Bereich kann in diesem Projekt Arbeit übernehmen.",
+            "excluded": "Können es gerade nicht übernehmen",
+            "open_items": "{count, plural, one{# offenes Element} other{# offene Elemente}}"
+          },
+          "toast": {
+            "assigned": "Zugewiesen",
+            "not_assigned": "Konnte nicht zugewiesen werden",
+            "claimed": "Gehört dir",
+            "not_claimed": "Konnte nicht übernommen werden",
+            "returned": "Zurück in der Warteschlange",
+            "not_returned": "Konnte nicht zurückgegeben werden"
+          }
         }
       }
     },

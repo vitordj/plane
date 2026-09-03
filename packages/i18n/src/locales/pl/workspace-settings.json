@@ -569,7 +569,8 @@
         },
         "detail": {
           "tab_people": "Osoby",
-          "back_aria": "Powrót do wszystkich obszarów"
+          "back_aria": "Powrót do wszystkich obszarów",
+          "tab_work": "Praca"
         },
         "members": {
           "select_person": "Wybierz osobę",
@@ -696,6 +697,49 @@
           "process_projection_disabled": "Projekcja procesów nie jest włączona w tej instancji.",
           "directory_workspace_not_found": "Ta przestrzeń robocza już nie istnieje.",
           "directory_token_required": "Wydaj token SCIM, zanim włączysz udostępnianie z katalogu."
+        },
+        "queue": {
+          "inbox": "Skrzynka",
+          "inbox_empty": "Nic nie czeka. Wszystko, co należy do tego obszaru, ma swoją osobę.",
+          "in_progress": "W toku",
+          "in_progress_empty": "Nikt teraz nie zajmuje się niczym z tego obszaru.",
+          "unknown_executor": "Bez osoby",
+          "claim": "Biorę",
+          "assign_to": "Przypisz do…",
+          "return": "Zwróć do kolejki",
+          "overdue": "Po terminie",
+          "overdue_tooltip": "Nikt nie przejął tego w terminie obiecanym przez obszar.",
+          "age_minutes": "{count, plural, one{# minuta} few{# minuty} many{# minut} other{# minuty}}",
+          "age_hours": "{count, plural, one{# godzina} few{# godziny} many{# godzin} other{# godziny}}",
+          "age_days": "{count, plural, one{# dzień} few{# dni} many{# dni} other{# dnia}}",
+          "reason": {
+            "new_item": "Właśnie przyszło",
+            "awaiting_coordinator": "Czeka na koordynatora",
+            "awaiting_claim": "Czeka, aż ktoś weźmie",
+            "no_eligible_member": "Nikt nie był dostępny",
+            "executor_unavailable": "Osoba stała się niedostępna",
+            "manually_returned": "Zwrócone"
+          },
+          "excluded_reason": {
+            "policy_limit": "na limicie obszaru",
+            "member_limit": "na własnym limicie",
+            "unavailable": "niedostępny",
+            "opted_out": "nie przyjmuje nowej pracy"
+          },
+          "assign_modal": {
+            "title": "Kto to weźmie?",
+            "nobody": "Nikt z tego obszaru nie może wziąć pracy w tym projekcie.",
+            "excluded": "Nie mogą tego teraz wziąć",
+            "open_items": "{count, plural, one{# otwarty element} few{# otwarte elementy} many{# otwartych elementów} other{# otwartego elementu}}"
+          },
+          "toast": {
+            "assigned": "Przypisano",
+            "not_assigned": "Nie udało się przypisać",
+            "claimed": "Jest twoje",
+            "not_claimed": "Nie udało się wziąć",
+            "returned": "Z powrotem w kolejce",
+            "not_returned": "Nie udało się zwrócić"
+          }
         }
       }
     },
