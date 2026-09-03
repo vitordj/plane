@@ -241,6 +241,64 @@ class OrganizationalUnitMembership(BaseModel):
         return f"{self.workspace_member_id} in {self.organizational_unit_id} ({self.role})"
 
 
+class OrganizationalUnitCoordinator(BaseModel):
+    """
+    Somebody who runs an area's queue without necessarily working in it.
+
+    @description A coordinator answers the question "whose problem is this
+    queue?". They see what is waiting, assign it, hand it back and move it
+    between areas — and they need access to the covered projects to do any of
+    that, which they inherit exactly like a member does, at Member level.
+
+    Deliberately separate from membership. A coordinator is not automatically
+    an executor: the ranking only ever picks members, so making somebody
+    responsible for a queue does not start pushing work at them. Somebody can
+    of course be both, and often is.
+
+    Attributes:
+        organizational_unit (OrganizationalUnit): The area they coordinate.
+        workspace_member (WorkspaceMember): The person.
+        workspace (Workspace): Denormalized for cheap querying.
+        is_active (bool): Coordination withdrawn keeps the row for history.
+    """
+
+    organizational_unit = models.ForeignKey(
+        OrganizationalUnit,
+        on_delete=models.CASCADE,
+        related_name="coordinators",
+    )
+    workspace_member = models.ForeignKey(
+        "db.WorkspaceMember",
+        on_delete=models.CASCADE,
+        related_name="orca_coordinations",
+    )
+    workspace = models.ForeignKey(
+        "db.Workspace",
+        on_delete=models.CASCADE,
+        related_name="orca_unit_coordinators",
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organizational_unit", "workspace_member"],
+                condition=Q(deleted_at__isnull=True),
+                name="orca_unit_coordinator_unique",
+            )
+        ]
+        indexes = [
+            models.Index(fields=["workspace", "is_active"], name="orca_coordinator_workspace_idx"),
+        ]
+        verbose_name = "Organizational Unit Coordinator"
+        verbose_name_plural = "Organizational Unit Coordinators"
+        db_table = "organizational_unit_coordinators"
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.workspace_member_id} coordinates {self.organizational_unit_id}"
+
+
 class OrganizationalUnitProject(BaseModel):
     """
     Link between an organizational unit and a project, carrying the project
@@ -327,10 +385,27 @@ class OrganizationalUnitGrant(BaseModel):
         on_delete=models.CASCADE,
         related_name="grants",
     )
+    # Null when the access came from coordinating the area rather than from
+    # belonging to it. Exactly one of the two is set; grant_source says which,
+    # so withdrawing coordination takes back only what coordination gave.
     membership = models.ForeignKey(
         OrganizationalUnitMembership,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="grants",
+    )
+    coordinator = models.ForeignKey(
+        "db.OrganizationalUnitCoordinator",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="grants",
+    )
+    grant_source = models.CharField(
+        max_length=16,
+        choices=[("membership", "Membership"), ("coordinator", "Coordination")],
+        default="membership",
     )
     unit_project = models.ForeignKey(
         OrganizationalUnitProject,

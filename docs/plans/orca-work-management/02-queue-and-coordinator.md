@@ -12,7 +12,7 @@ decisões. O **Gate 2-mínimo** é o que libera a API pública em produção.
 
 ---
 
-## 2.1 — Migração 0140: coordenadores e acesso reconciliado `[ ]`
+## 2.1 — Migração 0140: coordenadores e acesso reconciliado `[x]`
 
 - Modelo `OrganizationalUnitCoordinator` (RFC §5.2) em `organizational_unit.py`.
 - `org_unit_reconciler.py`: coordenadores ativos de uma área recebem `ProjectMember` (role Member, 15) em todos os projetos cobertos, com `OrganizationalUnitGrant` de origem própria. Adicionar campo `grant_source` (`membership` | `coordinator`) em `OrganizationalUnitGrant` na mesma migração, default `membership`, para que a remoção do coordenador retire só o que ele ganhou por isso e respeite o piso/proveniência já existentes. Reaproveitar toda a lógica de `baseline_role`/`last_applied_role`.

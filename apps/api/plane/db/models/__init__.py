@@ -85,6 +85,7 @@ from .organizational_unit import (
     OrganizationalUnit,
     OrganizationalUnitGrant,
     OrganizationalUnitMemberRole,
+    OrganizationalUnitCoordinator,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
     QueueReason,

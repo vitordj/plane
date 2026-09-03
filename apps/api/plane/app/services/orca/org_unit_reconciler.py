@@ -50,6 +50,7 @@ from django.utils import timezone
 
 # Module imports
 from plane.db.models import (
+    OrganizationalUnitCoordinator,
     OrganizationalProjectAccessState,
     OrganizationalUnit,
     OrganizationalUnitGrant,
@@ -128,6 +129,34 @@ def _max_edges() -> int:
     return int(getattr(settings, "ORCA_ORG_SYNC_MAX_EDGES", 100))
 
 
+# What a coordinator inherits on the projects their area covers. Member, not
+# whatever the area grants its members: a coordinator needs to see and move the
+# work, not to administer the project.
+COORDINATOR_ROLE = 15
+
+SOURCE_MEMBERSHIP = "membership"
+SOURCE_COORDINATOR = "coordinator"
+
+
+@dataclass(frozen=True)
+class AccessSource:
+    """
+    One reason somebody has inherited access to a project.
+
+    @description Belonging to an area and coordinating one are different
+    reasons with different consequences — losing one must not take away what
+    the other gave — so they are two kinds of source rather than one lumped
+    together.
+    """
+
+    kind: str
+    source_id: object
+    workspace_member_id: object
+    organizational_unit_id: object
+    unit_name: str
+    role: int
+
+
 def _active_sources(workspace_id, member_ids=None, project_ids=None):
     """
     Every (membership, unit-project) pair that currently sources inherited
@@ -168,19 +197,60 @@ def _active_sources(workspace_id, member_ids=None, project_ids=None):
     for membership in memberships:
         memberships_by_unit.setdefault(membership.organizational_unit_id, []).append(membership)
 
+    coordinator_filter = Q(
+        organizational_unit_id__in={up.organizational_unit_id for up in unit_projects},
+        is_active=True,
+        workspace_member__is_active=True,
+    )
+    if member_ids is not None:
+        coordinator_filter &= Q(workspace_member_id__in=member_ids)
+
+    coordinators_by_unit: dict = {}
+    for coordinator in OrganizationalUnitCoordinator.objects.filter(coordinator_filter).select_related(
+        "workspace_member", "organizational_unit"
+    ):
+        coordinators_by_unit.setdefault(coordinator.organizational_unit_id, []).append(coordinator)
+
     sources = []
     for unit_project in unit_projects:
+        unit_name = unit_project.organizational_unit.name
         for membership in memberships_by_unit.get(unit_project.organizational_unit_id, []):
-            sources.append((membership, unit_project))
+            sources.append(
+                (
+                    AccessSource(
+                        kind=SOURCE_MEMBERSHIP,
+                        source_id=membership.id,
+                        workspace_member_id=membership.workspace_member_id,
+                        organizational_unit_id=unit_project.organizational_unit_id,
+                        unit_name=unit_name,
+                        role=unit_project.default_role,
+                    ),
+                    unit_project,
+                )
+            )
+        for coordinator in coordinators_by_unit.get(unit_project.organizational_unit_id, []):
+            sources.append(
+                (
+                    AccessSource(
+                        kind=SOURCE_COORDINATOR,
+                        source_id=coordinator.id,
+                        workspace_member_id=coordinator.workspace_member_id,
+                        organizational_unit_id=unit_project.organizational_unit_id,
+                        unit_name=unit_name,
+                        role=COORDINATOR_ROLE,
+                    ),
+                    unit_project,
+                )
+            )
     return sources
 
 
 def _group_sources(sources) -> dict:
     """Index active sources by (workspace_member_id, project_id)."""
     grouped: dict = {}
-    for membership, unit_project in sources:
-        key = (membership.workspace_member_id, unit_project.project_id)
-        grouped.setdefault(key, []).append((membership, unit_project))
+    for source, unit_project in sources:
+        key = (source.workspace_member_id, unit_project.project_id)
+        grouped.setdefault(key, []).append((source, unit_project))
     return grouped
 
 
@@ -188,12 +258,14 @@ def _describe_sources(pairs) -> list[dict]:
     """Human-readable provenance for the effective-access response."""
     return [
         {
-            "organizational_unit_id": str(unit_project.organizational_unit_id),
-            "organizational_unit_name": unit_project.organizational_unit.name,
-            "membership_id": str(membership.id),
-            "role": unit_project.default_role,
+            "organizational_unit_id": str(source.organizational_unit_id),
+            "organizational_unit_name": source.unit_name,
+            "membership_id": str(source.source_id) if source.kind == SOURCE_MEMBERSHIP else None,
+            "coordinator_id": str(source.source_id) if source.kind == SOURCE_COORDINATOR else None,
+            "source": source.kind,
+            "role": source.role,
         }
-        for membership, unit_project in pairs
+        for source, unit_project in pairs
     ]
 
 
@@ -315,9 +387,7 @@ def plan_access(workspace_id, member_ids=None, project_ids=None) -> list[AccessC
             continue
         pairs = grouped.get((workspace_member_id, project_id), [])
         inherited = (
-            cap_role_to_workspace_role(
-                max(unit_project.default_role for _, unit_project in pairs), workspace_member.role
-            )
+            cap_role_to_workspace_role(max(source.role for source, _ in pairs), workspace_member.role)
             if pairs
             else None
         )
@@ -345,7 +415,7 @@ def _sync_grants(workspace_id, grouped, keys) -> None:
     revokes grants whose source disappeared, keeping revoked rows for audit.
     """
     existing = {
-        (grant.membership_id, grant.unit_project_id): grant
+        ((grant.coordinator_id or grant.membership_id), grant.unit_project_id): grant
         for grant in OrganizationalUnitGrant.objects.filter(
             workspace_id=workspace_id,
             workspace_member_id__in={key[0] for key in keys},
@@ -357,25 +427,27 @@ def _sync_grants(workspace_id, grouped, keys) -> None:
     to_update = []
 
     for (workspace_member_id, project_id), pairs in grouped.items():
-        for membership, unit_project in pairs:
-            live_keys.add((membership.id, unit_project.id))
-            grant = existing.get((membership.id, unit_project.id))
+        for source, unit_project in pairs:
+            live_keys.add((source.source_id, unit_project.id))
+            grant = existing.get((source.source_id, unit_project.id))
             if grant is None:
                 to_create.append(
                     OrganizationalUnitGrant(
                         organizational_unit_id=unit_project.organizational_unit_id,
-                        membership_id=membership.id,
+                        membership_id=source.source_id if source.kind == SOURCE_MEMBERSHIP else None,
+                        coordinator_id=source.source_id if source.kind == SOURCE_COORDINATOR else None,
+                        grant_source=source.kind,
                         unit_project_id=unit_project.id,
                         workspace_member_id=workspace_member_id,
                         project_id=project_id,
                         workspace_id=workspace_id,
-                        granted_role=unit_project.default_role,
+                        granted_role=source.role,
                         is_active=True,
                     )
                 )
-            elif not grant.is_active or grant.granted_role != unit_project.default_role:
+            elif not grant.is_active or grant.granted_role != source.role:
                 grant.is_active = True
-                grant.granted_role = unit_project.default_role
+                grant.granted_role = source.role
                 grant.revoked_at = None
                 to_update.append(grant)
 
@@ -517,9 +589,7 @@ def reconcile_access(workspace_id, member_ids=None, project_ids=None) -> list[Ac
                 continue
             pairs = grouped.get((workspace_member_id, project_id), [])
             inherited = (
-                cap_role_to_workspace_role(
-                    max(unit_project.default_role for _, unit_project in pairs), workspace_member.role
-                )
+                cap_role_to_workspace_role(max(source.role for source, _ in pairs), workspace_member.role)
                 if pairs
                 else None
             )
