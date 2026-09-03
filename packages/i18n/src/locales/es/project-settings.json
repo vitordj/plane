@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "No estados disponibles para el grupo {groupKey}",
         "description": "Por favor, crea un nuevo estado"
+      },
+      "workspace_states": {
+        "title": "Usar los estados de proyecto del espacio de trabajo",
+        "description": "Mientras esté activo, los estados vienen del espacio de trabajo y no se pueden editar aquí.",
+        "active_title": "Los estados de proyecto del espacio de trabajo están activos",
+        "active_description": "Este proyecto usa los estados del espacio de trabajo. Desactiva el interruptor de arriba para gestionar los estados aquí.",
+        "try_again": "Inténtalo de nuevo en un momento.",
+        "toast": {
+          "enabled": "Usando los estados del espacio de trabajo",
+          "disabled": "Usando los estados de este proyecto",
+          "not_saved": "No se guardó"
+        },
+        "confirm": {
+          "enable_title": "¿Usar los estados del espacio de trabajo en este proyecto?",
+          "disable_title": "¿Gestionar los estados en este proyecto?",
+          "enable_content": "A partir de ahora los estados de este proyecto vienen del espacio de trabajo. Los elementos de trabajo pueden ver su estado actualizado o movido.",
+          "disable_content": "Este proyecto vuelve a gestionar sus propios estados. Los elementos de trabajo pueden ver su estado actualizado o movido."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "El nombre de la etiqueta no debe exceder 255 caracteres",
       "toast": {
         "error": "Error al actualizar la etiqueta"
+      },
+      "workspace_labels": {
+        "title": "Usar las etiquetas de proyecto del espacio de trabajo",
+        "description": "Mientras esté activo, las etiquetas del espacio de trabajo se asignan y se muestran en la tarjeta de este proyecto.",
+        "active_title": "Las etiquetas de proyecto del espacio de trabajo están activas",
+        "active_description": "Este proyecto usa las etiquetas del espacio de trabajo. Desactiva el interruptor de arriba para gestionar las etiquetas aquí.",
+        "try_again": "Inténtalo de nuevo en un momento.",
+        "toast": {
+          "enabled": "Usando las etiquetas del espacio de trabajo",
+          "disabled": "Usando las etiquetas de este proyecto",
+          "not_saved": "No se guardó"
+        }
+      },
+      "delete": {
+        "title": "Eliminar etiqueta",
+        "question": "¿Seguro que quieres eliminar esta etiqueta?",
+        "warning": "Todos los elementos de trabajo que la lleven la perderán. Esta acción no se puede deshacer.",
+        "not_deleted": "No se eliminó",
+        "try_again": "Inténtalo de nuevo en un momento."
       }
     },
     "estimates": {
@@ -195,6 +232,14 @@
         "title": "Recordatorios automáticos",
         "description": "Plane enviará recordatorios automáticos via correo electrónico y notificaciones en la aplicación para mantener a tu equipo en el camino de los plazos.",
         "duration": "Enviar recordatorio antes"
+      },
+      "auto-cycle-complete": {
+        "title": "Completar los ciclos automáticamente",
+        "description": "Completar un ciclo en cuanto pase su fecha de fin. Si está desactivado, el ciclo sigue activo hasta que alguien lo cierre o lo archive."
+      },
+      "auto-conventional-commit": {
+        "title": "Etiquetar conventional commits",
+        "description": "Dar a un elemento de trabajo la etiqueta que implica el prefijo conventional commit de su título. Al activarlo también se revisan y etiquetan los elementos que aún no tienen etiqueta."
       }
     },
     "empty_state": {
@@ -437,7 +482,16 @@
         "loading": "Actualizando función del proyecto...",
         "success": "Función del proyecto actualizada correctamente.",
         "error": "Algo salió mal al actualizar la función del proyecto. Por favor, inténtalo de nuevo."
-      }
+      },
+      "project_states": {
+        "title": "Estados de proyecto",
+        "description": "Clasifica y sigue el progreso de este proyecto con los estados del espacio de trabajo."
+      },
+      "project_labels": {
+        "title": "Etiquetas de proyecto",
+        "description": "Categoriza y agrupa este proyecto con las etiquetas del espacio de trabajo."
+      },
+      "paid_plan_tooltip": "Disponible en los planes de pago"
     },
     "project_updates": {
       "heading": "Actualizaciones del proyecto",
@@ -529,6 +583,10 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Ciclos paralelos",
+        "description": "Ejecutar varios ciclos activos a la vez, con periodos que se solapan."
       }
     }
   }

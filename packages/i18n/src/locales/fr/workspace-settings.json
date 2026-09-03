@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "États du projet",
-        "heading": "Consultez la vue d’ensemble de la progression pour tous les projets.",
-        "description": "Les États de projet sont une fonctionnalité exclusive à Plane pour suivre la progression de tous vos projets par n’importe quelle propriété de projet.",
-        "go_to_settings": "Aller aux paramètres"
+        "heading": "États de projet",
+        "description": "Classez et suivez le cycle de vie des projets de façon cohérente dans tout l’espace de travail.",
+        "go_to_settings": "Aller aux paramètres",
+        "loading": "Chargement des paramètres",
+        "list_heading": "États de projet de l’espace de travail",
+        "try_again": "Réessayez dans un instant.",
+        "toast": {
+          "enabled": "États de projet activés",
+          "disabled": "États de projet désactivés",
+          "not_saved": "Non enregistré",
+          "state_created": "État créé",
+          "state_updated": "État mis à jour",
+          "state_deleted": "État supprimé",
+          "default_set": "État par défaut mis à jour"
+        },
+        "confirm": {
+          "enable_title": "Activer les états de projet de l’espace de travail ?",
+          "disable_title": "Désactiver les états de projet de l’espace de travail ?",
+          "enable_content": "Les états seront gérés depuis l’espace de travail, pour tous les projets. Les éléments de travail peuvent voir leur état aligné sur celui de l’espace de travail.",
+          "disable_content": "Chaque projet gère de nouveau ses propres états. Les éléments de travail peuvent voir leur état aligné sur celui du projet."
+        }
       },
       "project_labels": {
         "title": "Étiquettes de projet",
         "heading": "Étiquettes de projet",
         "description": "Créez et gérez des étiquettes de projet au niveau de l’espace de travail pour la catégorisation et le regroupement dans les vues tableau et liste.",
-        "go_to_settings": "Aller aux paramètres"
+        "go_to_settings": "Aller aux paramètres",
+        "loading": "Chargement des paramètres",
+        "list_heading": "Étiquettes de projet de l’espace de travail",
+        "try_again": "Réessayez dans un instant.",
+        "toast": {
+          "enabled": "Étiquettes de projet activées",
+          "disabled": "Étiquettes de projet désactivées",
+          "not_saved": "Non enregistré",
+          "label_created": "Étiquette créée",
+          "label_updated": "Étiquette mise à jour",
+          "label_deleted": "Étiquette supprimée"
+        },
+        "confirm": {
+          "enable_title": "Activer les étiquettes de projet de l’espace de travail ?",
+          "disable_title": "Désactiver les étiquettes de projet de l’espace de travail ?",
+          "enable_content": "Les étiquettes seront gérées depuis l’espace de travail, pour tous les projets.",
+          "disable_content": "Chaque projet gère de nouveau ses propres étiquettes."
+        }
       },
       "projects": {
         "title": "Projets",
@@ -629,6 +664,24 @@
             "not_resynced_title": "Non resynchronisé",
             "not_resynced": "La resynchronisation n’a pas pu être effectuée."
           }
+        },
+        "errors": {
+          "unit_not_found": "Cette zone n’existe plus.",
+          "name_required": "Une zone doit avoir un nom.",
+          "slug_taken": "Une zone porte déjà ce nom.",
+          "members_not_in_workspace": "Chaque personne ajoutée doit être un membre actif de cet espace de travail.",
+          "membership_not_found": "Cette personne n’est plus dans cette zone.",
+          "lead_already_set": "Cette zone a déjà un responsable.",
+          "unit_not_in_workspace": "Cette zone n’appartient pas à cet espace de travail.",
+          "project_required": "Choisissez un projet à lier.",
+          "invalid_role": "Une zone ne peut pas accorder ce rôle.",
+          "project_not_in_workspace": "Ce projet n’appartient pas à cet espace de travail.",
+          "link_not_found": "Ce projet n’est plus lié à cette zone.",
+          "work_item_not_found": "Cet élément de travail n’existe plus.",
+          "work_item_has_no_unit": "Aucune zone n’est responsable de cet élément de travail.",
+          "invalid_assignment_mode": "Ce n’est pas un mode d’attribution.",
+          "directory_workspace_not_found": "Cet espace de travail n’existe plus.",
+          "directory_token_required": "Émettez un jeton SCIM avant d’activer le provisionnement par annuaire."
         }
       }
     },

@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react";
 import { X } from "lucide-react";
 // plane imports
+import { resolveOrcaErrorKey } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
@@ -85,8 +86,12 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
         title: t(`${OU}.members.toast.added_title`),
         message: t(`${OU}.members.toast.added`),
       });
-    } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.members.toast.not_added`), message: t(`${OU}.try_again`) });
+    } catch (error) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${OU}.members.toast.not_added`),
+        message: t(resolveOrcaErrorKey(error) ?? `${OU}.try_again`),
+      });
     } finally {
       setIsAdding(false);
     }
@@ -95,11 +100,13 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
   const handleRoleChange = async (membershipId: string, role: TOrganizationalUnitMemberRole) => {
     try {
       await store.updateMemberRole(workspaceSlug, unitId, membershipId, role);
-    } catch {
+    } catch (error) {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: t(`${OU}.toast.role_unchanged`),
-        message: t(`${OU}.members.toast.one_lead`),
+        // The one-lead rule used to be the assumed cause; the API now says
+        // which rule was broken, so fall back to it only when it does not.
+        message: t(resolveOrcaErrorKey(error) ?? `${OU}.members.toast.one_lead`),
       });
     }
   };
@@ -112,8 +119,12 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
         title: t(`${OU}.members.toast.removed_title`),
         message: t(`${OU}.members.toast.removed`, { name: displayName }),
       });
-    } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.members.toast.not_removed`), message: t(`${OU}.try_again`) });
+    } catch (error) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${OU}.members.toast.not_removed`),
+        message: t(resolveOrcaErrorKey(error) ?? `${OU}.try_again`),
+      });
     }
   };
 

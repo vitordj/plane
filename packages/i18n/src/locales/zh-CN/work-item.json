@@ -281,6 +281,65 @@
         "nobody": "此区域中没有成员可以访问此项目。",
         "not_assigned": "未分配"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property}（多种）",
+      "subscribe_selected": "订阅所选项目的通知",
+      "mute_selected": "静音所选项目的通知",
+      "archive_selected": "归档所选项目",
+      "archive_unavailable": "只有已完成或已取消的工作项才能归档",
+      "delete_selected": "删除所选项目",
+      "try_again": "请稍后重试。",
+      "toast": {
+        "updated_title": "已更新",
+        "not_updated": "未更新",
+        "updated": "{count, plural, one {已更新 # 个工作项} other {已更新 # 个工作项}}"
+      },
+      "archive_modal": {
+        "title": "归档工作项",
+        "loading": "正在归档",
+        "toast": {
+          "archived_title": "已归档",
+          "not_archived": "未归档",
+          "archived": "{count, plural, one {已归档 # 个工作项} other {已归档 # 个工作项}}"
+        },
+        "content": "{count, plural, one {归档 # 个工作项？您可以在项目归档中找到它们，并在之后恢复。} other {归档 # 个工作项？您可以在项目归档中找到它们，并在之后恢复。}}",
+        "confirm": "{count, plural, one {归档 # 项} other {归档 # 项}}"
+      },
+      "delete_modal": {
+        "title": "删除工作项",
+        "loading": "正在删除",
+        "toast": {
+          "deleted_title": "已删除",
+          "not_deleted": "未删除",
+          "deleted": "{count, plural, one {已删除 # 个工作项} other {已删除 # 个工作项}}"
+        },
+        "content": "{count, plural, one {删除 # 个工作项？此操作无法撤销。} other {删除 # 个工作项？此操作无法撤销。}}",
+        "confirm": "{count, plural, one {删除 # 项} other {删除 # 项}}"
+      },
+      "selected": "{count, plural, one {已选择 # 项} other {已选择 # 项}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "此操作不可用",
+      "unavailable_message": "此处无法执行该操作。",
+      "remove_from_cycle": "从周期中移除",
+      "remove_from_module": "从模块中移除",
+      "try_again": "请稍后重试。",
+      "toast": {
+        "link_copied": "已复制链接",
+        "link_copied_message": "工作项链接已复制到剪贴板。",
+        "title_copied": "已复制标题",
+        "title_copied_message": "工作项标题已复制到剪贴板。",
+        "description_copied": "已复制描述",
+        "description_copied_message": "工作项描述已复制到剪贴板。",
+        "details_copied": "已复制标题和描述",
+        "details_copied_message": "工作项的标题和描述已复制到剪贴板。",
+        "no_description": "没有描述",
+        "no_description_message": "此工作项没有描述。",
+        "restored": "已恢复",
+        "restored_message": "您可以在项目的工作项中找到它。",
+        "not_restored": "未恢复"
+      }
     }
   },
   "sub_work_item": {

@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Estados do projeto",
-        "heading": "Veja uma visão geral do progresso de todos os projetos.",
-        "description": "Os Estados de projeto são um recurso exclusivo do Plane para acompanhar o progresso de todos os seus projetos por qualquer propriedade do projeto.",
-        "go_to_settings": "Ir para as configurações"
+        "heading": "Estados de projeto",
+        "description": "Classifique e acompanhe o ciclo de vida dos projetos de forma consistente em todo o espaço de trabalho.",
+        "go_to_settings": "Ir para as configurações",
+        "loading": "Carregando as configurações",
+        "list_heading": "Estados de projeto do espaço de trabalho",
+        "try_again": "Tente novamente em instantes.",
+        "toast": {
+          "enabled": "Estados de projeto ativados",
+          "disabled": "Estados de projeto desativados",
+          "not_saved": "Não salvo",
+          "state_created": "Estado criado",
+          "state_updated": "Estado atualizado",
+          "state_deleted": "Estado excluído",
+          "default_set": "Estado padrão atualizado"
+        },
+        "confirm": {
+          "enable_title": "Ativar os estados de projeto do espaço de trabalho?",
+          "disable_title": "Desativar os estados de projeto do espaço de trabalho?",
+          "enable_content": "Os estados passam a ser gerenciados pelo espaço de trabalho, em todos os projetos. Os itens de trabalho podem ter o estado alinhado ao conjunto do espaço de trabalho.",
+          "disable_content": "Cada projeto volta a gerenciar os próprios estados. Os itens de trabalho podem ter o estado alinhado ao conjunto do projeto."
+        }
       },
       "project_labels": {
         "title": "Etiquetas de projeto",
         "heading": "Etiquetas de projeto",
         "description": "Crie e gerencie etiquetas de projeto no nível do espaço de trabalho para categorização e agrupamento nas visualizações de quadro e lista.",
-        "go_to_settings": "Ir para as configurações"
+        "go_to_settings": "Ir para as configurações",
+        "loading": "Carregando as configurações",
+        "list_heading": "Etiquetas de projeto do espaço de trabalho",
+        "try_again": "Tente novamente em instantes.",
+        "toast": {
+          "enabled": "Etiquetas de projeto ativadas",
+          "disabled": "Etiquetas de projeto desativadas",
+          "not_saved": "Não salvo",
+          "label_created": "Etiqueta criada",
+          "label_updated": "Etiqueta atualizada",
+          "label_deleted": "Etiqueta excluída"
+        },
+        "confirm": {
+          "enable_title": "Ativar as etiquetas de projeto do espaço de trabalho?",
+          "disable_title": "Desativar as etiquetas de projeto do espaço de trabalho?",
+          "enable_content": "As etiquetas passam a ser gerenciadas pelo espaço de trabalho, em todos os projetos.",
+          "disable_content": "Cada projeto volta a gerenciar as próprias etiquetas."
+        }
       },
       "organizational_units": {
         "title": "Áreas",
@@ -405,6 +440,24 @@
             "not_resynced_title": "Não ressincronizado",
             "not_resynced": "Não foi possível concluir a ressincronização."
           }
+        },
+        "errors": {
+          "unit_not_found": "Essa área não existe mais.",
+          "name_required": "Uma área precisa de um nome.",
+          "slug_taken": "Já existe uma área com esse nome.",
+          "members_not_in_workspace": "Cada pessoa adicionada precisa ser membro ativo deste espaço de trabalho.",
+          "membership_not_found": "Essa pessoa não está mais nesta área.",
+          "lead_already_set": "Esta área já tem um responsável.",
+          "unit_not_in_workspace": "Essa área não pertence a este espaço de trabalho.",
+          "project_required": "Escolha um projeto para vincular.",
+          "invalid_role": "Uma área não pode conceder esse papel.",
+          "project_not_in_workspace": "Esse projeto não pertence a este espaço de trabalho.",
+          "link_not_found": "Esse projeto não está mais vinculado a esta área.",
+          "work_item_not_found": "Esse item de trabalho não existe mais.",
+          "work_item_has_no_unit": "Nenhuma área é responsável por este item de trabalho.",
+          "invalid_assignment_mode": "Esse não é um modo de atribuição.",
+          "directory_workspace_not_found": "Esse espaço de trabalho não existe mais.",
+          "directory_token_required": "Emita um token SCIM antes de ativar o provisionamento por diretório."
         }
       },
       "projects": {

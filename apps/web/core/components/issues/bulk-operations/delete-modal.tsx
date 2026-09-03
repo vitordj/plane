@@ -8,6 +8,7 @@ import { useState } from "react";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { AlertModalCore, EModalWidth } from "@plane/ui";
 // hooks
@@ -22,6 +23,9 @@ type Props = {
 
 export const BulkDeleteConfirmModal = observer(function BulkDeleteConfirmModal(props: Props) {
   const { isOpen, issueIds, onClose, onSuccess } = props;
+  // translation
+  const { t } = useTranslation();
+  const K = "issue.bulk_operations.delete_modal";
   // router
   const { workspaceSlug, projectId } = useParams();
   // store
@@ -38,16 +42,16 @@ export const BulkDeleteConfirmModal = observer(function BulkDeleteConfirmModal(p
       await removeBulkIssues(workspaceSlug.toString(), projectId.toString(), issueIds);
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Deleted!",
-        message: `${issueIds.length} work item${issueIds.length > 1 ? "s" : ""} deleted successfully.`,
+        title: t(`${K}.toast.deleted_title`),
+        message: t(`${K}.toast.deleted`, { count: issueIds.length }),
       });
       onSuccess();
       onClose();
     } catch {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error",
-        message: "Something went wrong while deleting. Please try again.",
+        title: t(`${K}.toast.not_deleted`),
+        message: t("issue.bulk_operations.try_again"),
       });
     } finally {
       setIsDeleting(false);
@@ -60,22 +64,14 @@ export const BulkDeleteConfirmModal = observer(function BulkDeleteConfirmModal(p
       handleClose={onClose}
       handleSubmit={handleDelete}
       isSubmitting={isDeleting}
-      title="Delete work items"
+      title={t(`${K}.title`)}
       variant="danger"
       width={EModalWidth.SM}
       primaryButtonText={{
-        loading: "Deleting...",
-        default: `Delete ${issueIds.length} item${issueIds.length > 1 ? "s" : ""}`,
+        loading: t(`${K}.loading`),
+        default: t(`${K}.confirm`, { count: issueIds.length }),
       }}
-      content={
-        <>
-          Are you sure you want to delete{" "}
-          <span className="font-medium break-words text-primary">
-            {issueIds.length} work item{issueIds.length > 1 ? "s" : ""}
-          </span>
-          ? This action cannot be undone.
-        </>
-      }
+      content={t(`${K}.content`, { count: issueIds.length })}
     />
   );
 });

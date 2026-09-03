@@ -281,6 +281,65 @@
         "nobody": "Bu alanın hiçbir üyesinin bu projeye erişimi yok.",
         "not_assigned": "Atanmadı"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property} (karışık)",
+      "subscribe_selected": "Seçili öğelerin bildirimlerine abone ol",
+      "mute_selected": "Seçili öğelerin bildirimlerini sustur",
+      "archive_selected": "Seçili öğeleri arşivle",
+      "archive_unavailable": "Yalnızca tamamlanmış veya iptal edilmiş iş öğeleri arşivlenebilir",
+      "delete_selected": "Seçili öğeleri sil",
+      "try_again": "Birazdan tekrar deneyin.",
+      "toast": {
+        "updated_title": "Güncellendi",
+        "not_updated": "Güncellenmedi",
+        "updated": "{count, plural, one {# iş öğesi güncellendi} other {# iş öğesi güncellendi}}"
+      },
+      "archive_modal": {
+        "title": "İş öğelerini arşivle",
+        "loading": "Arşivleniyor",
+        "toast": {
+          "archived_title": "Arşivlendi",
+          "not_archived": "Arşivlenmedi",
+          "archived": "{count, plural, one {# iş öğesi arşivlendi} other {# iş öğesi arşivlendi}}"
+        },
+        "content": "{count, plural, one {# iş öğesi arşivlensin mi? Bunları projenin arşivinde bulabilir ve daha sonra geri yükleyebilirsiniz.} other {# iş öğesi arşivlensin mi? Bunları projenin arşivinde bulabilir ve daha sonra geri yükleyebilirsiniz.}}",
+        "confirm": "{count, plural, one {# öğeyi arşivle} other {# öğeyi arşivle}}"
+      },
+      "delete_modal": {
+        "title": "İş öğelerini sil",
+        "loading": "Siliniyor",
+        "toast": {
+          "deleted_title": "Silindi",
+          "not_deleted": "Silinmedi",
+          "deleted": "{count, plural, one {# iş öğesi silindi} other {# iş öğesi silindi}}"
+        },
+        "content": "{count, plural, one {# iş öğesi silinsin mi? Bu işlem geri alınamaz.} other {# iş öğesi silinsin mi? Bu işlem geri alınamaz.}}",
+        "confirm": "{count, plural, one {# öğeyi sil} other {# öğeyi sil}}"
+      },
+      "selected": "{count, plural, one {# seçildi} other {# seçildi}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "Eylem kullanılamıyor",
+      "unavailable_message": "Bu eylem burada kullanılamıyor.",
+      "remove_from_cycle": "Döngüden çıkar",
+      "remove_from_module": "Modülden çıkar",
+      "try_again": "Birazdan tekrar deneyin.",
+      "toast": {
+        "link_copied": "Bağlantı kopyalandı",
+        "link_copied_message": "İş öğesinin bağlantısı panoda.",
+        "title_copied": "Başlık kopyalandı",
+        "title_copied_message": "İş öğesinin başlığı panoda.",
+        "description_copied": "Açıklama kopyalandı",
+        "description_copied_message": "İş öğesinin açıklaması panoda.",
+        "details_copied": "Başlık ve açıklama kopyalandı",
+        "details_copied_message": "İş öğesinin başlığı ve açıklaması panoda.",
+        "no_description": "Açıklama yok",
+        "no_description_message": "Bu iş öğesinin açıklaması yok.",
+        "restored": "Geri yüklendi",
+        "restored_message": "İş öğesini projenin iş öğeleri arasında bulabilirsiniz.",
+        "not_restored": "Geri yüklenmedi"
+      }
     }
   },
   "sub_work_item": {

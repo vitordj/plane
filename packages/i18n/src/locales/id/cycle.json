@@ -20,7 +20,70 @@
   },
   "cycle": {
     "label": "{count, plural, one {Siklus} other {Siklus}}",
-    "no_cycle": "Tidak ada siklus"
+    "no_cycle": "Tidak ada siklus",
+    "start_stop": {
+      "start": {
+        "title": "Mulai siklus",
+        "loading": "Memulai",
+        "question": "Mulai “{name}”? Ini menetapkan {date} sebagai tanggal mulai dan membuat siklus menjadi aktif."
+      },
+      "end": {
+        "title": "Selesaikan siklus",
+        "loading": "Menyelesaikan",
+        "question": "Selesaikan “{name}”? Ini menetapkan {date} sebagai tanggal berakhir dan menandai siklus sebagai selesai."
+      },
+      "move_unstarted": {
+        "label": "Pindahkan item yang belum dimulai ke Dalam Proses",
+        "hint": "Setiap item kerja backlog dan yang belum dimulai dalam siklus ini berpindah ke status Dalam Proses."
+      },
+      "no_in_progress": {
+        "title": "Proyek ini tidak memiliki status Dalam Proses.",
+        "hint": "Item kerja dalam siklus ini mempertahankan status yang sudah ada."
+      },
+      "mark_completed": {
+        "label": "Tandai semua item yang belum selesai sebagai Selesai",
+        "hint": "{count, plural, one {# item kerja yang belum selesai dalam siklus ini berpindah ke status Selesai.} other {# item kerja yang belum selesai dalam siklus ini berpindah ke status Selesai.}}"
+      },
+      "no_completed": {
+        "hint": "Proyek ini tidak memiliki status Selesai untuk memindahkannya.",
+        "title": "{count, plural, one {# item kerja belum selesai.} other {# item kerja belum selesai.}}"
+      },
+      "toast": {
+        "started": "Siklus dimulai",
+        "started_message": "“{name}” aktif.",
+        "started_moved": "“{name}” aktif. Item yang belum dimulai berpindah ke Dalam Proses.",
+        "completed": "Siklus selesai",
+        "completed_message": "“{name}” selesai.",
+        "completed_moved": "“{name}” selesai. Item yang belum selesai berpindah ke Selesai.",
+        "failed": "Terjadi kesalahan"
+      },
+      "try_again": "Coba lagi sebentar lagi."
+    },
+    "actions": {
+      "start": "Mulai siklus",
+      "complete": "Selesaikan siklus"
+    },
+    "toast": {
+      "created": "Siklus dibuat",
+      "not_created": "Siklus tidak dibuat",
+      "updated": "Siklus diperbarui",
+      "not_updated": "Siklus tidak diperbarui",
+      "try_again": "Coba lagi sebentar lagi.",
+      "dates_taken": "Siklus lain sudah memakai tanggal tersebut. Kosongkan tanggal untuk membuat siklus draf."
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "Item kerja dipindahkan",
+        "not_transferred": "Item kerja tidak dipindahkan",
+        "not_loaded": "Tidak dapat memuat siklus"
+      },
+      "search_placeholder": "Cari siklus",
+      "notice": "Siklus yang selesai tetap dapat diubah sampai diarsipkan. Item kerja yang belum selesai dapat dipindahkan ke siklus lain.",
+      "action": "Pindahkan item yang belum selesai",
+      "heading": "Pindahkan item yang belum selesai"
+    },
+    "drop_archived_error": "Item kerja tidak dapat dipindahkan ke siklus yang diarsipkan",
+    "add_named": "Tambahkan “{name}” ke siklus"
   },
   "active_cycle_analytics": {
     "empty_state": {

@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "프로젝트 스테이트",
-        "heading": "모든 프로젝트의 진행 상황 개요를 확인하세요.",
-        "description": "프로젝트 스테이트는 어떤 프로젝트 속성으로든 모든 프로젝트의 진행 상황을 추적하는 Plane 전용 기능입니다.",
-        "go_to_settings": "설정으로 이동"
+        "heading": "프로젝트 상태",
+        "description": "작업 공간 전체에서 일관된 기준으로 프로젝트 수명 주기를 분류하고 추적합니다.",
+        "go_to_settings": "설정으로 이동",
+        "loading": "설정을 불러오는 중",
+        "list_heading": "작업 공간 프로젝트 상태",
+        "try_again": "잠시 후 다시 시도하십시오.",
+        "toast": {
+          "enabled": "프로젝트 상태를 켰습니다",
+          "disabled": "프로젝트 상태를 껐습니다",
+          "not_saved": "저장되지 않았습니다",
+          "state_created": "상태를 만들었습니다",
+          "state_updated": "상태를 업데이트했습니다",
+          "state_deleted": "상태를 삭제했습니다",
+          "default_set": "기본 상태를 업데이트했습니다"
+        },
+        "confirm": {
+          "enable_title": "작업 공간 프로젝트 상태를 켜시겠습니까?",
+          "disable_title": "작업 공간 프로젝트 상태를 끄시겠습니까?",
+          "enable_content": "이제 상태는 모든 프로젝트에 걸쳐 작업 공간에서 관리됩니다. 작업 항목의 상태가 작업 공간 집합에 맞춰 조정될 수 있습니다.",
+          "disable_content": "각 프로젝트가 다시 자체 상태를 관리합니다. 작업 항목의 상태가 프로젝트 집합에 맞춰 조정될 수 있습니다."
+        }
       },
       "project_labels": {
         "title": "프로젝트 레이블",
         "heading": "프로젝트 레이블",
         "description": "작업 공간 수준의 프로젝트 레이블을 만들고 관리하여 분류와 보드/목록 그룹화에 사용합니다.",
-        "go_to_settings": "설정으로 이동"
+        "go_to_settings": "설정으로 이동",
+        "loading": "설정을 불러오는 중",
+        "list_heading": "작업 공간 프로젝트 레이블",
+        "try_again": "잠시 후 다시 시도하십시오.",
+        "toast": {
+          "enabled": "프로젝트 레이블을 켰습니다",
+          "disabled": "프로젝트 레이블을 껐습니다",
+          "not_saved": "저장되지 않았습니다",
+          "label_created": "레이블을 만들었습니다",
+          "label_updated": "레이블을 업데이트했습니다",
+          "label_deleted": "레이블을 삭제했습니다"
+        },
+        "confirm": {
+          "enable_title": "작업 공간 프로젝트 레이블을 켜시겠습니까?",
+          "disable_title": "작업 공간 프로젝트 레이블을 끄시겠습니까?",
+          "enable_content": "이제 레이블은 모든 프로젝트에 걸쳐 작업 공간에서 관리됩니다.",
+          "disable_content": "각 프로젝트가 다시 자체 레이블을 관리합니다."
+        }
       },
       "projects": {
         "title": "프로젝트",
@@ -629,6 +664,24 @@
             "not_resynced_title": "다시 동기화되지 않았습니다",
             "not_resynced": "다시 동기화를 완료할 수 없습니다."
           }
+        },
+        "errors": {
+          "unit_not_found": "해당 영역이 더 이상 없습니다.",
+          "name_required": "영역에는 이름이 필요합니다.",
+          "slug_taken": "이 이름의 영역이 이미 있습니다.",
+          "members_not_in_workspace": "추가하는 사람은 모두 이 작업 공간의 활성 구성원이어야 합니다.",
+          "membership_not_found": "그 사람은 더 이상 이 영역에 없습니다.",
+          "lead_already_set": "이 영역에는 이미 리드가 있습니다.",
+          "unit_not_in_workspace": "해당 영역은 이 작업 공간에 속하지 않습니다.",
+          "project_required": "연결할 프로젝트를 선택하십시오.",
+          "invalid_role": "영역은 그 역할을 부여할 수 없습니다.",
+          "project_not_in_workspace": "해당 프로젝트는 이 작업 공간에 속하지 않습니다.",
+          "link_not_found": "해당 프로젝트는 더 이상 이 영역에 연결되어 있지 않습니다.",
+          "work_item_not_found": "해당 작업 항목이 더 이상 없습니다.",
+          "work_item_has_no_unit": "이 작업 항목을 담당하는 영역이 없습니다.",
+          "invalid_assignment_mode": "그것은 배정 모드가 아닙니다.",
+          "directory_workspace_not_found": "해당 작업 공간이 더 이상 없습니다.",
+          "directory_token_required": "디렉터리 프로비저닝을 켜기 전에 SCIM 토큰을 발급하십시오."
         }
       }
     },

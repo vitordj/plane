@@ -281,6 +281,65 @@
         "nobody": "Aucun membre de ce domaine n’a accès à ce projet.",
         "not_assigned": "Non assigné"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property} (mixte)",
+      "subscribe_selected": "S’abonner aux notifications des éléments sélectionnés",
+      "mute_selected": "Couper les notifications des éléments sélectionnés",
+      "archive_selected": "Archiver les éléments sélectionnés",
+      "archive_unavailable": "Seuls les éléments de travail terminés ou annulés peuvent être archivés",
+      "delete_selected": "Supprimer les éléments sélectionnés",
+      "try_again": "Réessayez dans un instant.",
+      "toast": {
+        "updated_title": "Mis à jour",
+        "not_updated": "Non mis à jour",
+        "updated": "{count, plural, one {# élément de travail mis à jour} many {# éléments de travail mis à jour} other {# éléments de travail mis à jour}}"
+      },
+      "archive_modal": {
+        "title": "Archiver des éléments de travail",
+        "loading": "Archivage",
+        "toast": {
+          "archived_title": "Archivé",
+          "not_archived": "Non archivé",
+          "archived": "{count, plural, one {# élément de travail archivé} many {# éléments de travail archivés} other {# éléments de travail archivés}}"
+        },
+        "content": "{count, plural, one {Archiver # élément de travail ? Vous le retrouverez dans les archives du projet et pourrez le restaurer plus tard.} many {Archiver # éléments de travail ? Vous les retrouverez dans les archives du projet et pourrez les restaurer plus tard.} other {Archiver # éléments de travail ? Vous les retrouverez dans les archives du projet et pourrez les restaurer plus tard.}}",
+        "confirm": "{count, plural, one {Archiver # élément} many {Archiver # éléments} other {Archiver # éléments}}"
+      },
+      "delete_modal": {
+        "title": "Supprimer des éléments de travail",
+        "loading": "Suppression",
+        "toast": {
+          "deleted_title": "Supprimé",
+          "not_deleted": "Non supprimé",
+          "deleted": "{count, plural, one {# élément de travail supprimé} many {# éléments de travail supprimés} other {# éléments de travail supprimés}}"
+        },
+        "content": "{count, plural, one {Supprimer # élément de travail ? Cette action est irréversible.} many {Supprimer # éléments de travail ? Cette action est irréversible.} other {Supprimer # éléments de travail ? Cette action est irréversible.}}",
+        "confirm": "{count, plural, one {Supprimer # élément} many {Supprimer # éléments} other {Supprimer # éléments}}"
+      },
+      "selected": "{count, plural, one {# sélectionné} many {# sélectionnés} other {# sélectionnés}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "Action indisponible",
+      "unavailable_message": "Cette action n’est pas disponible ici.",
+      "remove_from_cycle": "Retirer du cycle",
+      "remove_from_module": "Retirer du module",
+      "try_again": "Réessayez dans un instant.",
+      "toast": {
+        "link_copied": "Lien copié",
+        "link_copied_message": "Le lien de l’élément de travail est dans votre presse-papiers.",
+        "title_copied": "Titre copié",
+        "title_copied_message": "Le titre de l’élément de travail est dans votre presse-papiers.",
+        "description_copied": "Description copiée",
+        "description_copied_message": "La description de l’élément de travail est dans votre presse-papiers.",
+        "details_copied": "Titre et description copiés",
+        "details_copied_message": "Le titre et la description de l’élément de travail sont dans votre presse-papiers.",
+        "no_description": "Aucune description",
+        "no_description_message": "Cet élément de travail n’a pas de description.",
+        "restored": "Restauré",
+        "restored_message": "Vous retrouverez l’élément de travail parmi ceux du projet.",
+        "not_restored": "Non restauré"
+      }
     }
   },
   "sub_work_item": {

@@ -223,6 +223,14 @@
       "search": {
         "description": "Nie znaleziono projektów spełniających kryteria.\nUtwórz nowy."
       }
+    },
+    "group_by_button": "Grupuj według: {value}",
+    "group": {
+      "no_label": "Bez etykiety"
+    },
+    "card": {
+      "set_state": "Ustaw stan",
+      "add_label": "+ Etykieta"
     }
   },
   "workspace_views": {

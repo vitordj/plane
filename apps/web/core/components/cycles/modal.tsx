@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import { mutate } from "swr";
 // types
+import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { CycleDateCheckData, ICycle, TCycleTabOptions } from "@plane/types";
 // ui
@@ -40,6 +41,8 @@ const cycleService = new CycleService();
  * by bypassing the date overlap validation when submitting the form.
  */
 export function CycleCreateUpdateModal(props: CycleModalProps) {
+  // translation
+  const { t } = useTranslation();
   const { isOpen, handleClose, data, workspaceSlug, projectId } = props;
   // states
   const [activeProject, setActiveProject] = useState<string | null>(null);
@@ -71,14 +74,15 @@ export function CycleCreateUpdateModal(props: CycleModalProps) {
 
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Success!",
-        message: "Cycle created successfully.",
+        title: t("cycle.toast.created"),
       });
     } catch (err: any) {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: err?.detail ?? "Error in creating cycle. Please try again.",
+        title: t("cycle.toast.not_created"),
+        // The server speaks English; prefer the translated line unless it has
+        // something specific to say.
+        message: err?.detail ?? t("cycle.toast.try_again"),
       });
     }
   };
@@ -91,14 +95,15 @@ export function CycleCreateUpdateModal(props: CycleModalProps) {
       await updateCycleDetails(workspaceSlug, selectedProjectId, cycleId, payload);
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Success!",
-        message: "Cycle updated successfully.",
+        title: t("cycle.toast.updated"),
       });
     } catch (err: any) {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: err?.detail ?? "Error in updating cycle. Please try again.",
+        title: t("cycle.toast.not_updated"),
+        // The server speaks English; prefer the translated line unless it has
+        // something specific to say.
+        message: err?.detail ?? t("cycle.toast.try_again"),
       });
     }
   };
@@ -166,8 +171,8 @@ export function CycleCreateUpdateModal(props: CycleModalProps) {
     } else
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "You already have a cycle on the given dates, if you want to create a draft cycle, remove the dates.",
+        title: t("cycle.toast.not_created"),
+        message: t("cycle.toast.dates_taken"),
       });
   };
 

@@ -8,6 +8,7 @@ import { useState } from "react";
 import { observer } from "mobx-react";
 import { Network, Trash2 } from "lucide-react";
 // plane imports
+import { resolveOrcaErrorKey } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { IOrganizationalUnit } from "@plane/types";
@@ -42,8 +43,12 @@ export const OrganizationalUnitList = observer(function OrganizationalUnitList(p
         message: t(`${OU}.list.toast.deleted_message`, { name: unitToDelete.name }),
       });
       setUnitToDelete(null);
-    } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.list.toast.not_deleted`), message: t(`${OU}.try_again`) });
+    } catch (error) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${OU}.list.toast.not_deleted`),
+        message: t(resolveOrcaErrorKey(error) ?? `${OU}.try_again`),
+      });
     } finally {
       setIsDeleting(false);
     }

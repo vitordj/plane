@@ -5,6 +5,9 @@
  */
 
 import { observable, action, makeObservable, runInAction } from "mobx";
+// plane imports
+import { applyDefaultLanguage } from "@plane/i18n";
+import type { TLanguage } from "@plane/i18n";
 // types
 import type { IInstance, IInstanceConfig } from "@plane/types";
 // services
@@ -64,6 +67,13 @@ export class InstanceStore implements IInstanceStore {
         this.instance = instanceInfo.instance;
         this.config = instanceInfo.config;
       });
+      // Orca (fork): dress the interface in the organization's language before
+      // anyone signs in. applyDefaultLanguage stands down on its own when the
+      // viewer already has a language of their own, so this is safe to call on
+      // every boot and cannot race the profile fetch that carries a real
+      // preference. Not awaited: the boot path should not wait on a locale
+      // bundle, and the wrapper above this store is already holding a spinner.
+      void applyDefaultLanguage(instanceInfo.config?.default_language as TLanguage | undefined);
     } catch (error) {
       runInAction(() => {
         this.isLoading = false;

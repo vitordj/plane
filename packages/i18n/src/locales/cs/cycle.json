@@ -20,7 +20,70 @@
   },
   "cycle": {
     "label": "{count, plural, one {Cyklus} few {Cykly} other {Cyklů}}",
-    "no_cycle": "Žádný cyklus"
+    "no_cycle": "Žádný cyklus",
+    "start_stop": {
+      "start": {
+        "title": "Spustit cyklus",
+        "loading": "Spouštění",
+        "question": "Spustit „{name}“? Nastaví se {date} jako datum zahájení a cyklus se stane aktivním."
+      },
+      "end": {
+        "title": "Dokončit cyklus",
+        "loading": "Dokončování",
+        "question": "Dokončit „{name}“? Nastaví se {date} jako datum ukončení a cyklus se označí jako dokončený."
+      },
+      "move_unstarted": {
+        "label": "Přesunout nezahájené pracovní položky do stavu V průběhu",
+        "hint": "Každá pracovní položka z backlogu i nezahájená položka v tomto cyklu přejde do stavu V průběhu."
+      },
+      "no_in_progress": {
+        "title": "Tento projekt nemá stav V průběhu.",
+        "hint": "Pracovní položky v tomto cyklu si ponechají svůj stávající stav."
+      },
+      "mark_completed": {
+        "label": "Označit všechny nedokončené pracovní položky jako Dokončeno",
+        "hint": "{count, plural, one {Jediná nedokončená pracovní položka v tomto cyklu přejde do stavu Dokončeno.} few {Všechny # nedokončené pracovní položky v tomto cyklu přejdou do stavu Dokončeno.} many {Všechny # nedokončené pracovní položky v tomto cyklu přejdou do stavu Dokončeno.} other {Všech # nedokončených pracovních položek v tomto cyklu přejde do stavu Dokončeno.}}"
+      },
+      "no_completed": {
+        "hint": "Tento projekt nemá stav Dokončeno, do kterého by je bylo možné přesunout.",
+        "title": "{count, plural, one {# pracovní položka ještě není hotová.} few {# pracovní položky ještě nejsou hotové.} many {# pracovní položky ještě není hotové.} other {# pracovních položek ještě není hotových.}}"
+      },
+      "toast": {
+        "started": "Cyklus spuštěn",
+        "started_message": "„{name}“ je aktivní.",
+        "started_moved": "„{name}“ je aktivní. Nezahájené položky přešly do stavu V průběhu.",
+        "completed": "Cyklus dokončen",
+        "completed_message": "„{name}“ je dokončený.",
+        "completed_moved": "„{name}“ je dokončený. Nedokončené položky přešly do stavu Dokončeno.",
+        "failed": "Něco se pokazilo"
+      },
+      "try_again": "Zkuste to prosím za okamžik znovu."
+    },
+    "actions": {
+      "start": "Spustit cyklus",
+      "complete": "Dokončit cyklus"
+    },
+    "toast": {
+      "created": "Cyklus vytvořen",
+      "not_created": "Cyklus nevytvořen",
+      "updated": "Cyklus aktualizován",
+      "not_updated": "Cyklus neaktualizován",
+      "try_again": "Zkuste to prosím za okamžik znovu.",
+      "dates_taken": "Tato data už zabírá jiný cyklus. Vymažte data a vytvoří se koncept cyklu."
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "Pracovní položky přeneseny",
+        "not_transferred": "Pracovní položky nepřeneseny",
+        "not_loaded": "Cyklus se nepodařilo načíst"
+      },
+      "search_placeholder": "Hledat cyklus",
+      "notice": "Dokončený cyklus zůstává upravitelný, dokud není archivován. Nedokončené pracovní položky lze přesunout do jiného cyklu.",
+      "action": "Přesunout nedokončené položky",
+      "heading": "Přesunout nedokončené položky"
+    },
+    "drop_archived_error": "Pracovní položku nelze přesunout do archivovaného cyklu",
+    "add_named": "Přidat „{name}“ mezi cykly"
   },
   "active_cycle_analytics": {
     "empty_state": {

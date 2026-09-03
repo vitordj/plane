@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Status proyek",
-        "heading": "Lihat ikhtisar kemajuan untuk semua proyek.",
-        "description": "Status Proyek adalah fitur khusus Plane untuk melacak kemajuan semua proyek Anda berdasarkan properti proyek apa pun.",
-        "go_to_settings": "Pergi ke pengaturan"
+        "heading": "Status proyek",
+        "description": "Klasifikasikan dan lacak siklus hidup proyek secara konsisten di seluruh ruang kerja.",
+        "go_to_settings": "Pergi ke pengaturan",
+        "loading": "Memuat pengaturan",
+        "list_heading": "Status proyek ruang kerja",
+        "try_again": "Coba lagi sebentar lagi.",
+        "toast": {
+          "enabled": "Status proyek aktif",
+          "disabled": "Status proyek nonaktif",
+          "not_saved": "Tidak tersimpan",
+          "state_created": "Status dibuat",
+          "state_updated": "Status diperbarui",
+          "state_deleted": "Status dihapus",
+          "default_set": "Status bawaan diperbarui"
+        },
+        "confirm": {
+          "enable_title": "Aktifkan status proyek ruang kerja?",
+          "disable_title": "Nonaktifkan status proyek ruang kerja?",
+          "enable_content": "Status akan dikelola dari ruang kerja, di semua proyek. Status item kerja dapat disesuaikan dengan kumpulan milik ruang kerja.",
+          "disable_content": "Setiap proyek kembali mengelola statusnya sendiri. Status item kerja dapat disesuaikan dengan kumpulan milik proyek."
+        }
       },
       "project_labels": {
         "title": "Label proyek",
         "heading": "Label proyek",
         "description": "Buat dan kelola label proyek di tingkat ruang kerja untuk kategorisasi dan pengelompokan pada tampilan papan dan daftar.",
-        "go_to_settings": "Pergi ke pengaturan"
+        "go_to_settings": "Pergi ke pengaturan",
+        "loading": "Memuat pengaturan",
+        "list_heading": "Label proyek ruang kerja",
+        "try_again": "Coba lagi sebentar lagi.",
+        "toast": {
+          "enabled": "Label proyek aktif",
+          "disabled": "Label proyek nonaktif",
+          "not_saved": "Tidak tersimpan",
+          "label_created": "Label dibuat",
+          "label_updated": "Label diperbarui",
+          "label_deleted": "Label dihapus"
+        },
+        "confirm": {
+          "enable_title": "Aktifkan label proyek ruang kerja?",
+          "disable_title": "Nonaktifkan label proyek ruang kerja?",
+          "enable_content": "Label akan dikelola dari ruang kerja, di semua proyek.",
+          "disable_content": "Setiap proyek kembali mengelola labelnya sendiri."
+        }
       },
       "projects": {
         "title": "Proyek",
@@ -629,6 +664,24 @@
             "not_resynced_title": "Tidak disinkronkan ulang",
             "not_resynced": "Sinkronisasi ulang tidak dapat diselesaikan."
           }
+        },
+        "errors": {
+          "unit_not_found": "Area itu sudah tidak ada.",
+          "name_required": "Area memerlukan nama.",
+          "slug_taken": "Sudah ada area dengan nama ini.",
+          "members_not_in_workspace": "Setiap orang yang Anda tambahkan harus menjadi anggota aktif ruang kerja ini.",
+          "membership_not_found": "Orang itu sudah tidak ada di area ini.",
+          "lead_already_set": "Area ini sudah memiliki pemimpin.",
+          "unit_not_in_workspace": "Area itu bukan bagian dari ruang kerja ini.",
+          "project_required": "Pilih proyek untuk ditautkan.",
+          "invalid_role": "Area tidak dapat memberikan peran itu.",
+          "project_not_in_workspace": "Proyek itu bukan bagian dari ruang kerja ini.",
+          "link_not_found": "Proyek itu sudah tidak tertaut ke area ini.",
+          "work_item_not_found": "Item kerja itu sudah tidak ada.",
+          "work_item_has_no_unit": "Tidak ada area yang bertanggung jawab atas item kerja ini.",
+          "invalid_assignment_mode": "Itu bukan mode penugasan.",
+          "directory_workspace_not_found": "Ruang kerja itu sudah tidak ada.",
+          "directory_token_required": "Terbitkan token SCIM sebelum mengaktifkan penyediaan dari direktori."
         }
       }
     },

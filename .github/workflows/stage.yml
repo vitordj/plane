@@ -211,6 +211,15 @@ jobs:
           pnpm check:format
           pnpm check:lint
 
+      # The i18n catalogue is only as good as its weakest locale: a key added to
+      # en/ and forgotten everywhere else renders the raw key string to whoever
+      # runs that language. sync-check compares every locale against English and
+      # also catches cross-namespace collisions and path conflicts, neither of
+      # which surfaces at runtime until the wrong string appears on screen.
+      # Cheap (reads JSON, no build), so it runs before the type checks.
+      - name: Run i18n Catalogue Sync Check
+        run: pnpm check:sync
+
       # Turbo builds the workspace packages first (check:types dependsOn ^build),
       # so this catches type errors the format and lint passes cannot see.
       - name: Run Type Checks

@@ -281,6 +281,65 @@
         "nobody": "このエリアのメンバーには、このプロジェクトへのアクセス権を持つ人がいません。",
         "not_assigned": "割り当てできませんでした"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property}（混在）",
+      "subscribe_selected": "選択した項目の通知を受け取る",
+      "mute_selected": "選択した項目の通知をミュートする",
+      "archive_selected": "選択した項目をアーカイブする",
+      "archive_unavailable": "アーカイブできるのは完了またはキャンセルされた作業項目のみです",
+      "delete_selected": "選択した項目を削除する",
+      "try_again": "少し時間をおいて、もう一度お試しください。",
+      "toast": {
+        "updated_title": "更新しました",
+        "not_updated": "更新されていません",
+        "updated": "{count, plural, one {# 件の作業項目を更新しました} other {# 件の作業項目を更新しました}}"
+      },
+      "archive_modal": {
+        "title": "作業項目をアーカイブ",
+        "loading": "アーカイブしています",
+        "toast": {
+          "archived_title": "アーカイブしました",
+          "not_archived": "アーカイブされていません",
+          "archived": "{count, plural, one {# 件の作業項目をアーカイブしました} other {# 件の作業項目をアーカイブしました}}"
+        },
+        "content": "{count, plural, one {# 件の作業項目をアーカイブしますか？プロジェクトのアーカイブから見つけて、後で復元できます。} other {# 件の作業項目をアーカイブしますか？プロジェクトのアーカイブから見つけて、後で復元できます。}}",
+        "confirm": "{count, plural, one {# 件をアーカイブ} other {# 件をアーカイブ}}"
+      },
+      "delete_modal": {
+        "title": "作業項目を削除",
+        "loading": "削除しています",
+        "toast": {
+          "deleted_title": "削除しました",
+          "not_deleted": "削除されていません",
+          "deleted": "{count, plural, one {# 件の作業項目を削除しました} other {# 件の作業項目を削除しました}}"
+        },
+        "content": "{count, plural, one {# 件の作業項目を削除しますか？この操作は元に戻せません。} other {# 件の作業項目を削除しますか？この操作は元に戻せません。}}",
+        "confirm": "{count, plural, one {# 件を削除} other {# 件を削除}}"
+      },
+      "selected": "{count, plural, one {# 件選択中} other {# 件選択中}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "この操作は利用できません",
+      "unavailable_message": "ここではこの操作を利用できません。",
+      "remove_from_cycle": "サイクルから外す",
+      "remove_from_module": "モジュールから外す",
+      "try_again": "少し時間をおいて、もう一度お試しください。",
+      "toast": {
+        "link_copied": "リンクをコピーしました",
+        "link_copied_message": "作業項目のリンクをクリップボードにコピーしました。",
+        "title_copied": "タイトルをコピーしました",
+        "title_copied_message": "作業項目のタイトルをクリップボードにコピーしました。",
+        "description_copied": "説明をコピーしました",
+        "description_copied_message": "作業項目の説明をクリップボードにコピーしました。",
+        "details_copied": "タイトルと説明をコピーしました",
+        "details_copied_message": "作業項目のタイトルと説明をクリップボードにコピーしました。",
+        "no_description": "説明がありません",
+        "no_description_message": "この作業項目には説明がありません。",
+        "restored": "復元しました",
+        "restored_message": "この作業項目はプロジェクトの作業項目の中にあります。",
+        "not_restored": "復元されていません"
+      }
     }
   },
   "sub_work_item": {

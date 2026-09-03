@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "Brak stanów w grupie {groupKey}",
         "description": "Utwórz nowy stan"
+      },
+      "workspace_states": {
+        "title": "Używaj stanów projektów przestrzeni roboczej",
+        "description": "Gdy ta opcja jest włączona, stany pochodzą z przestrzeni roboczej i nie można ich tu edytować.",
+        "active_title": "Stany projektów przestrzeni roboczej są aktywne",
+        "active_description": "Ten projekt korzysta ze stanów przestrzeni roboczej. Wyłącz przełącznik powyżej, aby zarządzać stanami tutaj.",
+        "try_again": "Spróbuj ponownie za chwilę.",
+        "toast": {
+          "enabled": "Używa stanów przestrzeni roboczej",
+          "disabled": "Używa stanów tego projektu",
+          "not_saved": "Nie zapisano"
+        },
+        "confirm": {
+          "enable_title": "Użyć w tym projekcie stanów przestrzeni roboczej?",
+          "disable_title": "Zarządzać stanami w tym projekcie?",
+          "enable_content": "Stany tego projektu będą odtąd pochodzić z przestrzeni roboczej. Elementy pracy mogą mieć stan zaktualizowany lub przeniesiony.",
+          "disable_content": "Ten projekt znów zarządza własnymi stanami. Elementy pracy mogą mieć stan zaktualizowany lub przeniesiony."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "Nazwa etykiety nie może mieć więcej niż 255 znaków",
       "toast": {
         "error": "Błąd podczas aktualizacji etykiety"
+      },
+      "workspace_labels": {
+        "title": "Używaj etykiet projektów przestrzeni roboczej",
+        "description": "Gdy ta opcja jest włączona, etykiety przestrzeni roboczej są przypisywane i widoczne na karcie tego projektu.",
+        "active_title": "Etykiety projektów przestrzeni roboczej są aktywne",
+        "active_description": "Ten projekt korzysta z etykiet przestrzeni roboczej. Wyłącz przełącznik powyżej, aby zarządzać etykietami tutaj.",
+        "try_again": "Spróbuj ponownie za chwilę.",
+        "toast": {
+          "enabled": "Używa etykiet przestrzeni roboczej",
+          "disabled": "Używa etykiet tego projektu",
+          "not_saved": "Nie zapisano"
+        }
+      },
+      "delete": {
+        "title": "Usuń etykietę",
+        "question": "Na pewno usunąć tę etykietę?",
+        "warning": "Każdy element pracy z tą etykietą ją utraci. Tej operacji nie można cofnąć.",
+        "not_deleted": "Nie usunięto",
+        "try_again": "Spróbuj ponownie za chwilę."
       }
     },
     "estimates": {
@@ -195,6 +232,14 @@
         "title": "Automatyczne przypomnienia",
         "description": "Plane automatycznie wysyła przypomnienia przez e-mail i powiadomienia w aplikacji, aby Twoja ekipa utrzymała się na ścieżce do terminów.",
         "duration": "Wyślij przypomnienie przed"
+      },
+      "auto-cycle-complete": {
+        "title": "Automatyczne kończenie cykli",
+        "description": "Kończyć cykl automatycznie, gdy minie jego data zakończenia. Przy wyłączonej opcji cykl pozostaje aktywny, dopóki ktoś go nie zamknie lub nie zarchiwizuje."
+      },
+      "auto-conventional-commit": {
+        "title": "Nadawaj etykiety według conventional commits",
+        "description": "Nadawaj elementowi pracy etykietę wynikającą z prefiksu conventional commit w jego tytule. Włączenie przejrzy też elementy bez etykiety i je oznaczy."
       }
     },
     "empty_state": {
@@ -437,7 +482,16 @@
         "loading": "Aktualizowanie funkcji projektu...",
         "success": "Funkcja projektu zaktualizowana pomyślnie.",
         "error": "Coś poszło nie tak podczas aktualizacji funkcji projektu. Spróbuj ponownie."
-      }
+      },
+      "project_states": {
+        "title": "Stany projektów",
+        "description": "Klasyfikuj i śledź postęp tego projektu za pomocą stanów przestrzeni roboczej."
+      },
+      "project_labels": {
+        "title": "Etykiety projektów",
+        "description": "Kategoryzuj i grupuj ten projekt za pomocą etykiet przestrzeni roboczej."
+      },
+      "paid_plan_tooltip": "Dostępne w planach płatnych"
     },
     "project_updates": {
       "heading": "Aktualizacje projektu",
@@ -529,6 +583,10 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Cykle równoległe",
+        "description": "Prowadzić kilka aktywnych cykli naraz, z nakładającymi się okresami."
       }
     }
   }

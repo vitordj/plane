@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "{groupKey} grubu için durum yok",
         "description": "Lütfen yeni bir durum oluşturun"
+      },
+      "workspace_states": {
+        "title": "Çalışma alanı proje durumlarını kullan",
+        "description": "Bu açıkken durumlar çalışma alanından gelir ve burada düzenlenemez.",
+        "active_title": "Çalışma alanı proje durumları etkin",
+        "active_description": "Bu proje çalışma alanının durumlarını kullanıyor. Durumları burada yönetmek için yukarıdaki anahtarı kapatın.",
+        "try_again": "Birazdan tekrar deneyin.",
+        "toast": {
+          "enabled": "Çalışma alanı durumları kullanılıyor",
+          "disabled": "Bu projenin durumları kullanılıyor",
+          "not_saved": "Kaydedilmedi"
+        },
+        "confirm": {
+          "enable_title": "Bu projede çalışma alanı durumları kullanılsın mı?",
+          "disable_title": "Durumlar bu projede yönetilsin mi?",
+          "enable_content": "Bundan sonra bu projenin durumları çalışma alanından gelir. İş öğelerinin durumu güncellenebilir veya taşınabilir.",
+          "disable_content": "Bu proje yeniden kendi durumlarını yönetir. İş öğelerinin durumu güncellenebilir veya taşınabilir."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "Etiket adı 255 karakteri geçmemeli",
       "toast": {
         "error": "Etiket güncellenirken hata oluştu"
+      },
+      "workspace_labels": {
+        "title": "Çalışma alanı proje etiketlerini kullan",
+        "description": "Bu açıkken çalışma alanının etiketleri atanır ve bu projenin kartında gösterilir.",
+        "active_title": "Çalışma alanı proje etiketleri etkin",
+        "active_description": "Bu proje çalışma alanının etiketlerini kullanıyor. Etiketleri burada yönetmek için yukarıdaki anahtarı kapatın.",
+        "try_again": "Birazdan tekrar deneyin.",
+        "toast": {
+          "enabled": "Çalışma alanı etiketleri kullanılıyor",
+          "disabled": "Bu projenin etiketleri kullanılıyor",
+          "not_saved": "Kaydedilmedi"
+        }
+      },
+      "delete": {
+        "title": "Etiketi sil",
+        "question": "Bu etiketi silmek istediğinizden emin misiniz?",
+        "warning": "Bu etiketi taşıyan her iş öğesi onu kaybeder. Bu işlem geri alınamaz.",
+        "not_deleted": "Silinmedi",
+        "try_again": "Birazdan tekrar deneyin."
       }
     },
     "estimates": {
@@ -195,6 +232,14 @@
         "title": "Otomatik hatırlatmalar",
         "description": "Plane, e-posta ve uygulama bildirimleri aracılığıyla otomatik olarak takımınızı zamanlama yolunda tutacaktır.",
         "duration": "Hatırlatma gönderimi öncesi"
+      },
+      "auto-cycle-complete": {
+        "title": "Döngüleri otomatik tamamla",
+        "description": "Bitiş tarihi geçtiği anda döngüyü otomatik tamamla. Kapalıyken döngü, biri kapatana veya arşivleyene kadar etkin kalır."
+      },
+      "auto-conventional-commit": {
+        "title": "Conventional commit etiketleri ver",
+        "description": "İş öğesine, başlığındaki conventional commit önekinin işaret ettiği etiketi ver. Açıldığında henüz etiketi olmayan iş öğeleri de taranıp etiketlenir."
       }
     },
     "empty_state": {
@@ -437,7 +482,16 @@
         "loading": "Proje özelliği güncelleniyor...",
         "success": "Proje özelliği başarıyla güncellendi.",
         "error": "Proje özelliği güncellenirken bir şeyler yanlış gitti. Lütfen tekrar deneyin."
-      }
+      },
+      "project_states": {
+        "title": "Proje durumları",
+        "description": "Bu projenin ilerleyişini çalışma alanı durumlarıyla sınıflandırın ve izleyin."
+      },
+      "project_labels": {
+        "title": "Proje etiketleri",
+        "description": "Bu projeyi çalışma alanı etiketleriyle kategorilere ayırın ve gruplayın."
+      },
+      "paid_plan_tooltip": "Ücretli planlarda kullanılabilir"
     },
     "project_updates": {
       "heading": "Proje Güncellemeleri",
@@ -529,6 +583,10 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Paralel döngüler",
+        "description": "Tarih aralıkları çakışan birden fazla döngüyü aynı anda etkin tutun."
       }
     }
   }

@@ -281,6 +281,65 @@
         "nobody": "No member of this area has access to this project.",
         "not_assigned": "Not assigned"
       }
+    },
+    "bulk_operations": {
+      "selected": "{count, plural, one {# selected} other {# selected}}",
+      "mixed": "{property} (mixed)",
+      "subscribe_selected": "Subscribe to notifications for the selected work items",
+      "mute_selected": "Mute notifications for the selected work items",
+      "archive_selected": "Archive the selected work items",
+      "archive_unavailable": "Only completed or cancelled work items can be archived",
+      "delete_selected": "Delete the selected work items",
+      "try_again": "Try again in a moment.",
+      "toast": {
+        "updated_title": "Updated",
+        "updated": "{count, plural, one {# work item updated} other {# work items updated}}",
+        "not_updated": "Not updated"
+      },
+      "archive_modal": {
+        "title": "Archive work items",
+        "content": "{count, plural, one {Archive # work item? You can find it in the project archives and restore it later.} other {Archive # work items? You can find them in the project archives and restore them later.}}",
+        "loading": "Archiving",
+        "confirm": "{count, plural, one {Archive # item} other {Archive # items}}",
+        "toast": {
+          "archived_title": "Archived",
+          "archived": "{count, plural, one {# work item archived} other {# work items archived}}",
+          "not_archived": "Not archived"
+        }
+      },
+      "delete_modal": {
+        "title": "Delete work items",
+        "content": "{count, plural, one {Delete # work item? This cannot be undone.} other {Delete # work items? This cannot be undone.}}",
+        "loading": "Deleting",
+        "confirm": "{count, plural, one {Delete # item} other {Delete # items}}",
+        "toast": {
+          "deleted_title": "Deleted",
+          "deleted": "{count, plural, one {# work item deleted} other {# work items deleted}}",
+          "not_deleted": "Not deleted"
+        }
+      }
+    },
+    "quick_actions": {
+      "unavailable_title": "Action not available",
+      "unavailable_message": "This action is not available here.",
+      "remove_from_cycle": "Remove from cycle",
+      "remove_from_module": "Remove from module",
+      "try_again": "Try again in a moment.",
+      "toast": {
+        "link_copied": "Link copied",
+        "link_copied_message": "The work item link is on your clipboard.",
+        "title_copied": "Title copied",
+        "title_copied_message": "The work item title is on your clipboard.",
+        "description_copied": "Description copied",
+        "description_copied_message": "The work item description is on your clipboard.",
+        "details_copied": "Title and description copied",
+        "details_copied_message": "The work item title and description are on your clipboard.",
+        "no_description": "No description",
+        "no_description_message": "This work item has no description.",
+        "restored": "Restored",
+        "restored_message": "You can find the work item with the project's work items.",
+        "not_restored": "Not restored"
+      }
     }
   },
   "sub_work_item": {

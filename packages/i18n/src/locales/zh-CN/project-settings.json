@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "{groupKey} 组中没有状态",
         "description": "请创建一个新状态"
+      },
+      "workspace_states": {
+        "title": "使用工作区项目状态",
+        "description": "开启期间，状态来自工作区，无法在此处编辑。",
+        "active_title": "工作区项目状态已生效",
+        "active_description": "此项目正在使用工作区的状态。如需在此处管理状态，请关闭上方开关。",
+        "try_again": "请稍后重试。",
+        "toast": {
+          "enabled": "正在使用工作区的状态",
+          "disabled": "正在使用此项目的状态",
+          "not_saved": "未保存"
+        },
+        "confirm": {
+          "enable_title": "在此项目中使用工作区的状态？",
+          "disable_title": "在此项目中管理状态？",
+          "enable_content": "今后此项目的状态来自工作区。工作项的状态可能会被更新或移动。",
+          "disable_content": "此项目重新管理自己的状态。工作项的状态可能会被更新或移动。"
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "标签名称不应超过255个字符",
       "toast": {
         "error": "更新标签时出错"
+      },
+      "workspace_labels": {
+        "title": "使用工作区项目标签",
+        "description": "开启期间，工作区的标签会被分配并显示在此项目的卡片上。",
+        "active_title": "工作区项目标签已生效",
+        "active_description": "此项目正在使用工作区的标签。如需在此处管理标签，请关闭上方开关。",
+        "try_again": "请稍后重试。",
+        "toast": {
+          "enabled": "正在使用工作区的标签",
+          "disabled": "正在使用此项目的标签",
+          "not_saved": "未保存"
+        }
+      },
+      "delete": {
+        "title": "删除标签",
+        "question": "确定要删除此标签吗？",
+        "warning": "带有此标签的每个工作项都会失去它。此操作无法撤销。",
+        "not_deleted": "未删除",
+        "try_again": "请稍后重试。"
       }
     },
     "estimates": {
@@ -195,6 +232,14 @@
         "title": "自动提醒",
         "description": "Plane 将自动通过电子邮件和应用程序通知来提醒您的团队保持进度。",
         "duration": "提前提醒"
+      },
+      "auto-cycle-complete": {
+        "title": "自动完成周期",
+        "description": "周期的结束日期一过就自动完成。关闭时，周期会一直进行到有人关闭或归档它为止。"
+      },
+      "auto-conventional-commit": {
+        "title": "按 Conventional Commits 打标签",
+        "description": "根据标题中的 Conventional Commit 前缀为工作项添加对应标签。开启后还会扫描并标记尚未打标签的工作项。"
       }
     },
     "empty_state": {
@@ -437,7 +482,16 @@
         "loading": "正在更新项目功能...",
         "success": "项目功能更新成功。",
         "error": "更新项目功能时出现错误。请重试。"
-      }
+      },
+      "project_states": {
+        "title": "项目状态",
+        "description": "使用工作区的状态对此项目的进度进行分类和跟踪。"
+      },
+      "project_labels": {
+        "title": "项目标签",
+        "description": "使用工作区的标签对此项目进行分类和分组。"
+      },
+      "paid_plan_tooltip": "付费方案可用"
     },
     "project_updates": {
       "heading": "项目更新",
@@ -529,6 +583,10 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "并行周期",
+        "description": "同时运行多个进行中的周期，日期范围可以重叠。"
       }
     }
   }

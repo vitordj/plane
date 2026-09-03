@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "项目状态",
-        "heading": "查看所有项目的进度概览。",
-        "description": "项目状态是 Plane 独有的功能，用于按任何项目属性跟踪您所有项目的进度。",
-        "go_to_settings": "前往设置"
+        "heading": "项目状态",
+        "description": "在整个工作区中以一致的方式对项目生命周期进行分类和跟踪。",
+        "go_to_settings": "前往设置",
+        "loading": "正在加载设置",
+        "list_heading": "工作区项目状态",
+        "try_again": "请稍后重试。",
+        "toast": {
+          "enabled": "项目状态已开启",
+          "disabled": "项目状态已关闭",
+          "not_saved": "未保存",
+          "state_created": "已创建状态",
+          "state_updated": "已更新状态",
+          "state_deleted": "已删除状态",
+          "default_set": "已更新默认状态"
+        },
+        "confirm": {
+          "enable_title": "开启工作区项目状态？",
+          "disable_title": "关闭工作区项目状态？",
+          "enable_content": "今后状态将由工作区统一管理，适用于所有项目。工作项的状态可能会与工作区的状态集对齐。",
+          "disable_content": "各项目重新管理自己的状态。工作项的状态可能会与项目的状态集对齐。"
+        }
       },
       "project_labels": {
         "title": "项目标签",
         "heading": "项目标签",
         "description": "创建和管理工作区级别的项目标签，用于分类以及看板和列表视图中的分组。",
-        "go_to_settings": "前往设置"
+        "go_to_settings": "前往设置",
+        "loading": "正在加载设置",
+        "list_heading": "工作区项目标签",
+        "try_again": "请稍后重试。",
+        "toast": {
+          "enabled": "项目标签已开启",
+          "disabled": "项目标签已关闭",
+          "not_saved": "未保存",
+          "label_created": "已创建标签",
+          "label_updated": "已更新标签",
+          "label_deleted": "已删除标签"
+        },
+        "confirm": {
+          "enable_title": "开启工作区项目标签？",
+          "disable_title": "关闭工作区项目标签？",
+          "enable_content": "今后标签将由工作区统一管理，适用于所有项目。",
+          "disable_content": "各项目重新管理自己的标签。"
+        }
       },
       "projects": {
         "title": "项目",
@@ -629,6 +664,24 @@
             "not_resynced_title": "未重新同步",
             "not_resynced": "无法完成重新同步。"
           }
+        },
+        "errors": {
+          "unit_not_found": "该区域已不存在。",
+          "name_required": "区域需要一个名称。",
+          "slug_taken": "已有同名的区域。",
+          "members_not_in_workspace": "添加的每个人都必须是本工作区的有效成员。",
+          "membership_not_found": "此人已不在该区域中。",
+          "lead_already_set": "该区域已有负责人。",
+          "unit_not_in_workspace": "该区域不属于本工作区。",
+          "project_required": "请选择要关联的项目。",
+          "invalid_role": "区域无法授予该角色。",
+          "project_not_in_workspace": "该项目不属于本工作区。",
+          "link_not_found": "该项目已不再关联到此区域。",
+          "work_item_not_found": "该工作项已不存在。",
+          "work_item_has_no_unit": "没有区域负责此工作项。",
+          "invalid_assignment_mode": "这不是一种分配模式。",
+          "directory_workspace_not_found": "该工作区已不存在。",
+          "directory_token_required": "请先签发 SCIM 令牌，再开启目录预配。"
         }
       }
     },

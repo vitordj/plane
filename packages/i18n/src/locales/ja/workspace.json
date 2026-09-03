@@ -223,6 +223,14 @@
       "search": {
         "description": "条件に一致するプロジェクトが見つかりません。\n代わりに新しいプロジェクトを作成してください。"
       }
+    },
+    "group_by_button": "グループ化：{value}",
+    "group": {
+      "no_label": "ラベルなし"
+    },
+    "card": {
+      "set_state": "ステータスを設定",
+      "add_label": "+ ラベル"
     }
   },
   "workspace_views": {

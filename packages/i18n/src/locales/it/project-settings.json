@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "Nessuno stato disponibile per il gruppo {groupKey}",
         "description": "Crea un nuovo stato"
+      },
+      "workspace_states": {
+        "title": "Usare gli stati di progetto dello spazio di lavoro",
+        "description": "Finché è attivo, gli stati provengono dallo spazio di lavoro e non sono modificabili qui.",
+        "active_title": "Gli stati di progetto dello spazio di lavoro sono attivi",
+        "active_description": "Questo progetto usa gli stati dello spazio di lavoro. Disattivi l’interruttore qui sopra per gestire gli stati qui.",
+        "try_again": "Riprovi tra un istante.",
+        "toast": {
+          "enabled": "Sta usando gli stati dello spazio di lavoro",
+          "disabled": "Sta usando gli stati di questo progetto",
+          "not_saved": "Non salvato"
+        },
+        "confirm": {
+          "enable_title": "Usare gli stati dello spazio di lavoro per questo progetto?",
+          "disable_title": "Gestire gli stati in questo progetto?",
+          "enable_content": "D’ora in poi gli stati di questo progetto provengono dallo spazio di lavoro. Gli elementi di lavoro potrebbero vedere il proprio stato aggiornato o spostato.",
+          "disable_content": "Questo progetto torna a gestire i propri stati. Gli elementi di lavoro potrebbero vedere il proprio stato aggiornato o spostato."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "Il nome dell'etichetta non deve superare i 255 caratteri",
       "toast": {
         "error": "Errore durante l'aggiornamento dell'etichetta"
+      },
+      "workspace_labels": {
+        "title": "Usare le etichette di progetto dello spazio di lavoro",
+        "description": "Finché è attivo, le etichette dello spazio di lavoro vengono assegnate e mostrate sulla scheda di questo progetto.",
+        "active_title": "Le etichette di progetto dello spazio di lavoro sono attive",
+        "active_description": "Questo progetto usa le etichette dello spazio di lavoro. Disattivi l’interruttore qui sopra per gestire le etichette qui.",
+        "try_again": "Riprovi tra un istante.",
+        "toast": {
+          "enabled": "Sta usando le etichette dello spazio di lavoro",
+          "disabled": "Sta usando le etichette di questo progetto",
+          "not_saved": "Non salvato"
+        }
+      },
+      "delete": {
+        "title": "Eliminare l’etichetta",
+        "question": "Vuole davvero eliminare questa etichetta?",
+        "warning": "Tutti gli elementi di lavoro che la portano la perderanno. L’operazione è irreversibile.",
+        "not_deleted": "Non eliminata",
+        "try_again": "Riprovi tra un istante."
       }
     },
     "estimates": {
@@ -195,6 +232,14 @@
         "title": "Promemoria automatici",
         "description": "Plane invierà automaticamente promemoria via email e notifiche in-app per mantenere il tuo team in linea con le scadenze.",
         "duration": "Invia promemoria prima di"
+      },
+      "auto-cycle-complete": {
+        "title": "Completamento automatico dei cicli",
+        "description": "Completare un ciclo appena passata la data di fine. Se disattivato, il ciclo resta attivo finché qualcuno non lo chiude o lo archivia."
+      },
+      "auto-conventional-commit": {
+        "title": "Etichettare i conventional commit",
+        "description": "Assegnare a un elemento di lavoro l’etichetta implicata dal prefisso conventional commit del suo titolo. Attivandolo vengono anche esaminati ed etichettati gli elementi ancora privi di etichetta."
       }
     },
     "empty_state": {
@@ -437,7 +482,16 @@
         "loading": "Aggiornamento funzionalità progetto...",
         "success": "Funzionalità progetto aggiornata con successo.",
         "error": "Qualcosa è andato storto durante l'aggiornamento della funzionalità progetto. Riprova."
-      }
+      },
+      "project_states": {
+        "title": "Stati di progetto",
+        "description": "Classifichi e monitori l’avanzamento di questo progetto con gli stati dello spazio di lavoro."
+      },
+      "project_labels": {
+        "title": "Etichette di progetto",
+        "description": "Categorizzi e raggruppi questo progetto con le etichette dello spazio di lavoro."
+      },
+      "paid_plan_tooltip": "Disponibile nei piani a pagamento"
     },
     "project_updates": {
       "heading": "Aggiornamenti del progetto",
@@ -529,6 +583,10 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Cicli paralleli",
+        "description": "Tenere attivi più cicli contemporaneamente, con periodi che si sovrappongono."
       }
     }
   }

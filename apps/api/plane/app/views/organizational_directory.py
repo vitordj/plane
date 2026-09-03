@@ -34,6 +34,7 @@ from plane.app.serializers import (
 )
 from plane.app.services.orca import project_workspace, unresolved_identities
 from plane.db.models import OrganizationalDirectoryConnection, Workspace
+from plane.utils.orca_error_codes import orca_error, orca_not_found
 
 from .base import BaseAPIView
 from .organizational_unit import OrganizationalUnitFeatureMixin
@@ -71,7 +72,7 @@ class OrganizationalDirectoryConnectionEndpoint(OrganizationalUnitFeatureMixin, 
         """Return the connection, with the SCIM base URL to paste into Entra."""
         workspace = Workspace.objects.filter(slug=slug).first()
         if workspace is None:
-            return Response({"error": "Workspace not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_DIRECTORY_WORKSPACE_NOT_FOUND")
 
         connection = get_or_create_connection(workspace.id)
         data = OrganizationalDirectoryConnectionSerializer(connection).data
@@ -93,16 +94,13 @@ class OrganizationalDirectoryConnectionEndpoint(OrganizationalUnitFeatureMixin, 
         """
         workspace = Workspace.objects.filter(slug=slug).first()
         if workspace is None:
-            return Response({"error": "Workspace not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_DIRECTORY_WORKSPACE_NOT_FOUND")
 
         connection = get_or_create_connection(workspace.id)
         payload = {key: value for key, value in request.data.items() if key in EDITABLE_CONNECTION_FIELDS}
 
         if payload.get("is_enabled") and not connection.token_hash:
-            return Response(
-                {"error": "Issue a SCIM token before enabling directory provisioning"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return orca_error("ORG_DIRECTORY_TOKEN_REQUIRED")
 
         serializer = OrganizationalDirectoryConnectionSerializer(connection, data=payload, partial=True)
         if serializer.is_valid():
@@ -126,7 +124,7 @@ class OrganizationalDirectoryTokenEndpoint(OrganizationalUnitFeatureMixin, BaseA
         """
         workspace = Workspace.objects.filter(slug=slug).first()
         if workspace is None:
-            return Response({"error": "Workspace not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_DIRECTORY_WORKSPACE_NOT_FOUND")
 
         connection = get_or_create_connection(workspace.id)
         with transaction.atomic():
@@ -148,7 +146,7 @@ class OrganizationalDirectoryTokenEndpoint(OrganizationalUnitFeatureMixin, BaseA
         """
         workspace = Workspace.objects.filter(slug=slug).first()
         if workspace is None:
-            return Response({"error": "Workspace not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_DIRECTORY_WORKSPACE_NOT_FOUND")
 
         connection = get_or_create_connection(workspace.id)
         connection.token_hash = ""
@@ -176,7 +174,7 @@ class OrganizationalDirectoryResyncEndpoint(OrganizationalUnitFeatureMixin, Base
         """
         workspace = Workspace.objects.filter(slug=slug).first()
         if workspace is None:
-            return Response({"error": "Workspace not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_DIRECTORY_WORKSPACE_NOT_FOUND")
 
         result = project_workspace(workspace.id)
         connection = get_or_create_connection(workspace.id)
@@ -200,7 +198,7 @@ class OrganizationalDirectoryUnresolvedEndpoint(OrganizationalUnitFeatureMixin, 
         """
         workspace = Workspace.objects.filter(slug=slug).first()
         if workspace is None:
-            return Response({"error": "Workspace not found"}, status=status.HTTP_404_NOT_FOUND)
+            return orca_not_found("ORG_DIRECTORY_WORKSPACE_NOT_FOUND")
 
         identities = unresolved_identities(workspace.id).select_related("workspace_member", "workspace_member__member")
         serializer = OrganizationalDirectoryIdentitySerializer(identities, many=True)

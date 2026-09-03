@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "Nenhum estado disponível para o grupo {groupKey}",
         "description": "Por favor, crie um novo estado"
+      },
+      "workspace_states": {
+        "title": "Usar os estados de projeto do espaço de trabalho",
+        "description": "Enquanto estiver ativo, os estados vêm do espaço de trabalho e não podem ser editados aqui.",
+        "active_title": "Os estados de projeto do espaço de trabalho estão ativos",
+        "active_description": "Este projeto usa os estados do espaço de trabalho. Desative a chave acima para gerenciar os estados aqui.",
+        "try_again": "Tente novamente em instantes.",
+        "toast": {
+          "enabled": "Usando os estados do espaço de trabalho",
+          "disabled": "Usando os estados deste projeto",
+          "not_saved": "Não salvo"
+        },
+        "confirm": {
+          "enable_title": "Usar os estados do espaço de trabalho neste projeto?",
+          "disable_title": "Gerenciar os estados neste projeto?",
+          "enable_content": "A partir de agora os estados deste projeto vêm do espaço de trabalho. Os itens de trabalho podem ter o estado atualizado ou movido.",
+          "disable_content": "Este projeto volta a gerenciar os próprios estados. Os itens de trabalho podem ter o estado atualizado ou movido."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "O nome da etiqueta não deve exceder 255 caracteres",
       "toast": {
         "error": "Erro ao atualizar a etiqueta"
+      },
+      "workspace_labels": {
+        "title": "Usar as etiquetas de projeto do espaço de trabalho",
+        "description": "Enquanto estiver ativo, as etiquetas do espaço de trabalho são atribuídas e exibidas no cartão deste projeto.",
+        "active_title": "As etiquetas de projeto do espaço de trabalho estão ativas",
+        "active_description": "Este projeto usa as etiquetas do espaço de trabalho. Desative a chave acima para gerenciar as etiquetas aqui.",
+        "try_again": "Tente novamente em instantes.",
+        "toast": {
+          "enabled": "Usando as etiquetas do espaço de trabalho",
+          "disabled": "Usando as etiquetas deste projeto",
+          "not_saved": "Não salvo"
+        }
+      },
+      "delete": {
+        "title": "Excluir etiqueta",
+        "question": "Tem certeza de que quer excluir esta etiqueta?",
+        "warning": "Todos os itens de trabalho que a usam vão perdê-la. Esta ação não pode ser desfeita.",
+        "not_deleted": "Não excluída",
+        "try_again": "Tente novamente em instantes."
       }
     },
     "estimates": {
@@ -195,6 +232,14 @@
         "title": "Avisos automáticos",
         "description": "O Plane enviará avisos automáticos via e-mail e notificações no aplicativo para manter sua equipe no caminho dos prazos.",
         "duration": "Enviar aviso antes"
+      },
+      "auto-cycle-complete": {
+        "title": "Concluir os ciclos automaticamente",
+        "description": "Concluir um ciclo assim que a data de término passar. Desativado, o ciclo continua ativo até alguém fechá-lo ou arquivá-lo."
+      },
+      "auto-conventional-commit": {
+        "title": "Etiquetar conventional commits",
+        "description": "Dar ao item de trabalho a etiqueta que o prefixo conventional commit do título indica. Ativar também percorre e etiqueta os itens que ainda não têm etiqueta."
       }
     },
     "empty_state": {
@@ -437,7 +482,16 @@
         "loading": "Atualizando recurso do projeto...",
         "success": "Recurso do projeto atualizado com sucesso.",
         "error": "Algo deu errado ao atualizar o recurso do projeto. Por favor, tente novamente."
-      }
+      },
+      "project_states": {
+        "title": "Estados de projeto",
+        "description": "Classifique e acompanhe o progresso deste projeto com os estados do espaço de trabalho."
+      },
+      "project_labels": {
+        "title": "Etiquetas de projeto",
+        "description": "Categorize e agrupe este projeto com as etiquetas do espaço de trabalho."
+      },
+      "paid_plan_tooltip": "Disponível nos planos pagos"
     },
     "project_updates": {
       "heading": "Atualizações do projeto",
@@ -529,6 +583,10 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Ciclos paralelos",
+        "description": "Manter vários ciclos ativos ao mesmo tempo, com períodos que se sobrepõem."
       }
     }
   }

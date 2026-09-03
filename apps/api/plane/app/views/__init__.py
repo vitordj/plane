@@ -261,6 +261,7 @@ from .organizational_unit import (
     IssueOrganizationalUnitAssignEndpoint,
     OrcaConfigEndpoint,
 )
+from .orca_language import UserLanguagePreferenceEndpoint
 from .organizational_directory import (
     OrganizationalDirectoryConnectionEndpoint,
     OrganizationalDirectoryResyncEndpoint,

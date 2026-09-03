@@ -223,6 +223,14 @@
       "search": {
         "description": "Keine Projekte entsprechen Ihren Suchkriterien.\nErstellen Sie ein neues."
       }
+    },
+    "group_by_button": "Gruppieren nach: {value}",
+    "group": {
+      "no_label": "Ohne Label"
+    },
+    "card": {
+      "set_state": "Status setzen",
+      "add_label": "+ Label"
     }
   },
   "workspace_views": {

@@ -189,6 +189,9 @@ in [entra-directory-sync.md](./entra-directory-sync.md).
 Directory provisioning is configured per workspace, not per instance — a
 workspace admin issues the SCIM token from **Workspace settings → Areas**.
 
+The interface language new members start in is an instance setting rather than
+an organizational-unit one; see [i18n.md](./i18n.md).
+
 ## Tests
 
 ```bash

@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "プロジェクトの状態",
-        "heading": "すべてのプロジェクトの進捗概要を確認します。",
-        "description": "プロジェクトステータスは、任意のプロジェクトプロパティでプロジェクトの進捗を追跡するためのPlane専用の機能です。",
-        "go_to_settings": "設定へ移動"
+        "heading": "プロジェクトステータス",
+        "description": "ワークスペース全体で一貫した基準でプロジェクトのライフサイクルを分類し、追跡します。",
+        "go_to_settings": "設定へ移動",
+        "loading": "設定を読み込んでいます",
+        "list_heading": "ワークスペースのプロジェクトステータス",
+        "try_again": "少し時間をおいて、もう一度お試しください。",
+        "toast": {
+          "enabled": "プロジェクトステータスをオンにしました",
+          "disabled": "プロジェクトステータスをオフにしました",
+          "not_saved": "保存されていません",
+          "state_created": "ステータスを作成しました",
+          "state_updated": "ステータスを更新しました",
+          "state_deleted": "ステータスを削除しました",
+          "default_set": "既定のステータスを更新しました"
+        },
+        "confirm": {
+          "enable_title": "ワークスペースのプロジェクトステータスをオンにしますか？",
+          "disable_title": "ワークスペースのプロジェクトステータスをオフにしますか？",
+          "enable_content": "今後、ステータスはすべてのプロジェクトを通じてワークスペースで管理されます。作業項目のステータスがワークスペースのセットに合わせて変更される場合があります。",
+          "disable_content": "各プロジェクトが再び自身のステータスを管理します。作業項目のステータスがプロジェクトのセットに合わせて変更される場合があります。"
+        }
       },
       "project_labels": {
         "title": "プロジェクトラベル",
         "heading": "プロジェクトラベル",
         "description": "ワークスペース全体のプロジェクトラベルを作成・管理し、分類やボード・リストでのグループ化に使用します。",
-        "go_to_settings": "設定へ移動"
+        "go_to_settings": "設定へ移動",
+        "loading": "設定を読み込んでいます",
+        "list_heading": "ワークスペースのプロジェクトラベル",
+        "try_again": "少し時間をおいて、もう一度お試しください。",
+        "toast": {
+          "enabled": "プロジェクトラベルをオンにしました",
+          "disabled": "プロジェクトラベルをオフにしました",
+          "not_saved": "保存されていません",
+          "label_created": "ラベルを作成しました",
+          "label_updated": "ラベルを更新しました",
+          "label_deleted": "ラベルを削除しました"
+        },
+        "confirm": {
+          "enable_title": "ワークスペースのプロジェクトラベルをオンにしますか？",
+          "disable_title": "ワークスペースのプロジェクトラベルをオフにしますか？",
+          "enable_content": "今後、ラベルはすべてのプロジェクトを通じてワークスペースで管理されます。",
+          "disable_content": "各プロジェクトが再び自身のラベルを管理します。"
+        }
       },
       "projects": {
         "title": "プロジェクト",
@@ -629,6 +664,24 @@
             "not_resynced_title": "再同期できませんでした",
             "not_resynced": "再同期を完了できませんでした。"
           }
+        },
+        "errors": {
+          "unit_not_found": "そのエリアは存在しません。",
+          "name_required": "エリアには名前が必要です。",
+          "slug_taken": "この名前のエリアはすでにあります。",
+          "members_not_in_workspace": "追加できるのは、このワークスペースの有効なメンバーだけです。",
+          "membership_not_found": "その方はこのエリアにはいません。",
+          "lead_already_set": "このエリアにはすでにリードがいます。",
+          "unit_not_in_workspace": "そのエリアはこのワークスペースのものではありません。",
+          "project_required": "紐付けるプロジェクトを選んでください。",
+          "invalid_role": "エリアはそのロールを付与できません。",
+          "project_not_in_workspace": "そのプロジェクトはこのワークスペースのものではありません。",
+          "link_not_found": "そのプロジェクトはこのエリアに紐付いていません。",
+          "work_item_not_found": "その作業項目は存在しません。",
+          "work_item_has_no_unit": "この作業項目を担当するエリアがありません。",
+          "invalid_assignment_mode": "それは割り当てモードではありません。",
+          "directory_workspace_not_found": "そのワークスペースは存在しません。",
+          "directory_token_required": "ディレクトリからのプロビジョニングを有効にする前に、SCIM トークンを発行してください。"
         }
       }
     },

@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react";
 import { X } from "lucide-react";
 // plane imports
+import { resolveOrcaErrorKey } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
@@ -98,8 +99,12 @@ export const OrganizationalUnitProjectsTab = observer(function OrganizationalUni
         title: t(`${OU}.projects.toast.linked_title`),
         message: t(`${OU}.projects.toast.linked`),
       });
-    } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.projects.toast.not_linked`), message: t(`${OU}.try_again`) });
+    } catch (error) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${OU}.projects.toast.not_linked`),
+        message: t(resolveOrcaErrorKey(error) ?? `${OU}.try_again`),
+      });
     } finally {
       setIsLinking(false);
     }
@@ -108,8 +113,12 @@ export const OrganizationalUnitProjectsTab = observer(function OrganizationalUni
   const handleRoleChange = async (linkId: string, role: number) => {
     try {
       await store.updateLinkedProjectRole(workspaceSlug, unitId, linkId, role);
-    } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.toast.role_unchanged`), message: t(`${OU}.try_again`) });
+    } catch (error) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${OU}.toast.role_unchanged`),
+        message: t(resolveOrcaErrorKey(error) ?? `${OU}.try_again`),
+      });
     }
   };
 

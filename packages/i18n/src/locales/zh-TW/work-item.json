@@ -281,6 +281,65 @@
         "nobody": "此區域中沒有成員擁有此專案的存取權限。",
         "not_assigned": "未指派"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property}（多種）",
+      "subscribe_selected": "訂閱所選項目的通知",
+      "mute_selected": "靜音所選項目的通知",
+      "archive_selected": "封存所選項目",
+      "archive_unavailable": "只有已完成或已取消的工作事項才能封存",
+      "delete_selected": "刪除所選項目",
+      "try_again": "請稍後再試。",
+      "toast": {
+        "updated_title": "已更新",
+        "not_updated": "未更新",
+        "updated": "{count, plural, one {已更新 # 個工作事項} other {已更新 # 個工作事項}}"
+      },
+      "archive_modal": {
+        "title": "封存工作事項",
+        "loading": "正在封存",
+        "toast": {
+          "archived_title": "已封存",
+          "not_archived": "未封存",
+          "archived": "{count, plural, one {已封存 # 個工作事項} other {已封存 # 個工作事項}}"
+        },
+        "content": "{count, plural, one {封存 # 個工作事項？您可以在專案封存中找到它們，並在之後還原。} other {封存 # 個工作事項？您可以在專案封存中找到它們，並在之後還原。}}",
+        "confirm": "{count, plural, one {封存 # 項} other {封存 # 項}}"
+      },
+      "delete_modal": {
+        "title": "刪除工作事項",
+        "loading": "正在刪除",
+        "toast": {
+          "deleted_title": "已刪除",
+          "not_deleted": "未刪除",
+          "deleted": "{count, plural, one {已刪除 # 個工作事項} other {已刪除 # 個工作事項}}"
+        },
+        "content": "{count, plural, one {刪除 # 個工作事項？此操作無法復原。} other {刪除 # 個工作事項？此操作無法復原。}}",
+        "confirm": "{count, plural, one {刪除 # 項} other {刪除 # 項}}"
+      },
+      "selected": "{count, plural, one {已選取 # 項} other {已選取 # 項}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "此操作無法使用",
+      "unavailable_message": "此處無法執行該操作。",
+      "remove_from_cycle": "從週期中移除",
+      "remove_from_module": "從模組中移除",
+      "try_again": "請稍後再試。",
+      "toast": {
+        "link_copied": "已複製連結",
+        "link_copied_message": "工作事項連結已複製到剪貼簿。",
+        "title_copied": "已複製標題",
+        "title_copied_message": "工作事項標題已複製到剪貼簿。",
+        "description_copied": "已複製描述",
+        "description_copied_message": "工作事項描述已複製到剪貼簿。",
+        "details_copied": "已複製標題與描述",
+        "details_copied_message": "工作事項的標題與描述已複製到剪貼簿。",
+        "no_description": "沒有描述",
+        "no_description_message": "此工作事項沒有描述。",
+        "restored": "已還原",
+        "restored_message": "您可以在專案的工作事項中找到它。",
+        "not_restored": "未還原"
+      }
     }
   },
   "sub_work_item": {

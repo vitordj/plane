@@ -227,7 +227,7 @@ export const CycleListItemAction = observer(function CycleListItemAction(props: 
             setStartStopModal("start");
           }}
         >
-          Start Cycle
+          {t("cycle.actions.start")}
         </Button>
       )}
       {/* Orca Custom: Inline Complete Cycle button — visible in the row for active cycles */}
@@ -241,7 +241,7 @@ export const CycleListItemAction = observer(function CycleListItemAction(props: 
             setStartStopModal("end");
           }}
         >
-          Complete Cycle
+          {t("cycle.actions.complete")}
         </Button>
       )}
       {showTransferIssues && (

@@ -10,6 +10,7 @@ import type {
   TInstanceEmailConfigurationKeys,
   TInstanceImageConfigurationKeys,
   TInstanceAuthenticationKeys,
+  TInstanceLanguageConfigurationKeys,
   TInstanceWorkspaceConfigurationKeys,
   TCoreLoginMediums,
 } from "./";
@@ -67,6 +68,15 @@ export interface IInstanceConfig {
   admin_base_url: string | undefined;
   is_self_managed: boolean;
   instance_changelog_url?: string;
+  /**
+   * Orca (fork): the interface language this instance falls back to when the
+   * viewer has not chosen one — new profiles are born with it, and the screens
+   * shown before sign-in render in it. Always one of the catalogue's locale
+   * codes; the API normalizes anything else to "en" before serializing.
+   * Typed as `string` because this package carries no dependencies, `TLanguage`
+   * living in `@plane/i18n`; narrow at the point of use.
+   */
+  default_language?: string;
 }
 
 export interface IInstanceAdmin {
@@ -86,7 +96,9 @@ export type TInstanceConfigurationKeys =
   | TInstanceEmailConfigurationKeys
   | TInstanceImageConfigurationKeys
   | TInstanceAuthenticationKeys
-  | TInstanceWorkspaceConfigurationKeys;
+  | TInstanceWorkspaceConfigurationKeys
+  // Orca (fork)
+  | TInstanceLanguageConfigurationKeys;
 
 export interface IInstanceConfiguration {
   id: string;

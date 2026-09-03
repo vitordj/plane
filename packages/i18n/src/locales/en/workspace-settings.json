@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Project states",
-        "heading": "See progress overview for all projects.",
-        "description": "Project States is a Plane-only feature for tracking progress of all your projects by any project property.",
-        "go_to_settings": "Go to settings"
+        "heading": "Project states",
+        "description": "Classify and track project lifecycles consistently across the workspace.",
+        "go_to_settings": "Go to settings",
+        "loading": "Loading settings",
+        "list_heading": "Workspace project states",
+        "try_again": "Try again in a moment.",
+        "toast": {
+          "enabled": "Project states are on",
+          "disabled": "Project states are off",
+          "not_saved": "Not saved",
+          "state_created": "State created",
+          "state_updated": "State updated",
+          "state_deleted": "State deleted",
+          "default_set": "Default state updated"
+        },
+        "confirm": {
+          "enable_title": "Turn on workspace project states?",
+          "disable_title": "Turn off workspace project states?",
+          "enable_content": "States will be managed from the workspace, across every project. Work items may have their state aligned to the workspace set.",
+          "disable_content": "Each project goes back to managing its own states. Work items may have their state aligned to the project set."
+        }
       },
       "project_labels": {
         "title": "Project labels",
-        "heading": "Project Labels",
+        "heading": "Project labels",
         "description": "Create and manage workspace-level project labels for categorization and board/list grouping.",
-        "go_to_settings": "Go to settings"
+        "go_to_settings": "Go to settings",
+        "loading": "Loading settings",
+        "list_heading": "Workspace project labels",
+        "try_again": "Try again in a moment.",
+        "toast": {
+          "enabled": "Project labels are on",
+          "disabled": "Project labels are off",
+          "not_saved": "Not saved",
+          "label_created": "Label created",
+          "label_updated": "Label updated",
+          "label_deleted": "Label deleted"
+        },
+        "confirm": {
+          "enable_title": "Turn on workspace project labels?",
+          "disable_title": "Turn off workspace project labels?",
+          "enable_content": "Labels will be managed from the workspace, across every project.",
+          "disable_content": "Each project goes back to managing its own labels."
+        }
       },
       "organizational_units": {
         "title": "Areas",
@@ -405,6 +440,24 @@
             "not_resynced_title": "Not resynced",
             "not_resynced": "The resync could not be completed."
           }
+        },
+        "errors": {
+          "unit_not_found": "That area no longer exists.",
+          "name_required": "An area needs a name.",
+          "slug_taken": "An area with this name already exists.",
+          "members_not_in_workspace": "Everyone you add has to be an active member of this workspace.",
+          "membership_not_found": "That person is no longer in this area.",
+          "lead_already_set": "This area already has a lead.",
+          "unit_not_in_workspace": "That area is not in this workspace.",
+          "project_required": "Pick a project to link.",
+          "invalid_role": "That is not a role an area can grant.",
+          "project_not_in_workspace": "That project is not in this workspace.",
+          "link_not_found": "That project is no longer linked to this area.",
+          "work_item_not_found": "That work item no longer exists.",
+          "work_item_has_no_unit": "No area is responsible for this work item.",
+          "invalid_assignment_mode": "That is not an assignment mode.",
+          "directory_workspace_not_found": "That workspace no longer exists.",
+          "directory_token_required": "Issue a SCIM token before turning directory provisioning on."
         }
       },
       "projects": {

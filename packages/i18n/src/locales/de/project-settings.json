@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "Keine Status für die Gruppe {groupKey}",
         "description": "Erstellen Sie einen neuen Status"
+      },
+      "workspace_states": {
+        "title": "Projektstatus des Arbeitsbereichs verwenden",
+        "description": "Solange dies aktiv ist, stammt der Status aus dem Arbeitsbereich und lässt sich hier nicht bearbeiten.",
+        "active_title": "Projektstatus des Arbeitsbereichs ist aktiv",
+        "active_description": "Dieses Projekt verwendet den Status des Arbeitsbereichs. Den Schalter oben deaktivieren, um den Status hier zu verwalten.",
+        "try_again": "Bitte gleich noch einmal versuchen.",
+        "toast": {
+          "enabled": "Verwendet den Status des Arbeitsbereichs",
+          "disabled": "Verwendet den Status dieses Projekts",
+          "not_saved": "Nicht gespeichert"
+        },
+        "confirm": {
+          "enable_title": "Status des Arbeitsbereichs für dieses Projekt verwenden?",
+          "disable_title": "Status in diesem Projekt verwalten?",
+          "enable_content": "Der Status dieses Projekts stammt künftig aus dem Arbeitsbereich. Bei Arbeitselementen kann der Status aktualisiert oder verschoben werden.",
+          "disable_content": "Dieses Projekt verwaltet seinen Status wieder selbst. Bei Arbeitselementen kann der Status aktualisiert oder verschoben werden."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "Der Labelname darf nicht mehr als 255 Zeichen enthalten",
       "toast": {
         "error": "Fehler beim Aktualisieren des Labels"
+      },
+      "workspace_labels": {
+        "title": "Projekt-Labels des Arbeitsbereichs verwenden",
+        "description": "Solange dies aktiv ist, werden die Labels des Arbeitsbereichs zugewiesen und auf der Karte dieses Projekts angezeigt.",
+        "active_title": "Projekt-Labels des Arbeitsbereichs sind aktiv",
+        "active_description": "Dieses Projekt verwendet die Labels des Arbeitsbereichs. Den Schalter oben deaktivieren, um Labels hier zu verwalten.",
+        "try_again": "Bitte gleich noch einmal versuchen.",
+        "toast": {
+          "enabled": "Verwendet die Labels des Arbeitsbereichs",
+          "disabled": "Verwendet die Labels dieses Projekts",
+          "not_saved": "Nicht gespeichert"
+        }
+      },
+      "delete": {
+        "title": "Label löschen",
+        "question": "Dieses Label wirklich löschen?",
+        "warning": "Jedes Arbeitselement mit diesem Label verliert es. Das lässt sich nicht rückgängig machen.",
+        "not_deleted": "Nicht gelöscht",
+        "try_again": "Bitte gleich noch einmal versuchen."
       }
     },
     "estimates": {
@@ -195,6 +232,14 @@
         "title": "Automatische Erinnerungen",
         "description": "Plane wird automatische Erinnerungen via E-Mail und in-App-Benachrichtigungen senden, um Ihr Team auf den Lauf der Dinge zu halten.",
         "duration": "Erinnerung vor"
+      },
+      "auto-cycle-complete": {
+        "title": "Zyklen automatisch abschließen",
+        "description": "Einen Zyklus automatisch abschließen, sobald sein Enddatum vorbei ist. Ausgeschaltet bleibt ein Zyklus aktiv, bis ihn jemand schließt oder archiviert."
+      },
+      "auto-conventional-commit": {
+        "title": "Conventional Commits als Label setzen",
+        "description": "Einem Arbeitselement das Label geben, das sich aus dem Conventional-Commit-Präfix seines Titels ergibt. Beim Einschalten werden auch die Arbeitselemente ohne Label geprüft und beschriftet."
       }
     },
     "empty_state": {
@@ -437,7 +482,16 @@
         "loading": "Projektfunktion wird aktualisiert...",
         "success": "Projektfunktion erfolgreich aktualisiert.",
         "error": "Beim Aktualisieren der Projektfunktion ist etwas schiefgelaufen. Bitte versuchen Sie es erneut."
-      }
+      },
+      "project_states": {
+        "title": "Projektstatus",
+        "description": "Den Fortschritt dieses Projekts mit dem Status des Arbeitsbereichs einordnen und verfolgen."
+      },
+      "project_labels": {
+        "title": "Projekt-Labels",
+        "description": "Dieses Projekt mit den Labels des Arbeitsbereichs kategorisieren und gruppieren."
+      },
+      "paid_plan_tooltip": "In den kostenpflichtigen Tarifen verfügbar"
     },
     "project_updates": {
       "heading": "Projektaktualisierungen",
@@ -529,6 +583,10 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Parallele Zyklen",
+        "description": "Mehrere Zyklen gleichzeitig aktiv halten, mit überlappenden Zeiträumen."
       }
     }
   }

@@ -20,7 +20,70 @@
   },
   "cycle": {
     "label": "{count, plural, one {chu kỳ} other {chu kỳ}}",
-    "no_cycle": "Không có chu kỳ"
+    "no_cycle": "Không có chu kỳ",
+    "start_stop": {
+      "start": {
+        "title": "Bắt đầu chu kỳ",
+        "loading": "Đang bắt đầu",
+        "question": "Bắt đầu “{name}”? Thao tác này đặt {date} làm ngày bắt đầu và chuyển chu kỳ sang hoạt động."
+      },
+      "end": {
+        "title": "Hoàn thành chu kỳ",
+        "loading": "Đang hoàn thành",
+        "question": "Hoàn thành “{name}”? Thao tác này đặt {date} làm ngày kết thúc và đánh dấu chu kỳ là đã hoàn thành."
+      },
+      "move_unstarted": {
+        "label": "Chuyển các mục chưa bắt đầu sang Đang tiến hành",
+        "hint": "Mọi mục công việc tồn đọng hoặc chưa bắt đầu trong chu kỳ này sẽ chuyển sang trạng thái Đang tiến hành."
+      },
+      "no_in_progress": {
+        "title": "Dự án này không có trạng thái Đang tiến hành.",
+        "hint": "Các mục công việc trong chu kỳ này giữ nguyên trạng thái hiện tại."
+      },
+      "mark_completed": {
+        "label": "Đánh dấu mọi mục chưa xong là Đã hoàn thành",
+        "hint": "{count, plural, one {# mục công việc chưa xong trong chu kỳ này sẽ chuyển sang trạng thái Đã hoàn thành.} other {# mục công việc chưa xong trong chu kỳ này sẽ chuyển sang trạng thái Đã hoàn thành.}}"
+      },
+      "no_completed": {
+        "hint": "Dự án này không có trạng thái Đã hoàn thành để chuyển chúng sang.",
+        "title": "{count, plural, one {# mục công việc vẫn chưa xong.} other {# mục công việc vẫn chưa xong.}}"
+      },
+      "toast": {
+        "started": "Đã bắt đầu chu kỳ",
+        "started_message": "“{name}” đang hoạt động.",
+        "started_moved": "“{name}” đang hoạt động. Các mục chưa bắt đầu đã chuyển sang Đang tiến hành.",
+        "completed": "Đã hoàn thành chu kỳ",
+        "completed_message": "“{name}” đã hoàn thành.",
+        "completed_moved": "“{name}” đã hoàn thành. Các mục chưa xong đã chuyển sang Đã hoàn thành.",
+        "failed": "Đã xảy ra lỗi"
+      },
+      "try_again": "Vui lòng thử lại sau giây lát."
+    },
+    "actions": {
+      "start": "Bắt đầu chu kỳ",
+      "complete": "Hoàn thành chu kỳ"
+    },
+    "toast": {
+      "created": "Đã tạo chu kỳ",
+      "not_created": "Chưa tạo chu kỳ",
+      "updated": "Đã cập nhật chu kỳ",
+      "not_updated": "Chưa cập nhật chu kỳ",
+      "try_again": "Vui lòng thử lại sau giây lát.",
+      "dates_taken": "Một chu kỳ khác đã chiếm những ngày đó. Hãy xóa ngày để tạo chu kỳ nháp."
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "Đã chuyển các mục công việc",
+        "not_transferred": "Chưa chuyển các mục công việc",
+        "not_loaded": "Không tải được chu kỳ"
+      },
+      "search_placeholder": "Tìm chu kỳ",
+      "notice": "Chu kỳ đã hoàn thành vẫn chỉnh sửa được cho đến khi được lưu trữ. Các mục công việc chưa xong có thể chuyển sang chu kỳ khác.",
+      "action": "Chuyển các mục chưa xong",
+      "heading": "Chuyển các mục chưa xong"
+    },
+    "drop_archived_error": "Không thể chuyển mục công việc vào chu kỳ đã lưu trữ",
+    "add_named": "Thêm “{name}” vào chu kỳ"
   },
   "active_cycle_analytics": {
     "empty_state": {

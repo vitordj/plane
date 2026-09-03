@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react";
 import { AlertTriangle, Check, Copy, RefreshCw } from "lucide-react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions, EUserPermissionsLevel, resolveOrcaErrorKey } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
@@ -113,7 +113,9 @@ export const DirectorySyncPanel = observer(function DirectorySyncPanel(props: Pr
       setConnection(next);
       setToast({ type: TOAST_TYPE.SUCCESS, title: t(`${OU}.toast.saved`), message: successMessage });
     } catch (error) {
-      const message = (error as { error?: string })?.error ?? t(`${DS}.toast.save_failed`);
+      // The API answers with a stable error_code; fall back to this panel's own
+      // wording rather than to the English prose the body also carries.
+      const message = t(resolveOrcaErrorKey(error) ?? `${DS}.toast.save_failed`);
       setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.toast.not_saved`), message });
     } finally {
       setIsBusy(false);

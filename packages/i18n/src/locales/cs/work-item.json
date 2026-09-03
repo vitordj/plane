@@ -281,6 +281,65 @@
         "nobody": "Žádný člen této oblasti nemá přístup k tomuto projektu.",
         "not_assigned": "Nepřiřazeno"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property} (smíšené)",
+      "subscribe_selected": "Odebírat oznámení k vybraným položkám",
+      "mute_selected": "Ztlumit oznámení k vybraným položkám",
+      "archive_selected": "Archivovat vybrané položky",
+      "archive_unavailable": "Archivovat lze pouze dokončené nebo zrušené pracovní položky",
+      "delete_selected": "Smazat vybrané položky",
+      "try_again": "Zkuste to prosím za okamžik znovu.",
+      "toast": {
+        "updated_title": "Aktualizováno",
+        "not_updated": "Neaktualizováno",
+        "updated": "{count, plural, one {# pracovní položka aktualizována} few {# pracovní položky aktualizovány} many {# pracovní položky aktualizováno} other {# pracovních položek aktualizováno}}"
+      },
+      "archive_modal": {
+        "title": "Archivovat pracovní položky",
+        "loading": "Archivace",
+        "toast": {
+          "archived_title": "Archivováno",
+          "not_archived": "Nearchivováno",
+          "archived": "{count, plural, one {# pracovní položka archivována} few {# pracovní položky archivovány} many {# pracovní položky archivováno} other {# pracovních položek archivováno}}"
+        },
+        "content": "{count, plural, one {Archivovat # pracovní položku? Najdete ji v archivu projektu a můžete ji později obnovit.} few {Archivovat # pracovní položky? Najdete je v archivu projektu a můžete je později obnovit.} many {Archivovat # pracovní položky? Najdete je v archivu projektu a můžete je později obnovit.} other {Archivovat # pracovních položek? Najdete je v archivu projektu a můžete je později obnovit.}}",
+        "confirm": "{count, plural, one {Archivovat # položku} few {Archivovat # položky} many {Archivovat # položky} other {Archivovat # položek}}"
+      },
+      "delete_modal": {
+        "title": "Smazat pracovní položky",
+        "loading": "Mazání",
+        "toast": {
+          "deleted_title": "Smazáno",
+          "not_deleted": "Nesmazáno",
+          "deleted": "{count, plural, one {# pracovní položka smazána} few {# pracovní položky smazány} many {# pracovní položky smazáno} other {# pracovních položek smazáno}}"
+        },
+        "content": "{count, plural, one {Smazat # pracovní položku? Tuto akci nelze vrátit zpět.} few {Smazat # pracovní položky? Tuto akci nelze vrátit zpět.} many {Smazat # pracovní položky? Tuto akci nelze vrátit zpět.} other {Smazat # pracovních položek? Tuto akci nelze vrátit zpět.}}",
+        "confirm": "{count, plural, one {Smazat # položku} few {Smazat # položky} many {Smazat # položky} other {Smazat # položek}}"
+      },
+      "selected": "{count, plural, one {# vybráno} few {# vybráno} many {# vybráno} other {# vybráno}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "Akce není dostupná",
+      "unavailable_message": "Tato akce zde není dostupná.",
+      "remove_from_cycle": "Odebrat z cyklu",
+      "remove_from_module": "Odebrat z modulu",
+      "try_again": "Zkuste to prosím za okamžik znovu.",
+      "toast": {
+        "link_copied": "Odkaz zkopírován",
+        "link_copied_message": "Odkaz na pracovní položku je ve schránce.",
+        "title_copied": "Název zkopírován",
+        "title_copied_message": "Název pracovní položky je ve schránce.",
+        "description_copied": "Popis zkopírován",
+        "description_copied_message": "Popis pracovní položky je ve schránce.",
+        "details_copied": "Název a popis zkopírovány",
+        "details_copied_message": "Název a popis pracovní položky jsou ve schránce.",
+        "no_description": "Bez popisu",
+        "no_description_message": "Tato pracovní položka nemá popis.",
+        "restored": "Obnoveno",
+        "restored_message": "Pracovní položku najdete mezi pracovními položkami projektu.",
+        "not_restored": "Neobnoveno"
+      }
     }
   },
   "sub_work_item": {

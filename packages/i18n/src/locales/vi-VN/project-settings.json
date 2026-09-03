@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "Không có trạng thái trong nhóm {groupKey}",
         "description": "Vui lòng tạo một trạng thái mới"
+      },
+      "workspace_states": {
+        "title": "Dùng trạng thái dự án của không gian làm việc",
+        "description": "Khi bật, trạng thái đến từ không gian làm việc và không thể chỉnh sửa tại đây.",
+        "active_title": "Trạng thái dự án của không gian làm việc đang hoạt động",
+        "active_description": "Dự án này dùng trạng thái của không gian làm việc. Hãy tắt công tắc ở trên để quản lý trạng thái tại đây.",
+        "try_again": "Vui lòng thử lại sau giây lát.",
+        "toast": {
+          "enabled": "Đang dùng trạng thái của không gian làm việc",
+          "disabled": "Đang dùng trạng thái của dự án này",
+          "not_saved": "Chưa lưu"
+        },
+        "confirm": {
+          "enable_title": "Dùng trạng thái của không gian làm việc cho dự án này?",
+          "disable_title": "Quản lý trạng thái trong dự án này?",
+          "enable_content": "Từ nay trạng thái của dự án này đến từ không gian làm việc. Các mục công việc có thể được cập nhật hoặc chuyển trạng thái.",
+          "disable_content": "Dự án này quản lý lại trạng thái của riêng mình. Các mục công việc có thể được cập nhật hoặc chuyển trạng thái."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "Tên nhãn không nên vượt quá 255 ký tự",
       "toast": {
         "error": "Đã xảy ra lỗi khi cập nhật nhãn"
+      },
+      "workspace_labels": {
+        "title": "Dùng nhãn dự án của không gian làm việc",
+        "description": "Khi bật, nhãn của không gian làm việc được gán và hiển thị trên thẻ của dự án này.",
+        "active_title": "Nhãn dự án của không gian làm việc đang hoạt động",
+        "active_description": "Dự án này dùng nhãn của không gian làm việc. Hãy tắt công tắc ở trên để quản lý nhãn tại đây.",
+        "try_again": "Vui lòng thử lại sau giây lát.",
+        "toast": {
+          "enabled": "Đang dùng nhãn của không gian làm việc",
+          "disabled": "Đang dùng nhãn của dự án này",
+          "not_saved": "Chưa lưu"
+        }
+      },
+      "delete": {
+        "title": "Xóa nhãn",
+        "question": "Bạn có chắc muốn xóa nhãn này không?",
+        "warning": "Mọi mục công việc mang nhãn này sẽ mất nhãn. Không thể hoàn tác.",
+        "not_deleted": "Chưa xóa",
+        "try_again": "Vui lòng thử lại sau giây lát."
       }
     },
     "estimates": {
@@ -195,6 +232,14 @@
         "title": "Nhắc nhở tự động",
         "description": "Plane sẽ tự động gửi nhắc nhở qua email và thông báo trong ứng dụng để giữ cho nhóm của bạn trên đường đến các hạn chót.",
         "duration": "Gửi nhắc nhở trước"
+      },
+      "auto-cycle-complete": {
+        "title": "Tự động hoàn thành chu kỳ",
+        "description": "Tự động hoàn thành chu kỳ ngay khi qua ngày kết thúc. Khi tắt, chu kỳ vẫn hoạt động cho đến khi có người đóng hoặc lưu trữ nó."
+      },
+      "auto-conventional-commit": {
+        "title": "Gắn nhãn theo conventional commit",
+        "description": "Gán cho mục công việc nhãn mà tiền tố conventional commit trong tiêu đề gợi ý. Khi bật, hệ thống cũng quét và gắn nhãn cho những mục chưa có nhãn."
       }
     },
     "empty_state": {
@@ -437,7 +482,16 @@
         "loading": "Đang cập nhật tính năng dự án...",
         "success": "Đã cập nhật tính năng dự án thành công.",
         "error": "Đã xảy ra lỗi khi cập nhật tính năng dự án. Vui lòng thử lại."
-      }
+      },
+      "project_states": {
+        "title": "Trạng thái dự án",
+        "description": "Phân loại và theo dõi tiến độ của dự án này bằng trạng thái của không gian làm việc."
+      },
+      "project_labels": {
+        "title": "Nhãn dự án",
+        "description": "Phân loại và nhóm dự án này bằng nhãn của không gian làm việc."
+      },
+      "paid_plan_tooltip": "Có trong các gói trả phí"
     },
     "project_updates": {
       "heading": "Cập nhật dự án",
@@ -529,6 +583,10 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Chu kỳ song song",
+        "description": "Chạy nhiều chu kỳ hoạt động cùng lúc, với các khoảng thời gian chồng lấn."
       }
     }
   }

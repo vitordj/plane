@@ -223,6 +223,14 @@
       "search": {
         "description": "未检测到符合匹配条件的项目。\n创建一个新项目"
       }
+    },
+    "group_by_button": "分组方式：{value}",
+    "group": {
+      "no_label": "无标签"
+    },
+    "card": {
+      "set_state": "设置状态",
+      "add_label": "+ 标签"
     }
   },
   "workspace_views": {

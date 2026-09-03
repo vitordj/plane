@@ -223,6 +223,14 @@
       "search": {
         "description": "Eşleşen kriterlerle proje bulunamadı.\nBunun yerine yeni bir proje oluşturun"
       }
+    },
+    "group_by_button": "Gruplandır: {value}",
+    "group": {
+      "no_label": "Etiketsiz"
+    },
+    "card": {
+      "set_state": "Durum ayarla",
+      "add_label": "+ Etiket"
     }
   },
   "workspace_views": {

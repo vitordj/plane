@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Proje durumları",
-        "heading": "Tüm projeler için ilerleme özetini görün.",
-        "description": "Proje Durumları, herhangi bir proje özelliğine göre tüm projelerinizin ilerlemesini takip etmek için Plane'e özgü bir özelliktir.",
-        "go_to_settings": "Ayarlara git"
+        "heading": "Proje durumları",
+        "description": "Proje yaşam döngülerini çalışma alanı genelinde tutarlı biçimde sınıflandırın ve izleyin.",
+        "go_to_settings": "Ayarlara git",
+        "loading": "Ayarlar yükleniyor",
+        "list_heading": "Çalışma alanı proje durumları",
+        "try_again": "Birazdan tekrar deneyin.",
+        "toast": {
+          "enabled": "Proje durumları açık",
+          "disabled": "Proje durumları kapalı",
+          "not_saved": "Kaydedilmedi",
+          "state_created": "Durum oluşturuldu",
+          "state_updated": "Durum güncellendi",
+          "state_deleted": "Durum silindi",
+          "default_set": "Varsayılan durum güncellendi"
+        },
+        "confirm": {
+          "enable_title": "Çalışma alanı proje durumları açılsın mı?",
+          "disable_title": "Çalışma alanı proje durumları kapatılsın mı?",
+          "enable_content": "Durumlar bundan sonra tüm projelerde çalışma alanından yönetilir. İş öğelerinin durumu çalışma alanı kümesine hizalanabilir.",
+          "disable_content": "Her proje yeniden kendi durumlarını yönetir. İş öğelerinin durumu proje kümesine hizalanabilir."
+        }
       },
       "project_labels": {
         "title": "Proje etiketleri",
         "heading": "Proje etiketleri",
         "description": "Kategorilendirme ve pano/liste gruplaması için çalışma alanı düzeyinde proje etiketleri oluşturun ve yönetin.",
-        "go_to_settings": "Ayarlara git"
+        "go_to_settings": "Ayarlara git",
+        "loading": "Ayarlar yükleniyor",
+        "list_heading": "Çalışma alanı proje etiketleri",
+        "try_again": "Birazdan tekrar deneyin.",
+        "toast": {
+          "enabled": "Proje etiketleri açık",
+          "disabled": "Proje etiketleri kapalı",
+          "not_saved": "Kaydedilmedi",
+          "label_created": "Etiket oluşturuldu",
+          "label_updated": "Etiket güncellendi",
+          "label_deleted": "Etiket silindi"
+        },
+        "confirm": {
+          "enable_title": "Çalışma alanı proje etiketleri açılsın mı?",
+          "disable_title": "Çalışma alanı proje etiketleri kapatılsın mı?",
+          "enable_content": "Etiketler bundan sonra tüm projelerde çalışma alanından yönetilir.",
+          "disable_content": "Her proje yeniden kendi etiketlerini yönetir."
+        }
       },
       "projects": {
         "title": "Projeler",
@@ -629,6 +664,24 @@
             "not_resynced_title": "Yeniden senkronize edilmedi",
             "not_resynced": "Yeniden senkronizasyon tamamlanamadı."
           }
+        },
+        "errors": {
+          "unit_not_found": "Bu alan artık yok.",
+          "name_required": "Bir alanın adı olmalı.",
+          "slug_taken": "Bu adı taşıyan bir alan zaten var.",
+          "members_not_in_workspace": "Eklediğiniz herkes bu çalışma alanının etkin üyesi olmalı.",
+          "membership_not_found": "Bu kişi artık bu alanda değil.",
+          "lead_already_set": "Bu alanın zaten bir lideri var.",
+          "unit_not_in_workspace": "Bu alan bu çalışma alanına ait değil.",
+          "project_required": "Bağlanacak bir proje seçin.",
+          "invalid_role": "Bir alan bu rolü veremez.",
+          "project_not_in_workspace": "Bu proje bu çalışma alanına ait değil.",
+          "link_not_found": "Bu proje artık bu alana bağlı değil.",
+          "work_item_not_found": "Bu iş öğesi artık yok.",
+          "work_item_has_no_unit": "Bu iş öğesinden sorumlu bir alan yok.",
+          "invalid_assignment_mode": "Bu bir atama modu değil.",
+          "directory_workspace_not_found": "Bu çalışma alanı artık yok.",
+          "directory_token_required": "Dizin sağlamayı açmadan önce bir SCIM belirteci oluşturun."
         }
       }
     },

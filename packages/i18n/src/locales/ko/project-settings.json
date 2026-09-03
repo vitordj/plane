@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "{groupKey} 그룹에 사용할 수 있는 상태 없음",
         "description": "새 상태를 생성하세요"
+      },
+      "workspace_states": {
+        "title": "작업 공간 프로젝트 상태 사용",
+        "description": "켜져 있는 동안 상태는 작업 공간에서 가져오며 여기서는 편집할 수 없습니다.",
+        "active_title": "작업 공간 프로젝트 상태가 활성화되어 있습니다",
+        "active_description": "이 프로젝트는 작업 공간의 상태를 사용합니다. 여기서 상태를 관리하려면 위의 스위치를 끄십시오.",
+        "try_again": "잠시 후 다시 시도하십시오.",
+        "toast": {
+          "enabled": "작업 공간 상태를 사용 중",
+          "disabled": "이 프로젝트의 상태를 사용 중",
+          "not_saved": "저장되지 않았습니다"
+        },
+        "confirm": {
+          "enable_title": "이 프로젝트에 작업 공간 상태를 사용하시겠습니까?",
+          "disable_title": "이 프로젝트에서 상태를 관리하시겠습니까?",
+          "enable_content": "이제 이 프로젝트의 상태는 작업 공간에서 가져옵니다. 작업 항목의 상태가 업데이트되거나 이동될 수 있습니다.",
+          "disable_content": "이 프로젝트가 다시 자체 상태를 관리합니다. 작업 항목의 상태가 업데이트되거나 이동될 수 있습니다."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "레이블 이름은 255자를 초과할 수 없습니다",
       "toast": {
         "error": "레이블 업데이트 중 오류 발생"
+      },
+      "workspace_labels": {
+        "title": "작업 공간 프로젝트 레이블 사용",
+        "description": "켜져 있는 동안 작업 공간의 레이블이 지정되어 이 프로젝트 카드에 표시됩니다.",
+        "active_title": "작업 공간 프로젝트 레이블이 활성화되어 있습니다",
+        "active_description": "이 프로젝트는 작업 공간의 레이블을 사용합니다. 여기서 레이블을 관리하려면 위의 스위치를 끄십시오.",
+        "try_again": "잠시 후 다시 시도하십시오.",
+        "toast": {
+          "enabled": "작업 공간 레이블을 사용 중",
+          "disabled": "이 프로젝트의 레이블을 사용 중",
+          "not_saved": "저장되지 않았습니다"
+        }
+      },
+      "delete": {
+        "title": "레이블 삭제",
+        "question": "이 레이블을 삭제하시겠습니까?",
+        "warning": "이 레이블이 붙은 모든 작업 항목에서 레이블이 사라집니다. 이 작업은 되돌릴 수 없습니다.",
+        "not_deleted": "삭제되지 않았습니다",
+        "try_again": "잠시 후 다시 시도하십시오."
       }
     },
     "estimates": {
@@ -195,6 +232,14 @@
         "title": "자동 알림",
         "description": "Plane은 이메일과 앱 알림을 통해 팀이 마감일에 따라 추진하도록 자동으로 알림을 보냅니다.",
         "duration": "알림 전"
+      },
+      "auto-cycle-complete": {
+        "title": "사이클 자동 완료",
+        "description": "종료일이 지나면 사이클을 자동으로 완료합니다. 꺼져 있으면 누군가 닫거나 보관할 때까지 사이클이 활성 상태로 남습니다."
+      },
+      "auto-conventional-commit": {
+        "title": "Conventional Commit 레이블 지정",
+        "description": "제목의 Conventional Commit 접두사가 가리키는 레이블을 작업 항목에 지정합니다. 켜면 아직 레이블이 없는 작업 항목도 검사해 레이블을 붙입니다."
       }
     },
     "empty_state": {
@@ -437,7 +482,16 @@
         "loading": "프로젝트 기능 업데이트 중...",
         "success": "프로젝트 기능이 성공적으로 업데이트되었습니다.",
         "error": "프로젝트 기능 업데이트 중 문제가 발생했습니다. 다시 시도해 주세요."
-      }
+      },
+      "project_states": {
+        "title": "프로젝트 상태",
+        "description": "작업 공간 상태로 이 프로젝트의 진행 상황을 분류하고 추적합니다."
+      },
+      "project_labels": {
+        "title": "프로젝트 레이블",
+        "description": "작업 공간 레이블로 이 프로젝트를 분류하고 그룹화합니다."
+      },
+      "paid_plan_tooltip": "유료 요금제에서 사용할 수 있습니다"
     },
     "project_updates": {
       "heading": "프로젝트 업데이트",
@@ -529,6 +583,10 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "병렬 사이클",
+        "description": "기간이 겹치는 여러 사이클을 동시에 활성 상태로 운영합니다."
       }
     }
   }

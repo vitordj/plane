@@ -223,6 +223,14 @@
       "search": {
         "description": "Nenašli sa projekty zodpovedajúce kritériám.\nVytvorte nový."
       }
+    },
+    "group_by_button": "Zoskupiť podľa: {value}",
+    "group": {
+      "no_label": "Bez štítku"
+    },
+    "card": {
+      "set_state": "Nastaviť stav",
+      "add_label": "+ Štítok"
     }
   },
   "workspace_views": {

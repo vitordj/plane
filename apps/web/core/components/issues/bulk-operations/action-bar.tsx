@@ -9,6 +9,7 @@ import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 import { Trash2, Archive, Tag, Bell, BellOff } from "lucide-react";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Button } from "@plane/propel/button";
 import { Checkbox } from "@plane/ui";
@@ -42,6 +43,7 @@ type Props = {
 
 export const BulkOperationsActionBar = observer(function BulkOperationsActionBar(props: Props) {
   const { className, wrapperClassName, onClearSelection } = props;
+  const { t } = useTranslation();
   const { workspaceSlug, projectId } = useParams();
   const { selectedEntityIds, clearSelection } = useMultipleSelectStore();
   const {
@@ -52,6 +54,11 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
   const { getLabelById } = useLabel();
   const { getUserDetails: _getUserDetails } = useMember();
 
+  const B = "issue.bulk_operations";
+  /** "State" on a uniform selection, "State (mixed)" when the values differ. */
+  const propertyLabel = (property: string, isMixed: boolean) =>
+    isMixed ? t(`${B}.mixed`, { property: t(property) }) : t(property);
+
   const [pending, setPending] = useState<TPendingProperties>({});
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -61,12 +68,12 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
       return (
         <span className="text-xs text-custom-text-100 flex items-center gap-1.5 font-medium">
           <Tag className="h-3 w-3" />
-          {isMixedLabels ? "Labels (Mixed)" : "Labels"}
+          {propertyLabel("common.labels", isMixedLabels)}
         </span>
       );
     }
     const firstLabel = getLabelById(ids[0]);
-    const firstLabelName = firstLabel?.name || "Label";
+    const firstLabelName = firstLabel?.name || t("common.label");
     const labelColor = firstLabel?.color || "#ccc";
 
     return (
@@ -190,14 +197,14 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
       });
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Updated!",
-        message: `${selectedCount} work item${selectedCount > 1 ? "s" : ""} updated successfully.`,
+        title: t(`${B}.toast.updated_title`),
+        message: t(`${B}.toast.updated`, { count: selectedCount }),
       });
       setPending({});
       clearSelection();
       onClearSelection();
     } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: "Error", message: "Something went wrong. Please try again." });
+      setToast({ type: TOAST_TYPE.ERROR, title: t(`${B}.toast.not_updated`), message: t(`${B}.try_again`) });
     } finally {
       setIsUpdating(false);
     }
@@ -232,7 +239,9 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
                 checked={false}
                 indeterminate={true}
               />
-              <span className="text-xs text-custom-text-100 font-semibold">{selectedCount} selected</span>
+              <span className="text-xs text-custom-text-100 font-semibold">
+                {t(`${B}.selected`, { count: selectedCount })}
+              </span>
             </button>
 
             {/* Vertical Divider */}
@@ -241,9 +250,7 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
             {/* Notification Toggle Action */}
             <button
               onClick={handleToggleSubscription}
-              title={
-                currentIsSubscribed ? "Mute notifications for selected" : "Subscribe to notifications for selected"
-              }
+              title={t(currentIsSubscribed ? `${B}.mute_selected` : `${B}.subscribe_selected`)}
               className="text-custom-text-400 hover:bg-custom-background-80 hover:text-custom-text-100 flex h-7 w-7 items-center justify-center rounded transition-colors"
             >
               {currentIsSubscribed ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
@@ -253,7 +260,7 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
             <button
               onClick={() => setIsArchiveOpen(true)}
               disabled={!canArchive}
-              title={canArchive ? "Archive selected" : "Only completed or canceled work items can be archived"}
+              title={t(canArchive ? `${B}.archive_selected` : `${B}.archive_unavailable`)}
               className="text-custom-text-400 hover:bg-custom-background-80 hover:text-custom-text-100 flex h-7 w-7 items-center justify-center rounded transition-colors disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Archive className="h-4 w-4" />
@@ -262,7 +269,7 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
             {/* Delete Action */}
             <button
               onClick={() => setIsDeleteOpen(true)}
-              title="Delete selected"
+              title={t(`${B}.delete_selected`)}
               className="text-custom-text-400 hover:bg-custom-background-80 hover:text-custom-text-100 flex h-7 w-7 items-center justify-center rounded transition-colors"
             >
               <Trash2 className="h-4 w-4" />
@@ -279,7 +286,7 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
                 onChange={(val) => updatePending({ state_id: val })}
                 buttonVariant="border-with-text"
                 buttonClassName={dropdownCls}
-                placeholder={isMixedState ? "State (Mixed)" : "State"}
+                placeholder={propertyLabel("common.state", isMixedState)}
                 showDefaultState={false}
                 renderByDefault={false}
                 placement="top-start"
@@ -292,7 +299,7 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
               onChange={(val) => updatePending({ priority: val })}
               buttonVariant="border-with-text"
               buttonClassName={dropdownCls}
-              placeholder={isMixedPriority ? "Priority (Mixed)" : "Priority"}
+              placeholder={propertyLabel("priority", isMixedPriority)}
               renderByDefault={false}
               placement="top-start"
             />
@@ -306,7 +313,7 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
                 multiple
                 buttonVariant="border-with-text"
                 buttonClassName={dropdownCls}
-                placeholder={isMixedAssignees ? "Assignees (Mixed)" : "Assignees"}
+                placeholder={propertyLabel("assignees", isMixedAssignees)}
                 renderByDefault={false}
                 placement="top-start"
                 showUserDetails={true}
@@ -336,7 +343,7 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
                 onChange={(val) => updatePending({ cycle_id: val ?? undefined })}
                 buttonVariant="border-with-text"
                 buttonClassName={dropdownCls}
-                placeholder={isMixedCycle ? "Cycle (Mixed)" : "Cycle"}
+                placeholder={propertyLabel("common.cycle", isMixedCycle)}
                 renderByDefault={false}
                 placement="top-start"
               />
@@ -352,7 +359,7 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
                 showCount={true}
                 buttonVariant="border-with-text"
                 buttonClassName={dropdownCls}
-                placeholder={isMixedModules ? "Modules (Mixed)" : "Modules"}
+                placeholder={propertyLabel("modules", isMixedModules)}
                 renderByDefault={false}
                 placement="top-start"
               />
@@ -364,7 +371,7 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
               onChange={(val) => updatePending({ start_date: val ? val.toISOString().split("T")[0] : null })}
               buttonVariant="border-with-text"
               buttonClassName={dropdownCls}
-              placeholder={isMixedStartDate ? "Start date (Mixed)" : "Start date"}
+              placeholder={propertyLabel("start_date", isMixedStartDate)}
               renderByDefault={false}
               isClearable
               placement="top-start"
@@ -376,7 +383,7 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
               onChange={(val) => updatePending({ target_date: val ? val.toISOString().split("T")[0] : null })}
               buttonVariant="border-with-text"
               buttonClassName={dropdownCls}
-              placeholder={isMixedTargetDate ? "Due date (Mixed)" : "Due date"}
+              placeholder={propertyLabel("due_date", isMixedTargetDate)}
               renderByDefault={false}
               isClearable
               placement="top-start"
@@ -392,7 +399,7 @@ export const BulkOperationsActionBar = observer(function BulkOperationsActionBar
               disabled={!hasPendingChanges || isUpdating}
               loading={isUpdating}
             >
-              Update
+              {t("common.update")}
             </Button>
           </div>
         </div>

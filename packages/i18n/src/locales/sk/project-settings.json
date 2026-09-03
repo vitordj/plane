@@ -43,6 +43,24 @@
       "empty_state": {
         "title": "Žiadne stavy pre skupinu {groupKey}",
         "description": "Vytvorte nový stav"
+      },
+      "workspace_states": {
+        "title": "Používať stavy projektov pracovného priestoru",
+        "description": "Kým je toto zapnuté, stavy pochádzajú z pracovného priestoru a nedajú sa tu upravovať.",
+        "active_title": "Stavy projektov pracovného priestoru sú aktívne",
+        "active_description": "Tento projekt používa stavy pracovného priestoru. Vypnite prepínač vyššie, ak chcete stavy spravovať tu.",
+        "try_again": "Skúste to prosím o chvíľu znova.",
+        "toast": {
+          "enabled": "Používajú sa stavy pracovného priestoru",
+          "disabled": "Používajú sa stavy tohto projektu",
+          "not_saved": "Neuložené"
+        },
+        "confirm": {
+          "enable_title": "Použiť pre tento projekt stavy pracovného priestoru?",
+          "disable_title": "Spravovať stavy v tomto projekte?",
+          "enable_content": "Stavy tohto projektu budú odteraz pochádzať z pracovného priestoru. Pri pracovných položkách sa stav môže aktualizovať alebo presunúť.",
+          "disable_content": "Tento projekt si opäť spravuje vlastné stavy. Pri pracovných položkách sa stav môže aktualizovať alebo presunúť."
+        }
       }
     },
     "labels": {
@@ -53,6 +71,25 @@
       "label_max_char": "Názov štítka nesmie presiahnuť 255 znakov",
       "toast": {
         "error": "Chyba pri aktualizácii štítka"
+      },
+      "workspace_labels": {
+        "title": "Používať štítky projektov pracovného priestoru",
+        "description": "Kým je toto zapnuté, štítky pracovného priestoru sa priraďujú a zobrazujú na karte tohto projektu.",
+        "active_title": "Štítky projektov pracovného priestoru sú aktívne",
+        "active_description": "Tento projekt používa štítky pracovného priestoru. Vypnite prepínač vyššie, ak chcete štítky spravovať tu.",
+        "try_again": "Skúste to prosím o chvíľu znova.",
+        "toast": {
+          "enabled": "Používajú sa štítky pracovného priestoru",
+          "disabled": "Používajú sa štítky tohto projektu",
+          "not_saved": "Neuložené"
+        }
+      },
+      "delete": {
+        "title": "Odstrániť štítok",
+        "question": "Naozaj chcete tento štítok odstrániť?",
+        "warning": "Každá pracovná položka s týmto štítkom oň príde. Túto akciu nemožno vrátiť späť.",
+        "not_deleted": "Neodstránené",
+        "try_again": "Skúste to prosím o chvíľu znova."
       }
     },
     "estimates": {
@@ -195,6 +232,14 @@
         "title": "Automatické upozornenia",
         "description": "Plane automaticky bude poslať upozornenia cez email a notifikácie v aplikácii, aby vaša ekipa zostala na ceste s termínmi.",
         "duration": "Poslať upozornenie pred"
+      },
+      "auto-cycle-complete": {
+        "title": "Automatické dokončenie cyklov",
+        "description": "Dokončiť cyklus automaticky, len čo uplynie jeho dátum ukončenia. Keď je vypnuté, cyklus zostáva aktívny, kým ho niekto neuzavrie alebo nearchivuje."
+      },
+      "auto-conventional-commit": {
+        "title": "Označovať conventional commits štítkami",
+        "description": "Prideliť pracovnej položke štítok, ktorý vyplýva z prefixu conventional commit v jej názve. Zapnutie zároveň prejde a označí položky, ktoré štítok zatiaľ nemajú."
       }
     },
     "empty_state": {
@@ -437,7 +482,16 @@
         "loading": "Aktualizácia funkcie projektu...",
         "success": "Funkcia projektu bola úspešne aktualizovaná.",
         "error": "Pri aktualizácii funkcie projektu sa niečo pokazilo. Skúste to prosím znova."
-      }
+      },
+      "project_states": {
+        "title": "Stavy projektov",
+        "description": "Zaraďujte a sledujte postup tohto projektu pomocou stavov pracovného priestoru."
+      },
+      "project_labels": {
+        "title": "Štítky projektov",
+        "description": "Kategorizujte a zoskupujte tento projekt pomocou štítkov pracovného priestoru."
+      },
+      "paid_plan_tooltip": "Dostupné v platených tarifoch"
     },
     "project_updates": {
       "heading": "Aktualizácie projektu",
@@ -529,6 +583,10 @@
             }
           }
         }
+      },
+      "parallel": {
+        "title": "Paralelné cykly",
+        "description": "Mať súčasne aktívnych viac cyklov s prekrývajúcimi sa obdobiami."
       }
     }
   }

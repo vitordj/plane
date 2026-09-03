@@ -281,6 +281,65 @@
         "nobody": "Žiadny člen tejto oblasti nemá prístup k tomuto projektu.",
         "not_assigned": "Nepriradené"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property} (zmiešané)",
+      "subscribe_selected": "Odoberať oznámenia k vybraným položkám",
+      "mute_selected": "Stlmiť oznámenia k vybraným položkám",
+      "archive_selected": "Archivovať vybrané položky",
+      "archive_unavailable": "Archivovať možno iba dokončené alebo zrušené pracovné položky",
+      "delete_selected": "Odstrániť vybrané položky",
+      "try_again": "Skúste to prosím o chvíľu znova.",
+      "toast": {
+        "updated_title": "Aktualizované",
+        "not_updated": "Neaktualizované",
+        "updated": "{count, plural, one {# pracovná položka aktualizovaná} few {# pracovné položky aktualizované} many {# pracovnej položky aktualizovaných} other {# pracovných položiek aktualizovaných}}"
+      },
+      "archive_modal": {
+        "title": "Archivovať pracovné položky",
+        "loading": "Archivácia",
+        "toast": {
+          "archived_title": "Archivované",
+          "not_archived": "Nearchivované",
+          "archived": "{count, plural, one {# pracovná položka archivovaná} few {# pracovné položky archivované} many {# pracovnej položky archivovaných} other {# pracovných položiek archivovaných}}"
+        },
+        "content": "{count, plural, one {Archivovať # pracovnú položku? Nájdete ju v archíve projektu a môžete ju neskôr obnoviť.} few {Archivovať # pracovné položky? Nájdete ich v archíve projektu a môžete ich neskôr obnoviť.} many {Archivovať # pracovnej položky? Nájdete ich v archíve projektu a môžete ich neskôr obnoviť.} other {Archivovať # pracovných položiek? Nájdete ich v archíve projektu a môžete ich neskôr obnoviť.}}",
+        "confirm": "{count, plural, one {Archivovať # položku} few {Archivovať # položky} many {Archivovať # položky} other {Archivovať # položiek}}"
+      },
+      "delete_modal": {
+        "title": "Odstrániť pracovné položky",
+        "loading": "Odstraňovanie",
+        "toast": {
+          "deleted_title": "Odstránené",
+          "not_deleted": "Neodstránené",
+          "deleted": "{count, plural, one {# pracovná položka odstránená} few {# pracovné položky odstránené} many {# pracovnej položky odstránených} other {# pracovných položiek odstránených}}"
+        },
+        "content": "{count, plural, one {Odstrániť # pracovnú položku? Túto akciu nemožno vrátiť späť.} few {Odstrániť # pracovné položky? Túto akciu nemožno vrátiť späť.} many {Odstrániť # pracovnej položky? Túto akciu nemožno vrátiť späť.} other {Odstrániť # pracovných položiek? Túto akciu nemožno vrátiť späť.}}",
+        "confirm": "{count, plural, one {Odstrániť # položku} few {Odstrániť # položky} many {Odstrániť # položky} other {Odstrániť # položiek}}"
+      },
+      "selected": "{count, plural, one {# vybraných} few {# vybraných} many {# vybraných} other {# vybraných}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "Akcia nie je dostupná",
+      "unavailable_message": "Táto akcia tu nie je dostupná.",
+      "remove_from_cycle": "Odobrať z cyklu",
+      "remove_from_module": "Odobrať z modulu",
+      "try_again": "Skúste to prosím o chvíľu znova.",
+      "toast": {
+        "link_copied": "Odkaz skopírovaný",
+        "link_copied_message": "Odkaz na pracovnú položku je v schránke.",
+        "title_copied": "Názov skopírovaný",
+        "title_copied_message": "Názov pracovnej položky je v schránke.",
+        "description_copied": "Popis skopírovaný",
+        "description_copied_message": "Popis pracovnej položky je v schránke.",
+        "details_copied": "Názov a popis skopírované",
+        "details_copied_message": "Názov a popis pracovnej položky sú v schránke.",
+        "no_description": "Bez popisu",
+        "no_description_message": "Táto pracovná položka nemá popis.",
+        "restored": "Obnovené",
+        "restored_message": "Pracovnú položku nájdete medzi pracovnými položkami projektu.",
+        "not_restored": "Neobnovené"
+      }
     }
   },
   "sub_work_item": {

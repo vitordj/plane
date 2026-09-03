@@ -257,15 +257,50 @@
       },
       "project_states": {
         "title": "Stavy projektů",
-        "heading": "Zobrazit přehled pokroku pro všechny projekty.",
-        "description": "Stavy projektů jsou funkce výhradně Plane pro sledování pokroku všech vašich projektů podle libovolné vlastnosti projektu.",
-        "go_to_settings": "Přejít do nastavení"
+        "heading": "Stavy projektů",
+        "description": "Zařazujte a sledujte životní cyklus projektů jednotně v celém pracovním prostoru.",
+        "go_to_settings": "Přejít do nastavení",
+        "loading": "Načítání nastavení",
+        "list_heading": "Stavy projektů pracovního prostoru",
+        "try_again": "Zkuste to prosím za okamžik znovu.",
+        "toast": {
+          "enabled": "Stavy projektů jsou zapnuté",
+          "disabled": "Stavy projektů jsou vypnuté",
+          "not_saved": "Neuloženo",
+          "state_created": "Stav vytvořen",
+          "state_updated": "Stav aktualizován",
+          "state_deleted": "Stav smazán",
+          "default_set": "Výchozí stav aktualizován"
+        },
+        "confirm": {
+          "enable_title": "Zapnout stavy projektů pracovního prostoru?",
+          "disable_title": "Vypnout stavy projektů pracovního prostoru?",
+          "enable_content": "Stavy se budou spravovat z pracovního prostoru, napříč všemi projekty. U pracovních položek se stav může srovnat se sadou pracovního prostoru.",
+          "disable_content": "Každý projekt si opět spravuje vlastní stavy. U pracovních položek se stav může srovnat se sadou projektu."
+        }
       },
       "project_labels": {
         "title": "Štítky projektů",
         "heading": "Štítky projektů",
         "description": "Vytvářejte a spravujte štítky projektů na úrovni pracovního prostoru pro kategorizaci a seskupování v nástěnce a seznamu.",
-        "go_to_settings": "Přejít do nastavení"
+        "go_to_settings": "Přejít do nastavení",
+        "loading": "Načítání nastavení",
+        "list_heading": "Štítky projektů pracovního prostoru",
+        "try_again": "Zkuste to prosím za okamžik znovu.",
+        "toast": {
+          "enabled": "Štítky projektů jsou zapnuté",
+          "disabled": "Štítky projektů jsou vypnuté",
+          "not_saved": "Neuloženo",
+          "label_created": "Štítek vytvořen",
+          "label_updated": "Štítek aktualizován",
+          "label_deleted": "Štítek smazán"
+        },
+        "confirm": {
+          "enable_title": "Zapnout štítky projektů pracovního prostoru?",
+          "disable_title": "Vypnout štítky projektů pracovního prostoru?",
+          "enable_content": "Štítky se budou spravovat z pracovního prostoru, napříč všemi projekty.",
+          "disable_content": "Každý projekt si opět spravuje vlastní štítky."
+        }
       },
       "projects": {
         "title": "Projekty",
@@ -629,6 +664,24 @@
             "not_resynced_title": "Nesynchronizováno",
             "not_resynced": "Opětovnou synchronizaci se nepodařilo dokončit."
           }
+        },
+        "errors": {
+          "unit_not_found": "Tato oblast už neexistuje.",
+          "name_required": "Oblast potřebuje název.",
+          "slug_taken": "Oblast s tímto názvem už existuje.",
+          "members_not_in_workspace": "Každý přidaný člověk musí být aktivním členem tohoto pracovního prostoru.",
+          "membership_not_found": "Tento člověk už v této oblasti není.",
+          "lead_already_set": "Tato oblast už má vedoucího.",
+          "unit_not_in_workspace": "Tato oblast do tohoto pracovního prostoru nepatří.",
+          "project_required": "Vyberte projekt, který chcete připojit.",
+          "invalid_role": "Tuto roli oblast udělit nemůže.",
+          "project_not_in_workspace": "Tento projekt do tohoto pracovního prostoru nepatří.",
+          "link_not_found": "Tento projekt už není k této oblasti připojen.",
+          "work_item_not_found": "Tato pracovní položka už neexistuje.",
+          "work_item_has_no_unit": "Za tuto pracovní položku neodpovídá žádná oblast.",
+          "invalid_assignment_mode": "To není režim přidělování.",
+          "directory_workspace_not_found": "Tento pracovní prostor už neexistuje.",
+          "directory_token_required": "Před zapnutím provisioningu z adresáře vydejte token SCIM."
         }
       }
     },

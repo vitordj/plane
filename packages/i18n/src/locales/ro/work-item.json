@@ -281,6 +281,65 @@
         "nobody": "Niciun membru al acestei zone nu are acces la acest proiect.",
         "not_assigned": "Nu s-a atribuit"
       }
+    },
+    "bulk_operations": {
+      "mixed": "{property} (mixt)",
+      "subscribe_selected": "Abonați-vă la notificările activităților selectate",
+      "mute_selected": "Dezactivați notificările activităților selectate",
+      "archive_selected": "Arhivați activitățile selectate",
+      "archive_unavailable": "Se pot arhiva doar activitățile finalizate sau anulate",
+      "delete_selected": "Ștergeți activitățile selectate",
+      "try_again": "Încercați din nou peste o clipă.",
+      "toast": {
+        "updated_title": "Actualizat",
+        "not_updated": "Nu s-a actualizat",
+        "updated": "{count, plural, one {# activitate actualizată} few {# activități actualizate} other {# de activități actualizate}}"
+      },
+      "archive_modal": {
+        "title": "Arhivați activități",
+        "loading": "Se arhivează",
+        "toast": {
+          "archived_title": "Arhivat",
+          "not_archived": "Nu s-a arhivat",
+          "archived": "{count, plural, one {# activitate arhivată} few {# activități arhivate} other {# de activități arhivate}}"
+        },
+        "content": "{count, plural, one {Arhivați # activitate? O veți găsi în arhiva proiectului și o veți putea restaura mai târziu.} few {Arhivați # activități? Le veți găsi în arhiva proiectului și le veți putea restaura mai târziu.} other {Arhivați # de activități? Le veți găsi în arhiva proiectului și le veți putea restaura mai târziu.}}",
+        "confirm": "{count, plural, one {Arhivați # element} few {Arhivați # elemente} other {Arhivați # de elemente}}"
+      },
+      "delete_modal": {
+        "title": "Ștergeți activități",
+        "loading": "Se șterge",
+        "toast": {
+          "deleted_title": "Șters",
+          "not_deleted": "Nu s-a șters",
+          "deleted": "{count, plural, one {# activitate ștearsă} few {# activități șterse} other {# de activități șterse}}"
+        },
+        "content": "{count, plural, one {Ștergeți # activitate? Această acțiune nu poate fi anulată.} few {Ștergeți # activități? Această acțiune nu poate fi anulată.} other {Ștergeți # de activități? Această acțiune nu poate fi anulată.}}",
+        "confirm": "{count, plural, one {Ștergeți # element} few {Ștergeți # elemente} other {Ștergeți # de elemente}}"
+      },
+      "selected": "{count, plural, one {# selectat} few {# selectate} other {# selectate}}"
+    },
+    "quick_actions": {
+      "unavailable_title": "Acțiune indisponibilă",
+      "unavailable_message": "Această acțiune nu este disponibilă aici.",
+      "remove_from_cycle": "Eliminați din ciclu",
+      "remove_from_module": "Eliminați din modul",
+      "try_again": "Încercați din nou peste o clipă.",
+      "toast": {
+        "link_copied": "Link copiat",
+        "link_copied_message": "Linkul activității este în clipboard.",
+        "title_copied": "Titlu copiat",
+        "title_copied_message": "Titlul activității este în clipboard.",
+        "description_copied": "Descriere copiată",
+        "description_copied_message": "Descrierea activității este în clipboard.",
+        "details_copied": "Titlu și descriere copiate",
+        "details_copied_message": "Titlul și descrierea activității sunt în clipboard.",
+        "no_description": "Fără descriere",
+        "no_description_message": "Această activitate nu are descriere.",
+        "restored": "Restaurat",
+        "restored_message": "Veți găsi activitatea printre activitățile proiectului.",
+        "not_restored": "Nu s-a restaurat"
+      }
     }
   },
   "sub_work_item": {

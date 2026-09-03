@@ -13,6 +13,7 @@ import type { FC } from "react";
 import { CalendarDays, LayersIcon, Paperclip } from "lucide-react";
 // plane types
 import { EIconSize, ISSUE_PRIORITIES, STATE_GROUPS } from "@plane/constants";
+import { translate } from "@plane/i18n";
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import type { ISvgIcons } from "@plane/propel/icons";
 import {
@@ -197,7 +198,9 @@ const getCycleColumns = (): IGroupByColumn[] | undefined => {
       icon: <CycleGroupIcon cycleGroup={cycleStatus} className="h-3.5 w-3.5" />,
       payload: { cycle_id: cycle.id },
       isDropDisabled,
-      dropErrorMessage: isDropDisabled ? "Work item cannot be moved to archived cycles" : undefined,
+      // This module has no component to hold useTranslation; it is called from
+      // render, so reading the language at call time is correct here.
+      dropErrorMessage: isDropDisabled ? translate("cycle.drop_archived_error") : undefined,
     });
   });
   cycles.push({
