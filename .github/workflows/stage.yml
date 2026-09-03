@@ -332,15 +332,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements/test.txt
 
-      # Scoped to the Orca suite: it is the fork's own surface and is verified
-      # green against this configuration. The upstream contract and smoke
-      # suites reach for services this job does not stand up (object storage
-      # among them), so widening the path is a separate change that has to
-      # provision them first — not something to switch on untested here, where
-      # a pre-existing failure would block every build.
-      - name: Run Orca Tests
+      # The whole unit tree, not just the fork's own suite: this fork edits
+      # upstream serializers, views, celery tasks and intake, so a regression it
+      # causes in upstream code has to fail here rather than in production. The
+      # unit tests that touch object storage mock boto3, so postgres and redis
+      # (above) are all this job needs.
+      #
+      # If a directory ever has to be excluded, add --ignore here AND record the
+      # reason in apps/api/tests/RUNNING_TESTS.md, section "CI exclusions". An
+      # exclusion nobody can explain is how a suite quietly stops covering.
+      - name: Run API Unit Tests
         working-directory: ./apps/api
-        run: pytest plane/tests/unit/orca/ -q
+        run: pytest plane/tests/unit -q
 
   build-push:
     name: Build & Push ${{ matrix.service }}

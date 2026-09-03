@@ -1,0 +1,46 @@
+# =============================================================================
+# API contract & smoke tests (manual)
+# =============================================================================
+#
+# When: you run it by hand from the Actions tab.
+# Why not on every push: these suites need object storage and a message broker
+#   as well as the database, so they run against the full docker-compose-test
+#   stack. That takes minutes, and the pull-request path is meant to stay fast.
+#
+# Run this before a release candidate, after touching the public API, and after
+# an upstream sync.
+# =============================================================================
+
+name: API Contract & Smoke Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      pytest_args:
+        description: 'Arguments passed to pytest inside the test container'
+        required: false
+        default: 'plane/tests/contract plane/tests/smoke -q'
+
+permissions:
+  contents: read
+
+jobs:
+  heavy-tests:
+    name: Contract & Smoke (docker-compose-test)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Generate apps/api/.env
+        run: ./setup.sh
+
+      - name: Run Suite
+        run: |
+          set -euo pipefail
+          docker compose -f docker-compose-test.yml run --rm --build api-tests \
+            pytest ${{ inputs.pytest_args }}
+
+      - name: Tear Down
+        if: always()
+        run: docker compose -f docker-compose-test.yml down -v

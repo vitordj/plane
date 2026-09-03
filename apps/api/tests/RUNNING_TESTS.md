@@ -73,6 +73,28 @@ All four dependencies expose health checks; `api-tests` waits for `service_healt
 
 Test-time env overrides live in the compose file itself (`POSTGRES_HOST=test-db`, `REDIS_URL=redis://test-redis:6379/`, `AWS_S3_ENDPOINT_URL=http://test-minio:9000`, `DJANGO_SETTINGS_MODULE=plane.settings.test`). Everything else is inherited from `apps/api/.env`.
 
+## What CI runs
+
+| Where | Command | When |
+| --- | --- | --- |
+| `stage.yml` → `api_lint` | `ruff check .` and `ruff format --check .` in `apps/api` | Every PR and push that touches `apps/api` |
+| `stage.yml` → `api_tests` | `pytest plane/tests/unit -q`, against postgres and valkey service containers | Every PR and push that touches `apps/api` |
+| `api-heavy-tests.yml` | `pytest plane/tests/contract plane/tests/smoke -q` inside the full `docker-compose-test.yml` stack | Manually, from the Actions tab |
+
+The pull-request job runs the **whole** unit tree, not only `plane/tests/unit/orca`. This fork edits upstream serializers, views, celery tasks and intake, so a regression it causes in upstream code has to surface on the pull request rather than in production. The unit tests that touch object storage mock `boto3`, so the database and cache containers are enough for them.
+
+The contract and smoke suites are not on that path: they need the message broker and object storage, which means the compose stack and several minutes. Run them by hand before a release candidate, after changing the public API, and after an upstream sync.
+
+### CI exclusions
+
+None. If a directory ever has to be skipped, add the `--ignore` to the `Run API Unit Tests` step in `.github/workflows/stage.yml` **and** list it here with the reason and the condition for removing it:
+
+| Path | Why it is excluded | Removed when |
+| --- | --- | --- |
+| _(empty)_ | | |
+
+An exclusion nobody can explain is how a suite quietly stops covering.
+
 ## Troubleshooting
 
 - **`./apps/api/.env: no such file or directory`** — run `./setup.sh` from the repo root.
