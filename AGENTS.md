@@ -55,6 +55,14 @@ All changes must follow the upstream compatibility model detailed in [FORK.md](.
   - `refactor(orca): [short description]` — Code refactoring or cleanup.
 - **Atomic Commits**: Keep edits small and write semantic, isolated commits to make merging upstream updates easier.
 
+## Active plans
+
+- **Gestão de trabalho por área (Orca):** specification in
+  [docs/orca-work-management-rfc.md](./docs/orca-work-management-rfc.md);
+  execution board, per-phase work items and the session handoff prompt in
+  [docs/plans/orca-work-management/](./docs/plans/orca-work-management/README.md).
+  Pick the next `[ ]` item from the board; one item, one PR against `stage`.
+
 ## Token Efficiency & Command Guidelines
 
 - **Always Prefer Local Execution**: To conserve token usage and maintain developer control, **never** run commands that generate large volumes of terminal output or perform heavy processing (e.g., `pnpm check`, `pnpm check:types`, `pnpm build`, full tests, or django database migrations) directly through the agent context or as background tasks.
