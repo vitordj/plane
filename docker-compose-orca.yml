@@ -348,6 +348,9 @@ services:
       FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT:-5242880}
       BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
       SITE_ADDRESS: :80
+      # Deliberately has no default: see apps/proxy/Caddyfile.ce. Set it to the
+      # CIDR the Coolify proxy calls from.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:?TRUSTED_PROXIES is required - set it to the CIDR of the proxy network in front of this stack, e.g. 10.0.0.0/8}
     depends_on:
       - web
       - api

@@ -164,6 +164,10 @@ services:
     environment:
       FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT:-5242880}
       BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
+      # The Caddyfile has no default for this (see apps/proxy/Caddyfile.ce);
+      # here the only callers are the host and other containers on the bridge
+      # network, so those ranges are the trusted ones.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1/32,172.16.0.0/12}
     depends_on:
       - web
       - api

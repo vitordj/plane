@@ -5,7 +5,15 @@
 	servers {
 		max_header_size 25MB
 		client_ip_headers X-Forwarded-For X-Real-IP
-		trusted_proxies static {$TRUSTED_PROXIES:0.0.0.0/0}
+		# No default on purpose. This list decides whose X-Forwarded-For
+		# Caddy believes, and the application reads the leftmost entry of
+		# that header as the client IP (plane/utils/ip_address.py), so
+		# `0.0.0.0/0` here let any caller pick the IP that rate limiting and
+		# the authentication log would record. Empty means no proxy is
+		# trusted: forged headers are dropped, and every request looks like
+		# it came from the proxy in front. Set it to the real CIDR of that
+		# proxy; docker-compose-orca.yml refuses to start without it.
+		trusted_proxies static {$TRUSTED_PROXIES}
 	}
 }
 

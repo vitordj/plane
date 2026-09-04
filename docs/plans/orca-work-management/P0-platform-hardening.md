@@ -225,22 +225,41 @@ workspace nos dois sentidos.
 
 ---
 
-## P0.7 — `TRUSTED_PROXIES` sem fallback aberto `[ ]`
+## P0.7 — `TRUSTED_PROXIES` sem fallback aberto `[x]`
 
-**Problema.** `apps/proxy/Caddyfile.ce` l.8: `trusted_proxies static {$TRUSTED_PROXIES:0.0.0.0/0}`; `.env.example` l.44 repete `0.0.0.0/0`.
+**Problema.** `apps/proxy/Caddyfile.ce` tinha
+`trusted_proxies static {$TRUSTED_PROXIES:0.0.0.0/0}` e `.env.example` repetia
+`0.0.0.0/0`. Com todo mundo confiável, o Caddy preserva o `X-Forwarded-For` que
+o cliente mandar, e `plane/utils/ip_address.py:get_client_ip` lê **a primeira
+entrada** do cabeçalho: qualquer chamador escolhia o IP que o rate limit e o
+log de autenticação registrariam.
 
-**Mudança.**
-- Caddyfile: `trusted_proxies static {$TRUSTED_PROXIES}` sem default. Caddy falha no boot se a variável estiver vazia, o que é o comportamento desejado em produção.
-- `.env.example`: `TRUSTED_PROXIES=` vazio com comentário "obrigatório: CIDR da rede do Coolify/proxy externo; ex.: 10.0.0.0/8". Para desenvolvimento local, `docker-compose-local.yml` define `TRUSTED_PROXIES=127.0.0.1/32,172.16.0.0/12`.
-- `docker-compose-orca.yml`: serviço `proxy` passa `TRUSTED_PROXIES=${TRUSTED_PROXIES:?TRUSTED_PROXIES is required}`.
-- README: linha na tabela de variáveis com "Required: Yes".
-- Confirmar que o Django recebe o IP via `X-Forwarded-For` já filtrado (o `SECURE_PROXY_SSL_HEADER` e o middleware de IP existentes continuam iguais).
+**Mudança** (entregue em `claude/continue-implementations-bquse8`).
+- Caddyfile: `trusted_proxies static {$TRUSTED_PROXIES}` sem default, com
+  comentário explicando a cadeia até o `get_client_ip`. Vazio não derruba o
+  Caddy — significa "nenhum proxy é confiável", e nesse caso ele descarta o
+  `X-Forwarded-For` recebido e reescreve com o IP do par direto. Seguro, porém
+  todo request parece vir do proxy; por isso a exigência ficou no Compose, onde
+  falha de verdade.
+- `docker-compose-orca.yml`: `TRUSTED_PROXIES: ${TRUSTED_PROXIES:?...}` no
+  serviço `proxy`, com a mensagem dizendo o que preencher.
+- `docker-compose.yml` (dev/self-host, que constrói o proxy localmente) passa
+  `${TRUSTED_PROXIES:-127.0.0.1/32,172.16.0.0/12}`: sem isso, tirar o default do
+  Caddyfile quebraria o desenvolvimento local. `docker-compose-local.yml` não
+  tem serviço de proxy, então não foi tocado.
+- `.env.example`: variável vazia com o comentário do que preencher e por quê.
+- README: linha na tabela de variáveis com "Required: **Yes**".
+- `SECURE_PROXY_SSL_HEADER` e o middleware de IP do Django continuam iguais: o
+  que muda é o cabeçalho chegar filtrado.
 
 **Aceite.**
-- [ ] `docker compose -f docker-compose-orca.yml config` falha sem a variável.
+- [x] `docker compose -f docker-compose-orca.yml config` falha sem a variável
+  (verificado nesta sessão: `required variable TRUSTED_PROXIES is missing a
+  value: ...`) e passa com `TRUSTED_PROXIES=10.0.0.0/8`.
 - [ ] Com a variável correta, `curl -H "X-Forwarded-For: 1.2.3.4"` de fora da faixa não altera o IP visto pela aplicação (verificar em log de autenticação ou endpoint de debug temporário).
+- [ ] Faixa real do proxy Coolify preenchida em staging e produção (pendência de operação, já listada no quadro).
 
-**Arquivos:** `apps/proxy/Caddyfile.ce`, `.env.example`, `docker-compose-orca.yml`, `docker-compose-local.yml`, `README.md`.
+**Arquivos:** `apps/proxy/Caddyfile.ce`, `.env.example`, `docker-compose-orca.yml`, `docker-compose.yml`, `README.md`.
 
 ---
 
