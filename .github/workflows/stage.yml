@@ -440,7 +440,9 @@ jobs:
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
             tags="${image}:pr-${PR_NUMBER}-${GITHUB_SHA}"
           else
-            tags="${image}:stage"
+            # `:stage` is mutable and says "whatever is deployed now";
+            # `:sha-<commit>` never moves and is what production promotes.
+            tags=$(printf '%s:stage\n%s:sha-%s' "${image}" "${image}" "${GITHUB_SHA}")
           fi
           {
             echo "tags<<TAGS_EOF"
@@ -462,6 +464,33 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # The digest is the only identifier that cannot be moved to point at
+      # other bits. Recorded per service here and merged by `image_digests`
+      # below, because a matrix job cannot write a shared output.
+      - name: Record ${{ matrix.service }} Digest
+        if: ${{ github.event_name != 'pull_request' && (needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch') }}
+        env:
+          SERVICE: ${{ matrix.service }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DIGEST}" ]; then
+            echo "::error::build-push-action reported no digest for ${SERVICE}"
+            exit 1
+          fi
+          mkdir -p digests
+          printf '{"service":"%s","digest":"%s"}\n' "${SERVICE}" "${DIGEST}" > "digests/${SERVICE}.json"
+          cat "digests/${SERVICE}.json"
+
+      - name: Upload ${{ matrix.service }} Digest
+        if: ${{ github.event_name != 'pull_request' && (needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-digest-${{ matrix.service }}
+          path: digests/${{ matrix.service }}.json
+          retention-days: 90
+          if-no-files-found: error
+
       - name: Post-build Runner Hygiene Cleanup
         if: ${{ always() && (needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch') }}
         run: |
@@ -470,13 +499,139 @@ jobs:
           docker image prune -f
           docker builder prune -f
 
+  # ---------------------------------------------------------------------------
+  # One record per commit of exactly which bits staging runs, and the
+  # `sha-<commit>` tag that production promotes from.
+  #
+  # `build-push` only rebuilds the services whose paths changed, so a commit
+  # that touches the API alone would leave the other five without a
+  # `sha-<commit>` tag — and prod.yml, which promotes by SHA, would find an
+  # incomplete set. This job fills those in from the digest `:stage` already
+  # points at: not rebuilding a service means this commit ships the image the
+  # previous one built, and saying so explicitly is what makes the promotion
+  # reproducible.
+  # ---------------------------------------------------------------------------
+  image_digests:
+    name: Collect Image Digests
+    needs: [build-push, changes]
+    if: >-
+      ${{ !cancelled()
+          && github.event_name != 'pull_request'
+          && !contains(needs.*.result, 'failure')
+          && (needs.changes.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digests: ${{ steps.collect.outputs.digests }}
+    steps:
+      - name: Lowercase Image Name
+        run: echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # A run where every service was skipped downloads nothing; that is a
+      # legitimate state (config-only commit) and the collect step below
+      # resolves all six from the registry, so a missing artifact is not an
+      # error here.
+      - name: Download Digests From The Build Matrix
+        continue-on-error: true
+        uses: actions/download-artifact@v5
+        with:
+          pattern: image-digest-*
+          path: digests
+          merge-multiple: true
+
+      - name: Collect Digests
+        id: collect
+        env:
+          SERVICES: web api space admin live proxy
+        run: |
+          set -euo pipefail
+          mkdir -p digests
+          image_base="${REGISTRY}/${IMAGE_NAME}"
+          entries=""
+
+          for service in ${SERVICES}; do
+            file="digests/${service}.json"
+            if [ -f "${file}" ]; then
+              digest=$(jq -er '.digest' "${file}")
+              rebuilt=true
+            else
+              # Not rebuilt at this commit: whatever `:stage` points at is what
+              # this commit ships for this service.
+              digest=$(docker buildx imagetools inspect "${image_base}/${service}:stage" --format '{{.Manifest.Digest}}' 2>/dev/null | tr -d '[:space:]') || digest=""
+              if [ -z "${digest}" ]; then
+                echo "::error::${image_base}/${service}:stage does not exist, so this commit has no image for ${service}. Run this workflow once via workflow_dispatch to build all six services."
+                exit 1
+              fi
+              rebuilt=false
+              # Give it the immutable tag too, so promotion by SHA finds a
+              # complete set. Re-tagging by digest copies no layers.
+              docker buildx imagetools create --tag "${image_base}/${service}:sha-${GITHUB_SHA}" "${image_base}/${service}@${digest}"
+            fi
+            entries="${entries}${service}\t${digest}\t${rebuilt}\n"
+          done
+
+          printf "%b" "${entries}" | jq -R -s --arg commit "${GITHUB_SHA}" --arg base "${image_base}" --arg run "${GITHUB_RUN_ID}" '
+            {
+              commit: $commit,
+              workflow_run: $run,
+              images: (
+                split("\n")
+                | map(select(length > 0) | split("\t"))
+                | map({ key: .[0], value: { image: ($base + "/" + .[0]), digest: .[1], tag: ("sha-" + $commit), rebuilt: (.[2] == "true") } })
+                | from_entries
+              )
+            }' > image-digests.json
+
+          jq -c . image-digests.json
+          echo "digests=$(jq -c . image-digests.json)" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## Images published for \`${GITHUB_SHA}\`"
+            echo ""
+            echo "| Service | Digest | Rebuilt in this run |"
+            echo "|---|---|---|"
+            jq -r '.images | to_entries[] | "| \(.key) | `\(.value.digest)` | \(if .value.rebuilt then "yes" else "no (inherited from :stage)" end) |"' image-digests.json
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Image Digests
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-digests
+          path: image-digests.json
+          retention-days: 90
+          if-no-files-found: error
+
   deploy:
     name: Deploy to Stage (Coolify)
-    needs: [build-push, changes]
+    needs: [build-push, changes, image_digests]
     if: ${{ always() && vars.COOLIFY_DEPLOY_ENABLED == 'true' && github.event_name != 'pull_request' && (needs.build-push.result == 'success' || needs.build-push.result == 'skipped') && (needs.changes.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch') && !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     environment: stage
     steps:
+      # Coolify pulls `:stage` by tag, so the run log is the only place that
+      # ties this deployment to the exact bits. Printed before the deploy is
+      # triggered, so it survives a deploy that later fails.
+      - name: Log The Digests This Deploy Pulls
+        if: ${{ needs.image_digests.result == 'success' }}
+        env:
+          DIGESTS: ${{ needs.image_digests.outputs.digests }}
+        run: |
+          set -euo pipefail
+          echo "${DIGESTS}" | jq -r '"commit \(.commit)", (.images | to_entries[] | "  \(.key): \(.value.image)@\(.value.digest)")'
+
       - name: Trigger Coolify deploy
         id: deploy
         run: |

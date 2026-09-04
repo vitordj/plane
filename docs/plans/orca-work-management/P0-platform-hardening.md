@@ -76,14 +76,30 @@ revisado.
 
 ---
 
-## P0.2 — Publicar tag imutável por SHA e registrar digests `[ ]`
+## P0.2 — Publicar tag imutável por SHA e registrar digests `[x]`
 
-**Mudança.**
-- Em push para `stage`, `tags:` passa a duas linhas: `:stage` e `:sha-${{ github.sha }}`.
-- Após o build, passo que captura `steps.build.outputs.digest` e escreve `image-digests.json` (`{service: digest}`) como artifact do run e como output do job (`outputs.digests`).
-- Novo passo no job `deploy` que loga os digests que o Coolify vai puxar.
+**Mudança** (entregue em `claude/continue-implementations-bquse8`).
+- Em push para `stage`, `tags:` passa a duas linhas: `:stage` e `:sha-<commit>`.
+- Cada job da matriz grava `steps.build.outputs.digest` e o publica como
+  artifact `image-digest-<serviço>` (uma matriz não escreve output compartilhado).
+- Job novo `image_digests` junta os seis num `image-digests.json`
+  (`{commit, workflow_run, images: {serviço: {image, digest, tag, rebuilt}}}`),
+  publicado como artifact `image-digests` e exposto em `outputs.digests`.
+- **Serviço não reconstruído neste commit:** `build-push` só reconstrói o que
+  mudou de caminho, então um commit só de API deixaria os outros cinco sem
+  `sha-<commit>` e a promoção por SHA (P0.3) acharia um conjunto incompleto. O
+  job resolve o digest para o qual `:stage` aponta, registra `rebuilt: false` e
+  cria a tag `sha-<commit>` a partir dele por digest (`imagetools create`, não
+  copia camada). Se nem `:stage` existir, falha com instrução de rodar o
+  workflow uma vez por `workflow_dispatch`.
+- `deploy` ganhou passo que loga commit, imagem e digest antes de acionar o
+  Coolify, e o job passa a depender de `image_digests`.
+- Resumo do run traz a tabela serviço/digest/reconstruído.
 
 **Aceite.**
+- [x] Lógica do passo `Collect Digests` exercitada localmente com `docker`
+  stubado: caminho feliz (dois serviços reconstruídos, três herdados) e caminho
+  de falha (`:stage` ausente → erro com o nome do serviço, antes de qualquer tag).
 - [ ] Após merge em `stage`, existem `api:stage` e `api:sha-<commit>` com o mesmo digest.
 - [ ] Artifact `image-digests` presente no run com seis entradas.
 
