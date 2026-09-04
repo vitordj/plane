@@ -107,23 +107,44 @@ revisado.
 
 ---
 
-## P0.3 — Promoção para produção por SHA, não por `:stage` `[ ]`
+## P0.3 — Promoção para produção por SHA, não por `:stage` `[x]`
 
-**Problema.** `.github/workflows/prod.yml` (job "Promote Images", ~l.81) faz
-`docker pull <img>:stage` e retagueia. A promoção não está vinculada ao commit
-revisado.
+**Problema.** `.github/workflows/prod.yml` (job "Promote Images") fazia
+`docker pull <img>:stage` e retagueava. A promoção não estava vinculada ao
+commit revisado: promovia o build mais recente, não o aprovado.
 
-**Mudança.**
-- O job lê o SHA do merge de `stage` em `prod` (`git log -1 --format=%H origin/stage` no momento do release, ou o segundo pai do merge commit) e faz `docker pull <img>:sha-<sha>`.
-- Falha explícita se a tag `sha-<sha>` não existir (a imagem não passou pelo CI de `stage`).
-- Grava no corpo do GitHub Release os digests promovidos.
-- `:stage` continua existindo só como ponteiro de conveniência para o ambiente de staging.
+**Mudança** (entregue em `claude/continue-implementations-bquse8`).
+- Passo `Resolve The Stage Commit Under Release`: o commit sob release é o
+  segundo pai do merge mais recente no histórico de `prod` (o merge da RC), e
+  precisa ser ancestral de `origin/stage` — senão o job para. RC com squash
+  (sem segundo pai) e commit que nunca esteve em `stage` falham com mensagem
+  explícita apontando o runbook.
+- `workflow_dispatch` novo com input `stage_sha`, para ensaio e re-promoção
+  manual sem precisar de um merge.
+- Passo `Verify Every Service Was Built For This Commit`: resolve os seis
+  digests de `:sha-<commit>` **antes** de escrever qualquer tag; um serviço
+  ausente aborta o job com o nome dele (meia promoção é pior que nenhuma).
+- Promoção com `docker buildx imagetools create` a partir do digest, em vez de
+  `pull`/`tag`/`push`: publica os mesmos bytes e preserva manifesto multi-arch.
+- Corpo do GitHub Release passa a trazer o commit de stage, a tabela de digests
+  e os comandos `docker pull` por digest; falha na edição das notas vira aviso,
+  não bloqueia o deploy (os digests também estão no resumo do run e no artifact
+  `promoted-digests`).
+- `:stage` continua existindo só como ponteiro de conveniência do staging.
+- `docs/release-runbook.md` novo: tabela de tags (quais podem se mover), passo
+  a passo do release, verificação pós-deploy, promoção manual e rollback por
+  digest. As seções de ensaio e de variáveis por release estão marcadas como
+  pendência de P0.13.
 
 **Aceite.**
+- [x] Resolução do SHA exercitada em repositório git de teste: caminho feliz
+  (merge da RC + commit de release → segundo pai é o topo de `stage`), RC com
+  squash (sem merge commit → erro) e commit fora de `stage` (rejeitado pelo
+  `merge-base --is-ancestor`).
 - [ ] Ensaio: merge de `stage` em `prod` com commit `chore(prod): release` num ambiente controlado promove exatamente os digests de `image-digests.json`.
 - [ ] Ensaio negativo: apagar a tag `sha-<sha>` de um serviço faz o job falhar antes de qualquer retag.
 
-**Arquivos:** `.github/workflows/prod.yml`, `docs/release-runbook.md` (novo, ver P0.13).
+**Arquivos:** `.github/workflows/prod.yml`, `docs/release-runbook.md` (novo, seções restantes em P0.13).
 
 ---
 
@@ -302,7 +323,7 @@ a promoção, mas `prod.yml` só promove com commit `chore(prod): release`.
 **Mudança.**
 - Decidir e aplicar `1.5.0-plane.1.4.2` em `package.json` e no manifest (ou deixar o Release Please calcular a partir dos `feat(orca)`; documentar qual dos dois).
 - `release_candidate.md`: descrever o fluxo real em duas etapas (merge em `prod` → Release Please abre PR de release → merge desse PR gera o commit `chore(prod): release` → `prod.yml` promove).
-- Novo `docs/release-runbook.md`: passo a passo de RC, promoção por digest (P0.3), verificação pós-deploy, rollback para os seis digests anteriores (comandos `docker pull <img>@sha256:...` + retag `:latest` + redeploy Coolify), e checklist de variáveis de ambiente novas por release.
+- `docs/release-runbook.md` já existe (criado em P0.3, com a tabela de tags, o passo a passo do release, verificação pós-deploy, promoção manual e rollback por digest). Falta preencher as duas seções marcadas *(P0.13)*: checklist de variáveis de ambiente novas por release e o registro do ensaio.
 - Ensaiar o runbook uma vez de ponta a ponta em staging e anotar duração e problemas.
 
 **Aceite.**

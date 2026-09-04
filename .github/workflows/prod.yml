@@ -6,10 +6,16 @@
 # Where: Runs on GitHub Actions runners (ubuntu-latest).
 #
 # What happens:
-#   • Promote Images: Avoids recompiling code by pulling the validated :stage
-#     images from GHCR, tagging them as :latest, and pushing them back to GHCR.
+#   • Promote Images: Avoids recompiling code by re-tagging, by digest, the
+#     images that the stage CI built for the exact commit being released —
+#     the immutable :sha-<commit> tags, never the moving :stage pointer.
+#     Fails before touching a tag if any of the six is missing.
 #   • Deploy: Triggers Coolify production deployment, polls state until completion,
 #     and outputs step summaries or issues cancellations.
+#
+# Promoting a specific commit by hand (rehearsal, re-promotion after an
+# incident): run this workflow from the Actions tab and pass the stage commit
+# in the "stage_sha" input. See docs/release-runbook.md.
 #
 # Deployment is opt-in:
 #   The Coolify deploy job only runs when the repository (or "prod"
@@ -33,6 +39,12 @@ on:
   push:
     branches:
       - prod
+  workflow_dispatch:
+    inputs:
+      stage_sha:
+        description: 'Stage commit to promote (full 40-char SHA). Leave empty to resolve it from the prod history.'
+        required: false
+        type: string
 
 concurrency:
   group: prod-${{ github.ref }}
@@ -49,7 +61,7 @@ env:
 jobs:
   promote:
     name: Promote Images (Stage -> Production)
-    if: "${{ contains(github.event.head_commit.message, 'chore(prod): release') }}"
+    if: "${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'chore(prod): release') }}"
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -58,14 +70,63 @@ jobs:
       - name: Lowercase Image Name
         run: echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
+      # Full history: the commit being released is found by walking the prod
+      # history back to the merge that brought stage in.
       - name: Checkout Code
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Extract Version
         id: get_version
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+      # ---------------------------------------------------------------------
+      # Which commit is being released.
+      #
+      # `:stage` moves with every push to the stage branch, so promoting from
+      # it released whatever had been built most recently — not necessarily the
+      # commit the release PR was reviewed and approved on. The release commit
+      # itself (`chore(prod): release`) sits on top of the merge that brought
+      # stage into prod, so the second parent of the newest merge in this
+      # history is the stage commit under release, and stage CI tagged exactly
+      # that commit as `:sha-<commit>`.
+      # ---------------------------------------------------------------------
+      - name: Resolve The Stage Commit Under Release
+        id: stage_sha
+        env:
+          INPUT_SHA: ${{ inputs.stage_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin stage
+
+          if [ -n "${INPUT_SHA}" ]; then
+            sha=$(git rev-parse --verify "${INPUT_SHA}^{commit}")
+            echo "Promoting the commit given as input: ${sha}"
+          else
+            merge=$(git rev-list --merges -n 1 HEAD || true)
+            if [ -z "${merge}" ]; then
+              echo "::error::No merge commit in the prod history, so the stage commit under release cannot be identified. Re-run this workflow with the stage_sha input (see docs/release-runbook.md)."
+              exit 1
+            fi
+            if ! sha=$(git rev-parse --verify "${merge}^2" 2>/dev/null); then
+              echo "::error::${merge} has no second parent — the release candidate seems to have been squashed. Re-run with the stage_sha input (see docs/release-runbook.md)."
+              exit 1
+            fi
+          fi
+
+          # The commit being promoted has to be one that actually reached the
+          # stage branch: that is what "it went through stage CI" means.
+          if ! git merge-base --is-ancestor "${sha}" origin/stage; then
+            echo "::error::${sha} is not an ancestor of origin/stage; refusing to promote a commit that never landed on stage."
+            exit 1
+          fi
+
+          echo "STAGE_SHA=${sha}" >> "$GITHUB_ENV"
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          echo "Releasing stage commit ${sha}"
 
       - name: Log in to GHCR
         uses: docker/login-action@v4
@@ -74,34 +135,129 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Promote Docker Images
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # A half-promoted release — three services on the new version, three on
+      # the old — is worse than a failed one, so every image is resolved before
+      # any tag is written.
+      - name: Verify Every Service Was Built For This Commit
+        id: resolve
         run: |
+          set -euo pipefail
+          image_base="${REGISTRY}/${IMAGE_NAME}"
+          : > promoted-digests.txt
+          missing=""
+
           for app in web admin api space live proxy; do
-            echo "Promoting ${app} image..."
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:stage
-            docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:stage ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:latest
-            docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:stage ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:${{ env.VERSION }}
-            docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:stage ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:v${{ env.VERSION }}
-            docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:latest
-            docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:${{ env.VERSION }}
-            docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${app}:v${{ env.VERSION }}
+            src="${image_base}/${app}:sha-${STAGE_SHA}"
+            digest=$(docker buildx imagetools inspect "${src}" --format '{{.Manifest.Digest}}' 2>/dev/null | tr -d '[:space:]') || digest=""
+            if [ -z "${digest}" ]; then
+              echo "::error::${src} does not exist: this commit did not pass through the stage CI for ${app}."
+              missing="${missing} ${app}"
+              continue
+            fi
+            echo "${app} ${digest}" >> promoted-digests.txt
+            echo "${app}: ${digest}"
           done
 
+          if [ -n "${missing}" ]; then
+            echo "::error::Refusing to promote; no tag was written. Missing images for:${missing}"
+            exit 1
+          fi
+
+      - name: Promote Docker Images
+        run: |
+          set -euo pipefail
+          image_base="${REGISTRY}/${IMAGE_NAME}"
+          while read -r app digest; do
+            echo "Promoting ${app} (${digest})..."
+            # By digest, not by pull-and-retag: this publishes the very bytes
+            # stage CI built, and keeps a multi-arch manifest intact.
+            docker buildx imagetools create \
+              --tag "${image_base}/${app}:latest" \
+              --tag "${image_base}/${app}:${VERSION}" \
+              --tag "${image_base}/${app}:v${VERSION}" \
+              "${image_base}/${app}@${digest}"
+          done < promoted-digests.txt
+
+      - name: Write Promotion Summary
+        run: |
+          set -euo pipefail
+          image_base="${REGISTRY}/${IMAGE_NAME}"
+          {
+            echo "## Promoted to production"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| **Version** | v${VERSION} |"
+            echo "| **Stage commit** | [\`${STAGE_SHA}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${STAGE_SHA}) |"
+            echo ""
+            echo "| Service | Digest |"
+            echo "|---|---|"
+            while read -r app digest; do
+              echo "| ${app} | \`${digest}\` |"
+            done < promoted-digests.txt
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Promoted Digests
+        uses: actions/upload-artifact@v4
+        with:
+          name: promoted-digests
+          path: promoted-digests.txt
+          retention-days: 90
+          if-no-files-found: error
+
+      # The release notes are where an incident response looks first, so they
+      # carry the digests actually promoted and the stage commit they were
+      # built from — a `:v<version>` tag alone can be moved later, a digest
+      # cannot.
       - name: Update GitHub Releases with Official Container Artifacts
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          CLEAN_VER="${{ env.VERSION }}"
-          CLEAN_VER="${CLEAN_VER#v}"
+          set -euo pipefail
+          CLEAN_VER="${VERSION#v}"
           TAG="v${CLEAN_VER}"
-          IMAGE_BASE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          IMAGE_BASE="${REGISTRY}/${IMAGE_NAME}"
 
           EXISTING_NOTES=$(gh release view "$TAG" --json body --jq '.body' 2>/dev/null || true)
-          if [ -n "$EXISTING_NOTES" ] && [[ "$EXISTING_NOTES" != *"Production Container Artifacts"* ]]; then
-            HEADER=$(printf "### 🐳 Production Container Artifacts\n- **Web App**: \`%s/web:v%s\`\n- **Admin Panel**: \`%s/admin:v%s\`\n- **API Backend**: \`%s/api:v%s\`\n- **Space**: \`%s/space:v%s\`\n- **Live WebSockets**: \`%s/live:v%s\`\n- **Proxy Gateway**: \`%s/proxy:v%s\`\n- **Pull Commands**:\n\`\`\`bash\ndocker pull %s/web:v%s\ndocker pull %s/admin:v%s\ndocker pull %s/api:v%s\ndocker pull %s/space:v%s\ndocker pull %s/live:v%s\ndocker pull %s/proxy:v%s\n\`\`\`" "$IMAGE_BASE" "$CLEAN_VER" "$IMAGE_BASE" "$CLEAN_VER" "$IMAGE_BASE" "$CLEAN_VER" "$IMAGE_BASE" "$CLEAN_VER" "$IMAGE_BASE" "$CLEAN_VER" "$IMAGE_BASE" "$CLEAN_VER" "$IMAGE_BASE" "$CLEAN_VER" "$IMAGE_BASE" "$CLEAN_VER" "$IMAGE_BASE" "$CLEAN_VER" "$IMAGE_BASE" "$CLEAN_VER" "$IMAGE_BASE" "$CLEAN_VER" "$IMAGE_BASE" "$CLEAN_VER")
-            COMBINED_NOTES="${HEADER}"$'\n\n---\n\n'"${EXISTING_NOTES}"
-            gh release edit "$TAG" --notes "$COMBINED_NOTES" || true
+          if [ -z "$EXISTING_NOTES" ] || [[ "$EXISTING_NOTES" == *"Production Container Artifacts"* ]]; then
+            echo "Release $TAG has no notes yet, or already lists its artifacts; leaving it as is."
+            exit 0
           fi
+
+          {
+            echo "### 🐳 Production Container Artifacts"
+            echo ""
+            echo "Promoted from stage commit \`${STAGE_SHA}\` — the images below are"
+            echo "the exact artifacts its CI built, re-tagged by digest."
+            echo ""
+            echo "| Service | Tag | Digest |"
+            echo "|---|---|---|"
+            while read -r app digest; do
+              echo "| ${app} | \`${IMAGE_BASE}/${app}:v${CLEAN_VER}\` | \`${digest}\` |"
+            done < promoted-digests.txt
+            echo ""
+            echo "Pull by digest (immutable):"
+            echo ""
+            echo '```bash'
+            while read -r app digest; do
+              echo "docker pull ${IMAGE_BASE}/${app}@${digest}"
+            done < promoted-digests.txt
+            echo '```'
+            echo ""
+            echo "---"
+            echo ""
+            echo "${EXISTING_NOTES}"
+          } > release-notes.md
+
+          # The images are already promoted at this point; a failure to edit the
+          # notes must not block the deploy that follows. The digests are also
+          # in the run summary and the promoted-digests artifact.
+          gh release edit "$TAG" --notes-file release-notes.md \
+            || echo "::warning::Could not update the notes of release ${TAG}; digests are in the run summary and the promoted-digests artifact."
 
   deploy:
     name: Deploy to Production (Coolify)
