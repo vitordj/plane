@@ -142,6 +142,12 @@ MIDDLEWARE = [
 # REST_FRAMEWORK because the throttle-rates table below reads it.
 SCIM_RATE_LIMIT = os.environ.get("SCIM_RATE_LIMIT", "600/minute")
 
+# Ceiling on SCIM calls that fail to authenticate, keyed by caller address
+# rather than by workspace. A correctly configured tenant never reaches it;
+# it exists so a caller with no valid token cannot spend a workspace's
+# provisioning budget or grind at the token.
+SCIM_AUTH_FAILURE_RATE_LIMIT = os.environ.get("SCIM_AUTH_FAILURE_RATE_LIMIT", "30/minute")
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.SessionAuthentication",),
     "DEFAULT_THROTTLE_CLASSES": ("rest_framework.throttling.AnonRateThrottle",),
@@ -149,6 +155,7 @@ REST_FRAMEWORK = {
         "anon": "30/minute",
         "asset_id": "5/minute",
         "scim": SCIM_RATE_LIMIT,
+        "scim_auth_failure": SCIM_AUTH_FAILURE_RATE_LIMIT,
     },
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),

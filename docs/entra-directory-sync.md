@@ -263,14 +263,21 @@ Set through God Mode rather than the environment:
 
 And one environment variable, for the provisioning endpoints:
 
-| Variable          | Default      | Notes                                                                                                                                                                                                        |
-| ----------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `SCIM_RATE_LIMIT` | `600/minute` | Per workspace, DRF rate format. Entra provisions one request per user and per membership change, so a first sync of a few hundred people is a few hundred requests in a row. Raise it for a large directory. |
+| Variable                       | Default      | Notes                                                                                                                                                                                                                                                  |
+| ------------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SCIM_RATE_LIMIT`              | `600/minute` | Per workspace, DRF rate format, charged only to calls that authenticated. Entra provisions one request per user and per membership change, so a first sync of a few hundred people is a few hundred requests in a row. Raise it for a large directory. |
+| `SCIM_AUTH_FAILURE_RATE_LIMIT` | `30/minute`  | Per caller address. Charged only when a call fails to authenticate, so a working tenant never meets it. Leave it alone unless a proxy makes every request look like it comes from one address.                                                         |
 
-Keyed per workspace rather than per caller: all of Microsoft's provisioning
-traffic arrives from their own address ranges, so an IP-keyed limit would have
-one workspace's sync throttle another's. If Entra reports `429` responses
-during a large first sync, this is the number to raise.
+`SCIM_RATE_LIMIT` is keyed per workspace rather than per caller: all of
+Microsoft's provisioning traffic arrives from their own address ranges, so an
+IP-keyed limit would have one workspace's sync throttle another's. If Entra
+reports `429` responses during a large first sync, this is the number to raise.
+
+It is charged only once a call has proved it holds the workspace's token.
+Calls that fail to authenticate meet `SCIM_AUTH_FAILURE_RATE_LIMIT` instead,
+which is keyed on the caller's address — otherwise anyone who knew a workspace
+slug could fill its counter with tokenless requests and Entra's real calls
+would come back `429` until the window rolled.
 
 ### Tables
 
