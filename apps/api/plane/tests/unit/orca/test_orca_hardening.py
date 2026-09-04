@@ -762,6 +762,40 @@ class TestFeatureFlagClosesTheBackgroundPaths:
 
         assert ProjectMember.objects.filter(project=project, member=plain_user, is_active=True).exists()
 
+    def test_the_reconciler_itself_refuses_to_write_when_disabled(
+        self, settings, workspace_with_members, unit, project, link_project, add_member, plain_user
+    ):
+        """
+        Defence in depth: the task, the command and the API mixin each check the
+        switch before calling ``reconcile_access``, but that function is the one
+        place native ``ProjectMember`` rows get written. A future caller that
+        forgets the guard must still be stopped there.
+        """
+        from plane.app.services.orca import reconcile_access
+
+        link_project(unit, project)
+        add_member(unit, plain_user)
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        changes = reconcile_access(workspace_with_members.id)
+
+        assert changes == []
+        assert not ProjectMember.objects.filter(project=project, member=plain_user, is_active=True).exists()
+
+    def test_the_reconciler_still_writes_while_enabled(
+        self, settings, workspace_with_members, unit, project, link_project, add_member, plain_user
+    ):
+        """The control for the test above."""
+        from plane.app.services.orca import reconcile_access
+
+        link_project(unit, project)
+        add_member(unit, plain_user)
+        settings.ORCA_ORG_UNITS_ENABLED = True
+
+        reconcile_access(workspace_with_members.id)
+
+        assert ProjectMember.objects.filter(project=project, member=plain_user, is_active=True).exists()
+
     def test_the_directory_sync_command_refuses_to_run_when_disabled(
         self, settings, workspace_with_members, bound_unit, project, link_project, make_identity, put_in_group
     ):

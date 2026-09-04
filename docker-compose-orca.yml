@@ -1,9 +1,15 @@
+# Images are published by .github/workflows/stage.yml under the namespace of
+# the repository that ran the workflow (ghcr.io/<owner>/<repo>/<service>). The
+# default below MUST match that namespace, otherwise this file deploys someone
+# else's build of the code you reviewed; the `compose_provenance` CI job fails
+# when the two drift apart. Override ORCA_IMAGE_REPOSITORY only to deploy a
+# mirror, and prefer an immutable TAG (sha-<commit>) over the moving `stage`.
 version: '3.8'
 
 services:
   web:
     container_name: web
-    image: ghcr.io/prospect-development-team/plane-orca/web:${TAG:-stage}
+    image: ${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}/web:${TAG:-stage}
     pull_policy: always
     restart: always
     depends_on:
@@ -21,7 +27,7 @@ services:
 
   admin:
     container_name: admin
-    image: ghcr.io/prospect-development-team/plane-orca/admin:${TAG:-stage}
+    image: ${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}/admin:${TAG:-stage}
     pull_policy: always
     restart: always
     depends_on:
@@ -40,7 +46,7 @@ services:
 
   space:
     container_name: space
-    image: ghcr.io/prospect-development-team/plane-orca/space:${TAG:-stage}
+    image: ${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}/space:${TAG:-stage}
     pull_policy: always
     restart: always
     depends_on:
@@ -59,7 +65,7 @@ services:
 
   api:
     container_name: api
-    image: ghcr.io/prospect-development-team/plane-orca/api:${TAG:-stage}
+    image: ${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}/api:${TAG:-stage}
     pull_policy: always
     restart: always
     command: ./bin/docker-entrypoint-api.sh
@@ -78,6 +84,13 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Orca organizational layer. The same value has to reach the API, the
+      # worker, the beat and the migrator: a worker without the kill switch
+      # would keep writing ProjectMember rows after the API went dark.
+      - ORCA_ORG_UNITS_ENABLED=${ORCA_ORG_UNITS_ENABLED:-1}
+      - ORCA_ORG_SYNC_MAX_EDGES=${ORCA_ORG_SYNC_MAX_EDGES:-100}
+      - SCIM_RATE_LIMIT=${SCIM_RATE_LIMIT:-600/minute}
+      - SCIM_AUTH_FAILURE_RATE_LIMIT=${SCIM_AUTH_FAILURE_RATE_LIMIT:-30/minute}
       - GUNICORN_WORKERS=${GUNICORN_WORKERS:-1}
       - FILE_SIZE_LIMIT=${FILE_SIZE_LIMIT:-5242880}
       - SERVICE_URL_PROXY
@@ -98,7 +111,7 @@ services:
 
   worker:
     container_name: bgworker
-    image: ghcr.io/prospect-development-team/plane-orca/api:${TAG:-stage}
+    image: ${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}/api:${TAG:-stage}
     pull_policy: always
     restart: always
     x-exclude_from_hc: true
@@ -116,6 +129,13 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Orca organizational layer. The same value has to reach the API, the
+      # worker, the beat and the migrator: a worker without the kill switch
+      # would keep writing ProjectMember rows after the API went dark.
+      - ORCA_ORG_UNITS_ENABLED=${ORCA_ORG_UNITS_ENABLED:-1}
+      - ORCA_ORG_SYNC_MAX_EDGES=${ORCA_ORG_SYNC_MAX_EDGES:-100}
+      - SCIM_RATE_LIMIT=${SCIM_RATE_LIMIT:-600/minute}
+      - SCIM_AUTH_FAILURE_RATE_LIMIT=${SCIM_AUTH_FAILURE_RATE_LIMIT:-30/minute}
       - FILE_SIZE_LIMIT=${FILE_SIZE_LIMIT:-5242880}
       - SERVICE_URL_PROXY
       - "WEB_URL=${SERVICE_URL_PROXY:-http://localhost:8000}"
@@ -130,7 +150,7 @@ services:
 
   beat-worker:
     container_name: beatworker
-    image: ghcr.io/prospect-development-team/plane-orca/api:${TAG:-stage}
+    image: ${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}/api:${TAG:-stage}
     pull_policy: always
     restart: always
     x-exclude_from_hc: true
@@ -148,6 +168,13 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Orca organizational layer. The same value has to reach the API, the
+      # worker, the beat and the migrator: a worker without the kill switch
+      # would keep writing ProjectMember rows after the API went dark.
+      - ORCA_ORG_UNITS_ENABLED=${ORCA_ORG_UNITS_ENABLED:-1}
+      - ORCA_ORG_SYNC_MAX_EDGES=${ORCA_ORG_SYNC_MAX_EDGES:-100}
+      - SCIM_RATE_LIMIT=${SCIM_RATE_LIMIT:-600/minute}
+      - SCIM_AUTH_FAILURE_RATE_LIMIT=${SCIM_AUTH_FAILURE_RATE_LIMIT:-30/minute}
       - FILE_SIZE_LIMIT=${FILE_SIZE_LIMIT:-5242880}
       - SERVICE_URL_PROXY
       - "WEB_URL=${SERVICE_URL_PROXY:-http://localhost:8000}"
@@ -162,7 +189,7 @@ services:
 
   migrator:
     container_name: plane-migrator
-    image: ghcr.io/prospect-development-team/plane-orca/api:${TAG:-stage}
+    image: ${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}/api:${TAG:-stage}
     pull_policy: always
     restart: "no"
     x-exclude_from_hc: true
@@ -180,6 +207,13 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Orca organizational layer. The same value has to reach the API, the
+      # worker, the beat and the migrator: a worker without the kill switch
+      # would keep writing ProjectMember rows after the API went dark.
+      - ORCA_ORG_UNITS_ENABLED=${ORCA_ORG_UNITS_ENABLED:-1}
+      - ORCA_ORG_SYNC_MAX_EDGES=${ORCA_ORG_SYNC_MAX_EDGES:-100}
+      - SCIM_RATE_LIMIT=${SCIM_RATE_LIMIT:-600/minute}
+      - SCIM_AUTH_FAILURE_RATE_LIMIT=${SCIM_AUTH_FAILURE_RATE_LIMIT:-30/minute}
       - FILE_SIZE_LIMIT=${FILE_SIZE_LIMIT:-5242880}
       - SERVICE_URL_PROXY
       - "WEB_URL=${SERVICE_URL_PROXY:-http://localhost:8000}"
@@ -189,7 +223,7 @@ services:
 
   live:
     container_name: plane-live
-    image: ghcr.io/prospect-development-team/plane-orca/live:${TAG:-stage}
+    image: ${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}/live:${TAG:-stage}
     pull_policy: always
     restart: always
     environment:
@@ -305,7 +339,7 @@ services:
   # Comment this if you already have a reverse proxy running
   proxy:
     container_name: proxy
-    image: ghcr.io/prospect-development-team/plane-orca/proxy:${TAG:-stage}
+    image: ${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}/proxy:${TAG:-stage}
     pull_policy: always
     restart: always
     expose:

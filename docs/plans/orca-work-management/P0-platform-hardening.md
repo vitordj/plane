@@ -5,11 +5,46 @@ que hoje impediriam promover `stage` para produção, independentemente da
 camada organizacional.
 **Pré-requisitos:** nenhum. Corre em paralelo com D0.
 **Referência:** RFC §2.3, §9 (Fase P0), §12.
-**Prioridade interna:** P0.6 e P0.7 primeiro (comprometimento de conta e de
-IP), depois P0.1–P0.4 (integridade da cadeia de release), depois o resto.
+**Prioridade interna:** P0.0 primeiro (sem ele, nada do que se valida no
+código é comprovadamente o que está implantado), depois P0.6 e P0.7
+(comprometimento de conta e de IP), depois P0.1–P0.4 (integridade da cadeia
+de release), depois o resto.
+
+**Hardening complementar já entregue fora deste plano** (PRs #5 e #6, merge
+`3a4c769` em `stage`): kill switch lido na execução da tarefa Celery, nos
+comandos e no SCIM; baseline manual capturado ao elevar papel; orçamento SCIM
+cobrado só após autenticar, com bucket separado por IP para falhas; rejeição de
+convidados Entra pelo `#EXT#` do `userPrincipalName`. Nenhum desses fecha um
+item P0; estão registrados aqui para que a revisão externa de 04/09 não seja
+lida como "nada foi feito" nem como "P0 concluído".
 
 Cada item abaixo vira um PR. Comandos listados são para o desenvolvedor rodar
 localmente; a sessão de agente não executa builds nem migrações (AGENTS.md).
+
+---
+
+## P0.0 — Compose implanta as imagens deste repositório `[x]`
+
+**Problema.** `docker-compose-orca.yml` apontava as nove imagens para
+`ghcr.io/prospect-development-team/plane-orca/<serviço>:stage`, enquanto
+`stage.yml` publica em `ghcr.io/${{ github.repository }}` — hoje
+`ghcr.io/vitordj/plane`. O README manda o Coolify usar exatamente esse
+Compose. Salvo substituição externa no Coolify, o staging rodava imagens do
+repositório-pai: olhando o commit deste repositório não era possível afirmar
+qual código o ambiente executava. Achado da revisão externa de 04/09.
+
+**Mudança** (entregue em `claude/wayfinder-areas-review-yt98v5`).
+- Compose: `image: ${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}/<serviço>:${TAG:-stage}` nos nove serviços; comentário no topo do arquivo explica a regra.
+- Job `compose_provenance` em `stage.yml`: falha se o default divergir de `ghcr.io/<repositório em minúsculas>`, se houver `image: ghcr.io/...` fixo, se houver mais de um default ou se algum dos seis serviços não passar pela variável. `build-push` depende dele, então o drift bloqueia a publicação.
+- README (tabela de variáveis) e `.env.example` documentam `ORCA_IMAGE_REPOSITORY` e `TAG`.
+- Decisão: default com o namespace do fork em vez de `:?required`, para não derrubar o deploy Coolify existente na primeira subida. Promoção por digest fica em P0.2/P0.3; expor commit/digest no runtime fica em P0.15.
+
+**Aceite.**
+- [x] Script do check exercitado localmente contra o Compose atual (passa) e quatro variantes (namespace antigo, imagem fixa, dois defaults, serviço fora da variável — todas falham com a mensagem esperada).
+- [x] `docker-compose-orca.yml` continua YAML válido.
+- [ ] Primeiro deploy de staging após o merge: `docker inspect --format '{{.Config.Image}} {{index .RepoDigests 0}}' api` mostra `ghcr.io/vitordj/plane/api@sha256:...` (registrar data e digest no Gate P0). Só operação pode confirmar.
+
+**Arquivos:** `docker-compose-orca.yml`, `.github/workflows/stage.yml`, `README.md`, `.env.example`.
 
 ---
 
@@ -201,6 +236,7 @@ timeout. `PyJWT==2.13.0` e `cryptography` já estão em
 - [ ] Todos os testes acima verdes.
 - [ ] Doc `docs/entra-directory-sync.md` §Troubleshooting descreve os dois erros novos.
 - [ ] Validação de ponta a ponta contra tenant real registrada no quadro quando o tenant existir (não bloqueia o merge).
+- [ ] `test_entra_provider.py` deixa de usar `StubProvider` (que pula o `__init__`) nos casos de tenant e e-mail: o construtor real, com a configuração de instância mockada, entra na cobertura (achado do PR #6).
 
 **Arquivos:** `authentication/provider/oauth/entra.py`, `authentication/adapter/oauth.py`, `authentication/adapter/error.py`, `apps/web/helpers/authentication.helper.tsx`, `apps/space/helpers/authentication.helper.tsx`, `packages/constants/src/auth/core.ts`, testes, doc.
 
@@ -254,12 +290,79 @@ a promoção, mas `prod.yml` só promove com commit `chore(prod): release`.
 
 ---
 
+## P0.14 — Parser estrito do kill switch, guard no reconciliador e paridade de variáveis `[x]`
+
+**Problema.** `ORCA_ORG_UNITS_ENABLED` era lido como `== "1"`: `true`, `yes`
+ou `on` desligavam a camada em silêncio. O serviço `reconcile_access`, único
+ponto que escreve `ProjectMember`, confiava nos chamadores para checar o
+switch. O Compose não encaminhava a variável a nenhum serviço, então API e
+worker podiam divergir (API desligada, worker no default ligado). Achados da
+revisão externa de 04/09 e pendência registrada no PR #6.
+
+**Mudança** (entregue em `claude/wayfinder-areas-review-yt98v5`).
+- `apps/api/plane/utils/orca_env.py`: `parse_env_flag`/`env_flag` aceitam `1/true/yes/on` e `0/false/no/off` (case-insensitive, espaços tolerados); vazio → default; qualquer outro valor → `ImproperlyConfigured` no boot. `settings/common.py` usa `env_flag` só para o switch Orca; flags upstream não foram tocadas.
+- `reconcile_access` retorna `[]` sem escrever quando a camada está desligada (defesa em profundidade; os chamadores mantêm o guard).
+- `docker-compose-orca.yml` encaminha `ORCA_ORG_UNITS_ENABLED`, `ORCA_ORG_SYNC_MAX_EDGES`, `SCIM_RATE_LIMIT` e `SCIM_AUTH_FAILURE_RATE_LIMIT` a `api`, `worker`, `beat-worker` e `migrator` a partir de uma única variável cada.
+- Docs: `organizational-units.md` §Settings, README, `.env.example` (raiz e `apps/api`).
+
+**Testes.** `test_orca_env_flag.py` (grafias aceitas, default, recusa com o
+nome da variável na mensagem); dois testes novos em `test_orca_hardening.py`
+(`reconcile_access` direto com switch desligado não escreve; controle ligado
+escreve).
+
+**Aceite.**
+- [x] Ruff limpo nos arquivos tocados. Testes escritos; a sessão não roda pytest (AGENTS.md) — confirmar no CI de `stage`.
+- [ ] Em staging, `docker compose exec <api|bgworker|beatworker> printenv ORCA_ORG_UNITS_ENABLED` devolve o mesmo valor nos três (registrar no Gate P0).
+
+**Arquivos:** `apps/api/plane/utils/orca_env.py`, `apps/api/plane/settings/common.py`, `apps/api/plane/app/services/orca/org_unit_reconciler.py`, `docker-compose-orca.yml`, testes, docs.
+
+---
+
+## P0.15 — Runtime expõe commit e versão implantados `[ ]`
+
+**Problema.** Nada dentro de um contêiner diz de qual commit ele foi
+construído. Sem isso, P0.0–P0.3 provam a cadeia até o registry, mas não que
+o ambiente está executando aquele artefato.
+
+**Mudança.**
+- `build-push`: `build-args: GIT_SHA=${{ github.sha }}`; os seis Dockerfiles gravam `ORCA_BUILD_SHA` (e a tag `sha-<commit>` de P0.2) como variável de ambiente da imagem.
+- API: endpoint interno `GET /api/orca/build-info/` (sessão, admin de instância) e comando `orca_build_info` devolvendo `{"version", "git_sha", "service", "orca_org_units_enabled"}`; o digest da imagem não é conhecido de dentro do contêiner, então a proveniência primária é o SHA.
+- Web/admin: exibir o SHA no rodapé do god-mode (opcional nesta fase).
+
+**Aceite.**
+- [ ] Em staging, o endpoint devolve o SHA do merge que disparou o deploy.
+- [ ] `docs/release-runbook.md` (P0.13) inclui o passo "conferir build-info após o deploy".
+
+**Arquivos:** `.github/workflows/stage.yml`, Dockerfiles, `apps/api/plane/app/views/orca_build_info.py` (novo), `apps/api/plane/app/urls/orca.py`, docs.
+
+---
+
+## P0.16 — Fixar MinIO e alinhar a versão do PostgreSQL `[ ]`
+
+**Situação.** `docker-compose-orca.yml` usa `minio/minio` sem tag; o CI
+(`stage.yml`, job `api_tests`) usa `postgres:16-alpine` enquanto o Compose de
+implantação e `docker-compose-test.yml` usam `postgres:15.7-alpine`.
+
+**Mudança.**
+- `minio/minio:RELEASE.<data>` (tag imutável) no Compose, com nota no runbook sobre como atualizar.
+- CI passa a `postgres:15.7-alpine`, igual ao ambiente implantado; ou, se a decisão for migrar o ambiente para 16, registrar em `apps/api/tests/RUNNING_TESTS.md` a matriz suportada e o plano de upgrade do banco. Decidir e registrar aqui.
+
+**Aceite.**
+- [ ] `grep -n "image:" docker-compose-orca.yml` não mostra imagem sem tag.
+- [ ] A versão de PostgreSQL do CI e a do Compose são a mesma, ou a matriz está documentada.
+
+**Arquivos:** `docker-compose-orca.yml`, `.github/workflows/stage.yml`, `apps/api/tests/RUNNING_TESTS.md`.
+
+---
+
 ## Gate P0
 
-- [ ] Todos os 13 itens `[x]` ou `[-]` com motivo.
+- [ ] Todos os 17 itens `[x]` ou `[-]` com motivo.
 - [ ] CI de `stage` verde com suíte upstream (P0.8) e ruff (P0.9).
 - [ ] Ensaio completo de RC documentado em `docs/release-runbook.md`: PR criada pelo job, promoção por digest, deploy em staging, rollback.
 - [ ] Nenhuma conta com a senha antiga da migração em nenhum ambiente.
 - [ ] `TRUSTED_PROXIES` configurado em staging e produção com a faixa real.
+- [ ] Staging comprovadamente executando imagens de `ghcr.io/vitordj/plane` (P0.0, `docker inspect`), com data e digest registrados aqui.
+- [ ] `ORCA_ORG_UNITS_ENABLED` com o mesmo valor em api, worker e beat em staging (P0.14).
 
 Data do gate: ____

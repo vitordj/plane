@@ -280,9 +280,48 @@ concorrência" com o padrão usado.
 
 ---
 
+## D0.11 — Arquivar projeto dispara reconciliação `[ ]`
+
+**Problema** (pendência do PR #6). `_active_sources` já ignora projetos
+arquivados e `projects_in_workspace` só devolve não arquivados, então o
+acesso herdado a um projeto arquivado deixa de ter fonte — mas nenhuma
+reconciliação é disparada no arquivamento, e a passagem de workspace não
+inclui o projeto. O `ProjectMember` herdado fica ativo até alguém reconciliar
+aquele projeto explicitamente.
+
+**Mudança.**
+- `ProjectArchiveUnarchiveEndpoint` (`views/project/base.py`): após gravar `archived_at`, chamar `dispatch_reconciliation(workspace_id, project_ids=[project_id])`; ao desarquivar, idem (o acesso volta).
+- `reconcile_access` com `project_ids` explícitos deve aceitar projeto arquivado como alvo (só a coleta de *fontes* o ignora), para que a reconciliação possa desativar o que ele herdou.
+
+**Testes** (`test_org_unit_reconciler.py`): arquivar → `ProjectMember` herdado
+desativado, baseline manual preservado; desarquivar → restaurado.
+
+**Aceite.**
+- [ ] Testes acima verdes; `ORCA_ORG_UNITS_ENABLED=0` faz o arquivamento não reconciliar (o guard de `reconcile_access` cobre).
+
+---
+
+## D0.12 — Roster SCIM de grupo exclui memberships removidos logicamente `[ ]`
+
+**Problema** (pendência do PR #6). `members_of(unit)` em
+`views/orca_scim/groups.py` atravessa `group_memberships__organizational_unit_id`
+sem filtrar `deleted_at`; um membership soft-deleted pode reaparecer na
+resposta de `GET /Groups/{id}`, e o Entra passa a considerar a pessoa membro.
+
+**Mudança.**
+- `members_of` filtra `group_memberships__deleted_at__isnull=True`; revisar `remove_members`/`replace_members` para que a remoção seja consistente com o filtro.
+
+**Testes** (`test_scim_endpoints.py`): membership removido não aparece no
+`GET`; `PATCH remove` seguido de `GET` devolve roster vazio.
+
+**Aceite.**
+- [ ] Testes acima verdes.
+
+---
+
 ## Gate D0
 
-- [ ] Todos os 10 itens `[x]`.
+- [ ] Todos os 12 itens `[x]`.
 - [ ] Invariantes I1–I7 com teste positivo e negativo (listar nomes dos testes abaixo).
 - [ ] Concorrência: 20 alocações → 5/5/5/5; 10 claims → 1 vencedor.
 - [ ] `audit_organizational_routing` sem violações num dump do banco de `stage`.
