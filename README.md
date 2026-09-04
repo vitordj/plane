@@ -44,6 +44,9 @@ Plane Orca is pre-configured for self-hosting on low-spec VPS instances (<3GB RA
 | `POSTGRES_DB`                                 |    No    | PostgreSQL database schema      | `plane`                                    |
 | `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` |    No    | MinIO / S3 storage credentials  | `plane-access-key` / `plane-secret-key`    |
 | `AWS_S3_BUCKET_NAME`                          |    No    | File upload storage bucket      | `uploads`                                  |
+| `ORCA_IMAGE_REPOSITORY`                       |    No    | Registry namespace the images are pulled from. Must be the namespace `stage.yml` publishes to (`ghcr.io/<owner>/<repo>`); CI fails when they drift | `ghcr.io/vitordj/plane`                    |
+| `TAG`                                         |    No    | Image tag for all six services; prefer an immutable `sha-<commit>` for production | `stage`                                    |
+| `ORCA_ORG_UNITS_ENABLED`                      |    No    | Kill switch of the organizational layer (Areas); forwarded to api, worker, beat and migrator. `1/true/yes/on` or `0/false/no/off` | `1`                                        |
 
 ### 🚀 Fork Workflow & Git Strategy
 

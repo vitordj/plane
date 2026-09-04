@@ -39,6 +39,7 @@ predictable and testable.
 """
 
 # Python imports
+import logging
 from dataclasses import dataclass, field
 from typing import Iterable, Optional
 
@@ -59,6 +60,10 @@ from plane.db.models import (
     ProjectMember,
     WorkspaceMember,
 )
+
+from .feature_flags import organizational_units_enabled
+
+logger = logging.getLogger("plane.orca")
 
 # Actions reported by the planner/reconciler for a single (member, project) pair.
 ACTION_NONE = "none"
@@ -491,8 +496,17 @@ def reconcile_access(workspace_id, member_ids=None, project_ids=None) -> list[Ac
     @param workspace_id: Workspace being reconciled.
     @param member_ids: Optional workspace member ids to narrow the scope.
     @param project_ids: Optional project ids to narrow the scope.
-    @returns: The changes that were applied (``ACTION_NONE`` entries included).
+    @returns: The changes that were applied (``ACTION_NONE`` entries included);
+        empty, with nothing written, while the layer is switched off.
     """
+    # Defence in depth. Every current caller (API mixin, Celery task, management
+    # command) already checks the kill switch, but this is the one function that
+    # writes native ``ProjectMember`` rows, so it refuses on its own too: a future
+    # caller that forgets the guard must not be able to grant access through it.
+    if not organizational_units_enabled():
+        logger.info("Organizational layer disabled; refusing to reconcile access for workspace %s.", workspace_id)
+        return []
+
     with transaction.atomic():
         grouped, states, keys = _collect_context(workspace_id, member_ids, project_ids)
         if not keys:

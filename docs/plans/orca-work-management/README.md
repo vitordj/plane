@@ -43,8 +43,8 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 
 | Fase | Arquivo | Itens | Estado | Gate fechado em |
 | --- | --- | --- | --- | --- |
-| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 13 | `[ ]` 0/13 | — |
-| D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 10 | `[ ]` 0/10 | — |
+| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 17 | `[~]` 2/17 (P0.0, P0.14) | — |
+| D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 12 | `[ ]` 0/12 | — |
 | 1 Contrato público | [01-public-contract.md](./01-public-contract.md) | 8 | `[ ]` 0/8 | — |
 | 2 Fila e coordenador | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6 | — |
 | 3 Disponibilidade | [03-availability.md](./03-availability.md) | 6 | `[ ]` 0/6 | — |
@@ -53,10 +53,13 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 
 ## Próximo item recomendado
 
-Comece por **P0.6** (senha fixa na migração) e **D0.1** (cobertura
-área↔projeto). Os dois são pequenos, independentes, fecham um risco real
-cada, e servem de aquecimento nas convenções do repositório. Depois siga a
-ordem dos arquivos.
+P0.0 e P0.14 estão entregues (branch `claude/wayfinder-areas-review-yt98v5`).
+Siga com **P0.1 → P0.2 → P0.3** em sequência (a cadeia de release: PR não
+publica `:stage`, tag por SHA, promoção por digest) — são pequenos e juntos
+fecham a proveniência do deploy que P0.0 começou. Em paralelo, **P0.6**
+(senha fixa) e **P0.7** (`TRUSTED_PROXIES`) continuam sendo os riscos de
+comprometimento mais diretos. **D0.1** continua o melhor primeiro item do
+domínio.
 
 ## Pendências externas (não bloqueiam P0/D0)
 
@@ -73,3 +76,5 @@ ordem dos arquivos.
 | Data | Evento |
 | --- | --- |
 | 2026-09-03 | Plano criado a partir do RFC rev. 2. Nenhum item iniciado. |
+| 2026-09-04 | PRs #5 e #6 mesclados em `stage` (`3a4c769`): hardening complementar da camada de Áreas (kill switch nas tarefas/comandos/SCIM, baseline ao elevar papel, rate limit SCIM pós-autenticação, rejeição de convidados Entra). Não fecha item P0/D0; registrado no cabeçalho de P0. |
+| 2026-09-04 | Revisão externa do commit `3a4c769` verificada contra o código. Achado novo: Compose apontava para o namespace do repositório-pai. Itens criados: P0.0, P0.14, P0.15, P0.16, D0.11, D0.12; critério novo em P0.10. P0.0 e P0.14 entregues no mesmo PR. |

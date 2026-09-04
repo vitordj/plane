@@ -169,6 +169,14 @@ A seção 6.4 fixa a regra.
 - **Pipeline de imagens:** `build-push` em `.github/workflows/stage.yml` roda
   em `pull_request` com `push: true` incondicional para a tag mutável
   `:stage`; `prod.yml` promove puxando `:stage`. Pré-requisito P0.
+- **Namespace das imagens (04/09, corrigido):** `docker-compose-orca.yml`
+  apontava para `ghcr.io/prospect-development-team/plane-orca/*`, enquanto
+  `stage.yml` publica em `ghcr.io/<este repositório>/*`. O Compose que o
+  README manda o Coolify usar podia implantar imagens do repositório-pai.
+  Corrigido em P0.0 (variável `ORCA_IMAGE_REPOSITORY` com default no fork e
+  job `compose_provenance` que falha no drift). A promoção por digest
+  (P0.2/P0.3) e a exposição do commit no runtime (P0.15) completam a
+  proveniência.
 - **Plane Compose:** a doc oficial não pôde ser lida deste ambiente. As
   afirmações do debate (PAT/workspace token, `.plane/state.json`, update por
   id local, ausência de campo de área) vêm de fonte externa e devem ser
@@ -232,6 +240,7 @@ registrar na seção 4 o motivo e o impacto.
 | --- | --- |
 | 2026-09-03 | Rev. 1: RFC inicial com 23 dúvidas e 5 fases. |
 | 2026-09-03 | Rev. 2: 24 decisões fechadas (F1–F24); fila vira estado; executor principal; binding + operação; `AssignmentDecision` append-only; Fase 0 dividida em P0 e D0; Compose retirado dos bloqueios; contrato REST detalhado. |
+| 2026-09-04 | Rev. 3: revisão externa do commit `3a4c769` verificada. Compose volta aos bloqueios pelo namespace errado (P0.0, corrigido); parser estrito do kill switch, guard em `reconcile_access` e paridade de variáveis no Compose (P0.14, corrigido); novos itens P0.15 (commit no runtime), P0.16 (MinIO/PostgreSQL), D0.11 (arquivamento reconcilia), D0.12 (roster SCIM sem soft-deleted). Nenhuma decisão F1–F24 reaberta. |
 
 ---
 
@@ -865,6 +874,7 @@ paralelo. As demais são sequenciais.
 
 | Item | Entrega | Arquivos |
 | --- | --- | --- |
+| P0.0 | `docker-compose-orca.yml` puxa de `${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}`; job `compose_provenance` falha se o default divergir do namespace que `stage.yml` publica. **Entregue 04/09.** | `docker-compose-orca.yml`, `stage.yml`, `README.md`, `.env.example` |
 | P0.1 | `build-push` não publica em `pull_request`: `push: ${{ github.event_name != 'pull_request' }}`; em PR usa tag `pr-<n>-<sha>` só para build (sem push) | `.github/workflows/stage.yml` |
 | P0.2 | Em push para `stage`, publicar `sha-<commit>` além de `:stage`; gravar os seis digests em artefato `image-digests.json` e como output do job | `stage.yml` |
 | P0.3 | `prod.yml` promove por `sha-<commit>` do merge de `stage` em `prod` (ou pelos digests do artefato), nunca por `:stage` | `.github/workflows/prod.yml` |
@@ -878,6 +888,9 @@ paralelo. As demais são sequenciais.
 | P0.11 | Sync com Plane CE 1.4.2 via branch `sync/upstream-merge-<data>` | fluxo do FORK.md §Phase 5 |
 | P0.12 | Apagar os três branches remotos obsoletos | remoto |
 | P0.13 | Alinhar `package.json`, manifest do Release Please e template de RC para `1.5.0`; documentar o fluxo real de duas etapas (merge em `prod` + commit `chore(prod): release`) | `package.json`, `.release-please-manifest.json`, `.github/PULL_REQUEST_TEMPLATE/release_candidate.md`, `FORK.md` |
+| P0.14 | Kill switch com parser estrito (`1/true/yes/on`, `0/false/no/off`, outro valor falha no boot); `reconcile_access` recusa quando desligado; Compose encaminha `ORCA_*` e `SCIM_*` a api, worker, beat e migrator. **Entregue 04/09.** | `plane/utils/orca_env.py`, `settings/common.py`, `org_unit_reconciler.py`, `docker-compose-orca.yml` |
+| P0.15 | Runtime expõe commit e versão (`GET /api/orca/build-info/`, build-arg `GIT_SHA`) | `stage.yml`, Dockerfiles, `views/orca_build_info.py` |
+| P0.16 | Fixar `minio/minio` em tag imutável; alinhar PostgreSQL do CI (16) com o do Compose (15.7) ou documentar a matriz | `docker-compose-orca.yml`, `stage.yml`, `RUNNING_TESTS.md` |
 
 **Gate P0:** CI verde com suíte upstream e ruff; um ensaio completo de RC
 (criação da PR, promoção por digest, deploy em stage, rollback para os seis
@@ -897,6 +910,8 @@ digests anteriores) documentado em `docs/release-runbook.md`.
 | D0.8 | Contadores (logger estruturado + métricas quando houver backend): `orca.assignment.outcome{mode,outcome}`, `orca.queue.no_candidate`, `orca.decision.superseded`, `orca.idempotency.conflict` | `assignment_service.py` |
 | D0.9 | Testes: matriz da seção 10 para D0 | `apps/api/plane/tests/unit/orca/test_assignment_service.py`, `test_routing_state.py`, `test_assignment_concurrency.py` |
 | D0.10 | Docs: atualizar `organizational-units.md` (§Assignment) e este documento | `docs/` |
+| D0.11 | Arquivar/desarquivar projeto dispara `dispatch_reconciliation` para aquele projeto; reconciliação com alvo explícito aceita projeto arquivado para desativar o herdado | `views/project/base.py`, `org_unit_reconciler.py` |
+| D0.12 | `members_of` do SCIM filtra memberships soft-deleted; teste de contrato do `GET /Groups/{id}` | `views/orca_scim/groups.py`, `test_scim_endpoints.py` |
 
 **Gate D0:** todas as invariantes I1–I7 com teste positivo e negativo; teste
 de concorrência (20 alocações simultâneas na mesma área distribuem

@@ -20,6 +20,7 @@ from corsheaders.defaults import default_headers
 
 
 # Module imports
+from plane.utils.orca_env import env_flag
 from plane.utils.url import is_valid_url
 
 
@@ -588,7 +589,11 @@ SEED_DIR = os.path.join(BASE_DIR, "seeds")
 # Orca organizational layer (see FORK.md): feature toggle and reconciliation
 # fan-out threshold. Mutations affecting up to ORCA_ORG_SYNC_MAX_EDGES
 # (members x projects) reconcile synchronously; wider ones go to Celery.
-ORCA_ORG_UNITS_ENABLED = os.environ.get("ORCA_ORG_UNITS_ENABLED", "1") == "1"
+# Strict parser (plane.utils.orca_env): "true"/"yes"/"on" enable, "false"/"no"/
+# "off" disable, anything else fails at boot. The upstream `== "1"` idiom read
+# ORCA_ORG_UNITS_ENABLED=true as *disabled*, which is not a kill switch an
+# operator can trust.
+ORCA_ORG_UNITS_ENABLED = env_flag("ORCA_ORG_UNITS_ENABLED", default=True)
 ORCA_ORG_SYNC_MAX_EDGES = int(os.environ.get("ORCA_ORG_SYNC_MAX_EDGES", 100))
 
 ENABLE_DRF_SPECTACULAR = os.environ.get("ENABLE_DRF_SPECTACULAR", "0") == "1"
