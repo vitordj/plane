@@ -38,8 +38,17 @@ def resolve_directory_identities(self):
     abort the rest, so failures are logged per workspace and the pass keeps
     going; the task only retries when something fails outside the loop.
     """
-    from plane.app.services.orca import project_workspace
+    from plane.app.services.orca import organizational_units_enabled, project_workspace
     from plane.db.models import OrganizationalDirectoryConnection
+
+    # The kill switch has to reach the beat, not just the API. This pass
+    # projects directory groups into unit memberships and reconciles them into
+    # native ProjectMember rows, so leaving it running while the layer is off
+    # would keep granting project access every hour through the one door
+    # nobody is watching.
+    if not organizational_units_enabled():
+        logger.info("Organizational layer disabled; skipping the directory projection pass.")
+        return
 
     try:
         connections = OrganizationalDirectoryConnection.objects.filter(is_enabled=True).values_list(

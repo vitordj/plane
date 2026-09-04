@@ -111,6 +111,55 @@ class TestEmailResolution:
         with pytest.raises(AuthenticationException):
             provider.resolve_email({"userPrincipalName": "person_other.com#EXT#@tenant.onmicrosoft.com"})
 
+    def test_a_guest_is_refused_even_when_the_mail_attribute_is_populated(self):
+        """
+        The case the guest rule exists for, and the one it used to miss.
+
+        Modern tenants do populate `mail` for B2B guests, with the address in
+        their *home* tenant. Preferring `mail` and only inspecting the UPN as a
+        fallback meant every such guest signed in normally, while the
+        documentation promised guests were refused. Since a default Entra
+        tenant lets any member invite a guest, that quietly widened who may
+        sign in from "people this organization employs" to "people any employee
+        has invited" — and the address they arrive with is one somebody else's
+        tenant controls.
+        """
+        provider = StubProvider()
+
+        with pytest.raises(AuthenticationException):
+            provider.resolve_email(
+                {
+                    "mail": "person@other-company.com",
+                    "userPrincipalName": "person_other-company.com#EXT#@tenant.onmicrosoft.com",
+                }
+            )
+
+    def test_the_guest_marker_is_matched_whatever_its_casing(self):
+        """Graph is not consistent about the casing of the marker."""
+        provider = StubProvider()
+
+        with pytest.raises(AuthenticationException):
+            provider.resolve_email(
+                {
+                    "mail": "person@other-company.com",
+                    "userPrincipalName": "person_other-company.com#ext#@tenant.onmicrosoft.com",
+                }
+            )
+
+    def test_a_member_whose_mailbox_is_on_another_domain_still_signs_in(self):
+        """
+        Not every non-tenant-looking address is a guest: plenty of tenants have
+        verified domains that differ from the UPN suffix. Only the `#EXT#`
+        marker refuses, so these keep working.
+        """
+        provider = StubProvider()
+
+        email = provider.resolve_email(
+            {"mail": "person@brand.example", "userPrincipalName": "person@tenant.onmicrosoft.com"}
+        )
+
+        assert email == "person@brand.example"
+
     def test_a_response_with_no_usable_address_is_refused(self):
         provider = StubProvider()
 

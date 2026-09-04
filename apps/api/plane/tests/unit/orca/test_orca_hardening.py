@@ -118,7 +118,9 @@ class TestResponsibleUnitCanBeSetClearedAndSetAgain:
 
         statuses = []
         for target in (unit, second_unit, unit):
-            statuses.append(admin_client.post(url, {"organizational_unit_id": str(target.id)}, format="json").status_code)
+            statuses.append(
+                admin_client.post(url, {"organizational_unit_id": str(target.id)}, format="json").status_code
+            )
             statuses.append(admin_client.delete(url).status_code)
 
         assert statuses == [200, 204, 200, 204, 200, 204]
@@ -241,9 +243,7 @@ class TestIdentityFieldsCannotBeRepointedByPatch:
         # The link never moved, so second_project was never granted access.
         assert not ProjectMember.objects.filter(project=second_project, member=plain_user, is_active=True).exists()
 
-    def test_default_role_remains_patchable(
-        self, admin_client, workspace_with_members, unit, project, link_project
-    ):
+    def test_default_role_remains_patchable(self, admin_client, workspace_with_members, unit, project, link_project):
         unit_project = link_project(unit, project, role=ROLE_MEMBER)
 
         response = admin_client.patch(
@@ -359,9 +359,10 @@ class TestMemberCreationValidatesRoleAndLead:
         )
 
         assert response.status_code == 201
-        assert OrganizationalUnitMembership.objects.get(
-            organizational_unit=unit, workspace_member__member=plain_user
-        ).role == OrganizationalUnitMemberRole.LEAD
+        assert (
+            OrganizationalUnitMembership.objects.get(organizational_unit=unit, workspace_member__member=plain_user).role
+            == OrganizationalUnitMemberRole.LEAD
+        )
 
     def test_adding_several_plain_members_is_still_accepted(
         self, admin_client, workspace_with_members, unit, plain_user, second_user, workspace_member_of
@@ -387,9 +388,7 @@ class TestMemberCreationValidatesRoleAndLead:
 
         assert response.status_code == 400
 
-    def test_a_malformed_member_id_is_a_validation_error_not_a_crash(
-        self, admin_client, workspace_with_members, unit
-    ):
+    def test_a_malformed_member_id_is_a_validation_error_not_a_crash(self, admin_client, workspace_with_members, unit):
         # Previously this reached the ORM as a filter value and raised, which
         # DRF surfaces as a 500 rather than a 400.
         response = admin_client.post(
@@ -470,9 +469,7 @@ class TestFeatureFlagClosesTheLayer:
     is worse than none — an operator would believe the layer was off.
     """
 
-    def test_reads_are_closed_when_the_layer_is_disabled(
-        self, settings, admin_client, workspace_with_members, unit
-    ):
+    def test_reads_are_closed_when_the_layer_is_disabled(self, settings, admin_client, workspace_with_members, unit):
         settings.ORCA_ORG_UNITS_ENABLED = False
 
         response = admin_client.get(units_url(workspace_with_members.slug))
@@ -546,17 +543,13 @@ class TestFeatureFlagClosesTheLayer:
         assert response.status_code == 200
         assert response.data["organizational_units_enabled"] is False
 
-    def test_the_config_endpoint_reports_the_layer_as_on_by_default(
-        self, admin_client, workspace_with_members
-    ):
+    def test_the_config_endpoint_reports_the_layer_as_on_by_default(self, admin_client, workspace_with_members):
         response = admin_client.get(f"/api/orca/workspaces/{workspace_with_members.slug}/config/")
 
         assert response.status_code == 200
         assert response.data["organizational_units_enabled"] is True
 
-    def test_the_layer_works_normally_while_enabled(
-        self, settings, admin_client, workspace_with_members, unit
-    ):
+    def test_the_layer_works_normally_while_enabled(self, settings, admin_client, workspace_with_members, unit):
         settings.ORCA_ORG_UNITS_ENABLED = True
 
         response = admin_client.get(units_url(workspace_with_members.slug))
@@ -649,9 +642,7 @@ class TestWorkspaceLabelAndStateWritesAreAdminOnly:
     def test_a_member_cannot_create_a_workspace_state(self, member_client, workspace_with_members):
         url = self.STATES.format(slug=workspace_with_members.slug)
 
-        response = member_client.post(
-            url, {"name": "Blocked", "group": "started", "color": "#FF0000"}, format="json"
-        )
+        response = member_client.post(url, {"name": "Blocked", "group": "started", "color": "#FF0000"}, format="json")
 
         assert response.status_code == 403
 
@@ -661,9 +652,7 @@ class TestWorkspaceLabelAndStateWritesAreAdminOnly:
         # The delete path is the destructive one: it reassigns work items in
         # every subscribed project before dropping the state.
         url = self.STATES.format(slug=workspace_with_members.slug)
-        created = admin_client.post(
-            url, {"name": "Blocked", "group": "started", "color": "#FF0000"}, format="json"
-        )
+        created = admin_client.post(url, {"name": "Blocked", "group": "started", "color": "#FF0000"}, format="json")
         detail = f"{url}{created.data['id']}/"
 
         assert member_client.patch(detail, {"name": "Renamed"}, format="json").status_code == 403
@@ -672,9 +661,7 @@ class TestWorkspaceLabelAndStateWritesAreAdminOnly:
     def test_an_admin_can_create_a_workspace_state(self, admin_client, workspace_with_members):
         url = self.STATES.format(slug=workspace_with_members.slug)
 
-        response = admin_client.post(
-            url, {"name": "Blocked", "group": "started", "color": "#FF0000"}, format="json"
-        )
+        response = admin_client.post(url, {"name": "Blocked", "group": "started", "color": "#FF0000"}, format="json")
 
         assert response.status_code == 201
 
@@ -699,3 +686,103 @@ class TestWorkspaceLabelAndStateWritesAreAdminOnly:
             ).status_code
             == 403
         )
+
+
+@pytest.mark.unit
+class TestFeatureFlagClosesTheBackgroundPaths:
+    """
+    The kill switch has to reach everything that writes, not just what a person
+    can click.
+
+    ``ORCA_ORG_UNITS_ENABLED=0`` closed the HTTP routes and the reconcile
+    command, but the hourly directory pass on the Celery beat and the queued
+    reconciliation task consulted nothing. An operator who switched the layer
+    off — the thing you do first when access looks wrong — would have found it
+    still creating unit memberships and writing native ProjectMember rows every
+    hour, through the one door nobody was watching.
+    """
+
+    def test_the_hourly_directory_pass_writes_nothing_when_disabled(
+        self, settings, directory_connection, bound_unit, project, link_project, make_identity, put_in_group, plain_user
+    ):
+        from plane.bgtasks.organizational_directory_task import resolve_directory_identities
+
+        link_project(bound_unit, project)
+        put_in_group(bound_unit, make_identity("plain@plane.so"))
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        resolve_directory_identities()
+
+        assert not OrganizationalUnitMembership.objects.filter(organizational_unit=bound_unit).exists()
+        assert not ProjectMember.objects.filter(project=project, member=plain_user, is_active=True).exists()
+
+    def test_the_hourly_directory_pass_still_runs_while_enabled(
+        self, settings, directory_connection, bound_unit, project, link_project, make_identity, put_in_group, plain_user
+    ):
+        """The control: without it the test above would pass on a broken task."""
+        from plane.bgtasks.organizational_directory_task import resolve_directory_identities
+
+        link_project(bound_unit, project)
+        put_in_group(bound_unit, make_identity("plain@plane.so"))
+        settings.ORCA_ORG_UNITS_ENABLED = True
+
+        resolve_directory_identities()
+
+        assert OrganizationalUnitMembership.objects.filter(organizational_unit=bound_unit).exists()
+        assert ProjectMember.objects.filter(project=project, member=plain_user, is_active=True).exists()
+
+    def test_a_reconciliation_task_that_lands_after_the_switch_writes_nothing(
+        self, settings, workspace_with_members, unit, project, link_project, add_member, plain_user
+    ):
+        """
+        The switch is read when the task runs, not when it was queued: a task
+        already on the queue when an operator turns the layer off must not land
+        afterwards and grant the access they were trying to stop.
+        """
+        from plane.bgtasks.organizational_unit_task import reconcile_organizational_access
+
+        link_project(unit, project)
+        add_member(unit, plain_user)
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        reconcile_organizational_access(workspace_with_members.id)
+
+        assert not ProjectMember.objects.filter(project=project, member=plain_user, is_active=True).exists()
+
+    def test_the_reconciliation_task_still_runs_while_enabled(
+        self, settings, workspace_with_members, unit, project, link_project, add_member, plain_user
+    ):
+        from plane.bgtasks.organizational_unit_task import reconcile_organizational_access
+
+        link_project(unit, project)
+        add_member(unit, plain_user)
+        settings.ORCA_ORG_UNITS_ENABLED = True
+
+        reconcile_organizational_access(workspace_with_members.id)
+
+        assert ProjectMember.objects.filter(project=project, member=plain_user, is_active=True).exists()
+
+    def test_the_directory_sync_command_refuses_to_run_when_disabled(
+        self, settings, workspace_with_members, bound_unit, project, link_project, make_identity, put_in_group
+    ):
+        link_project(bound_unit, project)
+        put_in_group(bound_unit, make_identity("plain@plane.so"))
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        with pytest.raises(CommandError):
+            call_command("sync_organizational_directory", "--workspace", workspace_with_members.slug)
+
+        assert not OrganizationalUnitMembership.objects.filter(organizational_unit=bound_unit).exists()
+
+    def test_the_directory_sync_command_refuses_even_in_report_only_mode(
+        self, settings, workspace_with_members, bound_unit
+    ):
+        """
+        Reporting reads the layer's own tables, which the switch says are not
+        to be consulted. Refusing both modes keeps one answer to "is the layer
+        on", rather than one per flag.
+        """
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        with pytest.raises(CommandError):
+            call_command("sync_organizational_directory", "--workspace", workspace_with_members.slug, "--report-only")

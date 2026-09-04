@@ -195,23 +195,42 @@ class EntraOAuthProvider(OauthAdapter):
         """
         Pick the address to identify the account by.
 
-        @description ``mail`` is the tenant's real mailbox attribute and is
-        preferred. ``userPrincipalName`` is the fallback, but only when it is a
-        genuine address: guest accounts carry a mangled UPN
-        (``someone_example.com#EXT#@tenant.onmicrosoft.com``) which is an
-        internal identifier, not a mailbox, and matching an account on it would
-        be wrong.
+        @description Plane matches an OAuth identity to an account by email, so
+        the address chosen here is the entire trust boundary. Two rules keep it
+        inside the configured tenant.
+
+        **Guests are refused, whatever they present.** A B2B guest belongs to
+        another tenant and is merely present in this one, so the address Graph
+        reports for them is one their home tenant controls — and in a default
+        Entra configuration any member can invite a guest, which would make the
+        set of people who can sign in much wider than the set of people the
+        tenant employs. The ``#EXT#`` marker in ``userPrincipalName`` is what
+        identifies them, and it is there whether or not ``mail`` is populated:
+        modern tenants do populate ``mail`` for guests with their external
+        address, so checking the UPN only as a fallback would let exactly the
+        case this rule exists for walk straight through.
+
+        For a member, ``mail`` is the tenant's real mailbox attribute and is
+        preferred; ``userPrincipalName`` is the fallback when it is a genuine
+        address.
 
         @param user_info_response: The Microsoft Graph ``/me`` payload.
         @returns: The email to sign in with.
-        @raises AuthenticationException: When no usable address is present.
+        @raises AuthenticationException: When the caller is a guest, or no
+            usable address is present.
         """
+        upn = (user_info_response.get("userPrincipalName") or "").strip()
+        if "#EXT#" in upn.upper():
+            raise AuthenticationException(
+                error_code=AUTHENTICATION_ERROR_CODES["OAUTH_PROVIDER_UNVERIFIED_EMAIL"],
+                error_message="OAUTH_PROVIDER_UNVERIFIED_EMAIL",
+            )
+
         mail = (user_info_response.get("mail") or "").strip()
         if mail:
             return mail
 
-        upn = (user_info_response.get("userPrincipalName") or "").strip()
-        if upn and "@" in upn and "#EXT#" not in upn.upper():
+        if upn and "@" in upn:
             return upn
 
         # A tenant that maps neither is a configuration problem, not a user

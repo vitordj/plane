@@ -36,9 +36,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # Module imports
+from plane.app.services.orca import organizational_units_enabled
 from plane.db.models import OrganizationalDirectoryConnection, Workspace, hash_directory_token
-from plane.throttles.scim import SCIMRateThrottle
-from plane.app.views.organizational_unit import organizational_units_enabled
+from plane.throttles.scim import SCIMAuthFailureRateThrottle, SCIMRateThrottle
 
 SCIM_CONTENT_TYPE = "application/scim+json"
 
@@ -224,11 +224,12 @@ class SCIMBaseView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
-    # Not the project-wide AnonRateThrottle: these calls are anonymous to DRF
-    # (the caller is Microsoft's provisioning service, holding a bearer token
-    # rather than a session), and its 30/minute would throttle a real first
-    # sync into failure. See plane/throttles/scim.py.
-    throttle_classes = [SCIMRateThrottle]
+    # Deliberately empty: DRF runs its throttles inside super().initial(),
+    # which is before this view has checked the bearer token, so a throttle
+    # listed here could be spent by callers holding no token at all. The two
+    # SCIM limits are applied by hand in initial() instead, each once the
+    # request is known to be the kind it meters. See plane/throttles/scim.py.
+    throttle_classes = []
     renderer_classes = [SCIMRenderer, JSONRenderer]
     parser_classes = [SCIMParser, JSONParser]
 
@@ -249,7 +250,31 @@ class SCIMBaseView(APIView):
         self.workspace = None
         self.connection = None
         if self.requires_authentication:
-            self.workspace, self.connection = self.authenticate_directory(request, kwargs.get("slug"))
+            try:
+                self.workspace, self.connection = self.authenticate_directory(request, kwargs.get("slug"))
+            except SCIMError:
+                # Meter the failure by address before answering. The workspace
+                # counter is not touched on this path: a caller who cannot
+                # authenticate must not be able to exhaust the provisioning
+                # budget of a workspace whose slug they merely guessed.
+                self.enforce_throttle(SCIMAuthFailureRateThrottle(), request)
+                raise
+            self.enforce_throttle(SCIMRateThrottle(), request)
+
+    def enforce_throttle(self, throttle, request):
+        """
+        Charge one request against a throttle, answering 429 when it is spent.
+
+        @description Mirrors what DRF's ``check_throttles`` does, called at the
+        point in the request where the throttle in question applies rather than
+        uniformly before authentication.
+
+        @param throttle: The throttle instance to charge.
+        @param request: The incoming request.
+        @raises Throttled: With ``Retry-After``, when the limit is reached.
+        """
+        if not throttle.allow_request(request, self):
+            self.throttled(request, throttle.wait())
 
     def authenticate_directory(self, request, slug):
         """

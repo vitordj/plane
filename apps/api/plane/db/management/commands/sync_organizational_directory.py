@@ -9,7 +9,7 @@ from typing import Any
 from django.core.management import BaseCommand, CommandError
 
 # Module imports
-from plane.app.services.orca import project_workspace, unresolved_identities
+from plane.app.services.orca import organizational_units_enabled, project_workspace, unresolved_identities
 from plane.db.models import OrganizationalDirectoryConnection, OrganizationalUnit, Workspace
 
 
@@ -28,6 +28,13 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
+        # Same refusal the API and the reconcile command give: projecting the
+        # mirror writes unit memberships and, through them, project access.
+        if not organizational_units_enabled():
+            raise CommandError(
+                "The organizational layer is disabled (ORCA_ORG_UNITS_ENABLED=0); refusing to project the directory."
+            )
+
         slug = options["workspace"]
         workspace = Workspace.objects.filter(slug=slug).first()
         if workspace is None:

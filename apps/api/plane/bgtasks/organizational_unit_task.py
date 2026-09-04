@@ -39,8 +39,15 @@ def reconcile_organizational_access(self, workspace_id, member_ids=None, project
     @param member_ids: Optional workspace member ids to narrow the scope.
     @param project_ids: Optional project ids to narrow the scope.
     """
-    from plane.app.services.orca import reconcile_access
+    from plane.app.services.orca import organizational_units_enabled, reconcile_access
     from plane.app.services.orca.org_unit_reconciler import projects_in_workspace
+
+    # A task queued before the layer was switched off must not land after it.
+    # The switch is read here, at execution time, rather than at dispatch, so
+    # the worker honours the setting as it stands when the write would happen.
+    if not organizational_units_enabled():
+        logger.info("Organizational layer disabled; skipping reconciliation for workspace %s.", workspace_id)
+        return
 
     try:
         targets = list(project_ids) if project_ids else projects_in_workspace(workspace_id)

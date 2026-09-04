@@ -428,9 +428,17 @@ def _apply_change(workspace_member, project_id, project_member, state, action, r
         state.project_member = project_member
 
     elif action in (ACTION_ELEVATE, ACTION_LOWER):
-        if state.last_applied_role is None and action == ACTION_ELEVATE:
-            # First write over pre-existing manual access: remember it so the
-            # role can be restored when the unit source goes away.
+        if action == ACTION_ELEVATE and project_member.role != state.last_applied_role:
+            # About to write over a role this layer did not last write: either
+            # nothing was written before (pre-existing manual access) or
+            # somebody promoted by hand since. Either way a person chose the
+            # role standing here, so it becomes the baseline to fall back to
+            # when the unit source goes away. Without this the promotion is
+            # erased by the elevation and the person is later deactivated
+            # outright, which is the opposite of "manual access always wins".
+            #
+            # ACTION_LOWER cannot arrive drifted: _decide answers
+            # ACTION_SKIP_MANUAL_DRIFT when the current role is not ours.
             state.baseline_role = project_member.role
             state.created_by_org_layer = False
         project_member.role = role

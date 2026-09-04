@@ -12,9 +12,9 @@ exercise the exact payload shapes Entra emits rather than idealized ones.
 """
 
 import pytest
+from rest_framework.test import APIClient
 
 from plane.app.services.orca import project_unit, reconcile_unit, resolve_identity
-from plane.throttles.scim import SCIMRateThrottle
 from plane.db.models import (
     DirectorySyncSource,
     OrganizationalDirectoryGroupMembership,
@@ -22,6 +22,7 @@ from plane.db.models import (
     OrganizationalUnit,
     ProjectMember,
 )
+from plane.throttles.scim import SCIMAuthFailureRateThrottle, SCIMRateThrottle
 
 from .conftest import (
     scim_base,
@@ -627,9 +628,7 @@ class TestFeatureFlagClosesProvisioning:
         # a healthy endpoint for a layer that is off.
         settings.ORCA_ORG_UNITS_ENABLED = False
 
-        response = scim_client.get(
-            f"/api/orca/scim/v2/workspaces/{workspace_with_members.slug}/ServiceProviderConfig"
-        )
+        response = scim_client.get(f"/api/orca/scim/v2/workspaces/{workspace_with_members.slug}/ServiceProviderConfig")
 
         assert response.status_code == 404
 
@@ -673,3 +672,79 @@ class TestBatchProvisioningIsNotThrottled:
 
         assert 429 in first
         assert other == 401
+
+
+@pytest.mark.unit
+class TestAnUnauthenticatedCallerCannotStopProvisioning:
+    """
+    The provisioning budget belongs to callers who hold the workspace's token.
+
+    The throttle was keyed on the workspace slug and ran through DRF's
+    automatic pass, which happens before this view checks the bearer token. The
+    slug is in the URL, so anyone who knew or guessed it could fill a
+    workspace's counter with tokenless requests and every real call from Entra
+    came back 429 until the window rolled — provisioning switched off from
+    outside, with no credential at all.
+    """
+
+    def _bad_token_client(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION="Bearer not-the-token")
+        return client
+
+    def test_failed_authentications_do_not_spend_the_workspace_budget(
+        self, scim_client, workspace_with_members, directory_connection
+    ):
+        original = SCIMRateThrottle.rate
+        SCIMRateThrottle.rate = "2/minute"
+        try:
+            attacker = self._bad_token_client()
+            refused = [attacker.get(scim_users_url(workspace_with_members.slug)).status_code for _ in range(5)]
+            # Entra's next real call, with the workspace's own token.
+            served = scim_client.get(scim_users_url(workspace_with_members.slug)).status_code
+        finally:
+            SCIMRateThrottle.rate = original
+
+        assert set(refused) == {401}
+        assert served == 200
+
+    def test_repeated_failures_from_one_caller_are_capped(self, workspace_with_members, directory_connection):
+        """
+        The budget the failures do meet is their own, keyed by address: a wrong
+        token is either a misconfigured tenant or somebody grinding at the
+        credential, and neither should get unlimited attempts.
+        """
+        original = SCIMAuthFailureRateThrottle.rate
+        SCIMAuthFailureRateThrottle.rate = "2/minute"
+        try:
+            attacker = self._bad_token_client()
+            codes = [attacker.get(scim_users_url(workspace_with_members.slug)).status_code for _ in range(4)]
+        finally:
+            SCIMAuthFailureRateThrottle.rate = original
+
+        assert codes[:2] == [401, 401]
+        assert 429 in codes
+
+    def test_the_calls_that_are_themselves_capped_charge_nothing_to_the_workspace(
+        self, scim_client, workspace_with_members, directory_connection
+    ):
+        """
+        The 429s a flood earns must be as free to the workspace as the 401s
+        were, or the cap would just be a cheaper way to do the same damage.
+        """
+        original_workspace = SCIMRateThrottle.rate
+        original_failure = SCIMAuthFailureRateThrottle.rate
+        SCIMRateThrottle.rate = "2/minute"
+        SCIMAuthFailureRateThrottle.rate = "1/minute"
+        try:
+            attacker = self._bad_token_client()
+            flood = [attacker.get(scim_users_url(workspace_with_members.slug)).status_code for _ in range(6)]
+            served = [scim_client.get(scim_users_url(workspace_with_members.slug)).status_code for _ in range(2)]
+        finally:
+            SCIMRateThrottle.rate = original_workspace
+            SCIMAuthFailureRateThrottle.rate = original_failure
+
+        # The flood is capped after its first attempt...
+        assert flood.count(429) == 5
+        # ...and Entra still gets its full budget of two.
+        assert served == [200, 200]
