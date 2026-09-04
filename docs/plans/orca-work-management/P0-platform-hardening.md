@@ -48,19 +48,26 @@ qual código o ambiente executava. Achado da revisão externa de 04/09.
 
 ---
 
-## P0.1 — Build em pull request não publica imagem `[ ]`
+## P0.1 — Build em pull request não publica imagem `[x]`
 
 **Problema.** `.github/workflows/stage.yml`, job `build-push`, passo
-`docker/build-push-action` tem `push: true` incondicional e o workflow roda em
-`pull_request`. Um PR interno reescreve a tag mutável `:stage` antes de ser
+`docker/build-push-action` tinha `push: true` incondicional e o workflow roda em
+`pull_request`. Um PR interno reescrevia a tag mutável `:stage` antes de ser
 revisado.
 
-**Mudança.**
-- No passo de build: `push: ${{ github.event_name != 'pull_request' }}`.
-- Em PR, `tags:` passa a `ghcr.io/<repo>/<service>:pr-${{ github.event.pull_request.number }}-${{ github.sha }}` e `load: false`; o build continua servindo para provar que compila.
-- O passo "Log in to GHCR" ganha `if:` excluindo `pull_request`.
+**Mudança** (entregue em `claude/continue-implementations-bquse8`).
+- No passo de build: `push: ${{ github.event_name != 'pull_request' }}` e `load: false`.
+- Passo novo `Resolve Image Tags` monta a lista de tags em shell em vez de
+  interpolar no `with:`: em `pull_request` a única tag é
+  `<namespace>/<serviço>:pr-<número>-<sha>`, fora dele `:stage`. O build
+  continua servindo para provar que compila.
+- O passo "Log in to GHCR" ganhou `if:` excluindo `pull_request`: sem
+  credencial o push é impossível mesmo que a condição acima regrida.
+- Cabeçalho do workflow descreve a regra.
 
 **Aceite.**
+- [x] O passo de login e o `push:` do build são ambos condicionados ao evento; a
+  tag de PR não é `:stage` em nenhum caminho (lido no arquivo, sem CI).
 - [ ] Um PR de teste executa o job e o log mostra `push: false` (ou o passo de login pulado).
 - [ ] `docker manifest inspect ghcr.io/<repo>/api:stage` antes e depois do PR retorna o mesmo digest.
 - [ ] Merge em `stage` continua publicando `:stage`.

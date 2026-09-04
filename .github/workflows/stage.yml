@@ -10,6 +10,8 @@
 #   • Build & Push: Builds the web, api, space, live, and proxy images, and
 #     pushes them to GitHub Container Registry (GHCR) tagged as :stage.
 #     Also performs pre/post-build Docker runner pruning hygiene.
+#     On a pull request the images are built but never pushed: :stage is the
+#     tag the staging environment pulls, so only a merge may write it.
 #   • Deploy: Triggers Coolify stage deployment, polls state until completion,
 #     and outputs step summaries or issues cancellations.
 #
@@ -400,8 +402,10 @@ jobs:
         if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
         run: echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
+      # A pull request build proves the image compiles; it has no business
+      # holding a registry credential, and without one it cannot push.
       - name: Log in to GHCR
-        if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name != 'pull_request' && (needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch') }}
         uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
@@ -420,14 +424,41 @@ jobs:
           docker image prune -a -f --filter "until=24h"
           docker builder prune -a -f --filter "until=24h"
 
+      # `:stage` is what the deployed Compose pulls. A pull request that wrote
+      # it would replace the running staging image with unreviewed code, so the
+      # tag a PR build carries names the PR and the commit instead, and the
+      # push below is off for that event: the build still has to succeed.
+      - name: Resolve Image Tags
+        id: image_tags
+        if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
+        env:
+          SERVICE: ${{ matrix.service }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          image="${REGISTRY}/${IMAGE_NAME}/${SERVICE}"
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            tags="${image}:pr-${PR_NUMBER}-${GITHUB_SHA}"
+          else
+            tags="${image}:stage"
+          fi
+          {
+            echo "tags<<TAGS_EOF"
+            echo "${tags}"
+            echo "TAGS_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Tags for ${SERVICE}: ${tags}"
+
       - name: Build and Push ${{ matrix.service }}
+        id: build
         if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
         uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.file }}
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}:stage
+          push: ${{ github.event_name != 'pull_request' }}
+          load: false
+          tags: ${{ steps.image_tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
