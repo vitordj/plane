@@ -12,7 +12,6 @@ at once, so v1 keeps it centralized. Unit leads have read access only.
 """
 
 # Django imports
-from django.conf import settings
 from django.db import transaction
 from django.db.models import Count, Q
 from django.http import Http404
@@ -34,6 +33,7 @@ from plane.app.services.orca import (
     MODE_APPEND,
     MODE_FILL_EMPTY,
     assign_from_unit,
+    organizational_units_enabled,
     plan_access,
     reconcile_membership,
     reconcile_unit,
@@ -81,11 +81,6 @@ class OrganizationalUnitFeatureMixin:
         if not organizational_units_enabled():
             raise Http404("The organizational layer is disabled on this instance")
         return super().initial(request, *args, **kwargs)
-
-
-def organizational_units_enabled() -> bool:
-    """Whether the organizational layer is switched on for this instance."""
-    return bool(getattr(settings, "ORCA_ORG_UNITS_ENABLED", True))
 
 
 class OrcaConfigEndpoint(BaseAPIView):
@@ -238,9 +233,7 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
         # through a serializer on this path, and a second active lead would
         # otherwise abort the transaction with an IntegrityError from the
         # single-lead partial index instead of returning a 400.
-        payload = OrganizationalUnitMembershipCreateSerializer(
-            data=request.data, context={"organizational_unit": unit}
-        )
+        payload = OrganizationalUnitMembershipCreateSerializer(data=request.data, context={"organizational_unit": unit})
         if not payload.is_valid():
             return Response(payload.errors, status=status.HTTP_400_BAD_REQUEST)
 
