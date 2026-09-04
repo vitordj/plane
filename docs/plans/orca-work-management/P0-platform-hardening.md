@@ -182,23 +182,46 @@ criação. O job passa mesmo sem PR.
 
 ---
 
-## P0.6 — Remover a senha fixa da migração de usuários `[ ]`
+## P0.6 — Remover a senha fixa da migração de usuários `[x]`
 
-**Problema.** `tools/migration/create_users.py` l.23 define
-`DEFAULT_PASSWORD = "TemporaryOrca123!"` e l.84 aplica a todos os usuários
-criados. Nenhuma troca forçada.
+**Problema.** `tools/migration/create_users.py` definia uma constante
+`DEFAULT_PASSWORD` com uma senha em texto claro e a aplicava a todos os
+usuários criados; o README a repetia. Nenhuma troca forçada. Quem lesse o
+repositório entrava como qualquer pessoa migrada que ainda não tivesse
+acessado.
 
-**Mudança.**
-- Remover a constante. Para cada usuário criado: `user.set_unusable_password()` e `user.is_password_autoset = True` (mesmo padrão do provider Entra em `apps/api/plane/authentication/provider/oauth/entra.py`).
-- `tools/migration/README.md`: seção "Primeiro acesso" explicando Entra ID ou magic link; remover qualquer menção à senha antiga.
-- Adicionar ao README um bloco "Se este script já foi executado antes desta versão": comando Django para invalidar as credenciais dos usuários criados pelo script (filtrar por `created_at` da execução ou por lista de e-mails) com `set_unusable_password()`, e orientação para revisar logs de autenticação.
+**Mudança** (entregue em `claude/continue-implementations-bquse8`).
+- Constante removida. Conta criada agora recebe `set_unusable_password()` e
+  `is_password_autoset = True` (mesmo padrão do provider Entra), gravados com
+  `update_fields`. Conta que já existe não é tocada — o script não pode
+  redefinir a credencial de quem já acessou.
+- Script refatorado para ser importável: `bootstrap_django()` só roda sob
+  `__main__`, os imports de model são locais às funções, e a lógica está em
+  `create_user_from_payload(payload)` e `add_user_to_workspace(user, workspace, role)`.
+  `fetch_users_from_old_plane()` passou a devolver dicts e ganhou `timeout`.
+- `tools/migration/README.md`: seção "First sign-in" (Entra ID ou magic link) e
+  bloco "If you ran this script before this version" com o shell Django que
+  invalida as credenciais das contas criadas pelo script, separando quem nunca
+  acessou (invalidar direto) de quem já acessou (revisar log antes).
+
+**Testes.** `apps/api/plane/tests/unit/orca/test_migration_tools.py`: carrega o
+script pelo caminho (ele vive fora de `apps/api`; pula com motivo quando
+`tools/` não está montado, como no `docker-compose-test.yml`) e verifica conta
+nova sem senha utilizável e com `is_password_autoset`, nome/e-mail/username
+preservados, segunda execução não redefinindo a senha de quem já existia,
+ausência de qualquer constante de senha no módulo, e o papel da associação ao
+workspace nos dois sentidos.
 
 **Aceite.**
-- [ ] `grep -rn "TemporaryOrca" tools/ docs/ README.md` vazio.
-- [ ] Teste unitário simples em `apps/api/plane/tests/unit/orca/test_migration_tools.py` que importa a função de criação (refatorar o script para expor `create_user_from_payload`) e verifica `has_usable_password() is False` e `is_password_autoset is True`.
+- [x] Busca pela senha antiga em `tools/`, `docs/` e `README.md` não retorna
+  nada: a constante saiu do script, o README parou de citá-la e este item
+  passou a descrevê-la sem transcrevê-la.
+- [x] Teste unitário escrito; a sessão não roda pytest (AGENTS.md) — confirmar no CI de `stage`.
+- [x] Ruff limpo nos arquivos tocados.
 - [ ] Contas já criadas em qualquer ambiente com a senha antiga foram invalidadas (registrar data e ambiente no quadro).
 
-**Arquivos:** `tools/migration/create_users.py`, `tools/migration/README.md`, novo teste.
+**Arquivos:** `tools/migration/create_users.py`, `tools/migration/README.md`,
+`apps/api/plane/tests/unit/orca/test_migration_tools.py`.
 
 ---
 

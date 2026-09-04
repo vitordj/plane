@@ -53,7 +53,60 @@ If you are already inside the container shell (`docker exec -it <container> sh`)
 4. Run `python3 create_users.py`.
 5. Remove the temp file when done: `rm create_users.py`.
 
-_Note: Pre-created users are set with a temporary password `TemporaryOrca123!`. They can change this password under their profile settings upon logging in._
+### First sign-in
+
+Pre-created accounts have **no password**. The account exists so that issues,
+leads and roles can be mapped to it; the person it belongs to has not signed in
+yet, and a password shared by every migrated account would be a credential
+anyone reading this repository could use.
+
+They sign in the same way accounts created by an identity provider do:
+
+- **Entra ID** — the usual path on this install. The account is matched by
+  email on the first sign-in (see [`docs/entra-directory-sync.md`](../../docs/entra-directory-sync.md)).
+- **Magic link** — email code, if the instance has it enabled.
+
+Both paths mark the account as having chosen its own credential. If the
+instance allows password sign-in at all, the person sets one from their profile
+after the first sign-in.
+
+### If you ran this script before this version
+
+Earlier revisions gave every account they created the same hard-coded password,
+which was also printed in this file. Those credentials must be treated as
+public: anyone who saw either could have signed in as any migrated person who
+had not yet signed in themselves.
+
+On each environment where the old script ran, invalidate them. Run inside the
+API container, replacing the date with the day the script ran (or listing the
+emails it created):
+
+```bash
+docker exec -it <plane-api-container> python3 manage.py shell
+```
+
+```python
+from django.utils.dateparse import parse_datetime
+from plane.db.models import User
+
+# Everything the script created that day, or: User.objects.filter(email__in=[...])
+migrated = User.objects.filter(created_at__date="2026-01-01")
+
+for user in migrated:
+    if user.last_login is None:  # never signed in: nothing of theirs is lost
+        user.set_unusable_password()
+        user.is_password_autoset = True
+        user.save(update_fields=["password", "is_password_autoset"])
+        print("invalidated", user.email)
+    else:
+        print("REVIEW — signed in at least once:", user.email, user.last_login)
+```
+
+Accounts that did sign in need a look before you touch them: either the person
+signed in legitimately and has since chosen their own password, or somebody
+used the shared one. Check the authentication logs for those emails and, when
+in doubt, invalidate the password too and tell the person to sign in through
+Entra ID.
 
 ---
 
