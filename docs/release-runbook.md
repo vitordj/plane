@@ -33,7 +33,14 @@ the six were rebuilt (`"rebuilt": true`) and which were inherited.
 1. **Stage is green.** The `Staging CI/CD` run for the commit finished, and its
    `image-digests` artifact lists all six services.
 2. **Release candidate PR** (`stage` → `prod`) is open — the `promote-rc` job
-   maintains it. Review it as a PR: it is the last human gate.
+   maintains it, and fails loudly if it cannot. Review it as a PR: it is the
+   last human gate.
+
+   > Creating that PR needs either a `RELEASE_PLEASE_TOKEN` secret or
+   > **Settings → Actions → General → "Allow GitHub Actions to create and
+   > approve pull requests"** enabled. Without one of the two, the job goes
+   > red — which is the point: a release candidate that silently stops being
+   > opened is how a release silently stops happening.
 3. **Merge it with a merge commit, never a squash.** The promotion finds the
    commit under release as the second parent of that merge. A squashed RC has
    no second parent and the job stops with an error telling you to re-run with

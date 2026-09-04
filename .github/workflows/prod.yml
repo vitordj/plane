@@ -50,9 +50,9 @@ concurrency:
   group: prod-${{ github.ref }}
   cancel-in-progress: false
 
+# Read-only by default; the promote job declares the writes it needs.
 permissions:
-  contents: write
-  packages: write
+  contents: read
 
 env:
   REGISTRY: ghcr.io
@@ -265,6 +265,8 @@ jobs:
     if: ${{ vars.COOLIFY_DEPLOY_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     environment: prod
+    permissions:
+      contents: read
     steps:
       - name: Trigger Coolify deploy
         id: deploy

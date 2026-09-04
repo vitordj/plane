@@ -6,13 +6,16 @@ on:
       - prod
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   release-please:
     name: Release Please
     runs-on: ubuntu-latest
+    # Writes the release commit, the tag and the release PR.
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Run Release Please
         uses: googleapis/release-please-action@v4

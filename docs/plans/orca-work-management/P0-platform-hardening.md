@@ -148,37 +148,64 @@ commit revisado: promovia o build mais recente, não o aprovado.
 
 ---
 
-## P0.4 — Job `promote-rc` não pode ficar verde sem PR `[ ]`
+## P0.4 — Job `promote-rc` não pode ficar verde sem PR `[x]`
 
 **Problema.** `stage.yml`, job "Ensure Release Candidate PR": `curl -sS` sem
-`-f`, `python3 ... || true`, e `exit 0` em caminhos que não confirmam a
-criação. O job passa mesmo sem PR.
+`-f`, `python3 ... || true` e `exit 0` em caminhos que não confirmavam a
+criação. O job passava sem PR nenhuma — e o release simplesmente deixava de
+acontecer, sem ninguém ser avisado.
 
-**Mudança.**
-- Trocar os `curl` por `curl -fsS` e checar código HTTP; remover `|| true` dos passos que buscam/criam a PR (manter só no `git fetch origin prod`).
-- Ao final, `test -n "$PR_NUMBER" || { echo "::error::RC PR not found nor created"; exit 1; }`.
-- Preferível: substituir o bloco Python por `gh pr list`/`gh pr create` (o runner já tem `gh`), mantendo o template `release_candidate.md` como corpo.
-- Verificar em Settings → Actions → General que "Allow GitHub Actions to create and approve pull requests" está ligado; documentar no runbook.
+**Mudança** (entregue em `claude/continue-implementations-bquse8`).
+- Bloco Python + `curl` substituídos por `gh pr list` / `gh pr create` /
+  `gh pr edit` (o runner já tem `gh`), com `set -euo pipefail` e o template
+  `release_candidate.md` como corpo.
+- `|| true` sobreviveu só no `git fetch origin prod`, com verificação explícita
+  de que `origin/prod` existe logo depois.
+- Depois de criar, o número é relido com `gh pr list` em vez de extraído da
+  saída: cobre a corrida com outro run e não depende do formato da saída. A
+  criação em si tolera falha, porque quem decide é a releitura.
+- Fecha com `if [ -z "$PR_NUMBER" ]; then ::error + exit 1`, e o número da PR
+  entra no resumo do run.
+- Atribuição de responsável continua best-effort (vira `::warning`): assignee
+  inválido não é motivo para reprovar uma RC que existe.
+- Comentário no job e linha no runbook sobre "Allow GitHub Actions to create and
+  approve pull requests" (Settings → Actions → General), necessária quando não
+  há `RELEASE_PLEASE_TOKEN`.
 
 **Aceite.**
+- [x] Todo caminho que não termina com uma PR aberta agora sai com `exit 1`
+  (lido no arquivo; `bash -n` limpo em todos os passos dos workflows).
 - [ ] Com `stage` à frente de `prod`, o job cria a PR ou falha com mensagem clara.
 - [ ] Teste negativo: rodar com token sem permissão → job vermelho.
 
-**Arquivos:** `.github/workflows/stage.yml`.
+**Arquivos:** `.github/workflows/stage.yml`, `docs/release-runbook.md`.
 
 ---
 
-## P0.5 — Lockfile congelado e permissões mínimas `[ ]`
+## P0.5 — Lockfile congelado e permissões mínimas `[x]`
 
-**Mudança.**
-- `pnpm install --no-frozen-lockfile` → `pnpm install --frozen-lockfile` em todos os jobs.
-- `permissions:` global em `stage.yml` e `prod.yml` passa a `contents: read`; cada job que precisa (labeler: `pull-requests: write`, `issues: write`; build-push: `packages: write`; promote-rc: `contents: write`, `pull-requests: write`; release: `contents: write`) declara o seu.
+**Mudança** (entregue em `claude/continue-implementations-bquse8`).
+- `pnpm install --no-frozen-lockfile` → `--frozen-lockfile` (só o job `ci` roda
+  `pnpm install`). Verificado nesta sessão que o lockfile atual satisfaz os 20
+  projetos do workspace: `pnpm install --frozen-lockfile --lockfile-only` passa
+  sem alterar arquivo nenhum, então a troca não deixa o CI vermelho.
+- `permissions:` global passa a `contents: read` em `stage.yml`, `prod.yml`,
+  `release-please.yml` e `copyright-check.yml` (que não tinha nenhuma
+  declaração e só faz `addlicense -check`). Cada job declara o que escreve:
+  labeler `pull-requests`+`issues`, build-push e image_digests `packages`,
+  promote-rc `pull-requests`, promote (prod) `contents`+`packages`, sync-stage
+  `contents`, release-please `contents`+`pull-requests`. Todos os demais ficam
+  em `contents: read`.
+- `promote-rc` deixou de pedir `contents: write` e `issues: write`: cria PR e
+  atribui responsável, ambos cobertos por `pull-requests: write`.
 
 **Aceite.**
+- [x] Lockfile em sincronia hoje (comando acima), então `--frozen-lockfile` não
+  quebra o CI atual.
 - [ ] CI verde em um PR que não altera dependências.
 - [ ] CI vermelho em um PR que altera `package.json` sem atualizar `pnpm-lock.yaml` (teste descartável).
 
-**Arquivos:** `.github/workflows/stage.yml`, `.github/workflows/prod.yml`, `.github/workflows/release-please.yml`.
+**Arquivos:** `.github/workflows/stage.yml`, `.github/workflows/prod.yml`, `.github/workflows/release-please.yml`, `.github/workflows/copyright-check.yml`.
 
 ---
 

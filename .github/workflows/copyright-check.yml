@@ -17,6 +17,10 @@ on:
       - '**.ts'
       - '**.tsx'
 
+# Checks headers and reports; it writes nothing.
+permissions:
+  contents: read
+
 jobs:
   license-check:
     name: Copy Right Check

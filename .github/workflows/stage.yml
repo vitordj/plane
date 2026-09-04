@@ -44,10 +44,11 @@ concurrency:
   group: stage-${{ github.ref }}
   cancel-in-progress: false
 
+# Read-only by default; every job that writes something declares the one
+# permission it needs. A compromised action in any other job then holds a token
+# that cannot label, comment, push or publish.
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+  contents: read
 
 env:
   REGISTRY: ghcr.io
@@ -187,7 +188,7 @@ jobs:
     if: github.event_name == 'pull_request' && !startsWith(github.event.pull_request.head.ref, 'release-please--') && github.event.pull_request.head.ref != 'stage' && github.event.pull_request.user.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
       issues: write
     steps:
@@ -244,6 +245,8 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.code_changes == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
@@ -257,8 +260,11 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
+      # Frozen: CI installs exactly what pnpm-lock.yaml pins. Without it a
+      # dependency bump that never made it into the lockfile is resolved fresh
+      # here, so CI tests a tree nobody else has.
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Run Format and Lint Checks
         run: |
@@ -290,6 +296,8 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.api == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       postgres:
         image: postgres:16-alpine
@@ -620,6 +628,8 @@ jobs:
     if: ${{ always() && vars.COOLIFY_DEPLOY_ENABLED == 'true' && github.event_name != 'pull_request' && (needs.build-push.result == 'success' || needs.build-push.result == 'skipped') && (needs.changes.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch') && !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     environment: stage
+    permissions:
+      contents: read
     steps:
       # Coolify pulls `:stage` by tag, so the run log is the only place that
       # ties this deployment to the exact bits. Printed before the deploy is
@@ -824,9 +834,8 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
-      issues: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
@@ -849,103 +858,74 @@ jobs:
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 
+      # ---------------------------------------------------------------------
+      # This job is the only thing that opens the release candidate PR, so a
+      # green run with no PR is the failure mode that matters: the release
+      # silently stops happening and nobody is told. Every call therefore
+      # either succeeds or fails the job, and the last statement checks that a
+      # PR number actually exists.
+      #
+      # Needs "Allow GitHub Actions to create and approve pull requests"
+      # (Settings -> Actions -> General) unless RELEASE_PLEASE_TOKEN is set.
+      # ---------------------------------------------------------------------
       - name: Maintain Release Candidate PR
         if: steps.sync-guard.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
           RELEASE_ASSIGNEE_VAR: ${{ vars.RELEASE_ASSIGNEE }}
           ACTOR: ${{ github.actor }}
         run: |
+          set -euo pipefail
           TARGET_ASSIGNEE="${RELEASE_ASSIGNEE_VAR:-$ACTOR}"
-          git fetch origin prod || true
+
+          git fetch --no-tags origin prod || true
+          if ! git rev-parse --verify origin/prod >/dev/null 2>&1; then
+            echo "::error::origin/prod does not exist, so there is nothing to open a release candidate against."
+            exit 1
+          fi
 
           COMMITS_AHEAD=$(git rev-list --count origin/prod..stage)
           echo "Commits on stage ahead of prod: $COMMITS_AHEAD"
-
           if [ "$COMMITS_AHEAD" -eq 0 ]; then
             echo "Stage branch is completely synced with prod. No Release Candidate PR needed."
             exit 0
           fi
 
-          VERSION=$(python3 -c "
-          import json
-          for f in ['package.json', 'composer.json', 'app.json']:
-              try:
-                  v = json.load(open(f)).get('version', '')
-                  if v:
-                      print(v)
-                      break
-              except Exception:
-                  pass
-          " 2>/dev/null || true)
-          VERSION="${VERSION:-}"
-          echo "Current package version: $VERSION"
-
+          VERSION=$(node -p "require('./package.json').version" 2>/dev/null || true)
           if [ -n "$VERSION" ]; then
             PR_TITLE="release: Promote Release Candidate from v${VERSION}"
           else
             PR_TITLE="release: Promote Release Candidate"
           fi
-          REPO_OWNER="${GITHUB_REPOSITORY%%/*}"
 
-          EXISTING_PR_JSON=$(curl -sS -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls?head=${REPO_OWNER}:stage&base=prod&state=open")
+          PR_NUMBER=$(gh pr list --base prod --head stage --state open --json number --jq '.[0].number // empty')
 
-          EXISTING_PR_NUMBER=$(python3 -c "
-          import sys, json
-          try:
-              prs = json.load(sys.stdin)
-              if isinstance(prs, list) and len(prs) > 0:
-                  print(prs[0].get('number', ''))
-          except Exception:
-              pass
-          " <<< "$EXISTING_PR_JSON" 2>/dev/null || true)
-
-          if [ -n "$EXISTING_PR_NUMBER" ] && [ "$EXISTING_PR_NUMBER" != "null" ]; then
-            echo "Existing open Release Candidate PR found (#$EXISTING_PR_NUMBER). Ensuring assignee is set to $TARGET_ASSIGNEE..."
-            curl -sS -X POST \
-              -H "Authorization: Bearer ${GH_TOKEN}" \
-              -H "Accept: application/vnd.github+json" \
-              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/issues/${EXISTING_PR_NUMBER}/assignees" \
-              -d "{\"assignees\":[\"${TARGET_ASSIGNEE}\"]}" || true
-            exit 0
-          fi
-
-          echo "No open Release Candidate PR found. Automatically creating PR from stage to prod via REST API..."
-
-          if [ -f .github/PULL_REQUEST_TEMPLATE/release_candidate.md ]; then
-            PR_BODY=$(cat .github/PULL_REQUEST_TEMPLATE/release_candidate.md)
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No open Release Candidate PR found. Creating one from stage to prod..."
+            if [ -f .github/PULL_REQUEST_TEMPLATE/release_candidate.md ]; then
+              BODY_ARGS=(--body-file .github/PULL_REQUEST_TEMPLATE/release_candidate.md)
+            else
+              BODY_ARGS=(--body "Promote Release Candidate changes from stage to prod.")
+            fi
+            # A concurrent run may have created it between the list and this
+            # call, which is not a failure; the read-back below is what decides.
+            gh pr create --base prod --head stage --title "$PR_TITLE" "${BODY_ARGS[@]}" \
+              || echo "::warning::gh pr create did not succeed; checking whether the PR exists anyway."
+            PR_NUMBER=$(gh pr list --base prod --head stage --state open --json number --jq '.[0].number // empty')
           else
-            PR_BODY="Promote Release Candidate changes from stage to prod."
+            echo "Existing open Release Candidate PR found (#${PR_NUMBER})."
           fi
 
-          export PR_TITLE PR_BODY GH_TOKEN GITHUB_API_URL GITHUB_REPOSITORY
-          CREATED_PR_NUMBER=$(python3 -c "
-          import os, sys, json, urllib.request
-
-          url = f\"{os.environ['GITHUB_API_URL']}/repos/{os.environ['GITHUB_REPOSITORY']}/pulls\"
-          token = os.environ['GH_TOKEN']
-          title = os.environ['PR_TITLE']
-          body = os.environ['PR_BODY']
-
-          payload = json.dumps({'title': title, 'head': 'stage', 'base': 'prod', 'body': body}).encode('utf-8')
-          headers = {'Authorization': f'Bearer {token}', 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json'}
-
-          req = urllib.request.Request(url, data=payload, headers=headers, method='POST')
-          try:
-              with urllib.request.urlopen(req) as resp:
-                  d = json.loads(resp.read().decode('utf-8'))
-                  print(d.get('number', ''))
-          except Exception as e:
-              sys.stderr.write(f'Error creating PR: {e}\n')
-          " 2>/dev/null || true)
-
-          if [ -n "$CREATED_PR_NUMBER" ] && [ "$CREATED_PR_NUMBER" != "null" ] && [ -n "$TARGET_ASSIGNEE" ]; then
-            echo "Release Candidate PR #$CREATED_PR_NUMBER created. Assigning $TARGET_ASSIGNEE..."
-            curl -sS -X POST \
-              -H "Authorization: Bearer ${GH_TOKEN}" \
-              -H "Accept: application/vnd.github+json" \
-              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/issues/${CREATED_PR_NUMBER}/assignees" \
-              -d "{\"assignees\":[\"${TARGET_ASSIGNEE}\"]}" || true
+          if [ -z "$PR_NUMBER" ]; then
+            echo "::error::Release Candidate PR was neither found nor created."
+            exit 1
           fi
+
+          # Best effort: an assignee who is not a collaborator is not a reason
+          # to fail a release candidate that exists.
+          gh pr edit "$PR_NUMBER" --add-assignee "$TARGET_ASSIGNEE" \
+            || echo "::warning::Could not assign ${TARGET_ASSIGNEE} to PR #${PR_NUMBER}."
+
+          echo "Release Candidate PR #${PR_NUMBER} is open."
+          echo "Release candidate: [#${PR_NUMBER}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${PR_NUMBER})" >> "$GITHUB_STEP_SUMMARY"
