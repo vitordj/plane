@@ -314,3 +314,84 @@ class TestReconcilerBehavior:
 
         with pytest.raises(ValidationError):
             add_member(compliance, outsider)
+
+
+@pytest.mark.unit
+class TestManualAccessSurvivesAnElevation:
+    """
+    The layer raising somebody's role must not erase the evidence that a human
+    put them where they were.
+
+    ``_apply_change`` recorded the role it was about to overwrite only when it
+    had never written to that pair before. Once the layer owned the row, a
+    hand-made promotion sitting on top of it was overwritten silently, and the
+    withdrawal that came later read ``current role == last applied role``,
+    concluded nothing manual was there, and took the access away outright.
+    """
+
+    def test_a_promotion_is_restored_after_the_unit_raises_the_role_and_goes_away(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link = link_project(compliance, onboarding, role=ROLE_GUEST)
+
+        lucas = make_member("lucas")
+        membership = add_member(compliance, lucas)
+        reconcile_membership(membership, force_sync=True)
+        assert project_member(onboarding, lucas).role == ROLE_GUEST
+
+        # An admin promotes Lucas by hand, above what Compliance grants.
+        promoted = project_member(onboarding, lucas)
+        promoted.role = ROLE_MEMBER
+        promoted.save()
+
+        # Compliance then starts granting Admin, so the layer writes over the
+        # promotion. That write is where the manual role has to be remembered.
+        link.default_role = ROLE_ADMIN
+        link.save()
+        reconcile_access(org_workspace.id)
+        assert project_member(onboarding, lucas).role == ROLE_ADMIN
+
+        state = OrganizationalProjectAccessState.objects.get(workspace_member=lucas, project=onboarding)
+        assert state.baseline_role == ROLE_MEMBER
+        assert state.created_by_org_layer is False
+
+        membership.is_active = False
+        membership.save()
+        reconcile_access(org_workspace.id)
+
+        member = project_member(onboarding, lucas)
+        assert member.is_active is True
+        assert member.role == ROLE_MEMBER
+
+    def test_an_elevation_over_the_layers_own_role_records_no_baseline(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """
+        The mirror image, and the reason the check is on drift rather than on
+        elevation: when the role being overwritten is the one the layer itself
+        last wrote, nobody chose it, so there is nothing to fall back to and
+        the access goes away with the unit.
+        """
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link = link_project(compliance, onboarding, role=ROLE_GUEST)
+
+        maria = make_member("maria")
+        membership = add_member(compliance, maria)
+        reconcile_membership(membership, force_sync=True)
+
+        link.default_role = ROLE_ADMIN
+        link.save()
+        reconcile_access(org_workspace.id)
+        assert project_member(onboarding, maria).role == ROLE_ADMIN
+
+        state = OrganizationalProjectAccessState.objects.get(workspace_member=maria, project=onboarding)
+        assert state.baseline_role is None
+
+        membership.is_active = False
+        membership.save()
+        reconcile_access(org_workspace.id)
+
+        assert project_member(onboarding, maria).is_active is False
