@@ -8,7 +8,10 @@ camada organizacional.
 **Prioridade interna:** P0.0 primeiro (sem ele, nada do que se valida no
 código é comprovadamente o que está implantado), depois P0.6 e P0.7
 (comprometimento de conta e de IP), depois P0.1–P0.4 (integridade da cadeia
-de release), depois o resto.
+de release), depois o resto. **Situação:** P0.0–P0.7 e P0.14 entregues no
+código; o que falta neles são aceites que exigem ambiente (deploy, tenant
+Azure, ensaio de release) e estão listados no Gate P0. Próximos itens de
+código: P0.8 e P0.9.
 
 **Hardening complementar já entregue fora deste plano** (PRs #5 e #6, merge
 `3a4c769` em `stage`): kill switch lido na execução da tarefa Celery, nos
