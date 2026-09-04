@@ -52,10 +52,14 @@ whose `mail` is `ceo@yourcompany.com`, and sign in as them. So:
   `consumers` are rejected outright;
 - every returned token's `tid` claim is checked against it, and a mismatch
   fails the sign-in;
-- guest accounts are refused, because a guest's UPN
-  (`someone_other.com#EXT#@tenant.onmicrosoft.com`) is an internal identifier
-  rather than a mailbox. Guests who need Plane should get a mailbox in your
-  tenant, or sign in another way.
+- guest accounts are refused. A guest belongs to another tenant and is only
+  present in yours, so the mailbox Graph reports for them is one that tenant
+  controls — and in a default Entra configuration any member can invite a
+  guest, which would make the set of people who can sign in much wider than
+  the set of people you employ. The refusal keys on the `#EXT#` marker in the
+  UPN (`someone_other.com#EXT#@tenant.onmicrosoft.com`), which is present
+  whether or not `mail` is populated. Guests who need Plane should get a
+  mailbox in your tenant, or sign in another way.
 
 To federate several tenants, run a separate registration per tenant rather than
 relaxing this.
