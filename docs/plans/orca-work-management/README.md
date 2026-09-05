@@ -43,7 +43,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 
 | Fase | Arquivo | Itens | Estado | Gate fechado em |
 | --- | --- | --- | --- | --- |
-| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 17 | `[~]` 11/17 (P0.0–P0.4, P0.6, P0.7, P0.9, P0.14, P0.15, P0.16) · P0.5 parcial | — |
+| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 18 | `[~]` 12/18 (P0.0–P0.4, P0.6, P0.7, P0.9, P0.10, P0.14, P0.15, P0.16) · P0.5 parcial | — |
 | D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 12 | `[ ]` 0/12 | — |
 | 1 Contrato público | [01-public-contract.md](./01-public-contract.md) | 8 | `[ ]` 0/8 | — |
 | 2 Fila e coordenador | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6 | — |
@@ -63,13 +63,16 @@ ensaio em CI/ambiente real dos critérios que só operação pode marcar.
 P0.4 (o job `promote-rc` que ficava verde sem criar o RC), a metade de
 permissões do P0.5 e o P0.6 (senha fixa na migração de usuários) foram na
 mesma branch, junto com **P0.7** (`TRUSTED_PROXIES` sem fallback aberto).
-**P0.9** (ruff obrigatório no CI) também entrou. Siga com **P0.8** (suíte
-upstream no CI), que é o que falta da qualidade do pipeline e precisa de uma
-execução real da suíte para saber o que excluir. **D0.1** continua o melhor
-primeiro item do domínio.
+**P0.9** (ruff obrigatório no CI) e **P0.10** (validação completa do `id_token`
+do Entra, nonce e timeouts) também entraram. Restam em P0: **P0.8** (suíte
+upstream no CI — precisa de uma execução real da suíte para saber o que
+excluir), **P0.11** (sync com o upstream 1.4.2), **P0.12** (apagar branches
+remotos), **P0.13** (versão e runbook), **P0.17** (documentação de implantação)
+e a metade do lockfile do **P0.5**. **D0.1** continua o melhor primeiro item do
+domínio.
 
 Pendências de operação abertas por esta branch, **uma delas bloqueante**:
-definir `TRUSTED_PROXIES` no ambiente do Coolify **antes** de mesclar em
+definir `TRUSTED_PROXIES` no ambiente de implantação **antes** de mesclar em
 `stage` (sem ela o Compose Orca recusa subir, de propósito); invalidar as
 contas criadas pela versão antiga do `create_users.py` (procedimento em
 `tools/migration/README.md`); regenerar `pnpm-lock.yaml` para destravar o
@@ -80,7 +83,7 @@ contas criadas pela versão antiga do `create_users.py` (procedimento em
 | Ref. | Pendência | Quem | Necessária em |
 | --- | --- | --- | --- |
 | A5 | Confirmar comportamento do Plane Compose em re-push com mesmo id e ausência de campo de área | pessoa com acesso à doc oficial | Fase 4 |
-| — | Faixa de rede do proxy Coolify para `TRUSTED_PROXIES` | operação | P0.7 |
+| — | Faixa de rede do proxy/ingress da 4UM para `TRUSTED_PROXIES` | operação | P0.7 |
 | — | Tenant Azure de testes para validar P0.10 de ponta a ponta | operação | fim de P0 (o item é implementável com testes unitários antes) |
 | — | Definir quem é coordenador de cada área piloto | negócio | Fase 2 |
 | — | Área piloto e projeto piloto para o primeiro uso real da fila | negócio | Gate 2-mínimo |
@@ -91,6 +94,7 @@ contas criadas pela versão antiga do `create_users.py` (procedimento em
 | --- | --- |
 | 2026-09-03 | Plano criado a partir do RFC rev. 2. Nenhum item iniciado. |
 | 2026-09-04 | PRs #5 e #6 mesclados em `stage` (`3a4c769`): hardening complementar da camada de Áreas (kill switch nas tarefas/comandos/SCIM, baseline ao elevar papel, rate limit SCIM pós-autenticação, rejeição de convidados Entra). Não fecha item P0/D0; registrado no cabeçalho de P0. |
+| 2026-09-05 | P0.10 entregue: `id_token` do Entra verificado por completo contra o JWKS do tenant (assinatura, `aud`, `iss`, janela de validade, claims obrigatórias), nonce de uso único no fluxo, timeouts em todas as chamadas OAuth, dois códigos de erro novos nos cinco lugares que os espelham, e testes com par de chaves RSA. Item novo P0.17 (documentação de implantação presume Coolify, que não é o ambiente da 4UM). |
 | 2026-09-05 | P0.15 entregue: as imagens gravam o commit (`ORCA_BUILD_SHA`/`ORCA_IMAGE_TAG`), `GET /api/orca/build-info/` responde a admin de instância e `manage.py orca_build_info` responde no worker e no beat, que não têm HTTP. Fecha no runtime a cadeia que P0.0–P0.3 fecharam no registry. |
 | 2026-09-05 | P0.16 entregue: MinIO fixado em tag imutável no Compose Orca e no de teste; CI passa a rodar PostgreSQL 15.7, igual ao ambiente implantado, com a decisão registrada em `RUNNING_TESTS.md`. |
 | 2026-09-05 | P0.9 entregue: job `api_lint` roda `ruff check` e `ruff format --check` em `apps/api` com a versão fixada em `requirements/local.txt`; 30 achados de lint corrigidos, 23 arquivos do fork formatados e 38 arquivos upstream em exclusão temporária de formatação até o sync do P0.11. |

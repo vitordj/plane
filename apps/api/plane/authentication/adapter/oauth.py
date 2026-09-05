@@ -20,6 +20,12 @@ from plane.utils.exception_logger import log_exception
 
 from .base import Adapter
 
+# (connect, read). Both calls below sit on the sign-in path: without a timeout
+# a provider that accepts the connection and then stalls holds the worker
+# until the process is restarted, so one slow provider takes the instance down
+# with it. Applies to every OAuth provider, not only Entra.
+OAUTH_REQUEST_TIMEOUT = (5, 15)
+
 
 class OauthAdapter(Adapter):
     def __init__(
@@ -77,7 +83,7 @@ class OauthAdapter(Adapter):
     def get_user_token(self, data, headers=None):
         try:
             headers = headers or {}
-            response = requests.post(self.get_token_url(), data=data, headers=headers)
+            response = requests.post(self.get_token_url(), data=data, headers=headers, timeout=OAUTH_REQUEST_TIMEOUT)
             response.raise_for_status()
             return response.json()
         except requests.RequestException:
@@ -88,7 +94,7 @@ class OauthAdapter(Adapter):
     def get_user_response(self):
         try:
             headers = {"Authorization": f"Bearer {self.token_data.get('access_token')}"}
-            response = requests.get(self.get_user_info_url(), headers=headers)
+            response = requests.get(self.get_user_info_url(), headers=headers, timeout=OAUTH_REQUEST_TIMEOUT)
             response.raise_for_status()
             return response.json()
         except requests.RequestException:

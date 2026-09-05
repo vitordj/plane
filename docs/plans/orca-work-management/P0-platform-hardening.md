@@ -252,7 +252,7 @@ registra e usa para rate limit. O mesmo default estava em
 - `docker-compose-local.yml` não tem serviço de proxy (o dev local sobe o Vite direto), então não há o que configurar lá — divergência do enunciado original do item.
 
 **Pré-requisito operacional.** O próximo deploy do Compose Orca **falha** se
-`TRUSTED_PROXIES` não estiver definido no ambiente do Coolify. Definir a
+`TRUSTED_PROXIES` não estiver definido no ambiente de implantação. Definir a
 faixa antes de mesclar em `stage` (pendência já registrada no quadro).
 
 **Aceite.**
@@ -338,29 +338,52 @@ justamente onde o fork escreve.
 
 ---
 
-## P0.10 — Validação completa do `id_token` do Entra e timeouts `[ ]`
+## P0.10 — Validação completa do `id_token` do Entra e timeouts `[x]`
 
-**Situação.** `apps/api/plane/authentication/provider/oauth/entra.py`:
-`decode_id_token_claims` lê o payload sem verificar assinatura; só `tid` é
-conferido. Chamadas ao token endpoint e ao Graph em `adapter/oauth.py` sem
-timeout. `PyJWT==2.13.0` e `cryptography` já estão em
-`apps/api/requirements/base.txt`.
+**Situação.** `decode_id_token_claims` lia o payload com base64 sem verificar
+assinatura; só `tid` era conferido — `aud`, `iss`, `exp` e `nbf` não eram
+olhados, então um token emitido para **outra aplicação** do mesmo tenant, ou
+expirado horas antes, era aceito. Chamadas ao token endpoint e ao Graph sem
+timeout. Sem `nonce`: um id token capturado de outro login (mesmo tenant, mesma
+aplicação, outra pessoa) era indistinguível do que o fluxo tinha pedido.
 
-**Mudança.**
-- Usar `jwt.PyJWKClient(f"https://login.microsoftonline.com/{tenant}/discovery/v2.0/keys", cache_keys=True)` e `jwt.decode(id_token, key, algorithms=["RS256"], audience=client_id, issuer=f"https://login.microsoftonline.com/{tenant}/v2.0", options={"require": ["exp","iat","nbf","aud","iss","tid"]})`.
-- Gerar `nonce` no início do fluxo, guardar na sessão (mesmo lugar do `state`), incluir no `authorize`, exigir igualdade na volta.
-- Manter `verify_tenant` (defesa em profundidade) e o `/me` do Graph.
-- `requests.post/get(..., timeout=(5, 15))` em todas as chamadas do adapter OAuth (benefício para todos os providers).
-- Erros novos em `authentication/adapter/error.py` (`ENTRA_ID_TOKEN_INVALID`, `ENTRA_NONCE_MISMATCH`) e nos mapas de erro do web e do space, como os códigos Entra existentes.
-- Testes em `test_entra_provider.py`: token com `aud` errado, `iss` errado, expirado, assinatura inválida (par de chaves RSA gerado no teste, `PyJWKClient` mockado), `nonce` divergente, caminho feliz.
+**Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+- `EntraOAuthProvider.decode_id_token`: `PyJWKClient` por tenant (cacheado no processo; o cliente guarda o key set por 5 min e só volta ao Microsoft quando aparece um `kid` novo, que é o que torna a rotação de chaves transparente), `timeout=10` na busca das chaves, e `jwt.decode(..., algorithms=["RS256"], audience=<client id>, issuer=https://login.microsoftonline.com/<tenant>/v2.0, options={"require": ["exp","iat","nbf","aud","iss","tid"]})`. Sem o `require`, o PyJWT só valida a claim que por acaso estiver presente: um token sem `exp` nunca expiraria.
+- Falha de qualquer natureza — assinatura, claim, ou JWKS inalcançável — vira `ENTRA_ID_TOKEN_INVALID`. **Fail closed**: token que ninguém consegue conferir é recusado, não presumido bom. O motivo específico vai para o log (`Entra id token failed verification`), nunca para o navegador, que diria ao atacante qual verificação falta passar.
+- `nonce` de uso único: gerado no início do fluxo nas duas views (app e space), guardado na sessão em `entra_nonce`, mandado no `authorize`, exigido igual na volta e **consumido mesmo quando não confere**, para que um callback capturado não possa ser repetido contra a mesma sessão. Erro próprio: `ENTRA_NONCE_MISMATCH`.
+- `verify_tenant` mantido em cima da checagem de `iss` — defesa em profundidade declarada: o argumento de confiança não deve depender de uma única opção de biblioteca ter sido passada certo.
+- **Tenant precisa ser o GUID.** O construtor recusa domínio (`contoso.onmicrosoft.com`) com `ENTRA_NOT_CONFIGURED`. Não é restrição nova de fato: `tid` e `iss` sempre trazem o GUID, então um tenant configurado por domínio já falhava todo login — a diferença é falhar dizendo o porquê, em vez de deixar uma instância onde ninguém entra.
+- Timeouts `(5, 15)` em `adapter/oauth.py` (token endpoint e userinfo, portanto todos os providers) e nas três chamadas que os providers GitHub e Gitea fazem por conta própria: sem timeout, um provedor que aceita a conexão e trava segura o worker até o processo reiniciar.
+- Códigos novos `ENTRA_ID_TOKEN_INVALID` (5127) e `ENTRA_NONCE_MISMATCH` (5128) em `adapter/error.py`, nos dois helpers de front (enum, mapa de mensagens e lista de agrupamento) e no catálogo i18n das **19 locales**, via skill `translate`.
+- Correção de registro de tratamento: as strings existentes de Entra em `es` e `pl` usavam a forma informal (`tú` / `ty`), que a skill proíbe em UI de produto nessas duas línguas e que o resto do bloco não usa. Ajustadas para `usted` e forma com `proszę` no mesmo bloco que estava sendo estendido.
+
+**Testes.** `test_entra_provider.py` reescrito: constrói o provider pelo
+**construtor real** com a configuração de instância mockada (o `StubProvider`
+que pulava o `__init__` saiu, achado do PR #6, e com isso as checagens de forma
+do tenant entraram na cobertura). Par de chaves RSA gerado no teste e
+`get_jwks_client` mockado. Cobre: URL de autorização com `state` e `nonce`;
+recusa de autoridade multi-tenant, de tenant por domínio e de instância não
+configurada; token válido; assinatura de outra chave; `aud` de outra aplicação;
+`iss` de outro tenant; expirado; ainda não válido; **cada uma** das seis claims
+obrigatórias ausente; token malformado; JWKS inalcançável; `tid` estrangeiro;
+nonce correto, divergente, ausente no token, ausente na sessão, uso único e
+consumo em caso de falha; `set_token_data` completo (guarda o token no caminho
+feliz, e não deixa `token_data` ser escrito quando qualquer verificação falha);
+e as regras de e-mail que já existiam. Mais uma classe de paridade dos quatro
+códigos Entra entre a tabela Python, os dois helpers e as 19 locales — nada no
+build comparava isso.
 
 **Aceite.**
-- [ ] Todos os testes acima verdes.
-- [ ] Doc `docs/entra-directory-sync.md` §Troubleshooting descreve os dois erros novos.
+- [x] Ruff (`check` e `format --check`, versão fixada) limpo nos arquivos tocados; paridade dos códigos e das 19 locales verificada fora do pytest; comportamento do PyJWT para **todos** os 16 casos de token exercitado num harness com a versão fixada (`PyJWT==2.13.0`, `cryptography==50.0.0`) antes de escrever as asserções. A sessão não roda pytest (AGENTS.md) — confirmar no CI de `stage`.
+- [x] Doc `docs/entra-directory-sync.md` §Troubleshooting descreve os dois erros novos, com as causas em ordem de probabilidade, e §"Why the tenant is pinned" ganhou a verificação completa do token, o nonce e a exigência do GUID.
+- [x] `test_entra_provider.py` não usa mais `StubProvider`.
 - [ ] Validação de ponta a ponta contra tenant real registrada no quadro quando o tenant existir (não bloqueia o merge).
-- [ ] `test_entra_provider.py` deixa de usar `StubProvider` (que pula o `__init__`) nos casos de tenant e e-mail: o construtor real, com a configuração de instância mockada, entra na cobertura (achado do PR #6).
 
-**Arquivos:** `authentication/provider/oauth/entra.py`, `authentication/adapter/oauth.py`, `authentication/adapter/error.py`, `apps/web/helpers/authentication.helper.tsx`, `apps/space/helpers/authentication.helper.tsx`, `packages/constants/src/auth/core.ts`, testes, doc.
+**Nota de implantação.** Quem estiver no meio de um login exatamente na hora do
+deploy recebe `ENTRA_NONCE_MISMATCH` uma vez: o fluxo começou antes de o nonce
+existir. Basta recomeçar; está descrito no Troubleshooting.
+
+**Arquivos:** `authentication/provider/oauth/entra.py`, `authentication/adapter/oauth.py`, `authentication/adapter/error.py`, `authentication/provider/oauth/{github,gitea}.py`, `authentication/views/{app,space}/entra.py`, `apps/web/helpers/authentication.helper.tsx`, `apps/space/helpers/authentication.helper.tsx`, `packages/i18n/src/locales/*/auth.json`, teste, doc.
 
 ---
 
@@ -487,6 +510,29 @@ implantação e `docker-compose-test.yml` usam `postgres:15.7-alpine`.
 - [x] A versão de PostgreSQL do CI e a do Compose são a mesma (15.7), e a matriz está documentada em `RUNNING_TESTS.md`.
 
 **Arquivos:** `docker-compose-orca.yml`, `docker-compose-test.yml`, `.github/workflows/stage.yml`, `apps/api/tests/RUNNING_TESTS.md`.
+
+---
+
+## P0.17 — Documentação de implantação não presume Coolify `[ ]`
+
+**Situação.** README, `docker-compose-orca.yml`, os workflows e este plano
+falam em Coolify como se fosse o alvo de implantação. Isso vem do ambiente da
+Orca; a 4UM não usa Coolify. O texto novo escrito nesta branch já foi
+neutralizado ("ingress ou proxy reverso à frente do Caddy"), mas o restante
+continua com o nome.
+
+**Mudança.** Decidir o alvo real de implantação e então: ou generalizar as
+menções (README §Self-Hosting e Quick Start, comentários do Compose, o job
+`deploy` de `stage.yml`/`prod.yml` que chama a API do Coolify), ou registrar
+explicitamente que o Coolify é um caminho suportado entre outros. Os jobs de
+deploy já são opt-in por `COOLIFY_DEPLOY_ENABLED`, então nada quebra enquanto
+a decisão não sai — o que existe é documentação que descreve outro ambiente.
+
+**Aceite.**
+- [ ] Alvo de implantação da 4UM registrado (aqui e no README).
+- [ ] Nenhuma instrução de implantação afirma Coolify sem qualificar.
+
+**Arquivos:** `README.md`, `docker-compose-orca.yml`, `.github/workflows/{stage,prod}.yml`, este plano.
 
 ---
 

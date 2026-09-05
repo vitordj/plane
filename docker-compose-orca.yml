@@ -366,7 +366,8 @@ services:
       SITE_ADDRESS: :80
       # Required: the Caddyfile has no fallback, and the variable was not even
       # forwarded here before, so the proxy always fell back to trusting every
-      # source. Set it to the CIDR of the Coolify/ingress network.
+      # source. Set it to the CIDR of whatever ingress or reverse proxy sits
+      # in front of this stack.
       TRUSTED_PROXIES: "${TRUSTED_PROXIES:?set it to the CIDR of the proxy network in front of Caddy, e.g. 10.0.0.0/8}"
     depends_on:
       - web

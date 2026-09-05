@@ -50,8 +50,24 @@ whose `mail` is `ceo@yourcompany.com`, and sign in as them. So:
 
 - a specific tenant id is **required**, and `common`, `organizations` and
   `consumers` are rejected outright;
+- the tenant id must be the **GUID**, not a verified domain. Microsoft accepts
+  either in the authority URL, but the `tid` and `iss` claims always carry the
+  GUID, so a domain-configured tenant would fail every sign-in. The
+  configuration is refused up front instead;
+- the id token is **verified in full** against the tenant's published signing
+  keys: RS256 signature, `aud` equal to this application's client id, `iss`
+  equal to this tenant, the `nbf`/`exp` window, and every one of those claims
+  required to be present. Fetching the key set is itself on the sign-in path,
+  so an unreachable key set refuses the sign-in rather than trusting a token
+  nobody can check;
 - every returned token's `tid` claim is checked against it, and a mismatch
-  fails the sign-in;
+  fails the sign-in. That check is redundant with `iss` on purpose — the trust
+  argument should not rest on one library option being passed correctly;
+- each sign-in carries a single-use **nonce**, generated when the flow starts,
+  kept in the session and required to match the token's `nonce` claim. `state`
+  protects the callback URL; the nonce protects the token, so an id token
+  captured from another sign-in in the same tenant, for the same application,
+  cannot be presented here;
 - guest accounts are refused. A guest belongs to another tenant and is only
   present in yours, so the mailbox Graph reports for them is one that tenant
   controls — and in a default Entra configuration any member can invite a
@@ -188,6 +204,29 @@ unauthenticated caller cannot use the response to discover which workspaces
 exist. Anything other than `200` or `401` is a routing or proxy problem: the
 SCIM paths are capitalized and carry **no trailing slash**, and a proxy that
 rewrites either will break provisioning.
+
+**Sign-in fails with "Microsoft Entra ID sign-in could not be verified"**
+(error `5127`). The id token did not pass verification. In order of
+likelihood: the tenant id in God Mode is not the tenant the app registration
+lives in; the client id in God Mode is not the app registration's Application
+(client) ID, so the token's `aud` belongs to another application; the tenant id
+was entered as a domain instead of the GUID; the server clock has drifted far
+enough for `nbf`/`exp` to fail; or `login.microsoftonline.com` is unreachable
+from the API container, so the signing keys cannot be fetched — a token that
+cannot be checked is refused, not trusted. The API log line
+`Entra id token failed verification` carries the specific reason; the browser
+deliberately does not, so a caller cannot use it to learn which check to get
+past next.
+
+**Sign-in fails with "Microsoft Entra ID sign-in expired"** (error `5128`).
+The nonce in the session did not match the one in the token. Ordinary causes:
+the person left the Microsoft screen open long enough for the session cookie to
+expire, started the sign-in in one browser and finished in another, or used a
+bookmarked callback URL. It also fires once for anyone mid-sign-in while this
+version is deployed, since their flow started before the nonce existed. Start
+again from the sign-in screen. If it happens on every attempt, the session
+cookie is not surviving the redirect back — check that the API and the web app
+are on the same site and that the proxy is not stripping cookies.
 
 **Entra provisioned people but they got no access.** Check, in order: the area
 has projects linked; the people are in the unresolved report (then they are not

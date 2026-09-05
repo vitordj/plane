@@ -53,8 +53,15 @@ class EntraOauthInitiateEndpoint(View):
             return HttpResponseRedirect(url)
         try:
             state = uuid.uuid4().hex
-            provider = EntraOAuthProvider(request=request, state=state)
+            # `state` protects the callback URL, the nonce protects the token
+            # itself: without it an id token captured from another sign-in in
+            # the same tenant, for the same application, is indistinguishable
+            # from one this flow just asked for. The provider compares it and
+            # consumes it (see EntraOAuthProvider.verify_nonce).
+            nonce = uuid.uuid4().hex
+            provider = EntraOAuthProvider(request=request, state=state, nonce=nonce)
             request.session["state"] = state
+            request.session[EntraOAuthProvider.NONCE_SESSION_KEY] = nonce
             auth_url = provider.get_auth_url()
             return HttpResponseRedirect(auth_url)
         except AuthenticationException as e:
