@@ -53,7 +53,7 @@ Regras de execução:
   verificado, e o próximo item recomendado.
 
 Contexto que você não precisa redescobrir:
-- Base: Plane CE v1.4.1 (commit upstream 5662b7610); fork com Areas
+- Base: Plane CE v1.4.2 (commit upstream 5f7d92784); fork com Areas
   (OrganizationalUnit), reconciliador de acesso, SCIM 2.0, Entra ID, i18n de
   idioma padrão, ciclos paralelos, labels/estados de workspace, bulk ops.
 - Rotas Orca internas: apps/api/plane/app/urls/orca.py sob /api/orca/, sessão.
