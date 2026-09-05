@@ -45,6 +45,12 @@ on:
     branches: [stage]
   pull_request:
     branches: [stage]
+  # Several jobs already gate on `github.event_name == 'workflow_dispatch'`
+  # (they run unconditionally when the workflow is started by hand, because
+  # the path filter has no base commit to diff against). The trigger itself
+  # was never declared, so those branches were dead and the integration suite
+  # below — which is manual by design — had no way to start (P0.8).
+  workflow_dispatch:
 
 concurrency:
   group: stage-${{ github.ref }}
@@ -266,16 +272,23 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        # Should be --frozen-lockfile (P0.5): a lockfile the CI is allowed to
-        # rewrite proves nothing, since the build silently resolves versions
-        # no one reviewed. It cannot be flipped yet — pnpm-lock.yaml is out of
-        # date with the workspace catalog (11 packages moved to `catalog:` in
-        # the package.json files by upstream 31853ab2 while the lockfile kept
-        # the resolved specifier), so --frozen-lockfile fails on every run
-        # today. Flip it in the same commit that regenerates the lockfile:
-        # `pnpm install --lockfile-only`. See
+        # --frozen-lockfile (P0.5): a lockfile the CI is allowed to rewrite
+        # proves nothing, since the build silently resolves versions no one
+        # reviewed. Nine catalog entries referenced as `catalog:` in the
+        # package.json files (typescript, vite, axios, uuid, lodash-es,
+        # postcss, express, @types/express, @react-router/node) are absent from
+        # the lockfile's `catalogs.default` section and carry their resolved
+        # specifier in `importers` instead — a leftover of upstream 31853ab2.
+        # That is not drift: all nine are pinned in pnpm-workspace.yaml to an
+        # exact version (typescript 5.8.3, axios 1.18.1, ...) identical to the
+        # specifier the lockfile records, and pnpm 11.3.0 — the version pinned
+        # in packageManager — resolves `catalog:` before comparing. Verified by
+        # running this exact command on a clean checkout: full install, exit 0,
+        # pnpm-lock.yaml byte-identical afterwards. Verified in the other
+        # direction too, by pointing one dependency at a version the lockfile
+        # does not carry: ERR_PNPM_OUTDATED_LOCKFILE, exit 1. See
         # docs/plans/orca-work-management/P0-platform-hardening.md, P0.5.
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Run Format and Lint Checks
         run: |
@@ -368,15 +381,51 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements/test.txt
 
-      # Scoped to the Orca suite: it is the fork's own surface and is verified
-      # green against this configuration. The upstream contract and smoke
-      # suites reach for services this job does not stand up (object storage
-      # among them), so widening the path is a separate change that has to
-      # provision them first — not something to switch on untested here, where
-      # a pre-existing failure would block every build.
-      - name: Run Orca Tests
+      # The whole unit suite, fork and upstream alike (P0.8). Running only the
+      # Orca directory meant an upstream regression this fork carries could
+      # reach `stage` unseen: the code is ours to deploy whether or not we
+      # wrote it. `-m unit` keeps the selection to what this job provisions —
+      # PostgreSQL and Valkey — and the contract and smoke suites, which need
+      # object storage and a broker, stay in the manual job below.
+      #
+      # Exclusions belong in apps/api/tests/RUNNING_TESTS.md, one line each
+      # with the service that is missing, and nowhere else: a bare `--ignore`
+      # with no reason is how a suite quietly stops covering something.
+      - name: Run Unit Tests
         working-directory: ./apps/api
-        run: pytest plane/tests/unit/orca/ -q
+        run: pytest plane/tests/unit -q -m unit
+
+  # ---------------------------------------------------------------------------
+  # Contract and smoke suites (P0.8). Manual, not part of the merge gate: they
+  # need RabbitMQ and MinIO on top of PostgreSQL and Valkey, which is what
+  # docker-compose-test.yml stands up. Building the API image and waiting on
+  # four healthchecks costs minutes on every push, and neither suite guards
+  # the Orca layer — so this runs on demand (before cutting a release
+  # candidate, per docs/release-runbook.md) instead of on every commit.
+  # ---------------------------------------------------------------------------
+  api_integration_tests:
+    name: API Contract & Smoke Tests (manual)
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      # docker-compose-test.yml reads apps/api/.env through env_file and fails
+      # to start without it. setup.sh generates it from .env.example.
+      - name: Generate API Environment File
+        run: ./setup.sh
+
+      - name: Run Contract And Smoke Suites
+        run: |
+          docker compose -f docker-compose-test.yml run --rm --build api-tests \
+            pytest plane/tests/contract plane/tests/smoke -q
+
+      - name: Tear Down Test Stack
+        if: always()
+        run: docker compose -f docker-compose-test.yml down -v
 
   # ---------------------------------------------------------------------------
   # Python lint and format. The frontend has had oxlint and oxfmt gating merges
