@@ -232,22 +232,51 @@ migração for reexecutada.
 
 ---
 
-## P0.7 — `TRUSTED_PROXIES` sem fallback aberto `[ ]`
+## P0.7 — `TRUSTED_PROXIES` sem fallback aberto `[x]`
 
-**Problema.** `apps/proxy/Caddyfile.ce` l.8: `trusted_proxies static {$TRUSTED_PROXIES:0.0.0.0/0}`; `.env.example` l.44 repete `0.0.0.0/0`.
+**Problema.** `apps/proxy/Caddyfile.ce` l.8:
+`trusted_proxies static {$TRUSTED_PROXIES:0.0.0.0/0}`; `.env.example` l.44
+repete `0.0.0.0/0`. **Pior do que o enunciado original:** nenhum dos dois
+Composes encaminhava `TRUSTED_PROXIES` ao contêiner do proxy, então o default
+valia sempre — Caddy confiava no `X-Forwarded-For` de qualquer origem em
+staging e em produção, e quem chamasse a aplicação escolhia o IP que ela
+registra e usa para rate limit. O mesmo default estava em
+`Caddyfile.aio.ce` (imagem all-in-one), que o item não citava.
 
-**Mudança.**
-- Caddyfile: `trusted_proxies static {$TRUSTED_PROXIES}` sem default. Caddy falha no boot se a variável estiver vazia, o que é o comportamento desejado em produção.
-- `.env.example`: `TRUSTED_PROXIES=` vazio com comentário "obrigatório: CIDR da rede do Coolify/proxy externo; ex.: 10.0.0.0/8". Para desenvolvimento local, `docker-compose-local.yml` define `TRUSTED_PROXIES=127.0.0.1/32,172.16.0.0/12`.
-- `docker-compose-orca.yml`: serviço `proxy` passa `TRUSTED_PROXIES=${TRUSTED_PROXIES:?TRUSTED_PROXIES is required}`.
-- README: linha na tabela de variáveis com "Required: Yes".
-- Confirmar que o Django recebe o IP via `X-Forwarded-For` já filtrado (o `SECURE_PROXY_SSL_HEADER` e o middleware de IP existentes continuam iguais).
+**Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+- `Caddyfile.ce` e `Caddyfile.aio.ce`: `trusted_proxies static {$TRUSTED_PROXIES}`, sem default, com comentário explicando por quê. Sem faixa nenhuma o resultado é fail-closed (nenhum proxy é confiável, o `X-Forwarded-For` de fora é ignorado) em vez de fail-open.
+- `docker-compose-orca.yml`: o serviço `proxy` passa a receber `TRUSTED_PROXIES: "${TRUSTED_PROXIES:?...}"` — obrigatório, com a mensagem dizendo o que preencher.
+- `docker-compose.yml` (stack padrão, Caddy publicado direto): recebe a variável com default de faixas privadas (`127.0.0.1/32,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16`), para o `docker compose up` do repositório continuar funcionando sem confiar na internet inteira. Mudança mínima no Compose principal, justificada por ser correção de segurança (FORK.md §F).
+- `.env.example`: `TRUSTED_PROXIES=` vazio, com comentário explicando o que é e um exemplo.
+- README: linha na tabela de variáveis com **Required: Yes**.
+- `docker-compose-local.yml` não tem serviço de proxy (o dev local sobe o Vite direto), então não há o que configurar lá — divergência do enunciado original do item.
+
+**Pré-requisito operacional.** O próximo deploy do Compose Orca **falha** se
+`TRUSTED_PROXIES` não estiver definido no ambiente do Coolify. Definir a
+faixa antes de mesclar em `stage` (pendência já registrada no quadro).
 
 **Aceite.**
+- [x] Os dois Caddyfiles e os dois Composes conferidos: nenhum deles tem mais faixa aberta, e ambos os Composes continuam YAML válido. O que resta de `0.0.0.0/0` no repositório são os comentários que explicam a remoção e os `nginx.conf` do web/admin/space (ver achado adjacente).
 - [ ] `docker compose -f docker-compose-orca.yml config` falha sem a variável.
 - [ ] Com a variável correta, `curl -H "X-Forwarded-For: 1.2.3.4"` de fora da faixa não altera o IP visto pela aplicação (verificar em log de autenticação ou endpoint de debug temporário).
 
-**Arquivos:** `apps/proxy/Caddyfile.ce`, `.env.example`, `docker-compose-orca.yml`, `docker-compose-local.yml`, `README.md`.
+**Achados adjacentes (não corrigidos).** `apps/web/nginx/nginx.conf`,
+`apps/admin/nginx/nginx.conf` e `apps/space/nginx/nginx.conf` têm
+`set_real_ip_from 0.0.0.0/0`. São arquivos upstream, servem estático atrás do
+proxy e não são alcançáveis fora da rede do Docker, e o IP que importa para
+autenticação e rate limit é o que chega na API — mas é a mesma classe de
+defeito e merece a mesma faixa na próxima sync.
+
+`plane/utils/ip_address.py::get_client_ip`
+usa o **primeiro** elemento de `X-Forwarded-For`, que é a ponta mais distante
+e portanto a mais fácil de forjar. Com o Caddy filtrando por proxy confiável
+o cabeçalho que chega já é confiável, mas a leitura correta com N proxies
+conhecidos é contar da direita para a esquerda. Fora do escopo deste item
+(é código upstream e a correção depende de saber quantos proxies existem à
+frente); candidato a item próprio se P0.7 não bastar na verificação de ponta
+a ponta.
+
+**Arquivos:** `apps/proxy/Caddyfile.ce`, `apps/proxy/Caddyfile.aio.ce`, `.env.example`, `docker-compose-orca.yml`, `docker-compose.yml`, `README.md`.
 
 ---
 

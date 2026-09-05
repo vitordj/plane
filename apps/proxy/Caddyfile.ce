@@ -5,7 +5,13 @@
 	servers {
 		max_header_size 25MB
 		client_ip_headers X-Forwarded-For X-Real-IP
-		trusted_proxies static {$TRUSTED_PROXIES:0.0.0.0/0}
+		# No default on purpose: with 0.0.0.0/0 Caddy trusted the
+		# X-Forwarded-For of any client, so anyone could choose the IP the
+		# application logs and rate-limits on. Empty here is fail-closed --
+		# no proxy is trusted -- and docker-compose-orca.yml makes the
+		# variable required so a deployment cannot land in that state by
+		# accident. Set it to the CIDR of the proxy in front of Caddy.
+		trusted_proxies static {$TRUSTED_PROXIES}
 	}
 }
 
