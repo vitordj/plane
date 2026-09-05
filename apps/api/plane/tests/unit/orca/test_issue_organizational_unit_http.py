@@ -458,29 +458,42 @@ class TestIssueAssignmentFromUnit:
         assert response.data["routing"]["queue_reason"] == QueueReason.AWAITING_CLAIM
         assert not IssueAssignee.objects.filter(issue=issue).exists()
 
-    def test_ranking_is_deterministic_when_load_is_tied(
-        self, admin_client, workspace_with_members, project_with_admin, staffed_unit, make_issue
+    def test_two_tied_items_go_round_the_area_rather_than_to_one_person(
+        self,
+        admin_client,
+        workspace_with_members,
+        project_with_admin,
+        staffed_unit,
+        plain_user,
+        second_user,
+        make_issue,
     ):
-        """Two runs over identical state must choose the same person."""
-        first = make_issue(project_with_admin, name="First")
-        second = make_issue(project_with_admin, name="Second")
+        """
+        Two people, no load on either, two items: they get one each.
 
+        The ranking's last tie-break is who went longest without an automatic
+        assignment, read from the decision log, so the second request already
+        knows what the first one did. Without that the button would hand every
+        item in a quiet area to the same person — the same failure the advisory
+        lock prevents between simultaneous requests, arriving sequentially.
+
+        Determinism itself is not testable through this route, and is not
+        tested here: the log is append-only and feeding it back is the point.
+        ``test_assignment_service.test_the_order_is_deterministic_on_a_tie``
+        pins that, by ranking twice and writing nothing.
+        """
         chosen = []
-        for issue in (first, second):
-            IssueAssignee.objects.filter(issue=issue).delete()
+        for name in ("First", "Second"):
+            issue = make_issue(project_with_admin, name=name)
             response = admin_client.post(
                 issue_assign_url(workspace_with_members.slug, project_with_admin.id, issue.id),
                 {"organizational_unit_id": str(staffed_unit.id)},
                 format="json",
             )
+            assert response.status_code == 200, response.data
             chosen.append(response.data["assigned"]["user_id"])
-            # Both rows go, and hard: an assignment now leaves a routing link
-            # whose executor is loaded work, so leaving it behind would make
-            # the second run rank different state, not the same state twice.
-            IssueAssignee.objects.filter(issue=issue).delete(soft=False)
-            IssueOrganizationalUnit.objects.filter(issue=issue).delete(soft=False)
 
-        assert chosen[0] == chosen[1]
+        assert set(chosen) == {str(plain_user.id), str(second_user.id)}
 
 
 @pytest.mark.unit
@@ -558,7 +571,8 @@ class TestTheRoutingPayload:
 
         routing = response.data["routing"]
         assert routing["routing_state"] == RoutingState.ASSIGNED
-        assert routing["primary_executor"] == str(plain_user.id)
+        # A related field's representation is the pk, not its string form.
+        assert routing["primary_executor"] == plain_user.id
         assert IssueAssignee.objects.filter(issue=issue, assignee=plain_user).exists()
 
     def test_clearing_the_area_leaves_the_event_behind(

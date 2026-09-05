@@ -17,11 +17,13 @@ from plane.app.services.orca.org_unit_reconciler import reconcile_access
 from plane.db.models import (
     Issue,
     IssueAssignee,
+    IssueOrganizationalUnit,
     OrganizationalUnit,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
     Project,
     ProjectMember,
+    RoutingState,
     State,
     StateGroup,
     User,
@@ -98,7 +100,32 @@ def make_issue(project, state, owner, name="Validate registration"):
 
 
 def assign(issue, user):
+    """Put ``user`` on the work item as an assignee, and nothing more."""
     return IssueAssignee.objects.create(issue=issue, assignee=user, project=issue.project, workspace=issue.workspace)
+
+
+def carry(issue, user, unit):
+    """
+    @description Make ``user`` the area's executor for ``issue``.
+
+    Load is measured on the executor since D0.5, not on ``IssueAssignee``: a
+    collaborator left over from an earlier assignment is not the person
+    answerable for the work, and counting them kept pushing them down the
+    ranking. So a test about the ranking has to hand work out this way —
+    ``assign`` alone produces a work item that looks assigned on screen and
+    weighs nothing. Tests about "somebody is already on it" still want
+    ``assign``.
+    @returns The responsibility link.
+    """
+    assign(issue, user)
+    return IssueOrganizationalUnit.objects.create(
+        issue=issue,
+        organizational_unit=unit,
+        project=issue.project,
+        workspace=issue.workspace,
+        routing_state=RoutingState.ASSIGNED,
+        primary_executor=user,
+    )
 
 
 @pytest.mark.unit
@@ -110,8 +137,8 @@ class TestAssignmentEngine:
         reconcile_access(workspace.id)
 
         for index in range(3):
-            assign(make_issue(project, open_state, owner, f"Existing {index}"), maria)
-        assign(make_issue(project, open_state, owner, "Existing ana"), ana)
+            carry(make_issue(project, open_state, owner, f"Existing {index}"), maria, unit)
+        carry(make_issue(project, open_state, owner, "Existing ana"), ana, unit)
 
         issue = make_issue(project, open_state, owner, "New work")
         chosen, reason = assign_from_unit(issue, unit)
@@ -129,8 +156,8 @@ class TestAssignmentEngine:
         reconcile_access(workspace.id)
 
         for index in range(4):
-            assign(make_issue(project, done_state, owner, f"Closed {index}"), maria)
-        assign(make_issue(project, open_state, owner, "Open ana"), ana)
+            carry(make_issue(project, done_state, owner, f"Closed {index}"), maria, unit)
+        carry(make_issue(project, open_state, owner, "Open ana"), ana, unit)
 
         issue = make_issue(project, open_state, owner, "New work")
         chosen, _ = assign_from_unit(issue, unit)

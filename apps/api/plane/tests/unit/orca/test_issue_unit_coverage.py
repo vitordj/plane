@@ -248,5 +248,7 @@ class TestTheSerializerPublishesCoverage:
         response = admin_client.get(units_url(workspace_with_members.slug))
 
         assert response.status_code == 200
-        listed = next(item for item in response.data if item["id"] == str(unit.id))
+        # `BaseSerializer.id` is a PrimaryKeyRelatedField, so `response.data`
+        # carries the pk itself; only the rendered JSON is a string.
+        listed = next(item for item in response.data if item["id"] == unit.id)
         assert listed["project_ids"] == [str(project.id)]

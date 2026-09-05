@@ -251,8 +251,13 @@ dois, e três casos novos na atribuição — o vínculo e a decisão criados pe
 própria rota, a recusa da área que proíbe o ranking, e `self_claim`
 respondendo `queued` em vez de erro. Dois testes de carga passaram a montar o
 vínculo: a carga é contada pelo executor principal desde o D0.5, então um
-`IssueAssignee` solto não pesa mais — e o de determinismo apaga o vínculo
-entre as rodadas, senão a segunda rodada ranqueia estado diferente.
+`IssueAssignee` solto não pesa mais. O de determinismo virou outro teste: pela
+rota não dá para ranquear duas vezes o mesmo estado, porque o log de decisões
+é append-only e o `last_auto_at` que ele grava é justamente uma entrada do
+desempate seguinte. O que a rota prova é o rodízio — dois itens empatados vão
+para pessoas diferentes; o determinismo em si fica em
+`test_assignment_service.py::TestRanking::test_the_order_is_deterministic_on_a_tie`,
+que ranqueia duas vezes sem escrever nada.
 `test_assignment_service.py`: o fallback agora aceita qualquer modo
 solicitado, e um modo inexistente continua recusado.
 

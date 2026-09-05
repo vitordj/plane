@@ -44,6 +44,21 @@ def project_with_admin(project, workspace_with_members, admin_user):
     return project
 
 
+@pytest.fixture
+def both_units_cover(project_with_admin, unit, second_unit, link_project):
+    """
+    Both areas cover the project.
+
+    @description Since D0.1 an area may only be made responsible for work in a
+    project it covers — the link is what grants its members access there, so
+    without one the route answers 400 ``ORG_UNIT_NOT_COVERING_PROJECT``. The
+    tests below are about the soft-deleted link and the partial unique index,
+    not about coverage, so they declare it and get on with their subject.
+    """
+    link_project(unit, project_with_admin, ROLE_MEMBER)
+    link_project(second_unit, project_with_admin, ROLE_MEMBER)
+
+
 @pytest.mark.unit
 class TestResponsibleUnitCanBeSetClearedAndSetAgain:
     """
@@ -62,7 +77,7 @@ class TestResponsibleUnitCanBeSetClearedAndSetAgain:
     """
 
     def test_setting_clearing_and_setting_again_succeeds(
-        self, admin_client, workspace_with_members, project_with_admin, unit, second_unit, make_issue
+        self, admin_client, workspace_with_members, project_with_admin, unit, second_unit, make_issue, both_units_cover
     ):
         issue = make_issue(project_with_admin)
         url = issue_unit_url(workspace_with_members.slug, project_with_admin.id, issue.id)
@@ -78,7 +93,7 @@ class TestResponsibleUnitCanBeSetClearedAndSetAgain:
         assert second.data["organizational_unit"]["slug"] == "legal"
 
     def test_exactly_one_live_link_survives_the_cycle(
-        self, admin_client, workspace_with_members, project_with_admin, unit, second_unit, make_issue
+        self, admin_client, workspace_with_members, project_with_admin, unit, second_unit, make_issue, both_units_cover
     ):
         issue = make_issue(project_with_admin)
         url = issue_unit_url(workspace_with_members.slug, project_with_admin.id, issue.id)
@@ -92,7 +107,7 @@ class TestResponsibleUnitCanBeSetClearedAndSetAgain:
         assert live.first().organizational_unit_id == second_unit.id
 
     def test_the_cleared_link_is_kept_as_history(
-        self, admin_client, workspace_with_members, project_with_admin, unit, second_unit, make_issue
+        self, admin_client, workspace_with_members, project_with_admin, unit, second_unit, make_issue, both_units_cover
     ):
         issue = make_issue(project_with_admin)
         url = issue_unit_url(workspace_with_members.slug, project_with_admin.id, issue.id)
@@ -109,7 +124,7 @@ class TestResponsibleUnitCanBeSetClearedAndSetAgain:
         assert cleared.first().organizational_unit_id == unit.id
 
     def test_the_cycle_can_repeat(
-        self, admin_client, workspace_with_members, project_with_admin, unit, second_unit, make_issue
+        self, admin_client, workspace_with_members, project_with_admin, unit, second_unit, make_issue, both_units_cover
     ):
         # One round could pass on a lucky ordering; three prove the constraint
         # is genuinely partial rather than merely unhit.

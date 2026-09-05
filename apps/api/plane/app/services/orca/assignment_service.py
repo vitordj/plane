@@ -344,6 +344,14 @@ def rank_candidates(
         caller wants somebody *other* than whoever is already on the item.
     @returns Eligible candidates in order, plus those excluded and why.
     """
+    # Coverage first: an area that does not own work in this project has
+    # nobody to offer for it, whatever its roster says. ``allocate`` and
+    # ``transfer`` refuse earlier with an error code, so this guard is what
+    # answers the callers that only ask for a ranking — the shim in
+    # ``assignment_engine`` and anything reading a list of candidates for a UI.
+    if not unit_covers_project(unit, project_id):
+        return RankedCandidates()
+
     memberships = _membership_map(unit)
     if not memberships:
         return RankedCandidates()

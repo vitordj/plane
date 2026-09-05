@@ -493,7 +493,10 @@ class IssueOrganizationalUnit(BaseModel):
     # ``IssueAssignee`` — cannot be expressed as a CHECK and is a service
     # invariant (RFC §6.1), verified by test and by audit command.
     routing_state = models.CharField(
-        max_length=16,
+        # 32, not the 16 the shortest state would suggest: "allocation_failed"
+        # is 17 characters, and Postgres rejects the write rather than
+        # truncating it.
+        max_length=32,
         choices=RoutingState.choices,
         default=RoutingState.QUEUED,
     )

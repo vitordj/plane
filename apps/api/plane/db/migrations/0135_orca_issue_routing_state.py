@@ -82,7 +82,7 @@ class Migration(migrations.Migration):
                     ("suspended", "Suspended"),
                 ],
                 default="queued",
-                max_length=16,
+                max_length=32,
             ),
         ),
         migrations.AddField(
