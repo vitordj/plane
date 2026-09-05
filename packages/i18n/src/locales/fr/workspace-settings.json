@@ -687,7 +687,17 @@
           "decision_stale": "Cet élément de travail a changé entre-temps. Rechargez et réessayez.",
           "invalid_routing_transition": "Cet élément de travail ne peut pas passer à cet état depuis son état actuel.",
           "directory_workspace_not_found": "Cet espace de travail n’existe plus.",
-          "directory_token_required": "Émettez un jeton SCIM avant d’activer le provisionnement par annuaire."
+          "directory_token_required": "Émettez un jeton SCIM avant d’activer le provisionnement par annuaire.",
+          "public_api_disabled": "L’API d’automatisation est désactivée sur cette instance.",
+          "idempotency_key_required": "Cette requête nécessite un en-tête Idempotency-Key.",
+          "idempotency_payload_mismatch": "Cette clé a déjà été utilisée pour une autre requête.",
+          "operation_in_progress": "Une requête identique est encore en cours. Réessayez dans un instant.",
+          "external_binding_conflict": "Cette clé externe pointe déjà vers un autre élément de travail.",
+          "assignees_not_allowed_here": "C’est la zone qui décide qui prend cet élément de travail, cette requête ne peut donc pas définir d’assignés.",
+          "if_match_required": "Cette requête nécessite un en-tête If-Match portant la décision en cours.",
+          "process_projection_disabled": "La projection de processus est désactivée sur cette instance.",
+          "completion_manual_only": "Cet élément de travail ne peut être terminé que par une personne.",
+          "internal_error": "Une erreur est survenue. L’opération a été enregistrée comme échouée."
         }
       }
     },

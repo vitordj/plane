@@ -463,7 +463,17 @@
           "decision_stale": "Este item de trabalho mudou enquanto você olhava. Recarregue e tente de novo.",
           "invalid_routing_transition": "Este item de trabalho não pode ir para esse estado a partir do atual.",
           "directory_workspace_not_found": "Esse espaço de trabalho não existe mais.",
-          "directory_token_required": "Emita um token SCIM antes de ativar o provisionamento por diretório."
+          "directory_token_required": "Emita um token SCIM antes de ativar o provisionamento por diretório.",
+          "public_api_disabled": "A API de automação está desligada nesta instância.",
+          "idempotency_key_required": "Esta requisição precisa do cabeçalho Idempotency-Key.",
+          "idempotency_payload_mismatch": "Essa chave já foi usada para outra requisição.",
+          "operation_in_progress": "Uma requisição idêntica ainda está em andamento. Tente de novo em instantes.",
+          "external_binding_conflict": "Essa chave externa já aponta para outro item de trabalho.",
+          "assignees_not_allowed_here": "É a área que decide quem assume este item de trabalho, então esta requisição não pode definir responsáveis.",
+          "if_match_required": "Esta requisição precisa do cabeçalho If-Match com a decisão vigente.",
+          "process_projection_disabled": "A projeção de processos está desligada nesta instância.",
+          "completion_manual_only": "Este item de trabalho só pode ser concluído por uma pessoa.",
+          "internal_error": "Algo deu errado. A operação foi registrada como falha."
         }
       },
       "projects": {

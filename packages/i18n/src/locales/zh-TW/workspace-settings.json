@@ -687,7 +687,17 @@
           "decision_stale": "此工作事項在您檢視期間已變更。請重新載入後再試。",
           "invalid_routing_transition": "此工作事項無法從目前狀態轉為該狀態。",
           "directory_workspace_not_found": "該工作區已不存在。",
-          "directory_token_required": "請先簽發 SCIM 權杖，再開啟目錄佈建。"
+          "directory_token_required": "請先簽發 SCIM 權杖，再開啟目錄佈建。",
+          "public_api_disabled": "此執行個體已關閉自動化 API。",
+          "idempotency_key_required": "此請求需要 Idempotency-Key 標頭。",
+          "idempotency_payload_mismatch": "該金鑰已用於另一個請求。",
+          "operation_in_progress": "相同的請求仍在處理中。請稍後再試。",
+          "external_binding_conflict": "該外部索引鍵已指向另一個工作事項。",
+          "assignees_not_allowed_here": "由區域決定誰承接此工作事項，因此此請求無法設定負責人。",
+          "if_match_required": "此請求需要帶有目前決定的 If-Match 標頭。",
+          "process_projection_disabled": "此執行個體已關閉流程投影。",
+          "completion_manual_only": "此工作事項只能由人完成。",
+          "internal_error": "發生問題。該操作已記錄為失敗。"
         }
       }
     },

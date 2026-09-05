@@ -687,7 +687,17 @@
           "decision_stale": "Mục công việc này đã thay đổi trong lúc bạn xem. Vui lòng tải lại và thử lại.",
           "invalid_routing_transition": "Mục công việc này không thể chuyển sang trạng thái đó từ trạng thái hiện tại.",
           "directory_workspace_not_found": "Không gian làm việc đó không còn tồn tại.",
-          "directory_token_required": "Hãy cấp token SCIM trước khi bật cấp phát từ thư mục."
+          "directory_token_required": "Hãy cấp token SCIM trước khi bật cấp phát từ thư mục.",
+          "public_api_disabled": "API tự động hóa đang tắt trên phiên bản này.",
+          "idempotency_key_required": "Yêu cầu này cần tiêu đề Idempotency-Key.",
+          "idempotency_payload_mismatch": "Khóa đó đã được dùng cho một yêu cầu khác.",
+          "operation_in_progress": "Một yêu cầu giống hệt vẫn đang chạy. Vui lòng thử lại sau giây lát.",
+          "external_binding_conflict": "Khóa bên ngoài đó đã trỏ tới một mục công việc khác.",
+          "assignees_not_allowed_here": "Khu vực quyết định ai nhận mục công việc này, nên yêu cầu này không thể đặt người phụ trách.",
+          "if_match_required": "Yêu cầu này cần tiêu đề If-Match kèm quyết định hiện hành.",
+          "process_projection_disabled": "Phép chiếu quy trình đang tắt trên phiên bản này.",
+          "completion_manual_only": "Mục công việc này chỉ có thể do một người hoàn tất.",
+          "internal_error": "Đã xảy ra lỗi. Thao tác được ghi nhận là thất bại."
         }
       }
     },
