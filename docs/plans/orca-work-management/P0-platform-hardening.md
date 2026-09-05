@@ -63,9 +63,15 @@ revisado.
 
 **Aceite.**
 - [x] `stage.yml` continua YAML válido; todo bloco `run:` passa em `bash -n`; os scripts embutidos (`Resolve Image Tags`, registro e merge de digests, log do deploy) foram exercitados a seco fora do CI, com `GITHUB_ENV`/`GITHUB_OUTPUT` simulados.
-- [ ] Um PR de teste executa o job e o log mostra `push: false` (ou o passo de login pulado).
-- [ ] `docker manifest inspect ghcr.io/<repo>/api:stage` antes e depois do PR retorna o mesmo digest.
-- [ ] Merge em `stage` continua publicando `:stage`.
+- [x] Confirmado no PR #8: o job `Build & Push api` construiu com `IMAGE_TAGS: ghcr.io/vitordj/plane/api:pr-8-<sha>` e o buildx registrou `WARNING: No output specified with docker-container driver. Build result will only remain in the build cache. To push result image into registry use --push` — ou seja, **nada foi publicado**. Os seis builds passaram.
+- [ ] `docker manifest inspect ghcr.io/<repo>/api:stage` antes e depois do PR retorna o mesmo digest (só quem tem acesso ao registry).
+- [ ] Merge em `stage` continua publicando `:stage` (verificável no primeiro merge).
+
+**Detalhe do `github.sha` em pull request.** Num evento `pull_request` o
+`github.sha` é o **merge commit** que o GitHub cria, não a cabeça da branch, e
+é ele que aparece na tag `pr-<n>-<sha>`. Isso é irrelevante aqui (a tag é
+inerte e nada a publica) e não afeta P0.2/P0.3, que só produzem e promovem
+`sha-<commit>` em eventos de `push`, onde `github.sha` é o commit real.
 
 **Arquivos:** `.github/workflows/stage.yml`.
 
@@ -217,7 +223,7 @@ não está montado (no CI, que roda do checkout completo, executam de verdade).
 
 **Aceite.**
 - [x] Nenhuma senha literal em `tools/`, `docs/` ou `README.md`: a constante saiu do script, a menção saiu do README da ferramenta, e o teste de regressão lê o fonte e falha se qualquer uma das duas voltar. As ocorrências que restam nesses arquivos são referências ao que foi removido (este enunciado e o comando de invalidação), nenhuma é uma credencial.
-- [x] Teste unitário que importa a função de criação e verifica `has_usable_password() is False` e `is_password_autoset is True`. Escrito; a sessão não roda pytest (AGENTS.md) — confirmar no CI de `stage`.
+- [x] Teste unitário que importa a função de criação e verifica `has_usable_password() is False` e `is_password_autoset is True`. Verde no CI do PR #8 (`API Tests (pytest)`).
 - [x] Ruff limpo (`check` e `format --check`, linha 120) no script e no teste novos.
 - [ ] Contas já criadas em qualquer ambiente com a senha antiga foram invalidadas (registrar data e ambiente no quadro). Só operação pode fazer; procedimento pronto no README da ferramenta.
 
@@ -330,7 +336,7 @@ sem uso.
 justamente onde o fork escreve.
 
 **Aceite.**
-- [x] `ruff check .` limpo em `apps/api` (ruff 0.9.7, a versão fixada).
+- [x] `ruff check .` limpo em `apps/api` (ruff 0.9.7, a versão fixada). O job `API Lint (ruff)` rodou verde no PR #8, instalando a versão a partir de `requirements/local.txt`.
 - [x] `ruff format --check .` limpo com a exclusão temporária documentada no `pyproject.toml`.
 - [ ] Job vermelho num PR que introduz `import os` não usado (teste descartável).
 
@@ -374,7 +380,7 @@ códigos Entra entre a tabela Python, os dois helpers e as 19 locales — nada n
 build comparava isso.
 
 **Aceite.**
-- [x] Ruff (`check` e `format --check`, versão fixada) limpo nos arquivos tocados; paridade dos códigos e das 19 locales verificada fora do pytest; comportamento do PyJWT para **todos** os 16 casos de token exercitado num harness com a versão fixada (`PyJWT==2.13.0`, `cryptography==50.0.0`) antes de escrever as asserções. A sessão não roda pytest (AGENTS.md) — confirmar no CI de `stage`.
+- [x] Ruff (`check` e `format --check`, versão fixada) limpo nos arquivos tocados; paridade dos códigos e das 19 locales verificada fora do pytest; comportamento do PyJWT para **todos** os 16 casos de token exercitado num harness com a versão fixada (`PyJWT==2.13.0`, `cryptography==50.0.0`) antes de escrever as asserções. Suíte verde no CI do PR #8 (`API Tests (pytest)`), e `Code Quality Checks` verde cobre `check:sync` das 19 locales e os tipos dos dois helpers.
 - [x] Doc `docs/entra-directory-sync.md` §Troubleshooting descreve os dois erros novos, com as causas em ordem de probabilidade, e §"Why the tenant is pinned" ganhou a verificação completa do token, o nonce e a exigência do GUID.
 - [x] `test_entra_provider.py` não usa mais `StubProvider`.
 - [ ] Validação de ponta a ponta contra tenant real registrada no quadro quando o tenant existir (não bloqueia o merge).
@@ -557,7 +563,7 @@ de instância, recusa membro comum e anônimo, e continua respondendo com a
 camada desligada; o comando imprime exatamente o mesmo JSON.
 
 **Aceite.**
-- [x] Ruff limpo (`check` e `format --check`) nos arquivos novos. Testes escritos; a sessão não roda pytest (AGENTS.md) — confirmar no CI de `stage`.
+- [x] Ruff limpo (`check` e `format --check`) nos arquivos novos; testes verdes no CI do PR #8 (`API Tests (pytest)`). Os seis builds passaram com `build-arg:GIT_SHA` presente no metadata, então o `ARG`/`ENV` novo nos Dockerfiles não quebrou nenhuma imagem.
 - [ ] Em staging, o endpoint devolve o SHA do merge que disparou o deploy.
 - [x] `docs/release-runbook.md` (P0.13) inclui o passo "conferir build-info após o deploy" — §4, exigindo o mesmo SHA em api, worker e beat.
 
