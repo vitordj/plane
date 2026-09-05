@@ -113,7 +113,7 @@ Consequências diretas:
 | Área responsável persistente por work item, uma por item | Sim | `IssueOrganizationalUnit` em `apps/api/plane/db/models/organizational_unit.py` |
 | Área liga pessoas a projetos e materializa `ProjectMember` | Sim | `apps/api/plane/app/services/orca/org_unit_reconciler.py` |
 | Acesso manual preservado, papel herdado como piso | Sim | idem; documentado em `organizational-units.md` |
-| Alocar ao integrante menos carregado | Parcial | `apps/api/plane/app/services/orca/assignment_engine.py`; disparo manual; modos `fill_empty` e `append` |
+| Alocar ao integrante menos carregado | Sim | `apps/api/plane/app/services/orca/assignment_service.py` (`lb-1`, lock por área, decisão registrada); disparo manual; `fill_empty`/`append` deprecados em favor de `assignment_mode` |
 | Papel `lead` na área | Só rótulo | `OrganizationalUnitMemberRole`; nenhuma permissão decorre disso |
 | "Minhas áreas" e carga por integrante | Sim | `UserOrganizationalUnitsEndpoint`, `OrganizationalUnitWorkloadEndpoint` em `apps/api/plane/app/views/organizational_unit.py` |
 | Tela da área | Só membros e projetos | `apps/web/core/components/orca/organizational-units/unit-detail.tsx` |
@@ -122,10 +122,10 @@ Consequências diretas:
 | Kill switch | Sim | `OrganizationalUnitFeatureMixin` |
 | Rate limit dedicado | Só SCIM | `apps/api/plane/throttles/scim.py` |
 | Disponibilidade, férias, capacidade | Não | — |
-| Estado de fila | Não | — |
-| Executor principal | Não | — |
-| Reatribuição quando alguém sai | Não | engine só evita novas atribuições |
-| Política automática na criação | Não | — |
+| Estado de fila | Sim | `IssueOrganizationalUnit.routing_state`/`queue_reason`/`queued_at`/`assignment_due_at`; máquina de estados em §6.2 |
+| Executor principal | Sim | `IssueOrganizationalUnit.primary_executor`; auditado por `audit_organizational_routing` |
+| Reatribuição quando alguém sai | Parcial | `audit_organizational_routing --write` devolve à fila quem perdeu elegibilidade; automático no evento é Fase 3 |
+| Política automática na criação | Parcial | `OrganizationalUnitAssignmentPolicy` existe e resolve (§6.3); criar item já com área é da API pública, Fase 1 |
 | Dashboard da área / executivo | Não | — |
 
 ### 2.2 Defeitos que precisam fechar antes de qualquer automação

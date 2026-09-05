@@ -354,14 +354,21 @@ arquivo, que é onde alguém procura "onde isto está coberto".
 
 ---
 
-## D0.10 — Documentação `[ ]`
+## D0.10 — Documentação `[x]`
 
-- `docs/organizational-units.md` §Assignment reescrita: estados, políticas,
-  executor principal, decisões, comando de auditoria, o que mudou em relação
-  à v1 (modo `append`).
-- RFC §2.1 tabela atualizada (linhas "Estado de fila", "Executor principal",
-  "Alocar ao menos carregado" → Sim).
-- Este arquivo e o `README.md` do plano com estado e data do gate.
+- `docs/organizational-units.md` §Assignment reescrita: a tabela dos campos de
+  roteamento, as três políticas e como resolvem, o que o `least_loaded`
+  ordena e exclui, o registro (decisão append-only e evento de área), como se
+  dispara, e uma seção "What changed from v1" dizendo o que o engine fazia de
+  errado. §Auditoria nova ao lado do reconcile (D0.7). §Tests atualizada com
+  os arquivos novos e o ponteiro para o padrão de concorrência. Tabela de
+  rotas com as duas de política.
+- RFC §2.1 atualizada: "Alocar ao menos carregado", "Estado de fila" e
+  "Executor principal" → Sim; "Reatribuição quando alguém sai" e "Política
+  automática na criação" → Parcial, com o que existe e o que falta. §6.3
+  registra o alargamento do fallback decidido no D0.6.
+- Este arquivo com a tabela de invariantes preenchida (D0.9) e o `README.md`
+  do plano com o estado.
 
 ---
 
