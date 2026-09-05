@@ -83,6 +83,8 @@ all four together and record the migration plan here.
 
 All four dependencies expose health checks; `api-tests` waits for `service_healthy` on each via `depends_on`, so pytest only starts once the stack is ready.
 
+Test-time env overrides live in the compose file itself (`POSTGRES_HOST=test-db`, `REDIS_URL=redis://test-redis:6379/`, `AWS_S3_ENDPOINT_URL=http://test-minio:9000`, `DJANGO_SETTINGS_MODULE=plane.settings.test`). Everything else is inherited from `apps/api/.env`.
+
 ## What CI runs
 
 Two jobs in `.github/workflows/stage.yml`, split by what they need to stand up:
@@ -111,8 +113,6 @@ covering something.
 `plane/tests/contract` and `plane/tests/smoke` are not exclusions: they are
 not selected in the first place (the path is `plane/tests/unit`), and they
 run in `api_integration_tests`.
-
-Test-time env overrides live in the compose file itself (`POSTGRES_HOST=test-db`, `REDIS_URL=redis://test-redis:6379/`, `AWS_S3_ENDPOINT_URL=http://test-minio:9000`, `DJANGO_SETTINGS_MODULE=plane.settings.test`). Everything else is inherited from `apps/api/.env`.
 
 ## Concurrency tests
 
