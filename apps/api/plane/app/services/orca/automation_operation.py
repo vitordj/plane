@@ -206,7 +206,14 @@ def start_operation(workspace, api_token, key, operation_type, payload) -> Opera
     """
     request_hash = canonical_hash(payload)
 
-    existing = AutomationOperation.objects.filter(workspace=workspace, idempotency_key=key).first()
+    # all_objects, not objects. The default manager hides soft-deleted rows,
+    # but the uniqueness constraint on (workspace, idempotency_key) has no
+    # deleted_at condition — deliberately, so a spent key stays spent. Looking
+    # through the filtering manager would make a soft-deleted receipt invisible
+    # here and then hit the constraint on INSERT, and the recovery read below
+    # would raise DoesNotExist instead of replaying the answer the key already
+    # has. The row still owns the key, so it still decides what happens.
+    existing = AutomationOperation.all_objects.filter(workspace=workspace, idempotency_key=key).first()
     if existing is not None:
         return _existing(existing, request_hash, api_token)
 
@@ -216,7 +223,7 @@ def start_operation(workspace, api_token, key, operation_type, payload) -> Opera
         with transaction.atomic():
             return _open(workspace, api_token, key, operation_type, request_hash)
     except IntegrityError:
-        winner = AutomationOperation.objects.get(workspace=workspace, idempotency_key=key)
+        winner = AutomationOperation.all_objects.get(workspace=workspace, idempotency_key=key)
         return _existing(winner, request_hash, api_token)
 
 

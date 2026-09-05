@@ -21,11 +21,22 @@ from plane.throttles.orca_public import OrcaPublicThrottle
 from plane.utils.orca_error_codes import ORCA_ERROR_CODES
 
 
-class Gated(OrcaPublicApiFeatureMixin):
-    """A minimal view-like object: the mixin only needs ``initial`` to chain."""
+class Reached:
+    """Stands in for the view the mixin chains into."""
 
     def initial(self, request, *args, **kwargs):
         return "reached the view"
+
+
+class Gated(OrcaPublicApiFeatureMixin, Reached):
+    """
+    The mixin in front of a view.
+
+    @description The mixin has to come *first* and the stand-in second. Putting
+    ``initial`` on this class directly would shadow the mixin's rather than
+    chain into it, and every gate assertion below would pass while testing
+    nothing.
+    """
 
 
 @pytest.mark.unit

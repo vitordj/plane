@@ -224,6 +224,53 @@ class TestTheOperationStillRunning:
 
 @pytest.mark.unit
 @pytest.mark.django_db
+class TestASoftDeletedReceipt:
+    """
+    The key is spent even when the row is hidden.
+
+    Nothing in the layer soft-deletes a receipt today — revoking a token does
+    not, and there is no cleanup that does. But the uniqueness constraint on
+    (workspace, idempotency_key) has no deleted_at condition, deliberately, so
+    the day anything soft-deletes one the key is still taken while the default
+    manager stops returning the row. A lookup through ``objects`` would miss
+    it, try to INSERT, hit the constraint, and then fail to re-read it —
+    turning a replay into a DoesNotExist crash. Hence ``all_objects``, and
+    hence these tests, which soft-delete the row directly rather than relying
+    on a cascade that does not exist.
+    """
+
+    def soft_delete(self, key="key-1"):
+        operation = AutomationOperation.objects.get(idempotency_key=key)
+        operation.deleted_at = timezone.now()
+        operation.save(update_fields=["deleted_at"])
+        return operation
+
+    def test_it_still_replays_its_answer(self, workspace_with_members):
+        begin(workspace_with_members).complete(response={"work_item": {"id": "abc"}}, http_status=201)
+        self.soft_delete()
+
+        handle = begin(workspace_with_members)
+        assert handle.replayed is True
+        body, http_status = handle.replay_response()
+        assert body == {"work_item": {"id": "abc"}}
+        assert http_status == 201
+
+    def test_it_still_refuses_a_changed_payload(self, workspace_with_members):
+        begin(workspace_with_members).complete(response={"ok": True})
+        self.soft_delete()
+
+        with pytest.raises(IdempotencyPayloadMismatch):
+            begin(workspace_with_members, payload={"other": True})
+
+    def test_no_second_receipt_is_opened_for_the_key(self, workspace_with_members):
+        begin(workspace_with_members).complete(response={"ok": True})
+        self.soft_delete()
+        begin(workspace_with_members)
+        assert AutomationOperation.all_objects.filter(idempotency_key="key-1").count() == 1
+
+
+@pytest.mark.unit
+@pytest.mark.django_db
 class TestTheContextManager:
     def test_it_marks_a_crashed_operation_failed(self, workspace_with_members):
         with pytest.raises(RuntimeError):

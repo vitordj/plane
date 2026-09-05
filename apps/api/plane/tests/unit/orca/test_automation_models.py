@@ -173,15 +173,45 @@ class TestTheAutomationOperation:
             operation.full_clean()
 
     def test_it_survives_the_token_that_made_it(self, workspace_with_members, admin_user):
+        """
+        SET_NULL, not CASCADE: revoking a credential must not erase the record
+        of what it did.
+
+        The hard delete is what exercises the rule — in this codebase
+        ``Model.delete()`` soft-deletes by default (``SoftDeleteModel``), which
+        leaves the row and therefore never fires the FK action at all.
+        """
         from plane.db.models import APIToken
 
         token = APIToken.objects.create(user=admin_user, workspace=workspace_with_members, label="t")
         operation = make_operation(workspace_with_members, api_token=token)
-        token.delete()
+
+        token.delete(soft=False)
+
         operation.refresh_from_db()
-        # The receipt outlives the credential: SET_NULL, not CASCADE. Deleting
-        # a token must not erase the record of what it did.
         assert operation.api_token_id is None
+        assert AutomationOperation.objects.filter(pk=operation.pk).exists()
+
+    def test_revoking_a_token_keeps_the_receipt(self, workspace_with_members, admin_user):
+        """
+        The ordinary revocation path: ``token.delete()`` soft-deletes.
+
+        Plane's cascade nulls the link the same way the FK action would, and
+        leaves the receipt itself alone — it is not soft-deleted with the
+        token. That is the behaviour worth having: revoking a credential
+        withdraws the credential, it does not erase the record of what was
+        done with it.
+        """
+        from plane.db.models import APIToken
+
+        token = APIToken.objects.create(user=admin_user, workspace=workspace_with_members, label="t")
+        operation = make_operation(workspace_with_members, api_token=token)
+
+        token.delete()
+
+        operation.refresh_from_db()
+        assert operation.api_token_id is None
+        assert operation.deleted_at is None
         assert AutomationOperation.objects.filter(pk=operation.pk).exists()
 
 
