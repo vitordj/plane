@@ -94,64 +94,75 @@ o comportamento voltando.
 
 ---
 
-## D0.3 — Migração 0135: estado de fila e executor principal `[ ]`
+## D0.3 — Migração 0135: estado de fila e executor principal `[x]`
 
-**Modelo.** `apps/api/plane/db/models/organizational_unit.py`,
-`IssueOrganizationalUnit`, campos e constraints do RFC §5.1:
-`routing_state`, `queue_reason`, `queued_at`, `assignment_due_at`,
-`primary_executor` (FK `User`, `SET_NULL`, `related_name="orca_primary_executions"`),
-`current_assignment_decision` (FK para modelo do D0.4; usar string
-`"db.AssignmentDecision"` e criar a FK em `0137`, ou criar `0135` sem esse
-campo e adicioná-lo em `0137` — preferir a segunda opção para evitar
-dependência circular).
+**Mudança** (entregue em `feat/orca-unit-project-coverage`).
+- `IssueOrganizationalUnit` ganhou `routing_state`, `queue_reason`, `queued_at`, `assignment_due_at` e `primary_executor` (FK `User`, `SET_NULL`, `related_name="orca_primary_executions"`). `RoutingState` e `QueueReason` são `TextChoices` no mesmo arquivo.
+- Dois CHECKs: `assigned` exige executor, e executor só existe em `assigned`. O primeiro impede o estado que a fila leria como "alguém está com isso" sem ninguém estar; o segundo impede o executor esquecido, que continuaria sendo cobrado na contagem de carga e mudaria quem o alocador escolhe.
+- Dois índices: `(workspace, organizational_unit, routing_state)` para a fila do coordenador e `(primary_executor, routing_state)` para a carga.
+- `current_assignment_decision` ficou para a `0137`, depois que a tabela de decisões existe — assim o import continua de mão única (o log conhece os modelos organizacionais, não o contrário).
 
-Choices como `TextChoices` no mesmo arquivo: `RoutingState`, `QueueReason`.
+**Migração `0135_orca_issue_routing_state`.** Campos → `RunPython` →
+constraints → índices, nessa ordem: até o backfill rodar, toda linha existente
+está em `assigned` por default de campo e sem executor, então o CHECK
+adicionado antes rejeitaria o banco inteiro. O backfill é idempotente: item
+com `IssueAssignee` vivo vira `assigned` com o assignee mais antigo; o resto
+entra na fila com `new_item`, e `queued_at` só é preenchido se estiver vazio,
+para que uma re-execução não zere há quanto tempo o item espera. Reverso do
+`RunPython` é no-op — os campos somem com o reverso dos `AddField`.
 
-**Migração.**
-1. `python3 apps/api/manage.py makemigrations db -n orca_issue_routing_state` → revisar; dependência `("db", "0134_orca_user_language_preference")`.
-2. `RunPython` idempotente: para cada `IssueOrganizationalUnit` sem `deleted_at`: se existe `IssueAssignee(issue, deleted_at=null)` → `routing_state=assigned`, `primary_executor` = assignee com menor `created_at`; senão `queued`, `queue_reason=new_item`, `queued_at=now`.
-3. `AddConstraint` para os dois CHECKs e `AddIndex` para os dois índices do RFC §5.1. O CHECK que exige `primary_executor` em `assigned` deve ser adicionado **depois** do `RunPython`.
-4. Reverso do `RunPython`: no-op (campos são removidos pelo reverso dos `AddField`).
+**Escrita à mão.** A sessão de agente não tem banco, então a migração foi
+escrita seguindo o padrão das existentes em vez de gerada. **O desenvolvedor
+precisa confirmar** com:
 
-**Testes** (`test_routing_state.py`):
-- CHECKs: salvar `assigned` sem executor → `IntegrityError`; `queued` com executor → `IntegrityError`.
-- Data migration: usar `django_test_migrations` se disponível; senão, testar a função de migração diretamente com dados montados.
+```bash
+python3 apps/api/manage.py makemigrations --check --dry-run
+python3 apps/api/manage.py migrate db 0137 && python3 apps/api/manage.py migrate db 0134
+```
+
+**Testes.** `test_routing_state.py`: defaults, os dois CHECKs contra o
+PostgreSQL de verdade (um CHECK que só existe no modelo não é constraint),
+`allocation_failed` também sem executor, o caminho feliz, e o backfill
+chamado direto com o registro de apps (o `django_test_migrations` não é
+dependência aqui) — inclusive a idempotência e o fato de links já limpos não
+serem reescritos.
 
 **Aceite.**
-- [ ] `makemigrations --check` limpo após a migração.
-- [ ] Migração aplicada e revertida com sucesso num banco local com dados (`migrate db 0134` e volta).
-- [ ] Testes verdes.
+- [ ] `makemigrations --check` limpo após a migração (comando acima; a sessão não roda Django).
+- [ ] Migração aplicada e revertida com sucesso num banco local com dados.
+- [x] Testes escritos; ruff limpo. Verdes a confirmar no CI.
 
 ---
 
-## D0.4 — Migrações 0136 e 0137: política, decisão e evento de responsabilidade `[ ]`
+## D0.4 — Migrações 0136 e 0137: política, decisão e evento de responsabilidade `[x]`
 
-**Modelos.** Novo arquivo `apps/api/plane/db/models/organizational_assignment.py`
-(exportar em `db/models/__init__.py`, na seção Orca, com header de copyright):
-- `OrganizationalUnitAssignmentPolicy` — RFC §5.2, incluindo as duas
-  constraints parciais de unicidade e `version` incrementado em `save()`.
-- `AssignmentDecision` — RFC §5.2. Bloquear `update`: sobrescrever `save()`
-  para levantar `ValueError` se `self.pk` já existe e o objeto veio do banco
-  (append-only), e cobrir por teste.
-- `IssueResponsibilityEvent` — RFC §5.2, mesmo tratamento append-only.
+**Mudança** (entregue em `feat/orca-unit-project-coverage`).
+Novo `apps/api/plane/db/models/organizational_assignment.py`, exportado em
+`db/models/__init__.py`:
+- `OrganizationalUnitAssignmentPolicy` — modo padrão, modos permitidos, SLA, teto de carga, `is_active` e `version`. `save()` incrementa a versão, preenche `allowed_modes` com o próprio `default_mode` quando vem vazio e desnormaliza `workspace`. `clean()` recusa `allowed_modes` que não seja lista, que traga modo desconhecido, ou que não contenha o `default_mode` — esta última é a que faria toda alocação sob a política rejeitar justamente o modo para o qual ela cai.
+- `AssignmentDecision` e `IssueResponsibilityEvent`, ambos herdando de `AppendOnlyModel` (novo, abstrato): `save()` numa linha existente levanta `ValueError`, e o soft delete também, porque soft delete é uma escrita. Um `update()` de queryset passa por fora, como em qualquer modelo — a guarda torna a regra óbvia, não é um sistema de permissão. Está documentado no docstring.
+- Duas constraints parciais de unicidade na política, uma para `unit_project IS NULL` e outra para `IS NOT NULL`: com uma só, o Postgres trataria os NULLs como distintos e uma área juntaria quantas políticas "padrão" quisesse, deixando o resolvedor escolhendo arbitrariamente entre elas.
 
-`0137` também adiciona `current_assignment_decision` em
-`IssueOrganizationalUnit` (ver D0.3).
+**Divergência consciente do RFC.** `AssignmentDecision.automation_operation`
+(FK para `AutomationOperation`) **não** entrou: aquele modelo nasce na `0138`,
+na Fase 1. Uma FK não pode apontar para uma tabela que ainda não existe;
+o campo entra junto com ela, pelo mesmo motivo que `current_assignment_decision`
+ficou para a `0137`.
 
-Choices como `TextChoices`: `AssignmentMode` (`manual`, `self_claim`,
-`least_loaded`, `explicit`), `RequestedAssignmentMode` (os anteriores +
-`default`), `PolicySource`, `DecisionTrigger`, `DecisionOutcome`,
-`ResponsibilitySource`.
+**Migrações.** `0136_orca_assignment_policy` (tabela + as duas constraints) e
+`0137_orca_assignment_decision` (as duas tabelas append-only, o
+`current_assignment_decision` no link e os três índices). Escritas à mão, pelo
+mesmo motivo do D0.3 — **confirmar com `makemigrations --check --dry-run`**.
 
-**Testes** (`test_assignment_models.py`):
-- unicidade: duas políticas padrão na mesma área → erro; duas para o mesmo `unit_project` → erro; uma padrão e uma por projeto → ok.
-- `allowed_modes` sem `default_mode` → `ValidationError` no `clean()`.
-- `version` incrementa a cada save.
-- decisão e evento não aceitam update.
+**Testes.** `test_assignment_models.py`: unicidade nos quatro arranjos
+(duas padrão, duas por projeto, uma de cada, duas áreas) e o fato de o soft
+delete liberar a vaga; validação dos `allowed_modes` e incremento de
+`version`; e os logs recusando edição e soft delete, com `supersedes` como a
+forma correta de mudar uma decisão.
 
 **Aceite.**
-- [ ] `makemigrations --check` limpo.
-- [ ] Testes verdes.
+- [ ] `makemigrations --check` limpo (comando no D0.3).
+- [x] Testes escritos; ruff limpo. Verdes a confirmar no CI.
 
 ---
 

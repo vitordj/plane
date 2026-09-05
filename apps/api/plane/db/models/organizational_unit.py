@@ -3,6 +3,7 @@
 # See the LICENSE file for details.
 
 # Django imports
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
@@ -17,6 +18,39 @@ class OrganizationalUnitMemberRole(models.TextChoices):
 
     LEAD = "lead", "Lead"
     MEMBER = "member", "Member"
+
+
+class RoutingState(models.TextChoices):
+    """
+    Where a work item stands between "an area owns this" and "a person is on it".
+
+    @description Responsibility and assignment used to be the same moment: the
+    link existed and either somebody was assigned or nobody was, with no way to
+    tell "waiting to be picked up" from "tried and found nobody". The queue is
+    that missing state, and it is what a coordinator's board reads.
+    """
+
+    QUEUED = "queued", "Queued"
+    ASSIGNED = "assigned", "Assigned"
+    ALLOCATION_FAILED = "allocation_failed", "Allocation failed"
+    SUSPENDED = "suspended", "Suspended"
+
+
+class QueueReason(models.TextChoices):
+    """
+    Why an item is sitting in the queue.
+
+    @description Without it every queued item looks alike, and the coordinator
+    cannot tell the ones nobody has looked at yet from the ones the allocator
+    already failed on — which need different actions.
+    """
+
+    NEW_ITEM = "new_item", "New item"
+    AWAITING_COORDINATOR = "awaiting_coordinator", "Awaiting coordinator"
+    AWAITING_CLAIM = "awaiting_claim", "Awaiting claim"
+    NO_ELIGIBLE_MEMBER = "no_eligible_member", "No eligible member"
+    EXECUTOR_UNAVAILABLE = "executor_unavailable", "Executor unavailable"
+    MANUALLY_RETURNED = "manually_returned", "Manually returned"
 
 
 class DirectorySyncSource(models.TextChoices):
@@ -452,13 +486,73 @@ class IssueOrganizationalUnit(BaseModel):
         related_name="issue_organizational_units",
     )
 
+    # --- routing state --------------------------------------------------
+    # An item owned by an area is either waiting for a person or has one. The
+    # two CHECKs below keep those two facts from drifting apart in the
+    # database; the third fact — that the executor is also a live
+    # ``IssueAssignee`` — cannot be expressed as a CHECK and is a service
+    # invariant (RFC §6.1), verified by test and by audit command.
+    routing_state = models.CharField(
+        max_length=16,
+        choices=RoutingState.choices,
+        default=RoutingState.QUEUED,
+    )
+    queue_reason = models.CharField(
+        max_length=32,
+        choices=QueueReason.choices,
+        blank=True,
+        default="",
+    )
+    queued_at = models.DateTimeField(null=True, blank=True)
+    # Effective assignment SLA for this item (RFC §6.6).
+    assignment_due_at = models.DateTimeField(null=True, blank=True)
+    # SET_NULL, not CASCADE: deleting a person must not delete the record that
+    # their area owned the work.
+    primary_executor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orca_primary_executions",
+    )
+    # The decision currently in force. Referenced by name to keep the import
+    # one-way: the decision log knows about the link's models, not the other
+    # way round. Added in migration 0137, after the log's table exists.
+    current_assignment_decision = models.ForeignKey(
+        "db.AssignmentDecision",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="current_for_links",
+    )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=["issue"],
                 condition=Q(deleted_at__isnull=True),
                 name="issue_org_unit_unique_issue_when_deleted_at_null",
-            )
+            ),
+            # "assigned" without an executor is a lie the queue view would
+            # believe; an executor in any other state is a leftover the load
+            # count would keep charging to that person.
+            models.CheckConstraint(
+                condition=~Q(routing_state=RoutingState.ASSIGNED) | Q(primary_executor__isnull=False),
+                name="issue_org_unit_assigned_requires_executor",
+            ),
+            models.CheckConstraint(
+                condition=Q(routing_state=RoutingState.ASSIGNED) | Q(primary_executor__isnull=True),
+                name="issue_org_unit_executor_only_when_assigned",
+            ),
+        ]
+        indexes = [
+            # The coordinator's queue: one area's items in one state.
+            models.Index(
+                fields=["workspace", "organizational_unit", "routing_state"],
+                name="issue_org_unit_queue_idx",
+            ),
+            # Load per person, which the ranking reads for every candidate.
+            models.Index(fields=["primary_executor", "routing_state"], name="issue_org_unit_load_idx"),
         ]
         verbose_name = "Issue Organizational Unit"
         verbose_name_plural = "Issue Organizational Units"
