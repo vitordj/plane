@@ -640,8 +640,27 @@ class TestThePolicyRoute:
         assert response.data["policy"]["version"] == 1
 
     def test_an_unknown_area_is_not_found(self, admin_client, workspace_with_members):
-        import uuid
-
         response = admin_client.get(unit_policy_url(workspace_with_members.slug, uuid.uuid4()))
+
+        assert response.status_code == 404
+
+    def test_a_guest_may_read_it(self, guest_client, workspace_with_members, covering_unit):
+        """It is a read, like the rest of the layer's GETs: a Guest who can see
+        the area can see how it hands work out."""
+        response = guest_client.get(unit_policy_url(workspace_with_members.slug, covering_unit.id))
+
+        assert response.status_code == 200
+
+    def test_somebody_from_another_workspace_cannot(self, outsider_client, workspace_with_members, covering_unit):
+        response = outsider_client.get(unit_policy_url(workspace_with_members.slug, covering_unit.id))
+
+        assert response.status_code == 403
+
+    def test_the_kill_switch_closes_it(self, settings, admin_client, workspace_with_members, covering_unit):
+        """A disabled layer answers 404 on every one of its routes, the new
+        ones included — otherwise the switch is a UI preference."""
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        response = admin_client.get(unit_policy_url(workspace_with_members.slug, covering_unit.id))
 
         assert response.status_code == 404

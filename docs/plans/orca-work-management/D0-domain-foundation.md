@@ -323,18 +323,34 @@ pessoa, não passou por cima de ninguém.
 
 ---
 
-## D0.9 — Fechar a matriz de testes da fase `[ ]`
+## D0.9 — Fechar a matriz de testes da fase `[x]`
 
-Percorrer RFC §10 linhas: I2 cobertura, Resolução de política, Ranking,
-Estados, Decisões, Concorrência, Encaminhamento, Kill switches, Permissões
-(para os endpoints internos alterados). Cada linha tem pelo menos um teste
-nomeado com o identificador (`test_i2_unit_not_covering_project_rejected`).
-Adicionar em `apps/api/tests/TESTING_GUIDE.md` a seção "Testes de
-concorrência" com o padrão usado.
+Percorridas as linhas do RFC §10 que pertencem à D0. Os nomes dos testes
+**não** ganharam prefixo `test_i2_...`: o repositório nomeia teste pela
+afirmação, não pelo identificador, e um prefixo de spec envelhece mal (a
+numeração da RFC muda, o nome fica). O rastro fica na tabela ao final deste
+arquivo, que é onde alguém procura "onde isto está coberto".
+
+**Lacunas encontradas e fechadas.**
+- **Estados**: a máquina de estados de §6.2 só era exercida de lado, por cada
+  operação no estado em que ela costuma rodar. `test_routing_transitions.py`
+  percorre a tabela: cada transição permitida acontece e cada transição
+  ausente é recusada — inclusive `allocation_failed → assigned` (por claim e
+  por rodar a alocação de novo), `suspended → queued`, e as recusas com o
+  status certo (409 quando alguém chegou primeiro, 400 quando o movimento não
+  faz sentido daquele estado).
+- **Concorrência**: faltava a terceira corrida do §10, alocação e claim
+  simultâneos no mesmo item — `test_an_allocation_and_a_claim_leave_one_executor`.
+- **Permissões e kill switch** da rota nova de política: Guest lê, gente de
+  outro workspace não, camada desligada devolve 404.
+- **`apps/api/tests/RUNNING_TESTS.md`** (o guia existente; não há
+  `TESTING_GUIDE.md` neste fork) ganhou a seção "Concurrency tests" com o
+  padrão: `transaction=True`, fixtures próprias, `connection.close()` por
+  thread, e asserção sobre o agregado e nunca sobre quem venceu.
 
 **Aceite.**
-- [ ] `pytest plane/tests/unit/orca/ -q` verde no runner Docker.
-- [ ] Cobertura das linhas listadas registrada em uma tabela ao final deste arquivo.
+- [ ] `pytest plane/tests/unit/orca/ -q` verde no runner Docker (a sessão não roda pytest — AGENTS.md).
+- [x] Cobertura das linhas listadas registrada na tabela ao final deste arquivo.
 
 ---
 
@@ -410,14 +426,35 @@ só. O roster interno da área já tinha teste equivalente.
 
 Data do gate: ____
 
-### Testes por invariante (preencher)
+### Testes por invariante
+
+Arquivos em `apps/api/plane/tests/unit/orca/`.
 
 | Invariante | Testes |
 | --- | --- |
-| I1 | |
-| I2 | |
-| I3 | |
-| I4 | |
-| I5 | |
-| I6 | |
-| I7 | |
+| I1 — uma área ativa por item | `test_issue_organizational_unit_http.py::test_replacing_the_responsible_unit_keeps_a_single_link`; a constraint parcial existente é do PR anterior |
+| I2 — área ativa cobrindo o projeto | `test_issue_unit_coverage.py` inteiro (a regra, as duas rotas, o engine, o serializer); `test_assignment_service.py::test_an_area_that_does_not_cover_the_project_is_refused`, `::test_marking_an_area_that_does_not_cover_the_project_is_refused`, `::test_a_transfer_to_an_area_that_does_not_cover_the_project_is_refused` |
+| I3 — `assigned` ⇔ executor ⇔ `IssueAssignee` | positivo: `test_routing_state.py::test_assigned_with_an_executor_is_accepted`, `::test_assigned_without_an_executor_is_rejected`, `::test_an_executor_in_any_other_state_is_rejected` (CHECKs). O terceiro elo não é constraint: `test_audit_routing_command.py::test_an_executor_who_is_no_longer_an_assignee` e `::test_write_returns_the_item_to_the_queue` |
+| I4 — executor elegível na hora da decisão | `test_assignment_service.py::test_an_explicit_executor_outside_the_area_is_refused`, `::test_an_explicit_executor_outside_the_project_is_refused`, `::test_someone_outside_the_area_cannot_claim`; auditoria: `test_audit_routing_command.py::test_an_executor_who_left_the_area`, `::test_an_executor_who_lost_project_access` |
+| I5 — toda mudança gera decisão | `test_assignment_service.py::test_every_allocation_leaves_a_decision`, `::test_the_second_decision_supersedes_the_first`; append-only em `test_assignment_models.py::test_a_decision_cannot_be_edited`, `::test_a_decision_cannot_be_soft_deleted`, `::test_superseding_is_how_a_decision_changes`; pela rota em `test_issue_organizational_unit_http.py::test_assigning_makes_the_area_responsible_and_records_the_decision` |
+| I6 — toda troca de área gera evento | `test_assignment_service.py::test_marking_an_area_creates_the_link_and_the_event`, `::test_a_transfer_records_both_areas`; pela rota em `test_issue_organizational_unit_http.py::test_clearing_the_area_leaves_the_event_behind`, `::test_moving_an_item_between_areas_records_both`; append-only em `test_assignment_models.py::test_a_responsibility_event_cannot_be_edited` |
+| I7 — modo fora de `allowed_modes` recusado, nunca degradado | `test_assignment_service.py::test_a_requested_mode_outside_the_allowed_list_is_refused`, `::test_an_unknown_mode_is_refused_even_with_no_policy`, `::test_claiming_is_refused_when_the_policy_does_not_allow_it`; pela rota em `test_issue_organizational_unit_http.py::test_an_area_that_forbids_the_ranking_refuses_the_button`. O fallback sem política aceita qualquer modo por decisão registrada no D0.6: `::test_with_no_policy_any_mode_may_be_requested` |
+| I8 — binding externo | Fase 1 (API pública). Sem modelo nesta fase. |
+| I9 — idempotência | Fase 1 (API pública). Sem modelo nesta fase. |
+| I10 — nada escreve `ProjectMember` fora dos reconciliadores | `test_assignment_service.py::test_the_service_never_writes_project_member` |
+
+### Linhas do RFC §10 cobertas nesta fase
+
+| Linha | Onde |
+| --- | --- |
+| I2 cobertura | `test_issue_unit_coverage.py` |
+| Resolução de política | `test_assignment_service.py::TestPolicyResolution`; rota em `test_issue_organizational_unit_http.py::TestThePolicyRoute` |
+| Ranking `lb-1` | `test_assignment_service.py::TestRanking` (carga, trabalho concluído, colaborador, Guest, bot, teto, determinismo, motivo da exclusão) |
+| Estados | `test_routing_transitions.py` (tabela §6.2, positivo e negativo) e `test_routing_state.py` (CHECKs e backfill) |
+| Decisões | `test_assignment_models.py` e `test_assignment_service.py::TestAllocate` (toda alocação deixa decisão, e a segunda supersede a primeira) |
+| Concorrência | `test_assignment_concurrency.py` (20 alocações → 5/5/5/5; 10 claims → 1 vencedor; alocação × claim → um executor) |
+| Encaminhamento | `test_assignment_service.py::TestResponsibilityAndTransfer` |
+| Kill switches | `test_issue_organizational_unit_http.py::TestThePolicyRoute::test_the_kill_switch_closes_it`, `test_audit_routing_command.py::test_the_kill_switch_closes_the_command`, `test_org_unit_reconciler.py::TestArchivingAProject::test_the_kill_switch_stops_the_reconciliation`, e a cobertura anterior das rotas da camada |
+| Permissões | `test_issue_organizational_unit_http.py` (Admin/Member/Guest/fora do workspace nas rotas de item e na rota de política) |
+| Observabilidade | `test_assignment_metrics.py` |
+| Disponibilidade, API pública, Frontend | Fase 1 e Fase 2 |

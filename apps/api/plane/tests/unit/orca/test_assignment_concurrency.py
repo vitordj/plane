@@ -187,3 +187,40 @@ def test_a_contested_claim_names_the_winner(world):
         claim(issue, second)
 
     assert raised.value.payload["primary_executor_id"] == str(first.id)
+
+
+@pytest.mark.unit
+@pytest.mark.django_db(transaction=True)
+def test_an_allocation_and_a_claim_leave_one_executor(world):
+    """
+    The third race in RFC §10: a coordinator re-running the allocation while
+    somebody claims the same item. Both paths take the row lock, so one of them
+    waits and then sees the item the other left behind — either the claimer is
+    refused, or the allocation lands on the person who already has it. What
+    must never happen is two executors, or an executor nobody assigned.
+    """
+    issue = make_linked_issue(world, "Contested by two paths")
+    claimant = world["members"][0]
+
+    def allocate_it():
+        return in_thread(lambda: allocate(issue, world["unit"]).chosen_user_id)
+
+    def claim_it():
+        def work():
+            try:
+                return claim(issue, claimant).chosen_user_id
+            except AlreadyClaimed:
+                return None
+
+        return in_thread(work)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = [pool.submit(allocate_it), pool.submit(claim_it)]
+        outcomes = [future.result() for future in results]
+
+    link = IssueOrganizationalUnit.objects.get(issue=issue)
+    assert link.routing_state == RoutingState.ASSIGNED
+    assert link.primary_executor_id is not None
+    # Whoever the link ended up on is one of the two the threads chose, and the
+    # item carries exactly one executor.
+    assert link.primary_executor_id in {outcome for outcome in outcomes if outcome is not None}
