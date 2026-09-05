@@ -59,20 +59,38 @@ item — vale um levantamento antes de ligar a camada num workspace que já usa
 
 ---
 
-## D0.2 — Remover herança implícita de assignees na API pública (defeito D2) `[ ]`
+## D0.2 — Remover herança implícita de assignees na API pública (defeito D2) `[x]`
 
-**Onde.** `apps/api/plane/api/serializers/issue.py` ~l.188 (bloco
-`# ORCA CUSTOM FEATURE: Default to assignees of user's last created issue`).
+**Onde estava.** `apps/api/plane/api/serializers/issue.py` (~l.188) e o mesmo
+bloco em `apps/api/plane/app/serializers/issue.py`: sem `assignees`, o item
+copiava os assignees do último item criado pela mesma pessoa naquele projeto.
 
-**Mudança.**
-- Restaurar o comportamento upstream no serializer público: sem `assignees`, usar `project.default_assignee` se válido; nada além disso. Consultar o mesmo trecho no commit upstream `5662b7610` para copiar literalmente.
-- Se a equipe quiser manter "lembrar últimos assignees" na **UI**, mover a lógica para o serializer interno (`apps/api/plane/app/serializers/issue.py`) atrás de `ProjectCustomSettings.remember_last_assignees` (novo boolean, default `False`, migração própria) e expor o toggle em `apps/web/core/components/project/settings/features-list.tsx`. Se ninguém reivindicar, apenas remover.
-- Atualizar `test_issue_serializer_orca_features.py`: o teste que hoje espera a herança passa a esperar `default_assignee` (público) e a herança só com o toggle (interno).
+**Mudança** (entregue em `feat/orca-unit-project-coverage`).
+- O bloco upstream foi restaurado **literalmente** (copiado de `5662b7610`) nos dois serializers: sem `assignees`, usa o `default_assignee` do projeto se ele ainda for um membro ativo com papel ≥ 15; nada além disso.
+- **Decisão tomada nesta sessão:** removido também do serializer interno, não só do público. O plano deixava a alternativa de manter na UI atrás de `ProjectCustomSettings.remember_last_assignees`; ninguém reivindicou o comportamento, e o próprio enunciado manda remover nesse caso. Um toggle que ninguém pediu é código morto com migração junto. Se aparecer demanda, a lógica está no histórico e vira item próprio.
+
+**Por que era defeito e não feature.** Para um robô que posta um item sem
+assignees, a escolha dependia de histórico invisível: o mesmo request produzia
+resultados diferentes conforme o que aquela conta tivesse criado antes. O
+contrato do `/api/v1` também divergia em silêncio do upstream, o que é
+exatamente o que um fork não deve fazer numa rota pública.
+
+**Testes.** `test_issue_serializer_orca_features.py`: a classe de herança deu
+lugar a `TestDefaultAssignee` (endpoint interno — sem default, lista
+explícita, default aplicado, default que saiu do projeto, default rebaixado a
+guest) e a `TestPublicApiDefaultAssignee`, que exercita
+`plane.api.serializers.IssueSerializer.create` direto (a rota pública
+autentica por API key; o que importa aqui é quais linhas o `create` grava).
+Os dois lados têm um teste que **fixa a ausência** da herança — é o que pega
+o comportamento voltando.
 
 **Aceite.**
-- [ ] Criar item via `/api/v1` sem `assignees` em projeto sem `default_assignee` → zero assignees.
-- [ ] Criar item via `/api/v1` sem `assignees` em projeto com `default_assignee` → esse assignee.
-- [ ] Docs: `README.md` (tabela de features) e `CHANGELOG` do próximo release registram a mudança de comportamento.
+- [x] Criar item via `/api/v1` sem `assignees` em projeto sem `default_assignee` → zero assignees (teste direto do serializer).
+- [x] Criar item via `/api/v1` sem `assignees` em projeto com `default_assignee` → esse assignee.
+- [ ] Registrar a mudança de comportamento nas notas do próximo release. O `CHANGELOG` é gerado pelo Release Please a partir das mensagens de commit, e o corpo do commit deste item descreve a mudança; **não** foi marcado `BREAKING CHANGE:` de propósito — com a versão em 1.x isso dispararia um bump major.
+- [ ] README: não há linha na tabela de features anunciando a herança (nunca houve), então não há o que corrigir lá. Fica registrado para o caso de alguém procurar.
+
+**Arquivos:** `apps/api/plane/api/serializers/issue.py`, `apps/api/plane/app/serializers/issue.py`, `apps/api/plane/tests/unit/orca/test_issue_serializer_orca_features.py`.
 
 ---
 
