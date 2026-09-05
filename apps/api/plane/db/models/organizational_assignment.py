@@ -248,6 +248,17 @@ class AssignmentDecision(AppendOnlyModel):
     )
     project = models.ForeignKey("db.Project", on_delete=models.CASCADE, related_name="orca_assignment_decisions")
     workspace = models.ForeignKey("db.Workspace", on_delete=models.CASCADE, related_name="orca_assignment_decisions")
+    # Which public-API call produced this decision, when one did. Deferred out
+    # of 0137 on purpose: AutomationOperation is born in 0138 and a foreign key
+    # cannot point at a table that does not exist yet (D0.4). Null for every
+    # decision taken from the UI, a command, or the internal API.
+    automation_operation = models.ForeignKey(
+        "db.AutomationOperation",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assignment_decisions",
+    )
 
     trigger = models.CharField(max_length=20, choices=DecisionTrigger.choices)
     requested_mode = models.CharField(max_length=16, choices=RequestedAssignmentMode.choices, null=True, blank=True)
