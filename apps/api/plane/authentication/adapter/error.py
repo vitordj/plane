@@ -53,6 +53,11 @@ AUTHENTICATION_ERROR_CODES = {
     "GITLAB_OAUTH_PROVIDER_ERROR": 5121,
     "GITEA_OAUTH_PROVIDER_ERROR": 5123,
     "ENTRA_OAUTH_PROVIDER_ERROR": 5126,
+    # The id token did not verify: bad signature, wrong audience or issuer,
+    # outside its validity window, or a required claim missing.
+    "ENTRA_ID_TOKEN_INVALID": 5127,
+    # The id token was not minted for this browser's sign-in attempt.
+    "ENTRA_NONCE_MISMATCH": 5128,
     "OAUTH_PROVIDER_UNVERIFIED_EMAIL": 5124,
     # Reset Password
     "INVALID_PASSWORD_TOKEN": 5125,

@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
-from rest_framework import serializers
 from plane.db.models import ProjectState, WorkspaceProjectStateSettings, ProjectStateProperty
 from .base import BaseSerializer
 

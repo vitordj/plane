@@ -70,6 +70,8 @@ export enum EAuthenticationErrorCodes {
   // provider upstream adds later cannot collide.
   ENTRA_NOT_CONFIGURED = "5113",
   ENTRA_OAUTH_PROVIDER_ERROR = "5126",
+  ENTRA_ID_TOKEN_INVALID = "5127",
+  ENTRA_NONCE_MISMATCH = "5128",
   // Reset Password
   INVALID_PASSWORD_TOKEN = "5125",
   EXPIRED_PASSWORD_TOKEN = "5130",
@@ -282,6 +284,18 @@ const errorCodeMessages: {
     },
     message: () => translate("auth.errors.entra.sign_in_failed.message"),
   },
+  [EAuthenticationErrorCodes.ENTRA_ID_TOKEN_INVALID]: {
+    get title() {
+      return translate("auth.errors.entra.token_invalid.title");
+    },
+    message: () => translate("auth.errors.entra.token_invalid.message"),
+  },
+  [EAuthenticationErrorCodes.ENTRA_NONCE_MISMATCH]: {
+    get title() {
+      return translate("auth.errors.entra.nonce_mismatch.title");
+    },
+    message: () => translate("auth.errors.entra.nonce_mismatch.message"),
+  },
 
   // Reset Password
   [EAuthenticationErrorCodes.INVALID_PASSWORD_TOKEN]: {
@@ -399,6 +413,8 @@ export const authErrorHandler = (errorCode: EAuthenticationErrorCodes, email?: s
     EAuthenticationErrorCodes.GITLAB_OAUTH_PROVIDER_ERROR,
     EAuthenticationErrorCodes.ENTRA_NOT_CONFIGURED,
     EAuthenticationErrorCodes.ENTRA_OAUTH_PROVIDER_ERROR,
+    EAuthenticationErrorCodes.ENTRA_ID_TOKEN_INVALID,
+    EAuthenticationErrorCodes.ENTRA_NONCE_MISMATCH,
     EAuthenticationErrorCodes.INVALID_PASSWORD_TOKEN,
     EAuthenticationErrorCodes.EXPIRED_PASSWORD_TOKEN,
     EAuthenticationErrorCodes.INCORRECT_OLD_PASSWORD,

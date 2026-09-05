@@ -288,6 +288,7 @@ class IssueCreateSerializer(BaseSerializer):
 
         # Auto-apply conventional commit label if enabled for the project
         from plane.utils.conventional_commits import apply_conventional_commit_label
+
         apply_conventional_commit_label(issue)
 
         return issue
@@ -355,6 +356,7 @@ class IssueCreateSerializer(BaseSerializer):
         # Auto-apply conventional commit label only when the work item title was actually changed
         if name_updated:
             from plane.utils.conventional_commits import apply_conventional_commit_label
+
             apply_conventional_commit_label(updated_issue, old_title=old_name)
 
         return updated_issue

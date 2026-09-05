@@ -170,19 +170,36 @@ Once you merge the PR into the **`stage`** branch, the **`stage.yml`** workflow 
 
 ### Phase 4: Release Candidate & Production Promotion
 
-When staging is verified and you are ready to release to production:
+When staging is verified and you are ready to release to production. The full
+procedure — checks at each step, verification after the deploy, and rollback —
+is [`docs/release-runbook.md`](./docs/release-runbook.md); this is the outline.
 
-1. **Open the PR**: Create a PR from **`stage`** targeting the **`prod`** branch.
-2. **PR Creation**: Do **NOT** edit the title or description when creating. Just click **"Create pull request"**.
-3. **Auto-Templating & PR Naming**: The automation workflow will:
-   - Label the PR with `release-candidate`.
-   - Inspect `package.json`, read the new version number, and rename the PR title to: `orca-release: Promote Release Candidate v[Version]`.
-   - Replace the description with the **`release_candidate.md`** QA checklist.
-4. **Verify release**: Reviewers verify staging builds, check off database migration safety, confirm production environment variables are updated, and sign off on the QA items.
-5. **Production Deploy**: Merging the PR into **`prod`** triggers the **`prod.yml`** workflow:
-   - Pulls the built `:stage` images from GHCR.
-   - Retags all images to `:latest` and the release version tag `:[Version]`.
-   - Pushes them to GHCR and triggers Coolify to redeploy the production server.
+Promotion takes **two** merges, not one:
+
+1. **Release Candidate PR**: the `Ensure Release Candidate PR` job in
+   `stage.yml` keeps a PR open from **`stage`** to **`prod`** whenever `stage`
+   is ahead, titled from `package.json` and filled with the
+   **`release_candidate.md`** checklist. It fails loudly if it cannot create
+   one, so a green job with no PR means something is wrong.
+2. **Verify release**: reviewers verify staging builds, check off database
+   migration safety, confirm production environment variables are set, and
+   sign off on the QA items.
+3. **Merge the RC PR**: this lands the changes on `prod` and triggers
+   **`release-please`**, which opens a *second* PR carrying the version bump
+   and the changelog. Merging the RC PR **does not deploy**.
+4. **Merge the Release PR**: this creates the `chore(prod): release [Version]`
+   commit, which is what `prod.yml` keys on. Check the proposed version first —
+   the `-plane.[UpstreamVersion]` suffix is a semver prerelease tag and is the
+   part most likely to be dropped (runbook §2).
+5. **Production promotion**: `prod.yml` resolves the `stage` commit the release
+   carries, reads the immutable `:sha-[commit]` images the staging workflow
+   published for it, and copies **those digests** to `:latest`, `:[Version]`
+   and `:v[Version]`. It refuses before writing any tag if a service has no
+   image for that commit. Nothing is promoted from the moving `:stage` tag, and
+   nothing is rebuilt.
+6. **Verify the deploy**: `GET /api/orca/build-info/` and
+   `manage.py orca_build_info` in the api, worker and beat containers must
+   report the same commit as the release.
 
 ---
 

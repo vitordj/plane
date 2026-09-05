@@ -58,8 +58,12 @@ class IntakeIssueSerializer(BaseSerializer):
                     State.objects.filter(project_id=intake_issue.project_id, default=True).first()
                     or getattr(intake_issue.project, "default_state", None)
                     or State.objects.filter(project_id=intake_issue.project_id, group=StateGroup.BACKLOG.value).first()
-                    or State.objects.filter(project_id=intake_issue.project_id, group=StateGroup.UNSTARTED.value).first()
-                    or State.objects.filter(project_id=intake_issue.project_id).exclude(group=StateGroup.TRIAGE.value).first()
+                    or State.objects.filter(
+                        project_id=intake_issue.project_id, group=StateGroup.UNSTARTED.value
+                    ).first()
+                    or State.objects.filter(project_id=intake_issue.project_id)
+                    .exclude(group=StateGroup.TRIAGE.value)
+                    .first()
                     or State.all_state_objects.filter(project_id=intake_issue.project_id).first()
                 )
 
@@ -84,7 +88,9 @@ class IntakeIssueSerializer(BaseSerializer):
                     or getattr(instance.project, "default_state", None)
                     or State.objects.filter(project_id=instance.project_id, group=StateGroup.BACKLOG.value).first()
                     or State.objects.filter(project_id=instance.project_id, group=StateGroup.UNSTARTED.value).first()
-                    or State.objects.filter(project_id=instance.project_id).exclude(group=StateGroup.TRIAGE.value).first()
+                    or State.objects.filter(project_id=instance.project_id)
+                    .exclude(group=StateGroup.TRIAGE.value)
+                    .first()
                     or State.all_state_objects.filter(project_id=instance.project_id).first()
                 )
                 if default_state:

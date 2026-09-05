@@ -43,7 +43,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 
 | Fase | Arquivo | Itens | Estado | Gate fechado em |
 | --- | --- | --- | --- | --- |
-| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 17 | `[~]` 2/17 (P0.0, P0.14) | — |
+| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 18 | `[~]` 12/18 (P0.0–P0.4, P0.6, P0.7, P0.9, P0.10, P0.14, P0.15, P0.16) · P0.5 e P0.13 parciais | — |
 | D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 12 | `[~]` 12/12 — aguardando o Gate D0 | — |
 | 1 Contrato público | [01-public-contract.md](./01-public-contract.md) | 8 | `[ ]` 0/8 | — |
 | 2 Fila e coordenador | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6 | — |
@@ -53,24 +53,44 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 
 ## Próximo item recomendado
 
-P0.0 e P0.14 estão entregues (branch `claude/wayfinder-areas-review-yt98v5`).
-Siga com **P0.1 → P0.2 → P0.3** em sequência (a cadeia de release: PR não
-publica `:stage`, tag por SHA, promoção por digest) — são pequenos e juntos
-fecham a proveniência do deploy que P0.0 começou. Em paralelo, **P0.6**
-(senha fixa) e **P0.7** (`TRUSTED_PROXIES`) continuam sendo os riscos de
-comprometimento mais diretos. A D0 está com os 12 itens entregues e
-aguardando o Gate D0 — o que falta ali é execução de suíte e migração, que a
-sessão de agente não roda (AGENTS.md): rodar `pytest plane/tests/unit/orca/`
-no runner Docker, aplicar `0135`–`0137` e passar o
-`audit_organizational_routing` num dump de `stage`. Fechado o gate, a Fase 1
-(contrato público) é o próximo bloco do domínio.
+A cadeia de proveniência do release está fechada no código: P0.0 e P0.14
+(branch `claude/wayfinder-areas-review-yt98v5`) e P0.1 → P0.2 → P0.3 (branch
+`claude/loving-carson-n9x6eq`) — PR não publica `:stage`, todo commit de
+`stage` ganha `:sha-<commit>` nos seis serviços, e a promoção para produção
+copia digests daquele commit em vez de seguir uma tag mutável. Falta o
+ensaio em CI/ambiente real dos critérios que só operação pode marcar.
+
+P0.4 (o job `promote-rc` que ficava verde sem criar o RC), a metade de
+permissões do P0.5 e o P0.6 (senha fixa na migração de usuários) foram na
+mesma branch, junto com **P0.7** (`TRUSTED_PROXIES` sem fallback aberto).
+**P0.9** (ruff obrigatório no CI) e **P0.10** (validação completa do `id_token`
+do Entra, nonce e timeouts) também entraram. Restam em P0: **P0.8** (suíte
+upstream no CI — precisa de uma execução real da suíte para saber o que
+excluir), **P0.11** (sync com o upstream 1.4.2), **P0.12** (apagar branches
+remotos), **P0.13** (versão e runbook), **P0.17** (documentação de implantação)
+e a metade do lockfile do **P0.5**.
+
+No domínio, a **D0 está com os 12 itens entregues** e aguardando o Gate D0. O
+que falta ali não é código: rodar `pytest plane/tests/unit/orca/` no runner
+Docker, aplicar as migrações `0135`–`0137` e passar o
+`audit_organizational_routing` num dump de `stage` — as três coisas que a
+sessão de agente não executa (AGENTS.md). Fechado o gate, a **Fase 1**
+(contrato público) é o próximo bloco.
+
+Pendências de operação abertas por esta branch, **uma delas bloqueante**:
+definir `TRUSTED_PROXIES` no ambiente de implantação **antes** de mesclar em
+`stage` (sem ela o Compose Orca recusa subir, de propósito); invalidar as
+contas criadas pela versão antiga do `create_users.py` (procedimento em
+`tools/migration/README.md`); regenerar `pnpm-lock.yaml` para destravar o
+`--frozen-lockfile` (P0.5).
 
 ## Pendências externas (não bloqueiam P0/D0)
 
 | Ref. | Pendência | Quem | Necessária em |
 | --- | --- | --- | --- |
 | A5 | Confirmar comportamento do Plane Compose em re-push com mesmo id e ausência de campo de área | pessoa com acesso à doc oficial | Fase 4 |
-| — | Faixa de rede do proxy Coolify para `TRUSTED_PROXIES` | operação | P0.7 |
+| — | Faixa de rede do proxy/ingress da 4UM para `TRUSTED_PROXIES` | operação | P0.7 |
+| — | Alvo real de implantação (o repositório documenta Coolify, que é o ambiente da Orca, não o da 4UM) | negócio/operação | P0.17 |
 | — | Tenant Azure de testes para validar P0.10 de ponta a ponta | operação | fim de P0 (o item é implementável com testes unitários antes) |
 | — | Definir quem é coordenador de cada área piloto | negócio | Fase 2 |
 | — | Área piloto e projeto piloto para o primeiro uso real da fila | negócio | Gate 2-mínimo |
@@ -82,4 +102,16 @@ no runner Docker, aplicar `0135`–`0137` e passar o
 | 2026-09-03 | Plano criado a partir do RFC rev. 2. Nenhum item iniciado. |
 | 2026-09-04 | PRs #5 e #6 mesclados em `stage` (`3a4c769`): hardening complementar da camada de Áreas (kill switch nas tarefas/comandos/SCIM, baseline ao elevar papel, rate limit SCIM pós-autenticação, rejeição de convidados Entra). Não fecha item P0/D0; registrado no cabeçalho de P0. |
 | 2026-09-04 | Revisão externa do commit `3a4c769` verificada contra o código. Achado novo: Compose apontava para o namespace do repositório-pai. Itens criados: P0.0, P0.14, P0.15, P0.16, D0.11, D0.12; critério novo em P0.10. P0.0 e P0.14 entregues no mesmo PR. |
+| 2026-09-05 | CI do PR #8 verde em tudo que terminou: `API Lint (ruff)`, `API Tests (pytest)`, `Code Quality Checks` (formato, lint, `check:sync`, tipos), proveniência do Compose, copyright e os **seis** builds. O log do build de PR confirma o P0.1: tag `pr-8-<sha>` e nenhuma publicação. |
+| 2026-09-05 | P0.12 verificado (falta executar): os três branches do enunciado confirmados como superados contra o código — inclusive o único commit que parecia valer um port, que corrige um bloco de settings inexistente em `stage` — e mais nove branches `claude/*` identificados como totalmente contidos em `stage`. A sessão não tem permissão para apagar branch remoto; comandos e SHAs registrados no item. |
+| 2026-09-05 | P0.13 parcial: `docs/release-runbook.md` escrito (fluxo em duas etapas, verificação pós-deploy, rollback por digest), template de RC e FORK.md §Phase 4 alinhados ao que os workflows fazem. O bump de versão fica para o PR do sync (P0.11); achado registrado: o sufixo `-plane.<upstream>` é um prerelease semver e o Release Please pode descartá-lo. |
+| 2026-09-05 | P0.10 entregue: `id_token` do Entra verificado por completo contra o JWKS do tenant (assinatura, `aud`, `iss`, janela de validade, claims obrigatórias), nonce de uso único no fluxo, timeouts em todas as chamadas OAuth, dois códigos de erro novos nos cinco lugares que os espelham, e testes com par de chaves RSA. Item novo P0.17 (documentação de implantação presume Coolify, que não é o ambiente da 4UM). |
+| 2026-09-05 | P0.15 entregue: as imagens gravam o commit (`ORCA_BUILD_SHA`/`ORCA_IMAGE_TAG`), `GET /api/orca/build-info/` responde a admin de instância e `manage.py orca_build_info` responde no worker e no beat, que não têm HTTP. Fecha no runtime a cadeia que P0.0–P0.3 fecharam no registry. |
+| 2026-09-05 | P0.16 entregue: MinIO fixado em tag imutável no Compose Orca e no de teste; CI passa a rodar PostgreSQL 15.7, igual ao ambiente implantado, com a decisão registrada em `RUNNING_TESTS.md`. |
+| 2026-09-05 | P0.9 entregue: job `api_lint` roda `ruff check` e `ruff format --check` em `apps/api` com a versão fixada em `requirements/local.txt`; 30 achados de lint corrigidos, 23 arquivos do fork formatados e 38 arquivos upstream em exclusão temporária de formatação até o sync do P0.11. |
+| 2026-09-05 | P0.7 entregue: `trusted_proxies` sem default aberto nos dois Caddyfiles, variável obrigatória no Compose Orca e encaminhada (faixas privadas) no Compose padrão. Achado: a variável não era encaminhada a nenhum dos dois, então o `0.0.0.0/0` valia sempre. |
+| 2026-09-05 | P0.6 entregue: contas migradas passam a nascer sem senha utilizável (`set_unusable_password` + `is_password_autoset`), com testes e com o procedimento de invalidação das contas já criadas no README da ferramenta. |
+| 2026-09-05 | P0.5 parcial: permissões mínimas por job em `stage.yml` e `prod.yml`. A metade do lockfile ficou bloqueada por um achado — `pnpm-lock.yaml` está defasado em relação ao catálogo do workspace desde o commit upstream `31853ab2` (46 dependências com `catalog:` no `package.json` e especificador resolvido no lockfile), então `--frozen-lockfile` falharia em todo run. Precisa de `pnpm install --lockfile-only` no mesmo commit da troca da flag. |
+| 2026-09-05 | P0.4 entregue na mesma branch: `promote-rc` passa a usar `gh`, verifica a existência de `prod`, e falha quando a RC não existe nem pôde ser criada. |
+| 2026-09-05 | P0.1, P0.2 e P0.3 entregues em `claude/loving-carson-n9x6eq`: PR constrói sem publicar; push em `stage` publica `:stage` e `:sha-<commit>` e retagueia por digest os serviços não reconstruídos, para que todo commit tenha os seis serviços; artifact `image-digests`; `prod.yml` resolve o commit de `stage` promovido e copia os digests daquele commit, falhando antes de qualquer retag se faltar imagem. |
 | 2026-09-05 | D0 completa (D0.1–D0.12) na branch `feat/orca-unit-project-coverage`: cobertura área↔projeto, herança de assignee removida da API pública, estado de fila, política e log de decisões, serviço único de alocação, endpoints internos falando com ele, comando de auditoria, métricas, matriz de testes, documentação, reconciliação no arquivamento e roster SCIM. Falta só a execução do Gate D0 (suíte, migrações, auditoria num dump). |
