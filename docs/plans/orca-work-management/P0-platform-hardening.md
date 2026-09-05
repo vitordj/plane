@@ -111,21 +111,25 @@ revisado.
 
 ---
 
-## P0.4 — Job `promote-rc` não pode ficar verde sem PR `[ ]`
+## P0.4 — Job `promote-rc` não pode ficar verde sem PR `[x]`
 
 **Problema.** `stage.yml`, job "Ensure Release Candidate PR": `curl -sS` sem
 `-f`, `python3 ... || true`, e `exit 0` em caminhos que não confirmam a
 criação. O job passa mesmo sem PR.
 
-**Mudança.**
-- Trocar os `curl` por `curl -fsS` e checar código HTTP; remover `|| true` dos passos que buscam/criam a PR (manter só no `git fetch origin prod`).
-- Ao final, `test -n "$PR_NUMBER" || { echo "::error::RC PR not found nor created"; exit 1; }`.
-- Preferível: substituir o bloco Python por `gh pr list`/`gh pr create` (o runner já tem `gh`), mantendo o template `release_candidate.md` como corpo.
-- Verificar em Settings → Actions → General que "Allow GitHub Actions to create and approve pull requests" está ligado; documentar no runbook.
+**Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+- O bloco de `curl` + Python foi substituído por `gh pr list`/`gh pr create`/`gh pr edit` (o runner já tem `gh`), com `set -euo pipefail`: erro de API derruba o passo em vez de virar string vazia. O corpo continua vindo de `release_candidate.md`.
+- `git fetch origin prod` mantém o `|| true` (o branch pode não existir num repositório novo), mas o passo passou a **verificar** `refs/remotes/origin/prod` e falhar com mensagem própria se não existir — antes, `git rev-list origin/prod..stage` num repositório sem `prod` derrubava o passo com um erro do git que não dizia o que fazer.
+- Ao final, `PR_NUMBER` vazio é `::error::RC PR not found nor created` + `exit 1`. O número vem da URL impressa pelo `gh pr create`, com `gh pr list` como fallback — um PR criado com sucesso não pode virar job vermelho por eventual consistency da API.
+- Atribuir o responsável ficou explicitamente não fatal (`::warning`): o entregável do job é a PR existir, e um `RELEASE_ASSIGNEE` desatualizado não pode bloquear o release.
+- Link da RC e número de commits à frente de `prod` vão para o resumo do run.
+- Comentário no workflow registra o modo de falha operacional: `gh pr create` devolve 403 quando "Allow GitHub Actions to create and approve pull requests" (Settings → Actions → General) está desligado e o run usa o `GITHUB_TOKEN` padrão; o remédio é ligar a opção ou definir `RELEASE_PLEASE_TOKEN`. Entra no runbook em P0.13.
 
 **Aceite.**
+- [x] Ensaio a seco do passo fora do CI, com `gh` simulado e um repositório git local (`stage` à frente de `prod`, PR já aberta, `gh pr create` devolvendo 403, `stage` igual a `prod`, `prod` inexistente): cria e reaproveita a PR nos dois primeiros casos, sai `1` com a mensagem esperada nos casos 403 e `prod` ausente, e sai `0` sem criar nada quando não há o que promover.
 - [ ] Com `stage` à frente de `prod`, o job cria a PR ou falha com mensagem clara.
 - [ ] Teste negativo: rodar com token sem permissão → job vermelho.
+- [ ] Confirmar em Settings → Actions → General que "Allow GitHub Actions to create and approve pull requests" está ligado (ou que `RELEASE_PLEASE_TOKEN` está configurado). Só quem administra o repositório pode conferir.
 
 **Arquivos:** `.github/workflows/stage.yml`.
 
