@@ -68,6 +68,7 @@ from plane.db.models import (
 )
 
 from .coverage import unit_covers_project
+from .metrics import record_assignment_outcome, record_decision_superseded, record_no_candidate
 from .errors import (
     AlreadyClaimed,
     AssignmentModeNotAllowed,
@@ -455,6 +456,7 @@ def _record(
     reason="",
 ) -> AssignmentDecision:
     """@description Write the decision and point the link at it (I5). @returns The new decision."""
+    superseded = link.current_assignment_decision
     decision = AssignmentDecision.objects.create(
         issue_id=link.issue_id,
         organizational_unit_id=link.organizational_unit_id,
@@ -487,6 +489,29 @@ def _record(
             "trigger": trigger,
         },
     )
+    record_assignment_outcome(
+        mode=decision.effective_mode,
+        outcome=outcome,
+        trigger=trigger,
+        workspace_id=link.workspace_id,
+        unit_id=link.organizational_unit_id,
+        issue_id=link.issue_id,
+        decision_id=decision.id,
+    )
+    # Only a decision that takes the work off the person the previous one
+    # chose is an overturned choice. A queued item being allocated, or the same
+    # person being confirmed, supersedes nothing anybody disagreed with.
+    if (
+        superseded is not None
+        and superseded.outcome == DecisionOutcome.ASSIGNED
+        and str(chosen_user_id) != str(previous_executor_id)
+    ):
+        record_decision_superseded(
+            unit_id=link.organizational_unit_id,
+            previous_mode=superseded.effective_mode,
+            workspace_id=link.workspace_id,
+            issue_id=link.issue_id,
+        )
     return decision
 
 
@@ -631,6 +656,12 @@ def allocate(
                 _apply_assigned(link, decision, chosen.user_id)
                 return AllocationResult(link, decision, DecisionOutcome.ASSIGNED, chosen.user_id)
 
+            record_no_candidate(
+                unit_id=unit.id,
+                workspace_id=issue.workspace_id,
+                project_id=issue.project_id,
+                considered=len(ranked.excluded),
+            )
             decision = _record(
                 link,
                 trigger=trigger,

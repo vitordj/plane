@@ -53,6 +53,11 @@ from .language import (
     get_default_language,
     normalize_language,
 )
+from .metrics import (
+    record_assignment_outcome,
+    record_decision_superseded,
+    record_no_candidate,
+)
 from .routing_audit import Finding, audit_routing
 from .org_unit_reconciler import (
     AccessChange,
@@ -108,6 +113,9 @@ __all__ = [
     "reconcile_unit",
     "reconcile_unit_project",
     "reconcile_workspace",
+    "record_assignment_outcome",
+    "record_decision_superseded",
+    "record_no_candidate",
     "resolve_identity",
     "resolve_policy",
     "return_to_queue",

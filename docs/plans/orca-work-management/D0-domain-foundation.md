@@ -301,17 +301,25 @@ segunda) e o kill switch fechando o comando.
 
 ---
 
-## D0.8 — Observabilidade mínima `[ ]`
+## D0.8 — Observabilidade mínima `[x]`
 
-**Mudança.** Módulo `services/orca/metrics.py` com funções
-`record_assignment_outcome(mode, outcome, trigger)`,
-`record_no_candidate(unit_id)`, `record_decision_superseded(unit_id,
-previous_mode)`; implementação inicial = log estruturado em nível INFO com
-nomes do RFC §11. Se o projeto adotar Prometheus/StatsD depois, só este
-módulo muda. Chamado por `assignment_service.py`.
+**Mudança.** `services/orca/metrics.py` com `record_assignment_outcome`,
+`record_no_candidate` e `record_decision_superseded`; implementação = log
+estruturado INFO no logger `plane.orca.metrics`, com o campo `metric` levando
+o nome do RFC §11 e os rótulos que a tabela lista. Prometheus/StatsD depois
+trocam só este módulo.
+
+Chamadas em `assignment_service`: o contador de desfecho sai de `_record`, ou
+seja, de **toda** decisão — inclusive as que enfileiram, senão "nada está
+sendo atribuído" e "nada está sendo pedido" ficam iguais no painel.
+`no_candidate` sai do ramo de `allocation_failed` com quantas pessoas o
+ranking chegou a olhar (`considered`), que é o que separa área vazia de área
+lotada. `superseded` só sai quando a decisão nova **tira** o trabalho de quem
+a anterior escolheu: alocar um item que estava na fila, ou confirmar a mesma
+pessoa, não passou por cima de ninguém.
 
 **Aceite.**
-- [ ] Teste que captura logs (`caplog`) e confere os campos.
+- [x] `test_assignment_metrics.py`: nomes e rótulos de cada contador, o desfecho enfileirado contando, `considered` distinguindo área vazia de teto atingido, alocação bem-sucedida sem `no_candidate`, reatribuição e devolução contando como superseded, alocação de item enfileirado não contando — e um teste de que nenhuma entrada carrega e-mail, nome de exibição ou título de item.
 
 ---
 
