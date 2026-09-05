@@ -190,23 +190,45 @@ regeneração trouxer ruído demais: fazer a troca junto com o sync upstream
 
 ---
 
-## P0.6 — Remover a senha fixa da migração de usuários `[ ]`
+## P0.6 — Remover a senha fixa da migração de usuários `[x]`
 
-**Problema.** `tools/migration/create_users.py` l.23 define
-`DEFAULT_PASSWORD = "TemporaryOrca123!"` e l.84 aplica a todos os usuários
-criados. Nenhuma troca forçada.
+**Problema.** `tools/migration/create_users.py` definia uma constante
+`DEFAULT_PASSWORD` com uma senha literal (l.23) e a aplicava a todos os
+usuários criados (l.84), sem troca forçada. A mesma string, publicada no
+repositório e repetida no README da ferramenta, abria toda conta migrada. A
+literal continua no histórico do git — por isso o item inclui invalidar as
+contas já criadas, não só parar de criar novas.
 
-**Mudança.**
-- Remover a constante. Para cada usuário criado: `user.set_unusable_password()` e `user.is_password_autoset = True` (mesmo padrão do provider Entra em `apps/api/plane/authentication/provider/oauth/entra.py`).
-- `tools/migration/README.md`: seção "Primeiro acesso" explicando Entra ID ou magic link; remover qualquer menção à senha antiga.
-- Adicionar ao README um bloco "Se este script já foi executado antes desta versão": comando Django para invalidar as credenciais dos usuários criados pelo script (filtrar por `created_at` da execução ou por lista de e-mails) com `set_unusable_password()`, e orientação para revisar logs de autenticação.
+**Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+- Constante removida. Conta nova recebe `set_unusable_password()` + `is_password_autoset = True`, persistidos com `save(update_fields=[...])`. Divergência consciente do `AuthAdapter` (`authentication/adapter/base.py`), que usa `set_password(uuid4().hex)`: lá a conta nasce **durante** um login já verificado; aqui ninguém autenticou, então a conta fica sem senha alguma. O flag é o mesmo que os provedores OAuth gravam, então o fluxo de primeiro acesso (Entra ID ou magic link) e o "definir senha" sem senha antiga funcionam igual.
+- Conta que já existe não é tocada: o dono pode ter definido a própria senha, e uma re-execução da migração não pode trancá-lo para fora.
+- Script refatorado para expor `create_user_from_payload(member, workspace=None)` e um `MigratedMember` (NamedTuple), e o bootstrap do Django virou `bootstrap_django()`, que não faz nada quando o registro de apps já está pronto — sem isso, importar o módulo no teste apontaria `DJANGO_SETTINGS_MODULE` para produção e trocaria o banco debaixo da suíte.
+- Timeout `(5, 30)` na chamada ao Plane de origem: uma migração que trava no meio é pior de diagnosticar que uma que falha.
+- `tools/migration/README.md`: seção "First access for pre-created accounts" (Entra ID ou magic link, e como definir senha depois) e seção "If you ran this script before September 2026" com o comando de invalidação — lê a senha antiga de variável de ambiente (a literal não volta ao repositório; está no histórico do git) e devolve a lista de contas afetadas para conferência nos logs de autenticação.
+
+**Testes.** `apps/api/plane/tests/unit/orca/test_migration_tools.py`: conta
+criada fica sem senha utilizável e com o flag, relido do banco; conta
+existente mantém a senha própria; membership entra com o papel mapeado;
+segunda execução não cria nada; e uma guarda que lê o fonte do script e
+falha se `DEFAULT_PASSWORD`, a literal antiga ou `set_password(` voltarem.
+O script vive fora de `apps/api` e o stack Docker de teste monta só
+`apps/api`, então os testes carregam o arquivo por caminho e pulam quando ele
+não está montado (no CI, que roda do checkout completo, executam de verdade).
 
 **Aceite.**
-- [ ] `grep -rn "TemporaryOrca" tools/ docs/ README.md` vazio.
-- [ ] Teste unitário simples em `apps/api/plane/tests/unit/orca/test_migration_tools.py` que importa a função de criação (refatorar o script para expor `create_user_from_payload`) e verifica `has_usable_password() is False` e `is_password_autoset is True`.
-- [ ] Contas já criadas em qualquer ambiente com a senha antiga foram invalidadas (registrar data e ambiente no quadro).
+- [x] Nenhuma senha literal em `tools/`, `docs/` ou `README.md`: a constante saiu do script, a menção saiu do README da ferramenta, e o teste de regressão lê o fonte e falha se qualquer uma das duas voltar. As ocorrências que restam nesses arquivos são referências ao que foi removido (este enunciado e o comando de invalidação), nenhuma é uma credencial.
+- [x] Teste unitário que importa a função de criação e verifica `has_usable_password() is False` e `is_password_autoset is True`. Escrito; a sessão não roda pytest (AGENTS.md) — confirmar no CI de `stage`.
+- [x] Ruff limpo (`check` e `format --check`, linha 120) no script e no teste novos.
+- [ ] Contas já criadas em qualquer ambiente com a senha antiga foram invalidadas (registrar data e ambiente no quadro). Só operação pode fazer; procedimento pronto no README da ferramenta.
 
-**Arquivos:** `tools/migration/create_users.py`, `tools/migration/README.md`, novo teste.
+**Achado adjacente (não corrigido).** O script deriva `username` de
+`email.split("@")[0]`, e `username` é `unique`. Dois endereços com o mesmo
+local part em domínios diferentes (`ana@a.com`, `ana@b.com`) abortam a
+migração com `IntegrityError` no meio da execução. O upstream usa
+`uuid4().hex` para isso. Fora do escopo deste item; vira item próprio se a
+migração for reexecutada.
+
+**Arquivos:** `tools/migration/create_users.py`, `tools/migration/README.md`, `apps/api/plane/tests/unit/orca/test_migration_tools.py`.
 
 ---
 

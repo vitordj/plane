@@ -43,7 +43,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 
 | Fase | Arquivo | Itens | Estado | Gate fechado em |
 | --- | --- | --- | --- | --- |
-| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 17 | `[~]` 6/17 (P0.0–P0.4, P0.14) · P0.5 parcial | — |
+| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 17 | `[~]` 7/17 (P0.0–P0.4, P0.6, P0.14) · P0.5 parcial | — |
 | D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 12 | `[ ]` 0/12 | — |
 | 1 Contrato público | [01-public-contract.md](./01-public-contract.md) | 8 | `[ ]` 0/8 | — |
 | 2 Fila e coordenador | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6 | — |
@@ -60,10 +60,17 @@ A cadeia de proveniência do release está fechada no código: P0.0 e P0.14
 copia digests daquele commit em vez de seguir uma tag mutável. Falta o
 ensaio em CI/ambiente real dos critérios que só operação pode marcar.
 
-P0.4 (o job `promote-rc` que ficava verde sem criar o RC) foi junto, na mesma
-branch. Siga com **P0.6** (senha fixa na migração) e **P0.7**
-(`TRUSTED_PROXIES` com fallback aberto) — os riscos de comprometimento mais
-diretos que restam. **D0.1** continua o melhor primeiro item do domínio.
+P0.4 (o job `promote-rc` que ficava verde sem criar o RC), a metade de
+permissões do P0.5 e o P0.6 (senha fixa na migração de usuários) foram na
+mesma branch. Siga com **P0.7** (`TRUSTED_PROXIES` com fallback aberto), o
+risco de comprometimento mais direto que resta, e depois **P0.8**/**P0.9**
+(suíte upstream e ruff no CI). **D0.1** continua o melhor primeiro item do
+domínio.
+
+Pendências de operação abertas por esta branch: invalidar as contas criadas
+pela versão antiga do `create_users.py` (procedimento em
+`tools/migration/README.md`) e regenerar `pnpm-lock.yaml` para destravar o
+`--frozen-lockfile` (P0.5).
 
 ## Pendências externas (não bloqueiam P0/D0)
 
@@ -81,6 +88,7 @@ diretos que restam. **D0.1** continua o melhor primeiro item do domínio.
 | --- | --- |
 | 2026-09-03 | Plano criado a partir do RFC rev. 2. Nenhum item iniciado. |
 | 2026-09-04 | PRs #5 e #6 mesclados em `stage` (`3a4c769`): hardening complementar da camada de Áreas (kill switch nas tarefas/comandos/SCIM, baseline ao elevar papel, rate limit SCIM pós-autenticação, rejeição de convidados Entra). Não fecha item P0/D0; registrado no cabeçalho de P0. |
+| 2026-09-05 | P0.6 entregue: contas migradas passam a nascer sem senha utilizável (`set_unusable_password` + `is_password_autoset`), com testes e com o procedimento de invalidação das contas já criadas no README da ferramenta. |
 | 2026-09-05 | P0.5 parcial: permissões mínimas por job em `stage.yml` e `prod.yml`. A metade do lockfile ficou bloqueada por um achado — `pnpm-lock.yaml` está defasado em relação ao catálogo do workspace desde o commit upstream `31853ab2` (46 dependências com `catalog:` no `package.json` e especificador resolvido no lockfile), então `--frozen-lockfile` falharia em todo run. Precisa de `pnpm install --lockfile-only` no mesmo commit da troca da flag. |
 | 2026-09-05 | P0.4 entregue na mesma branch: `promote-rc` passa a usar `gh`, verifica a existência de `prod`, e falha quando a RC não existe nem pôde ser criada. |
 | 2026-09-05 | P0.1, P0.2 e P0.3 entregues em `claude/loving-carson-n9x6eq`: PR constrói sem publicar; push em `stage` publica `:stage` e `:sha-<commit>` e retagueia por digest os serviços não reconstruídos, para que todo commit tenha os seis serviços; artifact `image-digests`; `prod.yml` resolve o commit de `stage` promovido e copia os digests daquele commit, falhando antes de qualquer retag se faltar imagem. |
