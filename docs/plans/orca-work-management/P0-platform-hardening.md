@@ -400,16 +400,71 @@ Atualizar `package.json` para `...-plane.1.4.2` (ver P0.13).
 
 ---
 
-## P0.12 — Apagar branches remotos obsoletos `[ ]`
+## P0.12 — Apagar branches remotos obsoletos `[~]`
 
-Branches com abordagens superadas pelo PR #2:
-`claude/azure-aad-integration-review-5if6pz`,
-`claude/sync-remote-azure-auth-m6618f`, `claude/aad-end-to-end-egj4dm`.
-Verificar antes com `git log origin/stage..<branch>` que nada ali é desejado
-(o levantamento de 03/09 concluiu que não). Apagar também branches `claude/*`
-já mesclados.
+**Verificação feita** (`claude/loving-carson-n9x6eq`, 05/09). O levantamento de
+03/09 confirmado contra o código, e não só contra os títulos dos commits:
+
+| Branch | Commits à frente de `stage` | Veredito |
+| --- | --- | --- |
+| `claude/azure-aad-integration-review-5if6pz` | 34 | Superado. Abordagem "oidc-free", substituída pelo provider Entra que está em `stage` (PR #2). |
+| `claude/sync-remote-azure-auth-m6618f` | 14 | Superado. Mesma abordagem, port para a base Orca. |
+| `claude/aad-end-to-end-egj4dm` | 1 | Superado. Versão anterior de "sign in with Microsoft Entra ID". |
+
+O único commit desses três que parecia valer um port —
+`16494934 fix(api): normalise SECURE_PROXY_SSL_HEADER and document the proxy
+vars` — **não se aplica**: ele corrige um bloco `USE_X_FORWARDED_*` /
+`SECURE_PROXY_SSL_HEADER` lido de variável de ambiente em
+`settings/common.py` que **não existe** nem no `stage` nem no upstream 1.4.1
+(foi introduzido pelo próprio branch). Em `stage`, o header é fixo em
+`settings/production.py` (`("HTTP_X_FORWARDED_PROTO", "https")`), e a falsificação
+que ele permitiria é justamente o que o P0.7 fechou no Caddy. Nada a portar.
+
+**Branches `claude/*` totalmente contidos em `stage`** (todo commit já está lá;
+apagar não perde nada), com o SHA registrado para poder recriar:
+
+```text
+dc4a596d  claude/area-membership-extension-ndwdoq
+848bbf65  claude/avaliacao-implementacoes-pendencias-wt5ign
+cd5a8419  claude/azure-areamembership-cleanup-gfep3c
+ca0ab6a0  claude/entra-id-directory-sync-rhoo9f
+ccf8618a  claude/orca-i18n-default-language-9xvxhr
+ca0ab6a0  claude/parecer-final-arquitetura-4ng4yo
+dc4a596d  claude/pending-tests-xnxc3s
+343e7f9e  claude/repository-evaluation-s419b6
+a349fd4c  claude/wayfinder-areas-review-yt98v5
+```
+
+**Não apagar:** `claude/codex-prompts-bocxeh` (3 commits à frente) e
+`claude/continue-implementations-bquse8` (7) não estão mesclados e não constam
+do enunciado; `feat/orca-work-management` (34) idem;
+`claude/loving-carson-n9x6eq` é a branch desta sessão.
+
+**Por que continua `[~]`.** A sessão de agente não tem permissão para apagar
+branch remoto (a ação é destrutiva e foi barrada). Comandos prontos, para
+quem tiver:
+
+```bash
+# Superados (verificados acima)
+git push origin --delete claude/azure-aad-integration-review-5if6pz \
+  claude/sync-remote-azure-auth-m6618f claude/aad-end-to-end-egj4dm
+
+# Já mesclados em stage
+git push origin --delete claude/area-membership-extension-ndwdoq \
+  claude/avaliacao-implementacoes-pendencias-wt5ign \
+  claude/azure-areamembership-cleanup-gfep3c \
+  claude/entra-id-directory-sync-rhoo9f \
+  claude/orca-i18n-default-language-9xvxhr \
+  claude/parecer-final-arquitetura-4ng4yo \
+  claude/pending-tests-xnxc3s \
+  claude/repository-evaluation-s419b6 \
+  claude/wayfinder-areas-review-yt98v5
+
+# Recriar um deles, se for preciso: git push origin <sha>:refs/heads/<nome>
+```
 
 **Aceite.**
+- [x] Conteúdo dos três branches do enunciado verificado contra o código de `stage`; nada a portar (e o motivo registrado, não só a conclusão).
 - [ ] `git ls-remote --heads origin | grep claude/` lista só branches com trabalho em andamento.
 
 ---
