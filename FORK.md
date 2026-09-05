@@ -164,7 +164,7 @@ Once you merge the PR into the **`stage`** branch, the **`stage.yml`** workflow 
 1. **Lint/Format checks**: Runs `pnpm check:format` and `pnpm check:lint` on workspace packages.
 2. **Path-Based Change Detection**: Analyzes modified paths. It skips docker compilation for any application directories (`apps/web`, `apps/api`, etc.) that were not modified.
 3. **Parallel Docker Builds**: Runs matrix builds concurrently on separate GitHub runners for modified services.
-4. **Staging Deploy**: Triggers your staging Coolify server to redeploy using the newly built images from GHCR.
+4. **Staging Deploy**: Opt-in, and only when `COOLIFY_DEPLOY_ENABLED` is `"true"` — it calls the Coolify API to redeploy staging from the newly built GHCR images. With the variable unset the job is skipped and the images are still published, so an environment that is not Coolify pulls them by digest on its own schedule (see [docs/release-runbook.md](./docs/release-runbook.md)).
 
 ---
 
@@ -185,7 +185,7 @@ Promotion takes **two** merges, not one:
    migration safety, confirm production environment variables are set, and
    sign off on the QA items.
 3. **Merge the RC PR**: this lands the changes on `prod` and triggers
-   **`release-please`**, which opens a *second* PR carrying the version bump
+   **`release-please`**, which opens a _second_ PR carrying the version bump
    and the changelog. Merging the RC PR **does not deploy**.
 4. **Merge the Release PR**: this creates the `chore(prod): release [Version]`
    commit, which is what `prod.yml` keys on. Check the proposed version first —
