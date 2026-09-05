@@ -240,6 +240,7 @@ registrar na seção 4 o motivo e o impacto.
 | --- | --- |
 | 2026-09-03 | Rev. 1: RFC inicial com 23 dúvidas e 5 fases. |
 | 2026-09-03 | Rev. 2: 24 decisões fechadas (F1–F24); fila vira estado; executor principal; binding + operação; `AssignmentDecision` append-only; Fase 0 dividida em P0 e D0; Compose retirado dos bloqueios; contrato REST detalhado. |
+| 2026-09-05 | Rev. 4: refinamento de mecanismo em P0.2/P0.3 (nenhuma decisão F1–F24 tocada). A promoção por SHA exige que **todos** os seis serviços tenham `:sha-<commit>`; como o CI só reconstrói serviços cujo path mudou, o commit passa a retaguear por digest (`imagetools create`) os serviços não reconstruídos, e `build-push` roda em todo push para `stage`. A promoção copia manifesto por digest em vez de `pull`/`tag`/`push`, preservando manifestos multi-arch. |
 | 2026-09-04 | Rev. 3: revisão externa do commit `3a4c769` verificada. Compose volta aos bloqueios pelo namespace errado (P0.0, corrigido); parser estrito do kill switch, guard em `reconcile_access` e paridade de variáveis no Compose (P0.14, corrigido); novos itens P0.15 (commit no runtime), P0.16 (MinIO/PostgreSQL), D0.11 (arquivamento reconcilia), D0.12 (roster SCIM sem soft-deleted). Nenhuma decisão F1–F24 reaberta. |
 
 ---

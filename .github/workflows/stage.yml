@@ -7,9 +7,17 @@
 #
 # What happens:
 #   • CI check: Runs oxfmt and oxlint checks to enforce code standards.
-#   • Build & Push: Builds the web, api, space, live, and proxy images, and
-#     pushes them to GitHub Container Registry (GHCR) tagged as :stage.
+#   • Build & Push: Builds the web, api, space, live, and proxy images. On a
+#     push to "stage" they go to GitHub Container Registry (GHCR) under two
+#     names for the same digest — the mutable :stage pointer the environment
+#     follows and an immutable :sha-<commit>. Services with no change in the
+#     commit are not rebuilt: their existing :stage digest is tagged with the
+#     commit, so every stage commit has a complete six-service set to promote.
+#     A pull request builds but never pushes, so it cannot move :stage.
 #     Also performs pre/post-build Docker runner pruning hygiene.
+#   • Image digests: Collects the digest of each service into the
+#     "image-digests" artifact — the provenance record prod.yml promotes
+#     against and a rollback reads.
 #   • Deploy: Triggers Coolify stage deployment, polls state until completion,
 #     and outputs step summaries or issues cancellations.
 #
@@ -361,10 +369,16 @@ jobs:
     # config-only change skips ci. A skipped dependency would normally skip
     # this job too, which would stop the build for exactly those changes, so
     # the gate is on `failure` rather than on completion.
+    # A push to stage always runs, even when no service path changed: the
+    # commit still needs its :sha-<commit> tags (the retag path below), or
+    # promotion by SHA would fail on, say, a docs-only commit that happens to
+    # be the head of a release candidate.
     if: >-
       ${{ !cancelled()
           && !contains(needs.*.result, 'failure')
-          && (needs.changes.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch') }}
+          && (needs.changes.outputs.any_changed == 'true'
+              || github.event_name == 'workflow_dispatch'
+              || github.event_name == 'push') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -392,16 +406,47 @@ jobs:
             context: ./apps/proxy
             file: ./apps/proxy/Dockerfile.ce
     steps:
+      # -----------------------------------------------------------------------
+      # Three outcomes per service, decided once so every step below reads the
+      # same answer:
+      #   build — the service changed (or the run was dispatched by hand);
+      #   retag — nothing in this service changed, but the commit still needs
+      #           an immutable sha- tag pointing at the image staging runs, or
+      #           promotion by SHA (prod.yml) would find a hole in the set;
+      #   skip  — nothing to do (unchanged service on a pull request).
+      # -----------------------------------------------------------------------
+      - name: Plan Work For ${{ matrix.service }}
+        id: plan
+        env:
+          SERVICE_CHANGED: ${{ needs.changes.outputs[matrix.service] }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          if [ "${SERVICE_CHANGED}" = "true" ] || [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            mode=build
+          elif [ "${EVENT_NAME}" = "push" ]; then
+            mode=retag
+          else
+            mode=skip
+          fi
+          echo "Mode for ${{ matrix.service }}: ${mode}"
+          echo "mode=${mode}" >> "$GITHUB_OUTPUT"
+
       - name: Checkout Code
-        if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ steps.plan.outputs.mode == 'build' }}
         uses: actions/checkout@v7
 
       - name: Lowercase Image Name
-        if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ steps.plan.outputs.mode != 'skip' }}
         run: echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
+      # A pull request must never be able to move the mutable :stage tag — that
+      # tag is what the staging environment pulls, so an unreviewed branch could
+      # otherwise publish over the reviewed build. Pull requests still build the
+      # image (that is the signal: it compiles) and then throw it away, so they
+      # do not need registry credentials at all.
       - name: Log in to GHCR
-        if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ steps.plan.outputs.mode == 'retag' || (steps.plan.outputs.mode == 'build' && github.event_name != 'pull_request') }}
         uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
@@ -409,43 +454,217 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ steps.plan.outputs.mode == 'build' }}
         uses: docker/setup-buildx-action@v4
 
       - name: Pre-build Runner Hygiene Cleanup
-        if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ steps.plan.outputs.mode == 'build' }}
         run: |
           echo "Running pre-build Docker cleanup..."
           docker container prune -f
           docker image prune -a -f --filter "until=24h"
           docker builder prune -a -f --filter "until=24h"
 
+      # On a push to stage the image gets two names for the same digest: the
+      # mutable :stage pointer the environment follows, and an immutable
+      # :sha-<commit> that ties the artifact to the reviewed commit. On a pull
+      # request the tag is inert (nothing is pushed) and only names the head.
+      - name: Resolve Image Tags
+        if: ${{ steps.plan.outputs.mode == 'build' }}
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SERVICE: ${{ matrix.service }}
+        run: |
+          set -euo pipefail
+          image="${REGISTRY}/${IMAGE_NAME}/${SERVICE}"
+          {
+            echo "IMAGE_TAGS<<ORCA_EOF"
+            if [ "${EVENT_NAME}" = "pull_request" ]; then
+              echo "${image}:pr-${PR_NUMBER}-${GITHUB_SHA}"
+            else
+              echo "${image}:stage"
+              echo "${image}:sha-${GITHUB_SHA}"
+            fi
+            echo "ORCA_EOF"
+          } >> "$GITHUB_ENV"
+
       - name: Build and Push ${{ matrix.service }}
-        if: ${{ needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch' }}
+        id: build
+        if: ${{ steps.plan.outputs.mode == 'build' }}
         uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.file }}
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}:stage
+          push: ${{ github.event_name != 'pull_request' }}
+          load: false
+          tags: ${{ env.IMAGE_TAGS }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # No rebuild: point :sha-<commit> at the digest already behind :stage, so
+      # every commit on stage has a complete, immutable six-service set for
+      # prod.yml to promote. imagetools copies the manifest by digest — no pull,
+      # no re-push of layers, and multi-arch manifests survive intact.
+      - name: Tag Existing ${{ matrix.service }} Image With This Commit
+        id: retag
+        if: ${{ steps.plan.outputs.mode == 'retag' }}
+        env:
+          SERVICE: ${{ matrix.service }}
+        run: |
+          set -euo pipefail
+          image="${REGISTRY}/${IMAGE_NAME}/${SERVICE}"
+          if ! docker buildx imagetools inspect "${image}:stage" > /dev/null 2>&1; then
+            echo "::warning::${image}:stage does not exist yet; ${SERVICE} has no image for commit ${GITHUB_SHA}"
+            exit 0
+          fi
+          docker buildx imagetools create --tag "${image}:sha-${GITHUB_SHA}" "${image}:stage"
+          digest=$(docker buildx imagetools inspect "${image}:sha-${GITHUB_SHA}" --format '{{json .Manifest.Digest}}' | tr -d '"')
+          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+
+      # One file per service; the collect job merges them into the run's
+      # image-digests artifact. This is the record of what the commit produced.
+      - name: Record ${{ matrix.service }} Image Digest
+        if: ${{ steps.plan.outputs.mode != 'skip' && github.event_name != 'pull_request' }}
+        env:
+          SERVICE: ${{ matrix.service }}
+          BUILD_DIGEST: ${{ steps.build.outputs.digest }}
+          RETAG_DIGEST: ${{ steps.retag.outputs.digest }}
+          MODE: ${{ steps.plan.outputs.mode }}
+        run: |
+          set -euo pipefail
+          digest="${BUILD_DIGEST:-${RETAG_DIGEST:-}}"
+          if [ -z "${digest}" ]; then
+            echo "::warning::no digest recorded for ${SERVICE}"
+            exit 0
+          fi
+          mkdir -p digests
+          python3 - <<'PY'
+          import json, os
+
+          service = os.environ["SERVICE"]
+          record = {
+              "image": f"{os.environ['REGISTRY']}/{os.environ['IMAGE_NAME']}/{service}",
+              "digest": os.environ.get("BUILD_DIGEST") or os.environ["RETAG_DIGEST"],
+              "tag": f"sha-{os.environ['GITHUB_SHA']}",
+              "origin": os.environ["MODE"],
+          }
+          with open(f"digests/{service}.json", "w", encoding="utf-8") as handle:
+              json.dump({service: record}, handle, indent=2, sort_keys=True)
+          PY
+          cat "digests/${SERVICE}.json"
+
+      - name: Upload ${{ matrix.service }} Digest
+        if: ${{ steps.plan.outputs.mode != 'skip' && github.event_name != 'pull_request' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-digest-${{ matrix.service }}
+          path: digests/${{ matrix.service }}.json
+          if-no-files-found: warn
+          retention-days: 90
+
       - name: Post-build Runner Hygiene Cleanup
-        if: ${{ always() && (needs.changes.outputs[matrix.service] == 'true' || github.event_name == 'workflow_dispatch') }}
+        if: ${{ always() && steps.plan.outputs.mode == 'build' }}
         run: |
           echo "Running post-build Docker cleanup..."
           docker container prune -f
           docker image prune -f
           docker builder prune -f
 
+  # ---------------------------------------------------------------------------
+  # Provenance record for the commit: which digest each of the six services
+  # resolves to under :sha-<commit>. prod.yml promotes those digests, so this
+  # artifact is what a release is checked against — and what a rollback reads
+  # to find the previous set.
+  # ---------------------------------------------------------------------------
+  image_digests:
+    name: Collect Image Digests
+    needs: [build-push, changes]
+    if: >-
+      ${{ !cancelled()
+          && github.event_name != 'pull_request'
+          && !contains(needs.*.result, 'failure')
+          && (needs.changes.outputs.any_changed == 'true'
+              || github.event_name == 'workflow_dispatch'
+              || github.event_name == 'push') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      digests: ${{ steps.merge.outputs.digests }}
+    steps:
+      - name: Download Per-service Digests
+        uses: actions/download-artifact@v4
+        with:
+          pattern: image-digest-*
+          path: digests
+          merge-multiple: true
+
+      - name: Merge Digests
+        id: merge
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, pathlib
+
+          merged = {}
+          for path in sorted(pathlib.Path("digests").glob("*.json")):
+              merged.update(json.loads(path.read_text(encoding="utf-8")))
+
+          pathlib.Path("image-digests.json").write_text(
+              json.dumps(merged, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+          )
+
+          missing = [s for s in ("web", "admin", "api", "space", "live", "proxy") if s not in merged]
+          if missing:
+              print(f"::warning::no digest for: {', '.join(missing)}")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write("digests=" + json.dumps(merged, sort_keys=True) + "\n")
+
+          lines = ["## Image digests", "", "| Service | Digest | Built |", "|---|---|---|"]
+          for service, record in sorted(merged.items()):
+              lines.append(f"| `{service}` | `{record['digest']}` | {record['origin']} |")
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as handle:
+                  handle.write("\n".join(lines) + "\n")
+          PY
+          cat image-digests.json
+
+      - name: Upload Image Digests
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-digests
+          path: image-digests.json
+          if-no-files-found: error
+          retention-days: 90
+
   deploy:
     name: Deploy to Stage (Coolify)
-    needs: [build-push, changes]
+    needs: [build-push, changes, image_digests]
     if: ${{ always() && vars.COOLIFY_DEPLOY_ENABLED == 'true' && github.event_name != 'pull_request' && (needs.build-push.result == 'success' || needs.build-push.result == 'skipped') && (needs.changes.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch') && !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     environment: stage
     steps:
+      # Coolify pulls :stage, a mutable tag, so the run log is the only place
+      # that says which digests this deploy actually put in staging.
+      - name: Log the digests this deploy pulls
+        env:
+          DIGESTS: ${{ needs.image_digests.outputs.digests }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DIGESTS:-}" ]; then
+            echo "::warning::no digest record for this run"
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json, os
+
+          for service, record in sorted(json.loads(os.environ["DIGESTS"]).items()):
+              print(f"{service}: {record['image']}:{record['tag']} -> {record['digest']}")
+          PY
+
       - name: Trigger Coolify deploy
         id: deploy
         run: |

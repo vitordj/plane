@@ -48,19 +48,21 @@ qual código o ambiente executava. Achado da revisão externa de 04/09.
 
 ---
 
-## P0.1 — Build em pull request não publica imagem `[ ]`
+## P0.1 — Build em pull request não publica imagem `[x]`
 
 **Problema.** `.github/workflows/stage.yml`, job `build-push`, passo
 `docker/build-push-action` tem `push: true` incondicional e o workflow roda em
 `pull_request`. Um PR interno reescreve a tag mutável `:stage` antes de ser
 revisado.
 
-**Mudança.**
-- No passo de build: `push: ${{ github.event_name != 'pull_request' }}`.
-- Em PR, `tags:` passa a `ghcr.io/<repo>/<service>:pr-${{ github.event.pull_request.number }}-${{ github.sha }}` e `load: false`; o build continua servindo para provar que compila.
-- O passo "Log in to GHCR" ganha `if:` excluindo `pull_request`.
+**Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+- No passo de build: `push: ${{ github.event_name != 'pull_request' }}` e `load: false`.
+- Novo passo `Resolve Image Tags`: em PR a tag é `ghcr.io/<repo>/<service>:pr-<n>-<sha>` (inerte, nada é publicado); em push para `stage` são duas tags (P0.2).
+- `Log in to GHCR` só roda quando há o que publicar ou retaguear — um PR não recebe credencial de registry.
+- Novo passo `Plan Work For <service>` decide, por serviço, entre `build`, `retag` e `skip`; todos os passos seguintes leem essa decisão em vez de repetir a expressão de mudança de path.
 
 **Aceite.**
+- [x] `stage.yml` continua YAML válido; todo bloco `run:` passa em `bash -n`; os scripts embutidos (`Resolve Image Tags`, registro e merge de digests, log do deploy) foram exercitados a seco fora do CI, com `GITHUB_ENV`/`GITHUB_OUTPUT` simulados.
 - [ ] Um PR de teste executa o job e o log mostra `push: false` (ou o passo de login pulado).
 - [ ] `docker manifest inspect ghcr.io/<repo>/api:stage` antes e depois do PR retorna o mesmo digest.
 - [ ] Merge em `stage` continua publicando `:stage`.
@@ -69,14 +71,16 @@ revisado.
 
 ---
 
-## P0.2 — Publicar tag imutável por SHA e registrar digests `[ ]`
+## P0.2 — Publicar tag imutável por SHA e registrar digests `[x]`
 
-**Mudança.**
-- Em push para `stage`, `tags:` passa a duas linhas: `:stage` e `:sha-${{ github.sha }}`.
-- Após o build, passo que captura `steps.build.outputs.digest` e escreve `image-digests.json` (`{service: digest}`) como artifact do run e como output do job (`outputs.digests`).
-- Novo passo no job `deploy` que loga os digests que o Coolify vai puxar.
+**Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+- Em push para `stage`, `tags:` passa a duas linhas: `:stage` e `:sha-<commit>` — mesmo digest, dois nomes.
+- **Serviço sem mudança no commit não é reconstruído, mas é retagueado**: `docker buildx imagetools create --tag <img>:sha-<commit> <img>:stage` copia o manifesto por digest (sem pull, sem re-push de camadas, manifesto multi-arch preservado). Sem isso, um commit que toca só `apps/api` deixaria os outros cinco serviços sem tag imutável e a promoção por SHA (P0.3) encontraria um buraco no conjunto. Pelo mesmo motivo, `build-push` e `image_digests` passaram a rodar em **todo** push para `stage`, inclusive quando nenhum path de serviço mudou (um commit só de documentação pode ser a cabeça de um release candidate).
+- Cada job da matriz grava `digests/<service>.json` (imagem, digest, tag e origem `build`/`retag`) e sobe o artifact `image-digest-<service>`; o job novo `image_digests` funde os seis em `image-digests.json`, publica como artifact `image-digests` (retenção 90 dias), expõe em `outputs.digests` e escreve a tabela no resumo do run. Serviço ausente vira `::warning` nomeando quais faltaram.
+- Novo passo no job `deploy` que loga os digests que o Coolify vai puxar — `:stage` é mutável, então o log do run é o único lugar que registra o que entrou em staging.
 
 **Aceite.**
+- [x] Script de registro e de merge dos digests exercitados a seco (três serviços, um deles pela via `retag`): `image-digests.json`, `outputs.digests` e o resumo saem com o formato esperado e os ausentes viram warning.
 - [ ] Após merge em `stage`, existem `api:stage` e `api:sha-<commit>` com o mesmo digest.
 - [ ] Artifact `image-digests` presente no run com seis entradas.
 
@@ -84,21 +88,24 @@ revisado.
 
 ---
 
-## P0.3 — Promoção para produção por SHA, não por `:stage` `[ ]`
+## P0.3 — Promoção para produção por SHA, não por `:stage` `[x]`
 
 **Problema.** `.github/workflows/prod.yml` (job "Promote Images", ~l.81) faz
 `docker pull <img>:stage` e retagueia. A promoção não está vinculada ao commit
 revisado.
 
-**Mudança.**
-- O job lê o SHA do merge de `stage` em `prod` (`git log -1 --format=%H origin/stage` no momento do release, ou o segundo pai do merge commit) e faz `docker pull <img>:sha-<sha>`.
-- Falha explícita se a tag `sha-<sha>` não existir (a imagem não passou pelo CI de `stage`).
-- Grava no corpo do GitHub Release os digests promovidos.
+**Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+- `Resolve The Promoted Stage Commit`: `git fetch --no-tags origin stage` e `git merge-base HEAD refs/remotes/origin/stage`. O commit de release está em `prod`; o commit mais recente que `prod` e `stage` compartilham é exatamente a cabeça de `stage` que o release candidate mesclou — funciona tanto para merge commit quanto para fast-forward, e não depende de `stage` ter parado de andar. O checkout passou a `fetch-depth: 0`.
+- `Resolve Digests For The Promoted Commit`: resolve os seis digests de `<img>:sha-<commit>` **antes** de escrever qualquer tag. Se qualquer um faltar, o job falha nomeando os serviços e indicando o remédio (rodar o workflow de stage naquele commit); promoção parcial — três serviços na versão nova e três na antiga — é pior que nenhuma.
+- `Promote Docker Images`: `docker buildx imagetools create --tag :latest --tag :<versão> --tag :v<versão> <img>@<digest>`. Copiar por digest garante que as tags de produção caem nos bytes exatos do commit e não achata manifestos multi-arch, o que o `pull`/`tag`/`push` anterior fazia.
+- Resumo do run e corpo do GitHub Release passam a listar commit de stage e digest promovido por serviço — é a lista que um rollback lê.
 - `:stage` continua existindo só como ponteiro de conveniência para o ambiente de staging.
 
 **Aceite.**
+- [x] `prod.yml` continua YAML válido; blocos `run:` passam em `bash -n`; a montagem do bloco de digests do release foi exercitada a seco (a substituição de comando come a quebra de linha final, por isso a linha é acrescentada explicitamente).
 - [ ] Ensaio: merge de `stage` em `prod` com commit `chore(prod): release` num ambiente controlado promove exatamente os digests de `image-digests.json`.
 - [ ] Ensaio negativo: apagar a tag `sha-<sha>` de um serviço faz o job falhar antes de qualquer retag.
+- [ ] Primeira promoção após este merge: o commit de `stage` promovido precisa ter sido construído **por este workflow** para ter as tags `sha-`. Para um release cujo merge-base seja anterior a esta mudança, rodar o workflow de stage por `workflow_dispatch` naquele commit antes de promover.
 
 **Arquivos:** `.github/workflows/prod.yml`, `docs/release-runbook.md` (novo, ver P0.13).
 
