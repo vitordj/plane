@@ -152,11 +152,19 @@ already active members of the workspace — a unit never sends invitations.
 
 ## Assignment
 
-A unit can be marked responsible for a work item. Because Plane requires an
-assignee to be a person who is an active project member, the engine turns that
-responsibility into a real assignee: it ranks the unit's members by open work
-across the unit's own live projects, least loaded first, breaking ties by
-whoever was assigned longest ago and then by user id.
+A unit can be marked responsible for a work item **in a project the unit
+covers** — one it is linked to, where the link is live and the project is not
+archived. Coverage is what grants the unit's members access in the first
+place, so an uncovered project would name a group that cannot act there: the
+API refuses it with `ORG_UNIT_NOT_COVERING_PROJECT` (4916), the engine offers
+no candidate, and the picker in the work item only lists units that cover the
+project it belongs to. The unit payload carries `project_ids` for exactly that
+filter, with archived projects left out.
+
+Because Plane requires an assignee to be a person who is an active project
+member, the engine turns responsibility into a real assignee: it ranks the
+unit's members by open work across the unit's own live projects, least loaded
+first, breaking ties by whoever was assigned longest ago and then by user id.
 
 Existing assignees are never replaced. The default mode assigns only when
 nobody holds the item; `mode=append` adds a unit member alongside the current

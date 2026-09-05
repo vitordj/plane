@@ -680,6 +680,7 @@
           "work_item_not_found": "Bu iş öğesi artık yok.",
           "work_item_has_no_unit": "Bu iş öğesinden sorumlu bir alan yok.",
           "invalid_assignment_mode": "Bu bir atama modu değil.",
+          "unit_not_covering_project": "Bu alan bu projeye bağlı değil.",
           "directory_workspace_not_found": "Bu çalışma alanı artık yok.",
           "directory_token_required": "Dizin sağlamayı açmadan önce bir SCIM belirteci oluşturun."
         }

@@ -23,6 +23,7 @@ from typing import Optional
 from django.db.models import Count, Max
 
 # Module imports
+from plane.app.services.orca.coverage import unit_covers_project
 from plane.db.models import (
     Issue,
     IssueAssignee,
@@ -70,9 +71,18 @@ def candidates_for(unit: OrganizationalUnit, project_id) -> list[AssignmentCandi
 
     @param unit: The responsible organizational unit.
     @param project_id: Project the work item belongs to.
-    @returns: Candidates ordered best-first; empty when the unit has nobody
-        eligible on that project.
+    @returns: Candidates ordered best-first; empty when the unit does not cover
+        the project, or has nobody eligible on it.
     """
+    # An area that does not link this project grants nobody access to it, so it
+    # has no candidates here by definition (defect D1). This used to be papered
+    # over further down, by adding the target project to the area's own project
+    # list when it was missing — which turned "not covered" into "covered", and
+    # counted work from a project the area does not own toward its members'
+    # load.
+    if not unit_covers_project(unit, project_id):
+        return []
+
     member_user_ids = list(
         OrganizationalUnitMembership.objects.filter(
             organizational_unit=unit,
@@ -95,15 +105,14 @@ def candidates_for(unit: OrganizationalUnit, project_id) -> list[AssignmentCandi
     if not eligible:
         return []
 
-    # Load is measured over the unit's live projects only.
+    # Load is measured over the unit's live projects only. The target project
+    # is one of them — coverage was checked above.
     unit_project_ids = list(
         OrganizationalUnitProject.objects.filter(
             organizational_unit=unit,
             project__archived_at__isnull=True,
         ).values_list("project_id", flat=True)
     )
-    if project_id not in unit_project_ids:
-        unit_project_ids.append(project_id)
 
     load = (
         IssueAssignee.objects.filter(

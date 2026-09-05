@@ -680,6 +680,7 @@
           "work_item_not_found": "해당 작업 항목이 더 이상 없습니다.",
           "work_item_has_no_unit": "이 작업 항목을 담당하는 영역이 없습니다.",
           "invalid_assignment_mode": "그것은 배정 모드가 아닙니다.",
+          "unit_not_covering_project": "해당 영역은 이 프로젝트에 연결되어 있지 않습니다.",
           "directory_workspace_not_found": "해당 작업 공간이 더 이상 없습니다.",
           "directory_token_required": "디렉터리 프로비저닝을 켜기 전에 SCIM 토큰을 발급하십시오."
         }

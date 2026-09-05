@@ -680,6 +680,7 @@
           "work_item_not_found": "Item kerja itu sudah tidak ada.",
           "work_item_has_no_unit": "Tidak ada area yang bertanggung jawab atas item kerja ini.",
           "invalid_assignment_mode": "Itu bukan mode penugasan.",
+          "unit_not_covering_project": "Area itu tidak tertaut dengan proyek ini.",
           "directory_workspace_not_found": "Ruang kerja itu sudah tidak ada.",
           "directory_token_required": "Terbitkan token SCIM sebelum mengaktifkan penyediaan dari direktori."
         }

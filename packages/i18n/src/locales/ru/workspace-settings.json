@@ -680,6 +680,7 @@
           "work_item_not_found": "Этого рабочего элемента больше нет.",
           "work_item_has_no_unit": "За этот рабочий элемент не отвечает ни одна область.",
           "invalid_assignment_mode": "Это не режим назначения.",
+          "unit_not_covering_project": "Эта область не связана с этим проектом.",
           "directory_workspace_not_found": "Этого пространства больше нет.",
           "directory_token_required": "Выпустите токен SCIM, прежде чем включать провижининг из каталога."
         }

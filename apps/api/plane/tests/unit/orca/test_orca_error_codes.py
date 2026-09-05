@@ -116,7 +116,7 @@ class TestEndpointsSendTheCode:
 @pytest.mark.unit
 class TestTheTableDoesNotDrift:
     """
-    The same sixteen codes appear in four places: this Python table, the
+    The same codes appear in four places: this Python table, the
     ORCA_ERROR_CODE_KEYS map the web app reads, the catalogue keys that map
     points at, and the English values behind them. Any one of them going out of
     step ships a blank or wrong message, and nothing else would notice.

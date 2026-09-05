@@ -31,6 +31,17 @@ def project_with_admin(project, workspace_with_members, admin_user):
     return project
 
 
+@pytest.fixture
+def covering_unit(unit, project_with_admin, link_project):
+    """
+    An area that covers the project, which is now a precondition for owning
+    work in it (defect D1). The refusal path has its own file,
+    ``test_issue_unit_coverage.py``.
+    """
+    link_project(unit, project_with_admin, ROLE_MEMBER)
+    return unit
+
+
 @pytest.mark.unit
 class TestIssueResponsibleUnit:
     def test_a_work_item_starts_without_a_responsible_unit(
@@ -44,26 +55,34 @@ class TestIssueResponsibleUnit:
         assert response.data["organizational_unit"] is None
 
     def test_setting_the_responsible_unit(
-        self, admin_client, workspace_with_members, project_with_admin, unit, make_issue
+        self, admin_client, workspace_with_members, project_with_admin, covering_unit, make_issue
     ):
         issue = make_issue(project_with_admin)
 
         response = admin_client.post(
             issue_unit_url(workspace_with_members.slug, project_with_admin.id, issue.id),
-            {"organizational_unit_id": str(unit.id)},
+            {"organizational_unit_id": str(covering_unit.id)},
             format="json",
         )
 
         assert response.status_code == 200
         assert response.data["organizational_unit"]["slug"] == "compliance"
-        assert IssueOrganizationalUnit.objects.get(issue=issue).organizational_unit_id == unit.id
+        assert IssueOrganizationalUnit.objects.get(issue=issue).organizational_unit_id == covering_unit.id
 
     def test_replacing_the_responsible_unit_keeps_a_single_link(
-        self, admin_client, workspace_with_members, project_with_admin, unit, second_unit, make_issue
+        self,
+        admin_client,
+        workspace_with_members,
+        project_with_admin,
+        covering_unit,
+        second_unit,
+        make_issue,
+        link_project,
     ):
+        link_project(second_unit, project_with_admin, ROLE_MEMBER)
         issue = make_issue(project_with_admin)
         url = issue_unit_url(workspace_with_members.slug, project_with_admin.id, issue.id)
-        admin_client.post(url, {"organizational_unit_id": str(unit.id)}, format="json")
+        admin_client.post(url, {"organizational_unit_id": str(covering_unit.id)}, format="json")
 
         response = admin_client.post(url, {"organizational_unit_id": str(second_unit.id)}, format="json")
 
@@ -106,11 +125,11 @@ class TestIssueResponsibleUnit:
         assert response.status_code == 404
 
     def test_clearing_the_responsible_unit(
-        self, admin_client, workspace_with_members, project_with_admin, unit, make_issue
+        self, admin_client, workspace_with_members, project_with_admin, covering_unit, make_issue
     ):
         issue = make_issue(project_with_admin)
         url = issue_unit_url(workspace_with_members.slug, project_with_admin.id, issue.id)
-        admin_client.post(url, {"organizational_unit_id": str(unit.id)}, format="json")
+        admin_client.post(url, {"organizational_unit_id": str(covering_unit.id)}, format="json")
 
         response = admin_client.delete(url)
 
@@ -287,14 +306,14 @@ class TestIssueAssignmentFromUnit:
         assert not IssueAssignee.objects.filter(issue=issue).exists()
 
     def test_a_unit_with_no_eligible_member_reports_it_explicitly(
-        self, admin_client, workspace_with_members, project_with_admin, unit, make_issue
+        self, admin_client, workspace_with_members, project_with_admin, covering_unit, make_issue
     ):
         """An empty unit is an answer, not a server error."""
         issue = make_issue(project_with_admin)
 
         response = admin_client.post(
             issue_assign_url(workspace_with_members.slug, project_with_admin.id, issue.id),
-            {"organizational_unit_id": str(unit.id)},
+            {"organizational_unit_id": str(covering_unit.id)},
             format="json",
         )
 

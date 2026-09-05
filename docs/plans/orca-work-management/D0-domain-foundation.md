@@ -18,27 +18,44 @@ suíte completa (AGENTS.md).
 
 ---
 
-## D0.1 — Área precisa cobrir o projeto (defeito D1) `[ ]`
+## D0.1 — Área precisa cobrir o projeto (defeito D1) `[x]`
 
-**Onde está o defeito.**
-- `apps/api/plane/app/views/organizational_unit.py`, `IssueOrganizationalUnitEndpoint.post`: valida só `workspace_id`.
-- `apps/web/core/components/orca/organizational-units/issue-unit-property.tsx` l.67: filtra só `unit.is_active`.
-- `apps/api/plane/app/services/orca/assignment_engine.py` ~l.105: acrescenta `project_id` a `unit_project_ids` quando não está lá.
+**Onde estava o defeito.**
+- `apps/api/plane/app/views/organizational_unit.py`, `IssueOrganizationalUnitEndpoint.post`: validava só `workspace_id`.
+- `apps/web/core/components/orca/organizational-units/issue-unit-property.tsx` l.67: filtrava só `unit.is_active` — com um comentário logo acima afirmando que só áreas que cobrem o projeto apareciam. O comentário descrevia a intenção; o código não a implementava.
+- `apps/api/plane/app/services/orca/assignment_engine.py` ~l.105: acrescentava `project_id` a `unit_project_ids` quando não estava lá, o que transformava "não coberto" em "coberto" **e** fazia trabalho de um projeto que a área não possui contar na carga dos membros dela.
 
-**Mudança.**
-- Helper `unit_covers_project(unit, project_id) -> bool` em `services/orca/` (novo módulo `coverage.py` ou dentro do futuro `assignment_service.py`): existe `OrganizationalUnitProject(organizational_unit=unit, project_id=..., deleted_at=null)` com `unit.is_active` e `project.archived_at is null`.
-- `post` e `IssueOrganizationalUnitAssignEndpoint.post` chamam o helper; falha → `orca_error("ORG_UNIT_NOT_COVERING_PROJECT")`.
-- Código novo em `apps/api/plane/utils/orca_error_codes.py`, `packages/constants/src/orca/error-codes.ts` e no catálogo i18n (todas as locales; skill `translate`).
-- Engine: remover o `append`; se o projeto não está coberto, `candidates_for` retorna lista vazia.
-- UI: o dropdown consome `unit.project_ids` (já vem na serialização da área? verificar `OrganizationalUnitSerializer`; se não, adicionar `project_ids` como campo read-only) e filtra `unit.is_active && unit.project_ids.includes(projectId)`.
+**Mudança** (entregue em `feat/orca-unit-project-coverage`).
+- `services/orca/coverage.py` (novo): `unit_covers_project(unit, project_id)` — área ativa, link vivo (o manager padrão já exclui soft-deleted) e projeto não arquivado. Projeto arquivado não concede nada, então uma área ligada só a projetos arquivados não cobre nenhum.
+- `IssueOrganizationalUnitEndpoint.post` e `IssueOrganizationalUnitAssignEndpoint.post` chamam o helper; falha → `ORG_UNIT_NOT_COVERING_PROJECT` (4916). A checagem é feita **de novo** na rota de atribuição, não só na criação do vínculo: o projeto pode ser desvinculado ou arquivado depois que o item já estava marcado como da área.
+- Engine: o `append` saiu. Coberto passou a ser pré-condição, verificada logo no começo de `candidates_for`, que devolve `[]` quando não é o caso.
+- Código novo nos três lugares (`orca_error_codes.py`, `error-codes.ts`, catálogo i18n nas 19 locales).
+- API: `OrganizationalUnitSerializer` ganha `project_ids` (read-only, sem projetos arquivados). O endpoint de lista alimenta o campo com um `Prefetch(..., to_attr=...)`, então listar áreas continua sendo uma consulta e não uma por área; a serialização de uma única área cai numa consulta filtrada.
+- UI: o dropdown filtra `unit.is_active && unit.project_ids.includes(projectId)` — o comentário passou a ser verdade.
+- `docs/organizational-units.md` §Assignment descreve a regra, o código de erro e o campo novo.
 
-**Testes** (`test_organizational_unit_http.py` ou novo `test_issue_unit_coverage.py`):
-- área cobre → 200; não cobre → 400 com o código; área inativa → 400; projeto arquivado → 400.
-- engine com projeto não coberto retorna `no_eligible_member`.
+**Testes.** `test_issue_unit_coverage.py` (novo): a regra em si (ligado, não
+ligado, ligado a outro projeto, área inativa, projeto arquivado, link
+removido, argumentos nulos); a recusa nas duas rotas com o código certo,
+inclusive o caso em que a cobertura some depois de o vínculo existir; o engine
+sem candidatos e `no_eligible_member`; e o serializer, incluindo que trabalho
+num projeto não coberto **deixou** de inflar a carga. Em
+`test_issue_organizational_unit_http.py`, os testes que marcavam uma área
+responsável passaram a ligar o projeto antes (fixture `covering_unit`) — o
+comportamento mudou, e é isso que eles agora afirmam.
 
 **Aceite.**
-- [ ] Testes acima verdes; `test_orca_error_codes.py` continua verde (paridade dos três lugares).
-- [ ] `check:sync` do i18n verde.
+- [x] Ruff limpo nos arquivos tocados; paridade dos quatro lugares do código de erro conferida fora do pytest (17 códigos, mapa TS e catálogo en batem). Testes escritos; a sessão não roda pytest (AGENTS.md) — confirmar no CI de `stage`.
+- [ ] `check:sync` do i18n verde (a sessão não tem `node_modules`; a paridade de chaves das 19 locales foi conferida com uma comparação equivalente de conjuntos de chaves).
+
+**Migração.** Nenhuma — o defeito era de validação, não de esquema.
+
+**Efeito em dados existentes.** Vínculos já gravados em projetos não cobertos
+continuam no banco e não são apagados por este item: a partir de agora eles
+recusam atribuição (com o código novo) em vez de atribuir errado. Se aparecer
+algum em produção, o caminho é vincular o projeto à área ou trocar a área do
+item — vale um levantamento antes de ligar a camada num workspace que já usa
+áreas.
 
 ---
 

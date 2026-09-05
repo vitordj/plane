@@ -680,6 +680,7 @@
           "work_item_not_found": "该工作项已不存在。",
           "work_item_has_no_unit": "没有区域负责此工作项。",
           "invalid_assignment_mode": "这不是一种分配模式。",
+          "unit_not_covering_project": "该区域未关联到本项目。",
           "directory_workspace_not_found": "该工作区已不存在。",
           "directory_token_required": "请先签发 SCIM 令牌，再开启目录预配。"
         }

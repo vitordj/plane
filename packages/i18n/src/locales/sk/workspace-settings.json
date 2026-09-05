@@ -680,6 +680,7 @@
           "work_item_not_found": "Táto pracovná položka už neexistuje.",
           "work_item_has_no_unit": "Za túto pracovnú položku nezodpovedá žiadna oblasť.",
           "invalid_assignment_mode": "To nie je režim prideľovania.",
+          "unit_not_covering_project": "Táto oblasť nie je prepojená s týmto projektom.",
           "directory_workspace_not_found": "Tento pracovný priestor už neexistuje.",
           "directory_token_required": "Pred zapnutím provisioningu z adresára vydajte token SCIM."
         }

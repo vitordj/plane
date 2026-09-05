@@ -680,6 +680,7 @@
           "work_item_not_found": "Mục công việc đó không còn tồn tại.",
           "work_item_has_no_unit": "Không có khu vực nào phụ trách mục công việc này.",
           "invalid_assignment_mode": "Đó không phải là chế độ phân công.",
+          "unit_not_covering_project": "Khu vực đó không được liên kết với dự án này.",
           "directory_workspace_not_found": "Không gian làm việc đó không còn tồn tại.",
           "directory_token_required": "Hãy cấp token SCIM trước khi bật cấp phát từ thư mục."
         }

@@ -40,6 +40,7 @@ ORCA_ERROR_CODES = {
     "ORG_WORK_ITEM_NOT_FOUND": 4911,
     "ORG_WORK_ITEM_HAS_NO_UNIT": 4912,
     "ORG_INVALID_ASSIGNMENT_MODE": 4913,
+    "ORG_UNIT_NOT_COVERING_PROJECT": 4916,
     # directory provisioning
     "ORG_DIRECTORY_WORKSPACE_NOT_FOUND": 4914,
     "ORG_DIRECTORY_TOKEN_REQUIRED": 4915,
@@ -63,6 +64,7 @@ ORCA_ERROR_MESSAGES = {
     "ORG_WORK_ITEM_NOT_FOUND": "Work item not found",
     "ORG_WORK_ITEM_HAS_NO_UNIT": "No organizational unit is responsible for this work item",
     "ORG_INVALID_ASSIGNMENT_MODE": "Invalid mode",
+    "ORG_UNIT_NOT_COVERING_PROJECT": "This organizational unit is not linked to this project",
     "ORG_DIRECTORY_WORKSPACE_NOT_FOUND": "Workspace not found",
     "ORG_DIRECTORY_TOKEN_REQUIRED": "Issue a SCIM token before enabling directory provisioning",
 }

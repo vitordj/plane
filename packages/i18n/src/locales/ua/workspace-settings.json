@@ -680,6 +680,7 @@
           "work_item_not_found": "Цієї робочої одиниці більше немає.",
           "work_item_has_no_unit": "За цю робочу одиницю не відповідає жодна область.",
           "invalid_assignment_mode": "Це не режим призначення.",
+          "unit_not_covering_project": "Ця область не пов’язана з цим проєктом.",
           "directory_workspace_not_found": "Цього робочого простору більше немає.",
           "directory_token_required": "Випустіть токен SCIM, перш ніж вмикати провізіонування з каталогу."
         }

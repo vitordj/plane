@@ -60,17 +60,20 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
     };
   }, [workspaceSlug, projectId, issueId, store]);
 
-  // Only areas that actually cover this project can own work in it.
+  // Only areas that actually cover this project can own work in it: an area
+  // that does not link this project grants nobody access to it, so the API
+  // refuses it (defect D1) and offering it here would produce an error the
+  // person cannot act on.
   const options = useMemo(
     () =>
       store.units
-        .filter((unit) => unit.is_active)
+        .filter((unit) => unit.is_active && (unit.project_ids ?? []).includes(projectId))
         .map((unit) => ({
           value: unit.id,
           query: unit.name,
           content: <span className="truncate">{unit.name}</span>,
         })),
-    [store.units]
+    [store.units, projectId]
   );
 
   const handleChange = async (unitId: string) => {

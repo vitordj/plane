@@ -25,6 +25,29 @@ class OrganizationalUnitSerializer(BaseSerializer):
 
     member_count = serializers.IntegerField(read_only=True)
     project_count = serializers.IntegerField(read_only=True)
+    project_ids = serializers.SerializerMethodField()
+
+    # Filled by the list endpoint's Prefetch; absent when a single unit is
+    # serialized on its own.
+    COVERED_PROJECTS_ATTR = "covered_projects"
+
+    def get_project_ids(self, obj) -> list:
+        """
+        @description The projects this area actually covers — the ones a work
+        item may name it responsible for. Archived projects are left out: they
+        grant nothing, so an area linked only to archived projects covers none
+        of them, and the interface must not offer it there (defect D1).
+
+        Uses the list endpoint's prefetch when it is there, so listing areas
+        stays one query rather than one per area, and falls back to a filtered
+        query for the single-unit responses, which serialize one object anyway.
+        @param obj: The organizational unit being serialized.
+        @returns: Project ids as strings.
+        """
+        links = getattr(obj, self.COVERED_PROJECTS_ATTR, None)
+        if links is None:
+            links = obj.unit_projects.filter(project__archived_at__isnull=True)
+        return [str(link.project_id) for link in links]
 
     class Meta:
         model = OrganizationalUnit
@@ -38,6 +61,7 @@ class OrganizationalUnitSerializer(BaseSerializer):
             "workspace",
             "member_count",
             "project_count",
+            "project_ids",
             "sync_source",
             "external_id",
             "directory_synced_at",

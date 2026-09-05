@@ -10,6 +10,7 @@ from .assignment_engine import (
     candidates_for,
     workload_snapshot,
 )
+from .coverage import unit_covers_project
 from .directory_projector import (
     ProjectionResult,
     match_workspace_member,
@@ -64,6 +65,7 @@ __all__ = [
     "reconcile_unit_project",
     "reconcile_workspace",
     "resolve_identity",
+    "unit_covers_project",
     "unresolved_identities",
     "workload_snapshot",
 ]
