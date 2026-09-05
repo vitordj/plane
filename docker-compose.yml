@@ -164,6 +164,11 @@ services:
     environment:
       FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT:-5242880}
       BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
+      # The Caddyfile no longer defaults to trusting every source, so the
+      # variable has to reach the container. Private ranges by default: on this
+      # stack Caddy is published directly, and the only legitimate proxies are
+      # on the local docker networks.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1/32,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
     depends_on:
       - web
       - api

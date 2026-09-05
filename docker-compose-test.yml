@@ -72,7 +72,9 @@ services:
       retries: 10
 
   test-minio:
-    image: minio/minio
+    # Pinned for the same reason as the deployment compose: a moving :latest
+    # makes a test run's verdict depend on the day it ran.
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
     networks:
       - test_env
     env_file:

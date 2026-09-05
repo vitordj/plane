@@ -155,5 +155,3 @@ from .organizational_unit import (
     OrganizationalUnitMembershipCreateSerializer,
     OrganizationalUnitProjectSerializer,
 )
-
-

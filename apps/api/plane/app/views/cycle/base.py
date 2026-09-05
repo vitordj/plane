@@ -170,10 +170,11 @@ class CycleViewSet(BaseViewSet):
                     # Additionally, if auto-complete is disabled, cycles remain CURRENT even after
                     # their end_date passes (unless manually completed).
                     When(
-                        Q(start_date__lte=current_time_in_utc) & (
-                            Q(end_date__isnull=True) |
-                            Q(end_date__gte=current_time_in_utc) |
-                            ~Q(project__custom_settings__cycle_auto_complete=True)
+                        Q(start_date__lte=current_time_in_utc)
+                        & (
+                            Q(end_date__isnull=True)
+                            | Q(end_date__gte=current_time_in_utc)
+                            | ~Q(project__custom_settings__cycle_auto_complete=True)
                         ),
                         then=Value("CURRENT"),
                     ),
@@ -306,59 +307,58 @@ class CycleViewSet(BaseViewSet):
             )
         serializer = CycleWriteSerializer(data=request.data, context={"project_id": project_id})
         if serializer.is_valid():
-                serializer.save(project_id=project_id, owned_by=request.user)
-                cycle = (
-                    self.get_queryset()
-                    .filter(pk=serializer.data["id"])
-                    .values(
-                        # necessary fields
-                        "id",
-                        "workspace_id",
-                        "project_id",
-                        # model fields
-                        "name",
-                        "description",
-                        "start_date",
-                        "end_date",
-                        "owned_by_id",
-                        "view_props",
-                        "sort_order",
-                        "external_source",
-                        "external_id",
-                        "progress_snapshot",
-                        "logo_props",
-                        "version",
-                        # meta fields
-                        "is_favorite",
-                        "total_issues",
-                        "completed_issues",
-                        "assignee_ids",
-                        "status",
-                        "created_by",
-                    )
-                    .first()
+            serializer.save(project_id=project_id, owned_by=request.user)
+            cycle = (
+                self.get_queryset()
+                .filter(pk=serializer.data["id"])
+                .values(
+                    # necessary fields
+                    "id",
+                    "workspace_id",
+                    "project_id",
+                    # model fields
+                    "name",
+                    "description",
+                    "start_date",
+                    "end_date",
+                    "owned_by_id",
+                    "view_props",
+                    "sort_order",
+                    "external_source",
+                    "external_id",
+                    "progress_snapshot",
+                    "logo_props",
+                    "version",
+                    # meta fields
+                    "is_favorite",
+                    "total_issues",
+                    "completed_issues",
+                    "assignee_ids",
+                    "status",
+                    "created_by",
                 )
+                .first()
+            )
 
-                # Fetch the project timezone
-                project = Project.objects.get(id=self.kwargs.get("project_id"))
-                project_timezone = project.timezone
+            # Fetch the project timezone
+            project = Project.objects.get(id=self.kwargs.get("project_id"))
+            project_timezone = project.timezone
 
-                datetime_fields = ["start_date", "end_date"]
-                cycle = user_timezone_converter(cycle, datetime_fields, project_timezone)
+            datetime_fields = ["start_date", "end_date"]
+            cycle = user_timezone_converter(cycle, datetime_fields, project_timezone)
 
-                # Send the model activity
-                model_activity.delay(
-                    model_name="cycle",
-                    model_id=str(cycle["id"]),
-                    requested_data=request.data,
-                    current_instance=None,
-                    actor_id=request.user.id,
-                    slug=slug,
-                    origin=base_host(request=request, is_app=True),
-                )
-                return Response(cycle, status=status.HTTP_201_CREATED)
+            # Send the model activity
+            model_activity.delay(
+                model_name="cycle",
+                model_id=str(cycle["id"]),
+                requested_data=request.data,
+                current_instance=None,
+                actor_id=request.user.id,
+                slug=slug,
+                origin=base_host(request=request, is_app=True),
+            )
+            return Response(cycle, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
     def partial_update(self, request, slug, project_id, pk):
@@ -382,9 +382,7 @@ class CycleViewSet(BaseViewSet):
             # removed from the cycle. Anything wider would rewrite states the cycle does not own.
             if request.data.get("set_in_progress", False):
                 in_progress_state = (
-                    State.objects.filter(project_id=project_id, group="started")
-                    .order_by("sequence")
-                    .first()
+                    State.objects.filter(project_id=project_id, group="started").order_by("sequence").first()
                 )
                 if in_progress_state:
                     Issue.issue_objects.filter(
@@ -398,47 +396,45 @@ class CycleViewSet(BaseViewSet):
             # Same scoping as set_in_progress above, for the same reason.
             if request.data.get("mark_completed", False):
                 completed_state = (
-                    State.objects.filter(project_id=project_id, group="completed")
-                    .order_by("sequence")
-                    .first()
+                    State.objects.filter(project_id=project_id, group="completed").order_by("sequence").first()
                 )
                 if completed_state:
                     Issue.issue_objects.filter(
                         issue_cycle__cycle_id=pk,
                         issue_cycle__deleted_at__isnull=True,
                         project_id=project_id,
-                    ).exclude(
-                        state__group__in=["completed", "cancelled"]
-                    ).update(state_id=completed_state.id)
+                    ).exclude(state__group__in=["completed", "cancelled"]).update(state_id=completed_state.id)
             cycle = (
                 self.get_queryset()
                 .filter(workspace__slug=slug, project_id=project_id, pk=pk)
                 .values(
-                # necessary fields
-                "id",
-                "workspace_id",
-                "project_id",
-                # model fields
-                "name",
-                "description",
-                "start_date",
-                "end_date",
-                "owned_by_id",
-                "view_props",
-                "sort_order",
-                "external_source",
-                "external_id",
-                "progress_snapshot",
-                "logo_props",
-                "version",
-                # meta fields
-                "is_favorite",
-                "total_issues",
-                "completed_issues",
-                "assignee_ids",
-                "status",
-                "created_by",
-            ).first())
+                    # necessary fields
+                    "id",
+                    "workspace_id",
+                    "project_id",
+                    # model fields
+                    "name",
+                    "description",
+                    "start_date",
+                    "end_date",
+                    "owned_by_id",
+                    "view_props",
+                    "sort_order",
+                    "external_source",
+                    "external_id",
+                    "progress_snapshot",
+                    "logo_props",
+                    "version",
+                    # meta fields
+                    "is_favorite",
+                    "total_issues",
+                    "completed_issues",
+                    "assignee_ids",
+                    "status",
+                    "created_by",
+                )
+                .first()
+            )
 
             # Fetch the project timezone
             project = Project.objects.get(id=self.kwargs.get("project_id"))

@@ -66,8 +66,20 @@ docker compose -f docker-compose-test.yml down -v
 | `test-db`    | `postgres:15.7-alpine`               | Application database                          |
 | `test-redis` | `valkey/valkey:7.2.11-alpine`        | Cache / Celery broker                         |
 | `test-mq`    | `rabbitmq:3.13.6-management-alpine`  | Task queue                                    |
-| `test-minio` | `minio/minio`                        | S3-compatible object storage                  |
+| `test-minio` | `minio/minio:RELEASE.2025-09-07T16-13-09Z` | S3-compatible object storage            |
 | `api-tests`  | built from `apps/api/Dockerfile.dev` | Installs `requirements/test.txt`, runs pytest |
+
+### Image versions
+
+Every dependency is pinned to an immutable tag, including MinIO — an untagged
+image is whatever `:latest` resolved to on the day it was pulled, which makes a
+run's verdict depend on its date. Bump a pin deliberately, in its own commit.
+
+PostgreSQL is **15.7** here, in every compose file in the repository, and in the
+`api_tests` job of `.github/workflows/stage.yml`. That job ran 16 until P0.16;
+CI on a different major than the one the deployment runs is a difference the
+suite cannot see and production can. If the deployment is ever moved to 16, move
+all four together and record the migration plan here.
 
 All four dependencies expose health checks; `api-tests` waits for `service_healthy` on each via `depends_on`, so pytest only starts once the stack is ready.
 

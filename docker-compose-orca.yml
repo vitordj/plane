@@ -84,6 +84,9 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Which of the four containers sharing the api image answered; read by
+      # `manage.py orca_build_info` and the build-info endpoint (P0.15).
+      - ORCA_SERVICE_NAME=${ORCA_SERVICE_NAME_API:-api}
       # Orca organizational layer. The same value has to reach the API, the
       # worker, the beat and the migrator: a worker without the kill switch
       # would keep writing ProjectMember rows after the API went dark.
@@ -129,6 +132,9 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Which of the four containers sharing the api image answered; read by
+      # `manage.py orca_build_info` and the build-info endpoint (P0.15).
+      - ORCA_SERVICE_NAME=${ORCA_SERVICE_NAME_WORKER:-worker}
       # Orca organizational layer. The same value has to reach the API, the
       # worker, the beat and the migrator: a worker without the kill switch
       # would keep writing ProjectMember rows after the API went dark.
@@ -168,6 +174,9 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Which of the four containers sharing the api image answered; read by
+      # `manage.py orca_build_info` and the build-info endpoint (P0.15).
+      - ORCA_SERVICE_NAME=${ORCA_SERVICE_NAME_BEAT_WORKER:-beat-worker}
       # Orca organizational layer. The same value has to reach the API, the
       # worker, the beat and the migrator: a worker without the kill switch
       # would keep writing ProjectMember rows after the API went dark.
@@ -207,6 +216,9 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Which of the four containers sharing the api image answered; read by
+      # `manage.py orca_build_info` and the build-info endpoint (P0.15).
+      - ORCA_SERVICE_NAME=${ORCA_SERVICE_NAME_MIGRATOR:-migrator}
       # Orca organizational layer. The same value has to reach the API, the
       # worker, the beat and the migrator: a worker without the kill switch
       # would keep writing ProjectMember rows after the API went dark.
@@ -317,7 +329,11 @@ services:
 
   plane-minio:
     container_name: plane-minio
-    image: minio/minio
+    # Pinned: an untagged image is whatever :latest resolved to on the day a
+    # container was pulled, so two environments -- or the same environment
+    # before and after a redeploy -- could run different MinIO builds. Bump
+    # deliberately; the tag below is what :latest pointed at when it was set.
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
     restart: always
     command: server /export --console-address ":9090"
     volumes:
@@ -348,6 +364,11 @@ services:
       FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT:-5242880}
       BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
       SITE_ADDRESS: :80
+      # Required: the Caddyfile has no fallback, and the variable was not even
+      # forwarded here before, so the proxy always fell back to trusting every
+      # source. Set it to the CIDR of whatever ingress or reverse proxy sits
+      # in front of this stack.
+      TRUSTED_PROXIES: "${TRUSTED_PROXIES:?set it to the CIDR of the proxy network in front of Caddy, e.g. 10.0.0.0/8}"
     depends_on:
       - web
       - api

@@ -46,6 +46,7 @@ Plane Orca is pre-configured for self-hosting on low-spec VPS instances (<3GB RA
 | `AWS_S3_BUCKET_NAME`                          |    No    | File upload storage bucket      | `uploads`                                  |
 | `ORCA_IMAGE_REPOSITORY`                       |    No    | Registry namespace the images are pulled from. Must be the namespace `stage.yml` publishes to (`ghcr.io/<owner>/<repo>`); CI fails when they drift | `ghcr.io/vitordj/plane`                    |
 | `TAG`                                         |    No    | Image tag for all six services; prefer an immutable `sha-<commit>` for production | `stage`                                    |
+| `TRUSTED_PROXIES`                             | **Yes**  | CIDR range(s) of the ingress or reverse proxy in front of Caddy, comma-separated. Only these sources may set the client IP via `X-Forwarded-For`; the stack refuses to start without it | _User-provided (e.g. `10.0.0.0/8`)_        |
 | `ORCA_ORG_UNITS_ENABLED`                      |    No    | Kill switch of the organizational layer (Areas); forwarded to api, worker, beat and migrator. `1/true/yes/on` or `0/false/no/off` | `1`                                        |
 
 ### 🚀 Fork Workflow & Git Strategy

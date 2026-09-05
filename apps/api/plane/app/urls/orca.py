@@ -19,6 +19,7 @@ from plane.app.views import (
     UserOrganizationalUnitsEndpoint,
     IssueOrganizationalUnitEndpoint,
     IssueOrganizationalUnitAssignEndpoint,
+    OrcaBuildInfoEndpoint,
     OrcaConfigEndpoint,
     OrganizationalDirectoryConnectionEndpoint,
     OrganizationalDirectoryResyncEndpoint,
@@ -35,6 +36,14 @@ from plane.app.views import (
 )
 
 urlpatterns = [
+    # Which commit this container was built from. Instance admins only, and
+    # outside the organizational kill switch: it has to answer precisely when
+    # something looks wrong, a misconfigured switch included.
+    path(
+        "orca/build-info/",
+        OrcaBuildInfoEndpoint.as_view(),
+        name="orca-build-info",
+    ),
     # Which Orca features this instance has switched on. Not gated by the
     # organizational-units flag: the UI asks this endpoint whether to render
     # the layer at all, so the switch must not be able to hide it.

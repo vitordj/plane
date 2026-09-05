@@ -217,7 +217,6 @@ class IssueCreateSerializer(BaseSerializer):
 
         project_id = self.context["project_id"]
         workspace_id = self.context["workspace_id"]
-        default_assignee_id = self.context["default_assignee_id"]
 
         # Create Issue
         issue = Issue.objects.create(**validated_data, project_id=project_id)
@@ -245,7 +244,9 @@ class IssueCreateSerializer(BaseSerializer):
             except IntegrityError:
                 pass
         else:
-            # ORCA CUSTOM FEATURE: Default to assignees of user's last created issue with assignees in project
+            # ORCA CUSTOM FEATURE: Default to assignees of user's last created issue with assignees in project.
+            # The project's own `default_assignee_id` still reaches this serializer through the view context and
+            # is not applied here; RFC docs/orca-work-management-rfc.md §2.2 tracks that divergence as D2.
             last_assignee_ids = []
             user_id = created_by_id or (
                 self.context.get("request")
@@ -318,6 +319,7 @@ class IssueCreateSerializer(BaseSerializer):
 
         # Auto-apply conventional commit label if enabled for the project
         from plane.utils.conventional_commits import apply_conventional_commit_label
+
         apply_conventional_commit_label(issue)
 
         return issue
@@ -385,6 +387,7 @@ class IssueCreateSerializer(BaseSerializer):
         # Auto-apply conventional commit label only when the work item title was actually changed
         if name_updated:
             from plane.utils.conventional_commits import apply_conventional_commit_label
+
             apply_conventional_commit_label(updated_issue, old_title=old_name)
 
         return updated_issue

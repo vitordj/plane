@@ -11,24 +11,21 @@ from django.db.models import Count, Q
 
 # Standard conventional commit types with semantic UI colors
 CONVENTIONAL_COMMIT_PREFIXES = {
-    "feat": "#3B82F6",      # Blue
-    "fix": "#EF4444",       # Red
-    "docs": "#8B5CF6",      # Purple
-    "style": "#EC4899",     # Pink
+    "feat": "#3B82F6",  # Blue
+    "fix": "#EF4444",  # Red
+    "docs": "#8B5CF6",  # Purple
+    "style": "#EC4899",  # Pink
     "refactor": "#F59E0B",  # Amber
-    "perf": "#10B981",      # Emerald
-    "test": "#6366F1",      # Indigo
-    "build": "#F97316",     # Orange
-    "ci": "#06B6D4",        # Cyan
-    "chore": "#64748B",     # Slate
-    "revert": "#6B7280",    # Gray
+    "perf": "#10B981",  # Emerald
+    "test": "#6366F1",  # Indigo
+    "build": "#F97316",  # Orange
+    "ci": "#06B6D4",  # Cyan
+    "chore": "#64748B",  # Slate
+    "revert": "#6B7280",  # Gray
 }
 
 # Regex pattern matching conventional commit format: <type>(<scope>)!?: <description>
-CONVENTIONAL_COMMIT_REGEX = re.compile(
-    r"^([a-zA-Z]+)(?:\([^\)]+\))?!?:\s+\S+",
-    re.IGNORECASE
-)
+CONVENTIONAL_COMMIT_REGEX = re.compile(r"^([a-zA-Z]+)(?:\([^\)]+\))?!?:\s+\S+", re.IGNORECASE)
 
 
 def extract_conventional_commit_type(title: str) -> str | None:
@@ -63,9 +60,7 @@ def apply_conventional_commit_label(issue, old_title: str | None = None):
         return None
 
     # Check if auto conventional commit labels is enabled for this project
-    custom_settings = ProjectCustomSettings.objects.filter(
-        project_id=issue.project_id
-    ).first()
+    custom_settings = ProjectCustomSettings.objects.filter(project_id=issue.project_id).first()
     if not custom_settings or not custom_settings.auto_conventional_commit_labels:
         return None
 
@@ -92,14 +87,12 @@ def apply_conventional_commit_label(issue, old_title: str | None = None):
             "name": commit_type,
             "color": color,
             "workspace_id": issue.workspace_id,
-        }
+        },
     )
 
     # Attach the label to the issue if not already assigned
     existing_issue_label = IssueLabel.objects.filter(
-        issue_id=issue.id,
-        label_id=label.id,
-        deleted_at__isnull=True
+        issue_id=issue.id, label_id=label.id, deleted_at__isnull=True
     ).exists()
 
     if not existing_issue_label:
@@ -131,8 +124,7 @@ def auto_label_conventional_commits_for_project(project):
         Issue.issue_objects.filter(project_id=project.id)
         .annotate(
             active_label_count=Count(
-                "labels",
-                filter=Q(labels__deleted_at__isnull=True, label_issue__deleted_at__isnull=True)
+                "labels", filter=Q(labels__deleted_at__isnull=True, label_issue__deleted_at__isnull=True)
             )
         )
         .filter(active_label_count=0)
@@ -151,7 +143,7 @@ def auto_label_conventional_commits_for_project(project):
                 "name": commit_type,
                 "color": color,
                 "workspace_id": project.workspace_id,
-            }
+            },
         )
 
         IssueLabel.objects.get_or_create(
@@ -162,5 +154,5 @@ def auto_label_conventional_commits_for_project(project):
                 "workspace_id": project.workspace_id,
                 "created_by_id": issue.created_by_id,
                 "updated_by_id": issue.updated_by_id,
-            }
+            },
         )
