@@ -41,15 +41,15 @@ dois gates fechados. As demais são sequenciais.
 
 Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` descartado (registrar motivo).
 
-| Fase                       | Arquivo                                                      | Itens             | Estado                                                                                                    | Gate fechado em |
-| -------------------------- | ------------------------------------------------------------ | ----------------- | --------------------------------------------------------------------------------------------------------- | --------------- |
-| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 18                | `[~]` 14/18 (P0.0–P0.10, P0.14, P0.15, P0.16) · P0.12, P0.13 e P0.17 parciais · P0.11 em revisão (PR #11) | —               |
-| D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · suíte verde no CI — faltam migrações, `check:types` e a auditoria num dump                  | —               |
-| 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[ ]` 0/8                                                                                                 | —               |
-| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6                                                                                                 | —               |
-| 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6                                                                                                 | —               |
-| 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                                 | —               |
-| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                                 | —               |
+| Fase                       | Arquivo                                                      | Itens             | Estado                                                                                   | Gate fechado em |
+| -------------------------- | ------------------------------------------------------------ | ----------------- | ---------------------------------------------------------------------------------------- | --------------- |
+| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 18                | `[~]` 15/18 (P0.0–P0.11, P0.14, P0.15, P0.16) · P0.12, P0.13 e P0.17 parciais            | —               |
+| D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · suíte verde no CI — faltam migrações, `check:types` e a auditoria num dump | —               |
+| 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[ ]` 0/8                                                                                | —               |
+| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6                                                                                | —               |
+| 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6                                                                                | —               |
+| 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                | —               |
+| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                | —               |
 
 ## Próximo item recomendado
 
@@ -79,15 +79,18 @@ passa no CI em 9m45s **sem exclusão nenhuma**, e o job manual de `contract/`
 e `smoke/` existe. De quebra, o `workflow_dispatch` do workflow, que três
 jobs testavam sem que o gatilho fosse declarado.
 
-**P0.11 saiu muito menor que o previsto**: o upstream 1.4.2 são 3 commits e
-uma mudança real. Está em revisão no PR #11, junto com o bump para
-`1.5.0-plane.1.4.2` que fecha metade do P0.13.
+**P0.11 fechou, e saiu muito menor que o previsto**: o upstream 1.4.2 são 3
+commits e uma mudança real. PR #11 mesclado em `stage` (`af571341`), com o
+bump para `1.5.0-plane.1.4.2` que fecha a metade de versão do P0.13. Sobra
+uma ponta de procedimento: o mirror `origin/upstream` continua em 1.4.1,
+porque a sessão de agente não empurra naquela branch (comando no item).
 
-Restam em P0: **P0.13** (o ensaio do runbook e a decisão do prerelease no
-Release Please — o bump de versão já está no PR #11), **P0.12** (verificação
-completa e refeita; falta só o `git push --delete`, que a sessão de agente
-não tem permissão de executar) e **P0.17** (o texto de implantação foi
-neutralizado; falta a decisão de negócio sobre qual é o alvo real da 4UM).
+**Nenhum dos três itens que restam em P0 é código.** Todos dependem de algo
+fora do repositório:
+
+- **P0.13** — o ensaio do runbook (ambiente) e a decisão do prerelease no Release Please, que só o primeiro PR de release revela.
+- **P0.12** — a verificação está completa e refeita; falta o `git push --delete`, barrado para a sessão de agente.
+- **P0.17** — o texto de implantação foi neutralizado; falta a decisão de negócio sobre qual é o alvo real da 4UM.
 
 No domínio, a **D0 está com os 12 itens entregues** e a suíte Orca verde no CI
 do PR #9. O que falta para fechar o gate não é código, são as três coisas que
@@ -137,6 +140,7 @@ as contas criadas pela versão antiga do `create_users.py` (procedimento em
 | 2026-09-05 | D0 completa (D0.1–D0.12) na branch `feat/orca-unit-project-coverage`: cobertura área↔projeto, herança de assignee removida da API pública, estado de fila, política e log de decisões, serviço único de alocação, endpoints internos falando com ele, comando de auditoria, métricas, matriz de testes, documentação, reconciliação no arquivamento e roster SCIM. Falta só a execução do Gate D0 (suíte, migrações, auditoria num dump).                                                                                                                                                                                                                                                      |
 | 2026-09-05 | **P0.5 fechado, corrigindo o achado do próprio dia.** `pnpm install --frozen-lockfile` foi executado inteiro sobre `0e4ab05c` com o pnpm 11.3.0 do `packageManager`: exit 0, 1459 pacotes instalados, `pnpm-lock.yaml` idêntico depois; `--lockfile-only` antes disso também não gerou diff. Das 11 entradas de catálogo ausentes do lockfile, 2 não são referenciadas por workspace nenhum e as 9 restantes estão pinadas em versão exata igual ao especificador gravado — o pnpm resolve `catalog:` antes de comparar. A checagem foi verificada no sentido oposto com uma divergência plantada (`chroma-js` → `^3.0.0`): `ERR_PNPM_OUTDATED_LOCKFILE`, exit 1. Flag trocada no `stage.yml`. |
 | 2026-09-05 | **P0.8 fechado pelo run.** PR #10 verde nos 16 checks (run 33974385564). `API Tests (pytest)` **success** em 9m45s com `plane/tests/unit -q -m unit` — a suíte upstream inteira, **zero exclusões**, confirmando a previsão. A previsão vinha de ter lido antes os candidatos a falhar sem MinIO/RabbitMQ: `test_storage.py` e `test_copy_s3_objects.py` mockam `boto3`, e `test_ssrf_advisories.py` faz `patch` em `socket.getaddrinfo` e em `requests.Session` — nada na suíte unit toca a rede. Os `ERROR` de constraint no log do PostgreSQL do run são as asserções negativas do D0, não defeito. `Code Quality Checks` verde no mesmo run fecha também o último critério do P0.5.        |
+| 2026-09-05 | PR #11 mesclado em `stage` (`af571341`): **P0.11 fechado** e a metade de versão do P0.13 junto. Fica em aberto no item o mirror `origin/upstream`, ainda em 1.4.1.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 2026-09-05 | P0.11 entregue no PR #11: upstream `v1.4.2` (`5f7d9278`) são 3 commits e uma mudança real (auto-reload em falha de chunk após deploy). Conflito único na versão do `package.json` raiz, resolvido para `1.5.0-plane.1.4.2`, com o manifest do Release Please junto — fecha a metade de versão do P0.13. Merge com os dois pais confirmado; `--frozen-lockfile` continua exit 0 depois dele. O mirror `origin/upstream` ficou uma release atrás: a sessão não tem autorização para empurrar naquela branch, e o comando está no corpo do PR.                                                                                                                                                    |
 | 2026-09-05 | P0.8 ligado (falta o run): `api_tests` roda `pytest plane/tests/unit -q -m unit`, sem exclusões; job manual `api_integration_tests` roda `contract/` e `smoke/` pelo `docker-compose-test.yml`; `RUNNING_TESTS.md` documenta os dois e a política de exclusões. Achado: o workflow **não declarava `workflow_dispatch`**, embora `changes`, `ci` e `api_tests` já testassem `github.event_name == 'workflow_dispatch'` — condições mortas, e nenhuma forma de rodar o workflow à mão. Gatilho declarado.                                                                                                                                                                                       |
 | 2026-09-05 | P0.12 reverificado por `merge-base --is-ancestor` contra `0e4ab05c`, não pela lista anterior: os tips dos três branches superados agora estão todos anotados (faltavam dois) e mais dois branches entraram na lista de apagar, porque seus PRs foram mesclados desde o levantamento (`claude/loving-carson-n9x6eq`, `feat/orca-unit-project-coverage`). `git push --delete` barrado de novo; sem ferramenta de deleção de branch no MCP do GitHub.                                                                                                                                                                                                                                             |

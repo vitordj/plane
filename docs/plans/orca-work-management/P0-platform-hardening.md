@@ -456,17 +456,42 @@ existir. Basta recomeçar; está descrito no Troubleshooting.
 
 ---
 
-## P0.11 — Sync com Plane CE 1.4.2 `[ ]`
+## P0.11 — Sync com Plane CE 1.4.2 `[x]`
 
 **Mudança.** Seguir FORK.md §Phase 5: atualizar branch `upstream` com
 `makeplane/plane` tag `v1.4.2`, criar `sync/upstream-merge-2026-09`, resolver
 conflitos, abrir PR para `stage`. Registrar no PR o SHA upstream usado.
 Atualizar `package.json` para `...-plane.1.4.2` (ver P0.13).
 
+**Entregue** (PR #11, mesclado em `stage` como `af571341`). O item estava
+marcado como o mais pesado que restava em P0; é o mais leve. Upstream
+`v1.4.2` = `5f7d92784c403f76284f0f16718f320221dc7fec`, três commits sobre o
+`v1.4.1` (`5662b7610`) em que o fork estava, e só um deles é mudança real:
+
+- `1c8a60f8` [WEB-8632] — `apps/web` recarrega a página uma vez quando uma navegação falha por chunk obsoleto depois de um deploy, em vez de deixar o usuário numa rota quebrada. Novo `apps/web/core/lib/stale-asset-error.ts`, mais `entry.client.tsx` e `root.tsx`. Vale para este fork em particular: o modelo de deploy troca os assets a cada push em `stage`.
+- `e056bbf9` e `5f7d9278` — bump de versão do próprio upstream em todos os `package.json`, e o commit de release.
+
+**Um conflito só**, na versão do `package.json` raiz: a convenção do fork
+(`1.4.0-plane.1.4.1`) contra a do upstream (`1.4.2`). Resolvido para
+`1.5.0-plane.1.4.2` — minor porque o sync traz feature, e o sufixo passa a
+nomear a base que o código de fato tem. `.github/release-please-manifest.json`
+foi junto; sem ele o Release Please proporia a partir da versão velha.
+
+**Detalhe do procedimento que ficou pela metade.** O merge tomou a tag
+`v1.4.2` diretamente em vez do mirror `origin/upstream` (FORK.md §Phase 5
+passo 1), porque a sessão de agente não tem autorização para empurrar naquela
+branch. Mesmo conteúdo, mesmo commit — mas **o mirror está uma release
+atrás**. Um comando resolve:
+
+```bash
+git push origin refs/tags/v1.4.2^{commit}:refs/heads/upstream
+```
+
 **Aceite.**
 
-- [ ] CI verde no PR de sync.
-- [ ] `docs/` e `FORK.md` mencionam 1.4.2 como base.
+- [x] CI verde no PR de sync — 16 checks no run 33974605256, incluindo `check:types` e os seis builds; merge com os dois pais confirmado por `git merge-base --is-ancestor v1.4.2 HEAD`.
+- [x] `docs/` menciona 1.4.2 como base (`HANDOFF-PROMPT.md`, com o SHA novo). `FORK.md` nunca afirmou uma versão-base: descreve a convenção `v<fork>-plane.<upstream>`, que continua correta.
+- [ ] Mirror `origin/upstream` atualizado para `v1.4.2` (comando acima; a sessão não empurra naquela branch).
 
 ---
 
@@ -586,17 +611,26 @@ onde isso aparece, e ele é editável antes do merge. Registrado como passo
 explícito no runbook §2, com as duas saídas (corrigir no PR ou configurar
 `prerelease: true`).
 
-**Não entregue, e por quê.** O bump para `1.5.0-plane.1.4.2` pressupõe o
-**P0.11** (sync com o upstream 1.4.2), que não aconteceu: marcar
-`-plane.1.4.2` hoje afirmaria uma base que o código não tem. O bump entra no
-PR do sync, junto com a decisão de prerelease acima.
+**O bump saiu, junto com o P0.11.** A versão dependia do sync: marcar
+`-plane.1.4.2` antes dele afirmaria uma base que o código não tinha. Com o
+PR #11 mesclado (`af571341`), `package.json` e
+`.github/release-please-manifest.json` estão em `1.5.0-plane.1.4.2` e a
+afirmação é verdadeira.
+
+**Resta o que só o primeiro release responde.** A decisão de prerelease
+continua aberta e não é decidível sem rodar: o Release Please pode propor uma
+versão **sem** o sufixo `-plane.<upstream>`, porque em semver ele é um
+prerelease tag e a configuração não declara `prerelease: true`. O PR de
+release é onde isso aparece e é editável antes do merge — runbook §2 descreve
+as duas saídas. O ensaio do runbook também continua pendente, e depende de
+ambiente.
 
 **Aceite.**
 
 - [x] Template e FORK.md §Phase 4 descrevem o mesmo fluxo que os workflows executam.
 - [x] Runbook escrito, com verificação pós-deploy e rollback por digest.
 - [ ] Runbook ensaiado, com data e resultado no próprio arquivo (tabela "Rehearsal log").
-- [ ] `package.json` e manifest em `1.5.0-plane.1.4.2` — depende do P0.11.
+- [x] `package.json` e manifest em `1.5.0-plane.1.4.2` — entrou no PR do sync (P0.11, PR #11), como previsto aqui.
 - [ ] Decidido e registrado se o Release Please calcula a versão ou se o sufixo é mantido à mão (o runbook descreve as duas saídas; a decisão sai no primeiro release).
 
 **Arquivos:** `package.json`, `.github/release-please-manifest.json`, `.github/release-please-config.json`, `.github/PULL_REQUEST_TEMPLATE/release_candidate.md`, `FORK.md`, `docs/release-runbook.md`.
