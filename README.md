@@ -18,36 +18,50 @@ Plane Orca enhances official Plane Community Edition with extended workflow capa
 |                        | Enhanced Bulk Operations           | Multi-select and update work item properties with clear, streamlined multi-value dropdowns.                                                              |
 | **🛠️ Data Migration**  | Plane-to-Plane Migration Tool      | Built-in CLI migration utility ([tools/migration](./tools/migration/README.md)) to migrate issues, cycles, labels, and projects between Plane instances. |
 | **🎨 UI & Privacy**    | Clean & Distraction-Free UI        | Removed telemetry trackers and promotional ads for a faster, clutter-free workspace.                                                                     |
-| **🐳 Self-Hosting**    | VPS & Coolify Ready                | Optimized low-memory footprint stack ([docker-compose-orca.yml](./docker-compose-orca.yml)) running smoothly under 3GB RAM.                              |
+| **🐳 Self-Hosting**    | VPS & PaaS Ready                   | Optimized low-memory footprint stack ([docker-compose-orca.yml](./docker-compose-orca.yml)) running smoothly under 3GB RAM.                              |
 
 ### 🐳 Self-Hosted Deployment (`docker-compose-orca.yml`)
 
-Plane Orca is pre-configured for self-hosting on low-spec VPS instances (<3GB RAM) and PaaS platforms like **Coolify** using [docker-compose-orca.yml](./docker-compose-orca.yml).
+Plane Orca is pre-configured for self-hosting on low-spec VPS instances (<3GB RAM) using [docker-compose-orca.yml](./docker-compose-orca.yml). It is a plain Compose file: anything that runs Compose runs it — `docker compose up` on a VPS, or a PaaS that consumes a Compose file, such as Coolify.
 
-#### ⚡ Quick Start (Coolify)
+#### ⚡ Quick Start
 
-1. **Create Application**: Add a new **Docker Compose** resource in Coolify pointing to this repository (`stage` or `prod` branch) with file path `docker-compose-orca.yml`.
-2. **Assign Domain**: In **Domains**, route your URL (e.g. `https://plane.example.com`) to the **`proxy`** service on container port `80`.
-3. **Configure Secrets & Deploy**: Add required secrets in **Environment Variables** and click **Deploy**.
+Whatever runs the stack, three things have to be true:
+
+1. **The Compose file is the deployment unit**: point the platform (or `docker compose -f`) at `docker-compose-orca.yml` on the `stage` or `prod` branch. The images come from GHCR; see `ORCA_IMAGE_REPOSITORY` and `TAG` below.
+2. **Public traffic reaches the `proxy` service on container port `80`**: route your domain (e.g. `https://plane.example.com`) there, and set `TRUSTED_PROXIES` to the CIDR of whatever sits in front of it — the stack refuses to start without it, on purpose, so that client IPs in logs and rate limits cannot be forged.
+3. **Secrets are set as environment variables** before the first boot, not after.
+
+<details>
+<summary>Worked example: Coolify</summary>
+
+1. **Create Application**: Add a new **Docker Compose** resource pointing to this repository (`stage` or `prod` branch) with file path `docker-compose-orca.yml`.
+2. **Assign Domain**: In **Domains**, route your URL to the **`proxy`** service on container port `80`. Coolify is also what supplies `SERVICE_FQDN_PROXY`, the default `DOMAIN_NAME` resolves from — set `DOMAIN_NAME` explicitly anywhere else.
+3. **Configure Secrets & Deploy**: Add the required secrets in **Environment Variables** and click **Deploy**.
+
+</details>
+
+> [!NOTE]
+> The deploy jobs in `.github/workflows/{stage,prod}.yml` call the Coolify API and are opt-in through the `COOLIFY_DEPLOY_ENABLED` variable; leave it unset and the workflows still lint, test, build and publish, while the deploy step is skipped. The 4UM deployment target is not yet decided (P0.17 in [the platform hardening plan](./docs/plans/orca-work-management/P0-platform-hardening.md)) — record it here once it is.
 
 > [!TIP]
 > **Generate Secret Keys**: Run `openssl rand -hex 32` in your terminal to generate 64-character secret keys.
 
 #### ⚙️ Configuration Variables
 
-| Variable                                      | Required | Description                     | Default                                    |
-| :-------------------------------------------- | :------: | :------------------------------ | :----------------------------------------- |
-| `SECRET_KEY`                                  | **Yes**  | Django session cryptography key | _User-provided (64-char hex)_              |
-| `LIVE_SERVER_SECRET_KEY`                      | **Yes**  | WebSocket encryption key        | _User-provided (64-char hex)_              |
-| `DOMAIN_NAME`                                 |    No    | Public application domain       | Auto-resolved from `${SERVICE_FQDN_PROXY}` |
-| `POSTGRES_USER` / `POSTGRES_PASSWORD`         |    No    | PostgreSQL credentials          | `plane` / `plane123`                       |
-| `POSTGRES_DB`                                 |    No    | PostgreSQL database schema      | `plane`                                    |
-| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` |    No    | MinIO / S3 storage credentials  | `plane-access-key` / `plane-secret-key`    |
-| `AWS_S3_BUCKET_NAME`                          |    No    | File upload storage bucket      | `uploads`                                  |
-| `ORCA_IMAGE_REPOSITORY`                       |    No    | Registry namespace the images are pulled from. Must be the namespace `stage.yml` publishes to (`ghcr.io/<owner>/<repo>`); CI fails when they drift | `ghcr.io/vitordj/plane`                    |
-| `TAG`                                         |    No    | Image tag for all six services; prefer an immutable `sha-<commit>` for production | `stage`                                    |
+| Variable                                      | Required | Description                                                                                                                                                                             | Default                                    |
+| :-------------------------------------------- | :------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------- |
+| `SECRET_KEY`                                  | **Yes**  | Django session cryptography key                                                                                                                                                         | _User-provided (64-char hex)_              |
+| `LIVE_SERVER_SECRET_KEY`                      | **Yes**  | WebSocket encryption key                                                                                                                                                                | _User-provided (64-char hex)_              |
+| `DOMAIN_NAME`                                 |    No    | Public application domain                                                                                                                                                               | Auto-resolved from `${SERVICE_FQDN_PROXY}` |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD`         |    No    | PostgreSQL credentials                                                                                                                                                                  | `plane` / `plane123`                       |
+| `POSTGRES_DB`                                 |    No    | PostgreSQL database schema                                                                                                                                                              | `plane`                                    |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` |    No    | MinIO / S3 storage credentials                                                                                                                                                          | `plane-access-key` / `plane-secret-key`    |
+| `AWS_S3_BUCKET_NAME`                          |    No    | File upload storage bucket                                                                                                                                                              | `uploads`                                  |
+| `ORCA_IMAGE_REPOSITORY`                       |    No    | Registry namespace the images are pulled from. Must be the namespace `stage.yml` publishes to (`ghcr.io/<owner>/<repo>`); CI fails when they drift                                      | `ghcr.io/vitordj/plane`                    |
+| `TAG`                                         |    No    | Image tag for all six services; prefer an immutable `sha-<commit>` for production                                                                                                       | `stage`                                    |
 | `TRUSTED_PROXIES`                             | **Yes**  | CIDR range(s) of the ingress or reverse proxy in front of Caddy, comma-separated. Only these sources may set the client IP via `X-Forwarded-For`; the stack refuses to start without it | _User-provided (e.g. `10.0.0.0/8`)_        |
-| `ORCA_ORG_UNITS_ENABLED`                      |    No    | Kill switch of the organizational layer (Areas); forwarded to api, worker, beat and migrator. `1/true/yes/on` or `0/false/no/off` | `1`                                        |
+| `ORCA_ORG_UNITS_ENABLED`                      |    No    | Kill switch of the organizational layer (Areas); forwarded to api, worker, beat and migrator. `1/true/yes/on` or `0/false/no/off`                                                       | `1`                                        |
 
 ### 🚀 Fork Workflow & Git Strategy
 

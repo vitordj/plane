@@ -61,13 +61,13 @@ docker compose -f docker-compose-test.yml down -v
 
 ## How it works
 
-| Service      | Image                                | Purpose                                       |
-| ------------ | ------------------------------------ | --------------------------------------------- |
-| `test-db`    | `postgres:15.7-alpine`               | Application database                          |
-| `test-redis` | `valkey/valkey:7.2.11-alpine`        | Cache / Celery broker                         |
-| `test-mq`    | `rabbitmq:3.13.6-management-alpine`  | Task queue                                    |
-| `test-minio` | `minio/minio:RELEASE.2025-09-07T16-13-09Z` | S3-compatible object storage            |
-| `api-tests`  | built from `apps/api/Dockerfile.dev` | Installs `requirements/test.txt`, runs pytest |
+| Service      | Image                                      | Purpose                                       |
+| ------------ | ------------------------------------------ | --------------------------------------------- |
+| `test-db`    | `postgres:15.7-alpine`                     | Application database                          |
+| `test-redis` | `valkey/valkey:7.2.11-alpine`              | Cache / Celery broker                         |
+| `test-mq`    | `rabbitmq:3.13.6-management-alpine`        | Task queue                                    |
+| `test-minio` | `minio/minio:RELEASE.2025-09-07T16-13-09Z` | S3-compatible object storage                  |
+| `api-tests`  | built from `apps/api/Dockerfile.dev`       | Installs `requirements/test.txt`, runs pytest |
 
 ### Image versions
 
@@ -84,6 +84,35 @@ all four together and record the migration plan here.
 All four dependencies expose health checks; `api-tests` waits for `service_healthy` on each via `depends_on`, so pytest only starts once the stack is ready.
 
 Test-time env overrides live in the compose file itself (`POSTGRES_HOST=test-db`, `REDIS_URL=redis://test-redis:6379/`, `AWS_S3_ENDPOINT_URL=http://test-minio:9000`, `DJANGO_SETTINGS_MODULE=plane.settings.test`). Everything else is inherited from `apps/api/.env`.
+
+## What CI runs
+
+Two jobs in `.github/workflows/stage.yml`, split by what they need to stand up:
+
+| Job                     | Command                                            | Services                                 | When                         |
+| ----------------------- | -------------------------------------------------- | ---------------------------------------- | ---------------------------- |
+| `api_tests`             | `pytest plane/tests/unit -q -m unit`               | PostgreSQL, Valkey                       | every PR and push to `stage` |
+| `api_integration_tests` | `pytest plane/tests/contract plane/tests/smoke -q` | the full `docker-compose-test.yml` stack | manual (`workflow_dispatch`) |
+
+The merge gate is the whole unit suite, upstream directories included — not
+just `plane/tests/unit/orca/`. This fork deploys the upstream code as much as
+its own, so an upstream regression carried into `stage` is ours either way
+(P0.8).
+
+### Exclusions in CI
+
+None. If a directory ever has to be dropped from the `api_tests` selection,
+add a row here naming the service it needs and the job that does cover it —
+an `--ignore` in the workflow with no line here is how a suite quietly stops
+covering something.
+
+| Path | Why it is excluded | Covered by |
+| ---- | ------------------ | ---------- |
+| —    | —                  | —          |
+
+`plane/tests/contract` and `plane/tests/smoke` are not exclusions: they are
+not selected in the first place (the path is `plane/tests/unit`), and they
+run in `api_integration_tests`.
 
 ## Concurrency tests
 
