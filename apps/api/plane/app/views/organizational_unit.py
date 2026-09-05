@@ -35,6 +35,7 @@ from plane.app.services.orca import (
     MODE_APPEND,
     MODE_FILL_EMPTY,
     OrcaDomainError,
+    orca_public_api_enabled,
     organizational_units_enabled,
     plan_access,
     reconcile_membership,
@@ -135,7 +136,15 @@ class OrcaConfigEndpoint(BaseAPIView):
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
     def get(self, request, slug):
         return Response(
-            {"organizational_units_enabled": organizational_units_enabled()},
+            {
+                "organizational_units_enabled": organizational_units_enabled(),
+                # So the app can show the automation instructions only where
+                # they would work. The two switches are independent: the layer
+                # can be on for people while /api/v1/orca/ stays shut, and a UI
+                # that told everyone to go and call it would be wrong on every
+                # instance that has not opened it.
+                "public_api_enabled": orca_public_api_enabled(),
+            },
             status=status.HTTP_200_OK,
         )
 
