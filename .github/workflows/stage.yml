@@ -50,10 +50,10 @@ concurrency:
   group: stage-${{ github.ref }}
   cancel-in-progress: false
 
+# Read-only by default: every job that writes something declares the single
+# scope it needs, so a compromised action in one job cannot reach the others.
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+  contents: read
 
 env:
   REGISTRY: ghcr.io
@@ -193,7 +193,7 @@ jobs:
     if: github.event_name == 'pull_request' && !startsWith(github.event.pull_request.head.ref, 'release-please--') && github.event.pull_request.head.ref != 'stage' && github.event.pull_request.user.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
       issues: write
     steps:
@@ -250,6 +250,8 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.code_changes == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
@@ -264,6 +266,15 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
+        # Should be --frozen-lockfile (P0.5): a lockfile the CI is allowed to
+        # rewrite proves nothing, since the build silently resolves versions
+        # no one reviewed. It cannot be flipped yet — pnpm-lock.yaml is out of
+        # date with the workspace catalog (11 packages moved to `catalog:` in
+        # the package.json files by upstream 31853ab2 while the lockfile kept
+        # the resolved specifier), so --frozen-lockfile fails on every run
+        # today. Flip it in the same commit that regenerates the lockfile:
+        # `pnpm install --lockfile-only`. See
+        # docs/plans/orca-work-management/P0-platform-hardening.md, P0.5.
         run: pnpm install --no-frozen-lockfile
 
       - name: Run Format and Lint Checks
@@ -296,6 +307,8 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.api == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       postgres:
         image: postgres:16-alpine
@@ -646,6 +659,8 @@ jobs:
     if: ${{ always() && vars.COOLIFY_DEPLOY_ENABLED == 'true' && github.event_name != 'pull_request' && (needs.build-push.result == 'success' || needs.build-push.result == 'skipped') && (needs.changes.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch') && !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     environment: stage
+    permissions:
+      contents: read
     steps:
       # Coolify pulls :stage, a mutable tag, so the run log is the only place
       # that says which digests this deploy actually put in staging.
@@ -856,10 +871,10 @@ jobs:
     name: Ensure Release Candidate PR
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    # Opens a pull request; it never pushes a commit, so contents stays read.
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
-      issues: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7

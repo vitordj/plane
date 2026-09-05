@@ -42,9 +42,10 @@ concurrency:
   group: prod-${{ github.ref }}
   cancel-in-progress: false
 
+# Read-only by default: promotion writes packages and the release body,
+# sync-stage writes a branch, and each declares only what it needs.
 permissions:
-  contents: write
-  packages: write
+  contents: read
 
 env:
   REGISTRY: ghcr.io
@@ -196,6 +197,8 @@ jobs:
     if: ${{ vars.COOLIFY_DEPLOY_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     environment: prod
+    permissions:
+      contents: read
     steps:
       - name: Trigger Coolify deploy
         id: deploy

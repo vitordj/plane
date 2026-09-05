@@ -135,13 +135,54 @@ criação. O job passa mesmo sem PR.
 
 ---
 
-## P0.5 — Lockfile congelado e permissões mínimas `[ ]`
+## P0.5 — Lockfile congelado e permissões mínimas `[~]`
 
 **Mudança.**
-- `pnpm install --no-frozen-lockfile` → `pnpm install --frozen-lockfile` em todos os jobs.
+- ~~`pnpm install --no-frozen-lockfile` → `pnpm install --frozen-lockfile` em todos os jobs.~~ **Bloqueado, ver abaixo.**
 - `permissions:` global em `stage.yml` e `prod.yml` passa a `contents: read`; cada job que precisa (labeler: `pull-requests: write`, `issues: write`; build-push: `packages: write`; promote-rc: `contents: write`, `pull-requests: write`; release: `contents: write`) declara o seu.
 
+**Entregue** (`claude/loving-carson-n9x6eq`): a metade das permissões.
+`permissions:` global de `stage.yml` e `prod.yml` é `contents: read`; cada job
+declara o mínimo — `labeler` (`pull-requests`/`issues: write`), `build-push`
+(`packages: write`), `promote-rc` (`pull-requests: write`; **não** precisa de
+`contents: write`, porque abre PR e não empurra commit), `promote` do prod
+(`contents: write` para editar o release + `packages: write`), `sync-stage`
+(`contents: write`); os demais, `contents: read` explícito.
+`release-please.yml` fica como está: a action precisa de `contents: write` e
+`pull-requests: write` e não roda `pnpm install`.
+
+**Bloqueio do lockfile (achado desta sessão).** `pnpm install
+--frozen-lockfile` **falha hoje**, antes de qualquer mudança nossa:
+`pnpm-workspace.yaml` tem 184 entradas de catálogo, `pnpm-lock.yaml` tem 173.
+As 11 que faltam — `typescript`, `vite`, `axios`, `uuid`, `lodash-es`,
+`postcss`, `express`, `@types/express`, `@react-router/node`,
+`@tanstack/react-virtual`, `@tanstack/virtual-core` — foram movidas para
+`catalog:` nos `package.json` pelo commit upstream `31853ab2` sem que o
+lockfile fosse regenerado: 46 dependências de 17 workspaces têm
+`"catalog:"` no `package.json` e o especificador resolvido (ex.: `5.8.3`) no
+lockfile. As **versões** batem; o que diverge é a forma do especificador, que
+é exatamente o que o `--frozen-lockfile` compara. O `--no-frozen-lockfile`
+atual esconde isso reescrevendo o lockfile a cada run — é o próprio defeito
+que o item quer fechar.
+
+Trocar a flag sem regenerar o lockfile deixa o CI vermelho em todo PR, então
+as duas coisas têm que entrar no mesmo commit. Comando para o desenvolvedor
+(a sessão de agente não roda `pnpm install`, AGENTS.md):
+
+```bash
+pnpm install --lockfile-only   # regenera pnpm-lock.yaml a partir dos package.json
+git diff --stat pnpm-lock.yaml # deve mostrar só as 46 linhas de specifier + a seção catalogs
+```
+
+Depois disso, trocar `--no-frozen-lockfile` por `--frozen-lockfile` no job
+`ci` de `stage.yml` (o comentário no passo aponta para este item) e confirmar
+que um PR sem mudança de dependência fica verde. Alternativa, se a
+regeneração trouxer ruído demais: fazer a troca junto com o sync upstream
+(P0.11), que já vai mexer no lockfile.
+
 **Aceite.**
+- [x] `permissions:` global `contents: read` em `stage.yml` e `prod.yml`, com cada job declarando o seu escopo mínimo.
+- [ ] `pnpm install --frozen-lockfile` no CI (depende da regeneração do lockfile acima).
 - [ ] CI verde em um PR que não altera dependências.
 - [ ] CI vermelho em um PR que altera `package.json` sem atualizar `pnpm-lock.yaml` (teste descartável).
 
