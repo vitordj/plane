@@ -687,7 +687,17 @@
           "decision_stale": "Táto pracovná položka sa medzitým zmenila. Načítajte ju znova a skúste to znova.",
           "invalid_routing_transition": "Táto pracovná položka nemôže zo svojho stavu prejsť do toho.",
           "directory_workspace_not_found": "Tento pracovný priestor už neexistuje.",
-          "directory_token_required": "Pred zapnutím provisioningu z adresára vydajte token SCIM."
+          "directory_token_required": "Pred zapnutím provisioningu z adresára vydajte token SCIM.",
+          "public_api_disabled": "Automatizačné API je v tejto inštancii vypnuté.",
+          "idempotency_key_required": "Táto požiadavka vyžaduje hlavičku Idempotency-Key.",
+          "idempotency_payload_mismatch": "Tento kľúč už bol použitý pre inú požiadavku.",
+          "operation_in_progress": "Zhodná požiadavka stále prebieha. Skúste to prosím o chvíľu znova.",
+          "external_binding_conflict": "Tento externý kľúč už odkazuje na inú pracovnú položku.",
+          "assignees_not_allowed_here": "O tom, kto túto pracovnú položku prevezme, rozhoduje oblasť, takže táto požiadavka nemôže nastaviť priradené osoby.",
+          "if_match_required": "Táto požiadavka vyžaduje hlavičku If-Match s aktuálnym rozhodnutím.",
+          "process_projection_disabled": "Projekcia procesov je v tejto inštancii vypnutá.",
+          "completion_manual_only": "Túto pracovnú položku môže dokončiť len človek.",
+          "internal_error": "Niečo sa pokazilo. Operácia bola zaznamenaná ako neúspešná."
         }
       }
     },

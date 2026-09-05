@@ -50,6 +50,17 @@ ORCA_ERROR_CODES = {
     # directory provisioning
     "ORG_DIRECTORY_WORKSPACE_NOT_FOUND": 4914,
     "ORG_DIRECTORY_TOKEN_REQUIRED": 4915,
+    # public automation API (RFC §7.3)
+    "ORG_PUBLIC_API_DISABLED": 4922,
+    "ORG_IDEMPOTENCY_KEY_REQUIRED": 4923,
+    "ORG_IDEMPOTENCY_PAYLOAD_MISMATCH": 4924,
+    "ORG_OPERATION_IN_PROGRESS": 4925,
+    "ORG_EXTERNAL_BINDING_CONFLICT": 4926,
+    "ORG_ASSIGNEES_NOT_ALLOWED_HERE": 4927,
+    "ORG_IF_MATCH_REQUIRED": 4928,
+    "ORG_PROCESS_PROJECTION_DISABLED": 4929,
+    "ORG_COMPLETION_MANUAL_ONLY": 4930,
+    "ORG_INTERNAL_ERROR": 4931,
 }
 
 # The English prose each code carries. Kept here rather than at the call sites
@@ -78,6 +89,16 @@ ORCA_ERROR_MESSAGES = {
     "ORG_INVALID_ROUTING_TRANSITION": "This work item cannot move to that state from its current one",
     "ORG_DIRECTORY_WORKSPACE_NOT_FOUND": "Workspace not found",
     "ORG_DIRECTORY_TOKEN_REQUIRED": "Issue a SCIM token before enabling directory provisioning",
+    "ORG_PUBLIC_API_DISABLED": "The Orca public automation API is disabled on this instance",
+    "ORG_IDEMPOTENCY_KEY_REQUIRED": "This request needs an Idempotency-Key header",
+    "ORG_IDEMPOTENCY_PAYLOAD_MISMATCH": "This Idempotency-Key was already used with a different payload",
+    "ORG_OPERATION_IN_PROGRESS": "An operation with this Idempotency-Key is still running",
+    "ORG_EXTERNAL_BINDING_CONFLICT": "This external key is already bound to another work item",
+    "ORG_ASSIGNEES_NOT_ALLOWED_HERE": "Assignees are decided by the organizational unit, not by this request",
+    "ORG_IF_MATCH_REQUIRED": "This request needs an If-Match header carrying the current decision id",
+    "ORG_PROCESS_PROJECTION_DISABLED": "Process projection is disabled on this instance",
+    "ORG_COMPLETION_MANUAL_ONLY": "This work item can only be completed by a person",
+    "ORG_INTERNAL_ERROR": "The operation failed and was recorded as failed",
 }
 
 

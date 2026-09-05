@@ -687,7 +687,17 @@
           "decision_stale": "보고 있는 동안 이 작업 항목이 변경되었습니다. 새로 고친 뒤 다시 시도하십시오.",
           "invalid_routing_transition": "이 작업 항목은 현재 상태에서 그 상태로 이동할 수 없습니다.",
           "directory_workspace_not_found": "해당 작업 공간이 더 이상 없습니다.",
-          "directory_token_required": "디렉터리 프로비저닝을 켜기 전에 SCIM 토큰을 발급하십시오."
+          "directory_token_required": "디렉터리 프로비저닝을 켜기 전에 SCIM 토큰을 발급하십시오.",
+          "public_api_disabled": "이 인스턴스에서는 자동화 API가 꺼져 있습니다.",
+          "idempotency_key_required": "이 요청에는 Idempotency-Key 헤더가 필요합니다.",
+          "idempotency_payload_mismatch": "이 키는 이미 다른 요청에 사용되었습니다.",
+          "operation_in_progress": "동일한 요청이 아직 실행 중입니다. 잠시 후 다시 시도하십시오.",
+          "external_binding_conflict": "이 외부 키는 이미 다른 작업 항목을 가리키고 있습니다.",
+          "assignees_not_allowed_here": "이 작업 항목을 누가 맡을지는 영역이 정하므로 이 요청으로는 담당자를 지정할 수 없습니다.",
+          "if_match_required": "이 요청에는 현재 결정이 담긴 If-Match 헤더가 필요합니다.",
+          "process_projection_disabled": "이 인스턴스에서는 프로세스 투영이 꺼져 있습니다.",
+          "completion_manual_only": "이 작업 항목은 사람만 완료할 수 있습니다.",
+          "internal_error": "문제가 발생했습니다. 이 작업은 실패로 기록되었습니다."
         }
       }
     },

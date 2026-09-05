@@ -45,7 +45,7 @@ from .directory_projector import (
     resolve_identity,
     unresolved_identities,
 )
-from .feature_flags import organizational_units_enabled
+from .feature_flags import orca_public_api_enabled, organizational_units_enabled
 from .language import (
     DEFAULT_LANGUAGE_KEY,
     FALLBACK_LANGUAGE,
@@ -103,6 +103,7 @@ __all__ = [
     "get_default_language",
     "match_workspace_member",
     "normalize_language",
+    "orca_public_api_enabled",
     "organizational_units_enabled",
     "plan_access",
     "project_identity",

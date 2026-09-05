@@ -45,6 +45,17 @@ export const ORCA_ERROR_CODE_KEYS: Record<number, string> = {
   // directory provisioning
   4914: "workspace_settings.settings.organizational_units.errors.directory_workspace_not_found",
   4915: "workspace_settings.settings.organizational_units.errors.directory_token_required",
+  // public automation API
+  4922: "workspace_settings.settings.organizational_units.errors.public_api_disabled",
+  4923: "workspace_settings.settings.organizational_units.errors.idempotency_key_required",
+  4924: "workspace_settings.settings.organizational_units.errors.idempotency_payload_mismatch",
+  4925: "workspace_settings.settings.organizational_units.errors.operation_in_progress",
+  4926: "workspace_settings.settings.organizational_units.errors.external_binding_conflict",
+  4927: "workspace_settings.settings.organizational_units.errors.assignees_not_allowed_here",
+  4928: "workspace_settings.settings.organizational_units.errors.if_match_required",
+  4929: "workspace_settings.settings.organizational_units.errors.process_projection_disabled",
+  4930: "workspace_settings.settings.organizational_units.errors.completion_manual_only",
+  4931: "workspace_settings.settings.organizational_units.errors.internal_error",
 };
 
 /** The shape the Orca API returns on failure. Every field may be absent. */
