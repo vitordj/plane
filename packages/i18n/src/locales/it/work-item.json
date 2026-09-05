@@ -277,6 +277,8 @@
         "assigned": "Affidato al membro dell'area con meno lavoro aperto.",
         "already_assigned_title": "Già assegnato",
         "already_assigned": "Questo elemento di lavoro ha già un assegnatario.",
+        "queued_title": "In coda nell'area",
+        "queued": "Quest'area distribuisce il lavoro a mano, quindi l'elemento di lavoro resta in attesa.",
         "nobody_title": "Nessuno disponibile",
         "nobody": "Nessun membro di quest'area ha accesso a questo progetto.",
         "not_assigned": "Non assegnato"

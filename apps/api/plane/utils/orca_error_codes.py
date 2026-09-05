@@ -40,6 +40,13 @@ ORCA_ERROR_CODES = {
     "ORG_WORK_ITEM_NOT_FOUND": 4911,
     "ORG_WORK_ITEM_HAS_NO_UNIT": 4912,
     "ORG_INVALID_ASSIGNMENT_MODE": 4913,
+    "ORG_UNIT_NOT_COVERING_PROJECT": 4916,
+    # assignment service
+    "ORG_ASSIGNMENT_MODE_NOT_ALLOWED": 4917,
+    "ORG_EXECUTOR_NOT_ELIGIBLE": 4918,
+    "ORG_WORK_ITEM_ALREADY_CLAIMED": 4919,
+    "ORG_DECISION_STALE": 4920,
+    "ORG_INVALID_ROUTING_TRANSITION": 4921,
     # directory provisioning
     "ORG_DIRECTORY_WORKSPACE_NOT_FOUND": 4914,
     "ORG_DIRECTORY_TOKEN_REQUIRED": 4915,
@@ -63,6 +70,12 @@ ORCA_ERROR_MESSAGES = {
     "ORG_WORK_ITEM_NOT_FOUND": "Work item not found",
     "ORG_WORK_ITEM_HAS_NO_UNIT": "No organizational unit is responsible for this work item",
     "ORG_INVALID_ASSIGNMENT_MODE": "Invalid mode",
+    "ORG_UNIT_NOT_COVERING_PROJECT": "This organizational unit is not linked to this project",
+    "ORG_ASSIGNMENT_MODE_NOT_ALLOWED": "This assignment mode is not allowed by the effective policy",
+    "ORG_EXECUTOR_NOT_ELIGIBLE": "This person cannot be assigned work of this organizational unit on this project",
+    "ORG_WORK_ITEM_ALREADY_CLAIMED": "This work item has already been claimed",
+    "ORG_DECISION_STALE": "This work item changed since the decision you are replacing",
+    "ORG_INVALID_ROUTING_TRANSITION": "This work item cannot move to that state from its current one",
     "ORG_DIRECTORY_WORKSPACE_NOT_FOUND": "Workspace not found",
     "ORG_DIRECTORY_TOKEN_REQUIRED": "Issue a SCIM token before enabling directory provisioning",
 }

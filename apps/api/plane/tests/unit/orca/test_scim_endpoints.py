@@ -576,6 +576,72 @@ class TestScimGroups:
 
         assert admin_client.get(roster).data == []
 
+    def test_a_withdrawn_member_disappears_from_the_scim_group_too(
+        self,
+        scim_client,
+        workspace_with_members,
+        directory_connection,
+        bound_unit,
+        make_identity,
+        put_in_group,
+    ):
+        """
+        The other half of the same rule, and the half that talks back to Entra.
+        A removed group membership is soft-deleted, and the roster query used
+        to reach it across a join the soft-delete manager does not cover — so
+        ``GET /Groups/{id}`` still listed the person and Entra went on
+        believing they were a member of the group it had just emptied.
+        """
+        identity = make_identity("plain@plane.so")
+        put_in_group(bound_unit, identity)
+        url = scim_group_url(workspace_with_members.slug, bound_unit.id)
+        assert len(scim_client.get(url).json()["members"]) == 1
+
+        scim_client.patch(
+            url,
+            {
+                "schemas": [SCHEMA_PATCH_OP],
+                "Operations": [{"op": "remove", "path": f'members[value eq "{identity.id}"]'}],
+            },
+            format="json",
+        )
+
+        assert scim_client.get(url).json()["members"] == []
+        # The row is kept: withdrawal is provenance, not an erasure.
+        assert OrganizationalDirectoryGroupMembership.all_objects.filter(
+            organizational_unit=bound_unit, identity=identity
+        ).exists()
+
+    def test_re_adding_a_withdrawn_member_lists_them_once(
+        self,
+        scim_client,
+        workspace_with_members,
+        directory_connection,
+        bound_unit,
+        make_identity,
+        put_in_group,
+    ):
+        """Somebody leaves a group and comes back, which happens constantly."""
+        identity = make_identity("plain@plane.so")
+        put_in_group(bound_unit, identity)
+        url = scim_group_url(workspace_with_members.slug, bound_unit.id)
+        remove = {
+            "schemas": [SCHEMA_PATCH_OP],
+            "Operations": [{"op": "remove", "path": f'members[value eq "{identity.id}"]'}],
+        }
+        scim_client.patch(url, remove, format="json")
+
+        scim_client.patch(
+            url,
+            {
+                "schemas": [SCHEMA_PATCH_OP],
+                "Operations": [{"op": "add", "path": "members", "value": [{"value": str(identity.id)}]}],
+            },
+            format="json",
+        )
+
+        assert len(scim_client.get(url).json()["members"]) == 1
+
     def test_a_group_from_another_workspace_is_not_found(
         self, scim_client, workspace_with_members, directory_connection, foreign_unit
     ):

@@ -13,7 +13,7 @@ at once, so v1 keeps it centralized. Unit leads have read access only.
 
 # Django imports
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.http import Http404
 from django.utils.text import slugify
 
@@ -24,6 +24,8 @@ from rest_framework.response import Response
 # Module imports
 from plane.app.permissions.base import ROLE, allow_permission
 from plane.app.serializers import (
+    AssignmentPolicySerializer,
+    IssueRoutingSerializer,
     OrganizationalUnitMembershipCreateSerializer,
     OrganizationalUnitMembershipSerializer,
     OrganizationalUnitProjectSerializer,
@@ -32,20 +34,28 @@ from plane.app.serializers import (
 from plane.app.services.orca import (
     MODE_APPEND,
     MODE_FILL_EMPTY,
-    assign_from_unit,
+    OrcaDomainError,
     organizational_units_enabled,
     plan_access,
     reconcile_membership,
     reconcile_unit,
     reconcile_unit_project,
+    resolve_policy,
+    set_responsibility,
+    unit_covers_project,
     workload_snapshot,
 )
 from plane.db.models import (
+    AssignmentMode,
+    DecisionOutcome,
     Issue,
+    IssueAssignee,
+    IssueResponsibilityEvent,
     IssueOrganizationalUnit,
     OrganizationalUnit,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
+    ResponsibilitySource,
     Project,
     Workspace,
     WorkspaceMember,
@@ -57,6 +67,36 @@ from .base import BaseAPIView, BaseViewSet
 
 # Native project roles a unit may hand out, mirroring ``ROLE_CHOICES``.
 VALID_PROJECT_ROLES = {ROLE.GUEST.value, ROLE.MEMBER.value, ROLE.ADMIN.value}
+
+# The assignment route answers in its own vocabulary, older than the service's
+# outcomes and still what the interface reads.
+ASSIGN_REASON_FOR_OUTCOME = {
+    DecisionOutcome.ASSIGNED: "assigned",
+    DecisionOutcome.ALLOCATION_FAILED: "no_eligible_member",
+    DecisionOutcome.QUEUED: "queued",
+}
+
+
+def _assigned_payload(result):
+    """
+    @description The person the allocation chose, with the numbers that chose
+    them, read back out of the decision so the caller sees what was recorded
+    rather than a second count.
+    @param result: An ``AllocationResult``.
+    @returns dict, or ``None`` when nobody was assigned.
+    """
+    if result.chosen_user_id is None:
+        return None
+    chosen_id = str(result.chosen_user_id)
+    snapshot = next(
+        (row for row in (result.decision.candidates_snapshot or []) if row.get("user_id") == chosen_id),
+        {},
+    )
+    return {
+        "user_id": chosen_id,
+        "open_issues": snapshot.get("total_open", 0),
+        "last_assigned_at": snapshot.get("last_auto_at"),
+    }
 
 
 class OrganizationalUnitFeatureMixin:
@@ -114,6 +154,16 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
             .annotate(member_count=Count("memberships", filter=Q(memberships__is_active=True), distinct=True))
             .annotate(project_count=Count("unit_projects", distinct=True))
             .select_related("workspace")
+            # Feeds OrganizationalUnitSerializer.project_ids in one query
+            # instead of one per area, and applies the same archived-project
+            # rule the coverage check uses.
+            .prefetch_related(
+                Prefetch(
+                    "unit_projects",
+                    queryset=OrganizationalUnitProject.objects.filter(project__archived_at__isnull=True),
+                    to_attr=OrganizationalUnitSerializer.COVERED_PROJECTS_ATTR,
+                )
+            )
         )
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
@@ -499,19 +549,25 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
     Set, read, or clear the organizational unit responsible for a work item.
 
     @description The responsible unit is a sidecar link, not a column on
-    ``Issue``. Assignment stays a separate, explicit action so marking a unit
-    responsible never silently changes who is assigned.
+    ``Issue``. Marking an area responsible is where the area's policy applies,
+    so the response says what happened to the item — queued for a coordinator,
+    waiting for a claim, or assigned — rather than only which area it is.
     """
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
     def get(self, request, slug, project_id, issue_id):
-        link = IssueOrganizationalUnit.objects.filter(
-            issue_id=issue_id, project_id=project_id, workspace__slug=slug
-        ).first()
+        link = (
+            IssueOrganizationalUnit.objects.filter(issue_id=issue_id, project_id=project_id, workspace__slug=slug)
+            .select_related("organizational_unit", "current_assignment_decision")
+            .first()
+        )
         if link is None:
-            return Response({"organizational_unit": None}, status=status.HTTP_200_OK)
+            return Response({"organizational_unit": None, "routing": None}, status=status.HTTP_200_OK)
         return Response(
-            {"organizational_unit": OrganizationalUnitSerializer(link.organizational_unit).data},
+            {
+                "organizational_unit": OrganizationalUnitSerializer(link.organizational_unit).data,
+                "routing": IssueRoutingSerializer(link).data,
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -527,36 +583,71 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
         if unit is None:
             return orca_error("ORG_UNIT_NOT_IN_WORKSPACE")
 
-        link, _ = IssueOrganizationalUnit.objects.get_or_create(
-            issue=issue,
-            defaults={
-                "organizational_unit": unit,
-                "project_id": issue.project_id,
-                "workspace_id": issue.workspace_id,
-            },
-        )
-        if link.organizational_unit_id != unit.id:
-            link.organizational_unit = unit
-            link.save()
+        try:
+            # The service creates the link (or transfers it), records the
+            # responsibility event, applies the area's policy and writes the
+            # decision. Coverage (defect D1) is checked in there, so this view
+            # no longer has its own copy of the rule.
+            result = set_responsibility(
+                issue,
+                unit,
+                actor=request.user,
+                source=ResponsibilitySource.INTERNAL_API,
+                requested_mode=request.data.get("mode"),
+                reason=request.data.get("reason", ""),
+            )
+        except OrcaDomainError as exc:
+            return orca_error(exc.error_code, exc.http_status)
 
         return Response(
-            {"organizational_unit": OrganizationalUnitSerializer(unit).data},
+            {
+                "organizational_unit": OrganizationalUnitSerializer(unit).data,
+                "routing": IssueRoutingSerializer(result.link).data,
+            },
             status=status.HTTP_200_OK,
         )
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
     def delete(self, request, slug, project_id, issue_id):
-        IssueOrganizationalUnit.objects.filter(issue_id=issue_id, project_id=project_id, workspace__slug=slug).delete()
+        link = IssueOrganizationalUnit.objects.filter(
+            issue_id=issue_id, project_id=project_id, workspace__slug=slug
+        ).first()
+        if link is None:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        with transaction.atomic():
+            # The event is what keeps "this used to belong to Support" from
+            # disappearing with the link (invariant I6). Assignees stay: the
+            # item goes back to being an ordinary Plane work item.
+            IssueResponsibilityEvent.objects.create(
+                issue_id=link.issue_id,
+                workspace_id=link.workspace_id,
+                from_unit=link.organizational_unit,
+                to_unit=None,
+                actor=request.user,
+                source=ResponsibilitySource.INTERNAL_API,
+            )
+            link.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
     """
-    Assign a work item to the least-loaded member of its responsible unit.
+    Run the area's allocation for a work item.
 
-    @description Manual trigger only in v1. By default it assigns only when
-    nobody is assigned yet; ``mode=append`` adds a unit member alongside the
-    current assignees. Existing assignees are never replaced.
+    @description Everything happens in ``assignment_service``: the row lock,
+    the advisory lock per area for automatic allocation, eligibility at
+    decision time, and the decision record. Existing assignees are never
+    replaced. The area is made responsible if it was not already, so pressing
+    this leaves the same trail as marking the area by hand.
+
+    This is a person asking for the ranking, so it requests ``least_loaded``
+    rather than taking the area's default — an area whose policy says work is
+    handed out by a coordinator would otherwise answer the button by queueing
+    the item again. An area that has configured ``allowed_modes`` without
+    ``least_loaded`` refuses (``ORG_ASSIGNMENT_MODE_NOT_ALLOWED``); one with no
+    policy at all permits it. Pass ``assignment_mode`` to ask for something
+    else.
     """
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
@@ -575,14 +666,89 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
         if unit is None:
             return orca_error("ORG_WORK_ITEM_HAS_NO_UNIT")
 
+        # Checked here as well as in the service: the service answers "nobody
+        # eligible", which is true but unhelpful, and this route can say the
+        # actual reason — the project was unlinked or archived after the item
+        # was marked as the area's (defect D1).
+        if not unit_covers_project(unit, issue.project_id):
+            return orca_error("ORG_UNIT_NOT_COVERING_PROJECT")
+
+        # `fill_empty` and `append` are the legacy shape of this route: they say
+        # what to do about people already on the item, not how to choose one.
+        # The service speaks in assignment modes, so the two are kept apart and
+        # `mode` here is deprecated — `assignment_mode` is the new field.
         mode = request.data.get("mode", MODE_FILL_EMPTY)
         if mode not in (MODE_FILL_EMPTY, MODE_APPEND):
             return orca_error("ORG_INVALID_ASSIGNMENT_MODE")
 
-        chosen, reason = assign_from_unit(issue, unit, mode=mode)
-        if chosen is None:
-            return Response({"assigned": None, "reason": reason}, status=status.HTTP_200_OK)
-        return Response({"assigned": chosen.as_dict(), "reason": reason}, status=status.HTTP_200_OK)
+        current_assignees = list(IssueAssignee.objects.filter(issue=issue).values_list("assignee_id", flat=True))
+        if current_assignees and mode == MODE_FILL_EMPTY:
+            link = IssueOrganizationalUnit.objects.filter(issue=issue).first()
+            return Response(
+                {
+                    "assigned": None,
+                    "reason": "already_assigned",
+                    "routing": IssueRoutingSerializer(link).data if link else None,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        try:
+            # Through the service, so an assignment made from this route has the
+            # same row lock, routing state and decision record as any other —
+            # the link is created here too when the caller named the area.
+            result = set_responsibility(
+                issue,
+                unit,
+                actor=request.user,
+                source=ResponsibilitySource.INTERNAL_API,
+                requested_mode=request.data.get("assignment_mode") or AssignmentMode.LEAST_LOADED.value,
+                exclude_user_ids=current_assignees if mode == MODE_APPEND else (),
+            )
+        except OrcaDomainError as exc:
+            return orca_error(exc.error_code, exc.http_status)
+
+        return Response(
+            {
+                "assigned": _assigned_payload(result),
+                "reason": ASSIGN_REASON_FOR_OUTCOME.get(result.outcome, result.outcome),
+                "routing": IssueRoutingSerializer(result.link).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class OrganizationalUnitPolicyEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
+    """
+    The assignment policy in force for an area, optionally for one project.
+
+    @description Resolved rather than stored: the interface needs to know what
+    *would* happen, and that is the project policy over the area policy over
+    the fallback. Without this, a panel offering "assign automatically" cannot
+    tell whether the area even allows it.
+    """
+
+    use_read_replica = True
+
+    @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
+    def get(self, request, slug, unit_id, project_id=None):
+        unit = OrganizationalUnit.objects.filter(workspace__slug=slug, pk=unit_id).first()
+        if unit is None:
+            return orca_not_found("ORG_UNIT_NOT_FOUND")
+
+        resolution = resolve_policy(unit, project_id)
+        return Response(
+            {
+                "effective_mode": resolution.effective_mode,
+                "policy_source": resolution.policy_source,
+                "policy_version": resolution.policy_version,
+                "allowed_modes": list(resolution.allowed_modes),
+                "assignment_sla_seconds": resolution.sla_seconds,
+                "max_open_items_per_member": resolution.max_open_items_per_member,
+                "policy": AssignmentPolicySerializer(resolution.policy).data if resolution.policy else None,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class OrganizationalUnitWorkloadEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):

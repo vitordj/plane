@@ -21,6 +21,7 @@ from plane.app.views import (
     IssueOrganizationalUnitAssignEndpoint,
     OrcaBuildInfoEndpoint,
     OrcaConfigEndpoint,
+    OrganizationalUnitPolicyEndpoint,
     OrganizationalDirectoryConnectionEndpoint,
     OrganizationalDirectoryResyncEndpoint,
     OrganizationalDirectoryTokenEndpoint,
@@ -51,6 +52,20 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/config/",
         OrcaConfigEndpoint.as_view(),
         name="orca-config",
+    ),
+    # The assignment policy in force for an area, and for one of its
+    # projects. Resolved, not stored: what the interface needs to know is what
+    # would happen, which is the project policy over the area policy over the
+    # fallback.
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/policy/",
+        OrganizationalUnitPolicyEndpoint.as_view(),
+        name="organizational-unit-policy",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/projects/<uuid:project_id>/policy/",
+        OrganizationalUnitPolicyEndpoint.as_view(),
+        name="organizational-unit-project-policy",
     ),
     # Workspace Project State Settings
     path(

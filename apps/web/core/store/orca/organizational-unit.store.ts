@@ -6,6 +6,7 @@
 
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import type {
+  IIssueRouting,
   IOrganizationalUnit,
   IOrganizationalUnitAccessChange,
   IOrganizationalUnitMembership,
@@ -82,14 +83,22 @@ export interface IOrganizationalUnitStore {
     projectId: string,
     issueId: string,
     options?: { unitId?: string; mode?: TOrganizationalUnitAssignMode }
-  ) => Promise<{ assigned: { user_id: string; open_issues: number } | null; reason: string }>;
-  fetchIssueUnit: (workspaceSlug: string, projectId: string, issueId: string) => Promise<IOrganizationalUnit | null>;
+  ) => Promise<{
+    assigned: { user_id: string; open_issues: number; last_assigned_at: string | null } | null;
+    reason: string;
+    routing: IIssueRouting | null;
+  }>;
+  fetchIssueUnit: (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string
+  ) => Promise<{ unit: IOrganizationalUnit | null; routing: IIssueRouting | null }>;
   setIssueUnit: (
     workspaceSlug: string,
     projectId: string,
     issueId: string,
     unitId: string
-  ) => Promise<IOrganizationalUnit>;
+  ) => Promise<{ unit: IOrganizationalUnit; routing: IIssueRouting | null }>;
   clearIssueUnit: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
 }
 
@@ -323,14 +332,21 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
     options?: { unitId?: string; mode?: TOrganizationalUnitAssignMode }
   ) => this.service.assignFromOrganizationalUnit(workspaceSlug, projectId, issueId, options);
 
+  /**
+   * @description The responsible area and, with it, where the item stands:
+   * queued for a coordinator, waiting for a claim, or assigned. The two travel
+   * together because marking an area is what applies its policy — showing the
+   * area without the outcome is how "I set the area, why is nobody on it?"
+   * happens.
+   */
   fetchIssueUnit = async (workspaceSlug: string, projectId: string, issueId: string) => {
     const response = await this.service.getIssueOrganizationalUnit(workspaceSlug, projectId, issueId);
-    return response.organizational_unit ?? null;
+    return { unit: response.organizational_unit ?? null, routing: response.routing ?? null };
   };
 
   setIssueUnit = async (workspaceSlug: string, projectId: string, issueId: string, unitId: string) => {
     const response = await this.service.setIssueOrganizationalUnit(workspaceSlug, projectId, issueId, unitId);
-    return response.organizational_unit;
+    return { unit: response.organizational_unit, routing: response.routing ?? null };
   };
 
   clearIssueUnit = async (workspaceSlug: string, projectId: string, issueId: string) =>

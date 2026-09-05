@@ -91,8 +91,21 @@ def unique_unit_slug(workspace_id, name, exclude_id=None) -> str:
 
 
 def members_of(unit):
-    """Directory identities the mirror lists in a unit's group."""
-    return OrganizationalDirectoryIdentity.objects.filter(group_memberships__organizational_unit_id=unit.id).distinct()
+    """
+    Directory identities the mirror lists in a unit's group.
+
+    @description Deliberately two queries rather than one join. Filtering
+    across ``group_memberships__...`` builds the join from the *base* manager,
+    which does not know about soft deletion, so a membership the directory
+    removed — the row is kept, with ``deleted_at`` set — would come back in
+    ``GET /Groups/{id}`` and Entra would read the person as still a member.
+    Selecting the live memberships first makes the default manager's filter
+    apply.
+    """
+    live_identity_ids = OrganizationalDirectoryGroupMembership.objects.filter(
+        organizational_unit_id=unit.id
+    ).values_list("identity_id", flat=True)
+    return OrganizationalDirectoryIdentity.objects.filter(id__in=list(live_identity_ids))
 
 
 class SCIMGroupMixin:

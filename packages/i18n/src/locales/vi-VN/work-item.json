@@ -277,6 +277,8 @@
         "assigned": "Đã giao cho thành viên khu vực có ít công việc đang mở nhất.",
         "already_assigned_title": "Đã có người phụ trách",
         "already_assigned": "Mục công việc này đã có người phụ trách.",
+        "queued_title": "Trong hàng đợi của khu vực",
+        "queued": "Khu vực này giao việc thủ công nên mục công việc này đang chờ.",
         "nobody_title": "Không có ai khả dụng",
         "nobody": "Không có thành viên nào trong khu vực này có quyền truy cập vào dự án này.",
         "not_assigned": "Chưa giao"

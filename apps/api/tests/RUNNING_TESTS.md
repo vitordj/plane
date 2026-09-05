@@ -85,6 +85,41 @@ All four dependencies expose health checks; `api-tests` waits for `service_healt
 
 Test-time env overrides live in the compose file itself (`POSTGRES_HOST=test-db`, `REDIS_URL=redis://test-redis:6379/`, `AWS_S3_ENDPOINT_URL=http://test-minio:9000`, `DJANGO_SETTINGS_MODULE=plane.settings.test`). Everything else is inherited from `apps/api/.env`.
 
+## Concurrency tests
+
+A few rules only hold under a real race — the ones the Orca assignment
+service protects with a row lock or an advisory lock. Sequential tests pass
+against those rules with no lock at all, so the tests that matter run threads
+against real transactions. The pattern, from
+`plane/tests/unit/orca/test_assignment_concurrency.py`:
+
+```python
+@pytest.mark.unit
+@pytest.mark.django_db(transaction=True)
+def test_simultaneous_allocations_spread_evenly(world):
+    ...
+```
+
+Four things make them behave:
+
+- **`transaction=True`** (and `transactional_db` in the fixtures they use).
+  The default `django_db` wraps each test in a transaction that is rolled
+  back, and a thread on another connection cannot see uncommitted data — the
+  test would deadlock or see an empty database.
+- **Fixtures of their own.** The fixtures in `conftest.py` are built for the
+  wrapped-transaction case; a concurrency test builds its world inside the
+  `transactional_db` fixture instead.
+- **Every thread closes its connection.** Django opens one per thread and
+  does not close it; without a `finally: connection.close()` each test leaves
+  Postgres backends behind and a long run exhausts `max_connections`.
+- **Assertions on the aggregate, not on who won.** Which thread wins is not
+  deterministic and must not be asserted; what is asserted is the
+  distribution (20 items over 4 people is 5/5/5/5), the count of winners
+  (exactly one claim), and the invariant (one executor, never two).
+
+They are slower than the rest and truncate tables rather than rolling back,
+so keep them few and keep them in their own file.
+
 ## Troubleshooting
 
 - **`./apps/api/.env: no such file or directory`** — run `./setup.sh` from the repo root.

@@ -456,6 +456,12 @@
           "work_item_not_found": "Esse item de trabalho não existe mais.",
           "work_item_has_no_unit": "Nenhuma área é responsável por este item de trabalho.",
           "invalid_assignment_mode": "Esse não é um modo de atribuição.",
+          "unit_not_covering_project": "Essa área não está vinculada a este projeto.",
+          "assignment_mode_not_allowed": "Essa área não permite essa forma de distribuir o trabalho.",
+          "executor_not_eligible": "Essa pessoa não pode assumir este item de trabalho.",
+          "work_item_already_claimed": "Outra pessoa pegou este item de trabalho antes.",
+          "decision_stale": "Este item de trabalho mudou enquanto você olhava. Recarregue e tente de novo.",
+          "invalid_routing_transition": "Este item de trabalho não pode ir para esse estado a partir do atual.",
           "directory_workspace_not_found": "Esse espaço de trabalho não existe mais.",
           "directory_token_required": "Emita um token SCIM antes de ativar o provisionamento por diretório."
         }

@@ -12,6 +12,7 @@ grant access to the same project.
 """
 
 import pytest
+from rest_framework.test import APIClient
 
 from plane.app.services.orca import plan_access, reconcile_access, reconcile_membership
 from plane.db.models import (
@@ -395,3 +396,101 @@ class TestManualAccessSurvivesAnElevation:
         reconcile_access(org_workspace.id)
 
         assert project_member(onboarding, maria).is_active is False
+
+
+@pytest.fixture
+def archive_request(owner, org_workspace):
+    """Archive or unarchive a project through the API, as an admin of it."""
+    client = APIClient()
+    client.force_authenticate(user=owner)
+
+    def _request(project, unarchive=False):
+        # The route is project-scoped, so the caller has to hold access to the
+        # project. Manual access, and none of the assertions below are about it.
+        ProjectMember.objects.get_or_create(
+            project=project,
+            member=owner,
+            defaults={"workspace": org_workspace, "role": ROLE_ADMIN, "is_active": True},
+        )
+        url = f"/api/workspaces/{org_workspace.slug}/projects/{project.id}/archive/"
+        return client.delete(url) if unarchive else client.post(url)
+
+    return _request
+
+
+@pytest.mark.unit
+class TestArchivingAProject:
+    """
+    Archiving is the one way a project stops being a source of inherited
+    access without anybody touching the unit. The resolver already skips
+    archived projects, so the access has no source the moment the flag is
+    set — but nothing recomputed it, and the inherited ``ProjectMember`` row
+    stayed active until somebody reconciled that project by hand.
+    """
+
+    def test_archiving_withdraws_the_inherited_access(
+        self, org_workspace, make_member, make_project, make_unit, archive_request
+    ):
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+        lucas = make_member("lucas")
+        reconcile_membership(add_member(compliance, lucas), force_sync=True)
+        assert project_member(onboarding, lucas).is_active is True
+
+        response = archive_request(onboarding)
+
+        assert response.status_code == 200
+        assert project_member(onboarding, lucas).is_active is False
+
+    def test_unarchiving_grants_it_again(self, org_workspace, make_member, make_project, make_unit, archive_request):
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+        lucas = make_member("lucas")
+        reconcile_membership(add_member(compliance, lucas), force_sync=True)
+        archive_request(onboarding)
+
+        response = archive_request(onboarding, unarchive=True)
+
+        assert response.status_code == 204
+        assert project_member(onboarding, lucas).is_active is True
+
+    def test_access_somebody_granted_by_hand_survives_archiving(
+        self, org_workspace, make_member, make_project, make_unit, archive_request
+    ):
+        """The layer withdraws what it granted, and only that."""
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+        lucas = make_member("lucas")
+        ProjectMember.objects.create(
+            project=onboarding,
+            member_id=lucas.member_id,
+            workspace=org_workspace,
+            role=ROLE_GUEST,
+            is_active=True,
+        )
+        reconcile_membership(add_member(compliance, lucas), force_sync=True)
+
+        archive_request(onboarding)
+
+        member = project_member(onboarding, lucas)
+        assert member.is_active is True
+        assert member.role == ROLE_GUEST
+
+    def test_the_kill_switch_stops_the_reconciliation(
+        self, settings, org_workspace, make_member, make_project, make_unit, archive_request
+    ):
+        """Archiving still works; the layer simply does not act."""
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+        lucas = make_member("lucas")
+        reconcile_membership(add_member(compliance, lucas), force_sync=True)
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        response = archive_request(onboarding)
+
+        assert response.status_code == 200
+        assert project_member(onboarding, lucas).is_active is True

@@ -277,6 +277,8 @@
         "assigned": "Przekazano członkowi obszaru z najmniejszą liczbą otwartych elementów pracy.",
         "already_assigned_title": "Już przypisano",
         "already_assigned": "Ten element pracy ma już przypisaną osobę.",
+        "queued_title": "W kolejce obszaru",
+        "queued": "Ten obszar rozdziela pracę ręcznie, więc element pracy czeka.",
         "nobody_title": "Nikt nie jest dostępny",
         "nobody": "Żaden członek tego obszaru nie ma dostępu do tego projektu.",
         "not_assigned": "Nie przypisano"

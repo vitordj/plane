@@ -217,6 +217,7 @@ class IssueCreateSerializer(BaseSerializer):
 
         project_id = self.context["project_id"]
         workspace_id = self.context["workspace_id"]
+        default_assignee_id = self.context["default_assignee_id"]
 
         # Create Issue
         issue = Issue.objects.create(**validated_data, project_id=project_id)
@@ -244,56 +245,24 @@ class IssueCreateSerializer(BaseSerializer):
             except IntegrityError:
                 pass
         else:
-            # ORCA CUSTOM FEATURE: Default to assignees of user's last created issue with assignees in project.
-            # The project's own `default_assignee_id` still reaches this serializer through the view context and
-            # is not applied here; RFC docs/orca-work-management-rfc.md §2.2 tracks that divergence as D2.
-            last_assignee_ids = []
-            user_id = created_by_id or (
-                self.context.get("request")
-                and getattr(self.context["request"], "user", None)
-                and getattr(self.context["request"].user, "id", None)
-            )
-            if user_id:
-                last_issue = (
-                    Issue.objects.filter(
-                        created_by_id=user_id,
-                        project_id=project_id,
-                    )
-                    .exclude(pk=issue.pk)
-                    .order_by("-created_at")
-                    .first()
-                )
-                if last_issue:
-                    valid_member_ids = ProjectMember.objects.filter(
-                        project_id=project_id,
-                        role__gte=15,
-                        is_active=True,
-                    ).values_list("member_id", flat=True)
-                    last_assignee_ids = list(
-                        dict.fromkeys(
-                            IssueAssignee.objects.filter(
-                                issue=last_issue,
-                                project_id=project_id,
-                                assignee_id__in=valid_member_ids,
-                            ).values_list("assignee_id", flat=True)
-                        )
-                    )
-
-            if last_assignee_ids:
+            # Then assign it to default assignee, if it is a valid assignee
+            if (
+                default_assignee_id is not None
+                and ProjectMember.objects.filter(
+                    member_id=default_assignee_id,
+                    project_id=project_id,
+                    role__gte=15,
+                    is_active=True,
+                ).exists()
+            ):
                 try:
-                    IssueAssignee.objects.bulk_create(
-                        [
-                            IssueAssignee(
-                                assignee_id=assignee_id,
-                                issue=issue,
-                                project_id=project_id,
-                                workspace_id=workspace_id,
-                                created_by_id=created_by_id,
-                                updated_by_id=updated_by_id,
-                            )
-                            for assignee_id in last_assignee_ids
-                        ],
-                        batch_size=10,
+                    IssueAssignee.objects.create(
+                        assignee_id=default_assignee_id,
+                        issue=issue,
+                        project_id=project_id,
+                        workspace_id=workspace_id,
+                        created_by_id=created_by_id,
+                        updated_by_id=updated_by_id,
                     )
                 except IntegrityError:
                     pass

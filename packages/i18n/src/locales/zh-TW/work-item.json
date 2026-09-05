@@ -277,6 +277,8 @@
         "assigned": "已交給此區域中未完成工作最少的成員。",
         "already_assigned_title": "已有指派對象",
         "already_assigned": "此工作事項已有指派對象。",
+        "queued_title": "已進入區域佇列",
+        "queued": "此區域以人工指派工作，因此此工作事項正在等待。",
         "nobody_title": "無人可用",
         "nobody": "此區域中沒有成員擁有此專案的存取權限。",
         "not_assigned": "未指派"

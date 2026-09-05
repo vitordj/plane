@@ -5,12 +5,15 @@
 """
 Coverage for the Orca work item serializer changes.
 
-Two fork behaviours live in ``IssueSerializer`` (and, for the second, in the
-draft serializer too), neither of them tested:
-
-* **Inherited assignees.** A work item created with no assignees picks up the
-  assignees of the last work item the same person created in that project, so a
-  run of related work does not have to be assigned one by one.
+* **The default assignee, and only the default assignee.** A work item created
+  with no assignees used to pick up the assignees of the last work item the
+  same person created in that project. That is defect D2 (RFC §2.2): a client
+  posting an unassigned item got someone attached to it without asking, the
+  API contract silently diverged from upstream's, and the choice depended on
+  invisible history. The upstream rule is back in both serializers — the
+  project's ``default_assignee`` if it is still a valid one, nothing else —
+  and these tests pin both halves: the default is applied, and the inheritance
+  is gone.
 * **Label ids as plain UUIDs.** ``label_ids`` used to be a
   ``PrimaryKeyRelatedField`` over the default manager, so a request carrying a
   label that had since been deleted was rejected outright — the client had no
@@ -18,7 +21,9 @@ draft serializer too), neither of them tested:
   against the project, so unknown ids are dropped and the write goes through.
 
 Both are about which rows end up attached, so both run through the endpoint
-against a real database.
+against a real database. The public ``/api/v1`` serializer carries the same
+rule and is exercised directly, since it authenticates by API key rather than
+by session.
 """
 
 import pytest
@@ -107,8 +112,10 @@ def label_ids_on(issue_id):
 
 
 @pytest.mark.contract
-class TestInheritedAssignees:
-    def test_the_first_work_item_in_a_project_gets_no_assignees(
+class TestDefaultAssignee:
+    """The internal serializer, which is what the web app posts to."""
+
+    def test_a_work_item_with_no_default_gets_no_assignees(
         self, admin_client, issues_url, project_admin, backlog_state
     ):
         response = admin_client.post(issues_url, {"name": "First ever"}, format="json")
@@ -126,137 +133,121 @@ class TestInheritedAssignees:
         assert response.status_code == status.HTTP_201_CREATED, response.data
         assert assignee_ids_on(response.data["id"]) == {project_member.id}
 
-    def test_the_next_work_item_inherits_them(
-        self, admin_client, issues_url, project_admin, backlog_state, project_member
+    def test_the_project_default_assignee_is_applied(
+        self, admin_client, issues_url, project_admin, backlog_state, project_member, project
     ):
-        admin_client.post(issues_url, {"name": "First", "assignee_ids": [str(project_member.id)]}, format="json")
+        project.default_assignee = project_member
+        project.save()
 
-        response = admin_client.post(issues_url, {"name": "Second"}, format="json")
+        response = admin_client.post(issues_url, {"name": "Unassigned"}, format="json")
 
         assert response.status_code == status.HTTP_201_CREATED, response.data
         assert assignee_ids_on(response.data["id"]) == {project_member.id}
 
-    def test_inheritance_follows_the_most_recent_one(
-        self, admin_client, issues_url, project_admin, backlog_state, project_member, other_project_member
-    ):
-        admin_client.post(issues_url, {"name": "Older", "assignee_ids": [str(project_member.id)]}, format="json")
-        admin_client.post(issues_url, {"name": "Newer", "assignee_ids": [str(other_project_member.id)]}, format="json")
-
-        response = admin_client.post(issues_url, {"name": "Latest"}, format="json")
-
-        assert assignee_ids_on(response.data["id"]) == {other_project_member.id}
-
-    def test_inheritance_only_looks_at_your_own_work_items(
-        self,
-        admin_client,
-        member_client,
-        issues_url,
-        project_admin,
-        backlog_state,
-        project_member,
-        other_project_member,
-    ):
-        """Someone else's last work item is not a default for you."""
-        admin_client.post(
-            issues_url, {"name": "Admin's", "assignee_ids": [str(other_project_member.id)]}, format="json"
-        )
-
-        response = member_client.post(issues_url, {"name": "Member's first"}, format="json")
-
-        assert response.status_code == status.HTTP_201_CREATED, response.data
-        assert assignee_ids_on(response.data["id"]) == set()
-
-    def test_inheritance_is_per_project(
-        self,
-        admin_client,
-        workspace_with_members,
-        project,
-        second_project,
-        admin_user,
-        project_admin,
-        backlog_state,
-        project_member,
-    ):
-        ProjectMember.objects.create(
-            project=second_project,
-            member=admin_user,
-            workspace=workspace_with_members,
-            role=ROLE_ADMIN,
-            is_active=True,
-        )
-        State.objects.create(
-            name="Backlog",
-            group="backlog",
-            sequence=10,
-            color="#000000",
-            default=True,
-            project=second_project,
-            workspace=workspace_with_members,
-        )
-        here = f"/api/workspaces/{workspace_with_members.slug}/projects/{project.id}/issues/"
-        there = f"/api/workspaces/{workspace_with_members.slug}/projects/{second_project.id}/issues/"
-        admin_client.post(here, {"name": "In project one", "assignee_ids": [str(project_member.id)]}, format="json")
-
-        response = admin_client.post(there, {"name": "In project two"}, format="json")
-
-        assert response.status_code == status.HTTP_201_CREATED, response.data
-        assert assignee_ids_on(response.data["id"]) == set(), "a default must not leak across projects"
-
-    def test_someone_who_left_the_project_is_not_inherited(
+    def test_a_default_assignee_who_left_the_project_is_not_applied(
         self, admin_client, issues_url, project_admin, backlog_state, project_member, project
     ):
-        """
-        The stored assignee is only a default if it is still a valid one: an
-        inactive member must not be re-attached to new work.
-        """
-        admin_client.post(issues_url, {"name": "First", "assignee_ids": [str(project_member.id)]}, format="json")
+        project.default_assignee = project_member
+        project.save()
         ProjectMember.objects.filter(project=project, member=project_member).update(is_active=False)
 
-        response = admin_client.post(issues_url, {"name": "Second"}, format="json")
+        response = admin_client.post(issues_url, {"name": "Unassigned"}, format="json")
 
         assert assignee_ids_on(response.data["id"]) == set()
 
-    def test_someone_demoted_to_guest_is_not_inherited(
+    def test_a_default_assignee_demoted_to_guest_is_not_applied(
         self, admin_client, issues_url, project_admin, backlog_state, project_member, project
     ):
-        admin_client.post(issues_url, {"name": "First", "assignee_ids": [str(project_member.id)]}, format="json")
+        project.default_assignee = project_member
+        project.save()
         ProjectMember.objects.filter(project=project, member=project_member).update(role=ROLE_GUEST)
 
-        response = admin_client.post(issues_url, {"name": "Second"}, format="json")
+        response = admin_client.post(issues_url, {"name": "Unassigned"}, format="json")
 
         assert assignee_ids_on(response.data["id"]) == set()
 
-    def test_nothing_is_inherited_when_the_previous_work_item_had_no_assignees(
+    def test_assignees_are_no_longer_inherited_from_the_previous_work_item(
         self, admin_client, issues_url, project_admin, backlog_state, project_member
     ):
         """
-        Only the immediately preceding work item is consulted — the code does not
-        search back for the last one that *had* assignees, whatever the comment
-        beside it suggests. Pinned so the difference is a decision, not a
-        surprise.
+        Defect D2, pinned from the other side: creating an item with assignees
+        must not turn those people into a default for the next one. This is the
+        behaviour that was removed, and the test that would catch it coming
+        back.
         """
-        admin_client.post(issues_url, {"name": "Assigned", "assignee_ids": [str(project_member.id)]}, format="json")
-        unassigned = admin_client.post(issues_url, {"name": "Deliberately unassigned"}, format="json")
-        IssueAssignee.objects.filter(issue_id=unassigned.data["id"]).delete()
-
-        response = admin_client.post(issues_url, {"name": "Third"}, format="json")
-
-        assert assignee_ids_on(response.data["id"]) == set()
-
-    def test_every_assignee_of_the_previous_work_item_is_inherited(
-        self, admin_client, issues_url, project_admin, backlog_state, project_member, other_project_member
-    ):
-        admin_client.post(
-            issues_url,
-            {"name": "First", "assignee_ids": [str(project_member.id), str(other_project_member.id)]},
-            format="json",
-        )
+        admin_client.post(issues_url, {"name": "First", "assignee_ids": [str(project_member.id)]}, format="json")
 
         response = admin_client.post(issues_url, {"name": "Second"}, format="json")
 
         assert response.status_code == status.HTTP_201_CREATED, response.data
-        assert assignee_ids_on(response.data["id"]) == {project_member.id, other_project_member.id}
-        assert IssueAssignee.objects.filter(issue_id=response.data["id"], deleted_at__isnull=True).count() == 2
+        assert assignee_ids_on(response.data["id"]) == set()
+
+    def test_inheritance_does_not_cross_over_from_another_person(
+        self, admin_client, member_client, issues_url, project_admin, backlog_state, project_member
+    ):
+        admin_client.post(issues_url, {"name": "Admin's", "assignee_ids": [str(project_member.id)]}, format="json")
+
+        response = member_client.post(issues_url, {"name": "Member's"}, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        assert assignee_ids_on(response.data["id"]) == set()
+
+
+@pytest.mark.unit
+class TestPublicApiDefaultAssignee:
+    """
+    The ``/api/v1`` serializer, exercised directly: it authenticates by API key
+    rather than by session, and what matters here is which rows ``create``
+    writes, not the routing around it.
+    """
+
+    @staticmethod
+    def create_issue(project, workspace, name, default_assignee_id=None, assignees=None):
+        from plane.api.serializers import IssueSerializer
+
+        serializer = IssueSerializer(
+            context={
+                "project_id": project.id,
+                "workspace_id": workspace.id,
+                "default_assignee_id": default_assignee_id,
+            }
+        )
+        validated = {"name": name}
+        if assignees is not None:
+            validated["assignees"] = assignees
+        return serializer.create(validated)
+
+    def test_no_default_means_no_assignees(self, db, project, workspace_with_members):
+        issue = self.create_issue(project, workspace_with_members, "Unassigned")
+
+        assert assignee_ids_on(issue.id) == set()
+
+    def test_the_default_assignee_is_applied(self, db, project, workspace_with_members, plain_user):
+        ProjectMember.objects.create(
+            project=project, member=plain_user, workspace=workspace_with_members, role=ROLE_MEMBER, is_active=True
+        )
+
+        issue = self.create_issue(project, workspace_with_members, "Unassigned", default_assignee_id=plain_user.id)
+
+        assert assignee_ids_on(issue.id) == {plain_user.id}
+
+    def test_a_default_who_is_not_a_project_member_is_not_applied(
+        self, db, project, workspace_with_members, plain_user
+    ):
+        issue = self.create_issue(project, workspace_with_members, "Unassigned", default_assignee_id=plain_user.id)
+
+        assert assignee_ids_on(issue.id) == set()
+
+    def test_nothing_is_inherited_from_the_previous_work_item(self, db, project, workspace_with_members, plain_user):
+        """The public API contract is upstream's again (defect D2)."""
+        ProjectMember.objects.create(
+            project=project, member=plain_user, workspace=workspace_with_members, role=ROLE_MEMBER, is_active=True
+        )
+        self.create_issue(project, workspace_with_members, "First", assignees=[plain_user.id])
+
+        issue = self.create_issue(project, workspace_with_members, "Second")
+
+        assert assignee_ids_on(issue.id) == set()
 
 
 # --- label ids as plain UUIDs ------------------------------------------------

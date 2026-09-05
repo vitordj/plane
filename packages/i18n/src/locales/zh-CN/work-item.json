@@ -277,6 +277,8 @@
         "assigned": "已分配给未完成工作最少的区域成员。",
         "already_assigned_title": "已有负责人",
         "already_assigned": "此工作项已有负责人。",
+        "queued_title": "已进入区域队列",
+        "queued": "此区域手动分派工作，因此该工作项正在等待。",
         "nobody_title": "没有可用成员",
         "nobody": "此区域中没有成员可以访问此项目。",
         "not_assigned": "未分配"

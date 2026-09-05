@@ -3,16 +3,16 @@
 # See the LICENSE file for details.
 
 """
-Assignment engine for work items owned by an organizational unit.
+Legacy entry point for unit-based assignment.
 
-Plane assigns work to people, not to groups: the backend drops assignees who
-are not active project members. So a unit is marked *responsible* for a work
-item (``IssueOrganizationalUnit``) and this engine turns that into a real
-person, picking whoever currently carries the least work in the unit.
+@description The ranking, the locking and the decision log moved to
+``assignment_service`` (RFC §6). This module stays as the shape the current
+callers already use — ``assign_from_unit`` with its ``fill_empty``/``append``
+modes and ``workload_snapshot`` for the workload panel — and delegates. Remove
+it in Phase 2, once those callers speak to the service directly (D0.6).
 
-Workload is counted across the unit's own projects — not the single target
-project, and not the whole workspace — so someone already loaded on the unit's
-other work does not get more of it.
+Nothing here ranks candidates any more; if you are changing how work is handed
+out, ``assignment_service`` is the file.
 """
 
 # Python imports
@@ -20,16 +20,19 @@ from dataclasses import dataclass
 from typing import Optional
 
 # Django imports
-from django.db.models import Count, Max
+from django.db.models import Count
 
 # Module imports
+from plane.app.services.orca.assignment_service import allocate, rank_candidates, resolve_policy
+from plane.app.services.orca.errors import OrcaDomainError
 from plane.db.models import (
+    DecisionTrigger,
     Issue,
     IssueAssignee,
+    IssueOrganizationalUnit,
     OrganizationalUnit,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
-    ProjectMember,
     StateGroup,
 )
 
@@ -58,109 +61,59 @@ class AssignmentCandidate:
         }
 
 
-def candidates_for(unit: OrganizationalUnit, project_id) -> list[AssignmentCandidate]:
+def candidates_for(unit: OrganizationalUnit, project_id, exclude_user_ids=()) -> list[AssignmentCandidate]:
     """
     Rank the people a unit could assign work to on one project.
 
-    @description Candidates are active unit members who are also active
-    ``ProjectMember``s of the target project — the same constraint the native
-    assignee validation applies, checked before assigning rather than after.
-    Ranking is least-loaded first, then whoever was assigned longest ago, then
-    user id so the order is deterministic.
+    @description Delegates to ``assignment_service.rank_candidates`` (the
+    ``lb-1`` algorithm) and maps the result onto the shape the existing callers
+    read. Two differences from what this function used to return, both of them
+    the service's rules: load counts only items where the person is the
+    **primary executor** (a collaborator left over from an earlier assignment
+    is not answerable for the work, and charging them kept pushing them down
+    the ranking), and an area that does not cover the project has no candidates
+    at all rather than having the project quietly added to its own list.
 
     @param unit: The responsible organizational unit.
     @param project_id: Project the work item belongs to.
-    @returns: Candidates ordered best-first; empty when the unit has nobody
-        eligible on that project.
+    @param exclude_user_ids: People the ranking must not choose.
+    @returns: Candidates ordered best-first; empty when the unit does not cover
+        the project, or has nobody eligible on it.
     """
-    member_user_ids = list(
-        OrganizationalUnitMembership.objects.filter(
-            organizational_unit=unit,
-            is_active=True,
-            workspace_member__is_active=True,
-        ).values_list("workspace_member__member_id", flat=True)
-    )
-    if not member_user_ids:
-        return []
-
-    eligible = {
-        project_member.member_id: project_member
-        for project_member in ProjectMember.objects.filter(
-            project_id=project_id,
-            member_id__in=member_user_ids,
-            is_active=True,
-            member__is_bot=False,
-        )
-    }
-    if not eligible:
-        return []
-
-    # Load is measured over the unit's live projects only.
-    unit_project_ids = list(
-        OrganizationalUnitProject.objects.filter(
-            organizational_unit=unit,
-            project__archived_at__isnull=True,
-        ).values_list("project_id", flat=True)
-    )
-    if project_id not in unit_project_ids:
-        unit_project_ids.append(project_id)
-
-    load = (
-        IssueAssignee.objects.filter(
-            assignee_id__in=eligible.keys(),
-            project_id__in=unit_project_ids,
-        )
-        .exclude(issue__state__group__in=CLOSED_STATE_GROUPS)
-        .values("assignee_id")
-        .annotate(open_issues=Count("id", distinct=True))
-    )
-    load_by_user = {row["assignee_id"]: row["open_issues"] for row in load}
-
-    last_assigned = (
-        IssueAssignee.objects.filter(assignee_id__in=eligible.keys(), project_id__in=unit_project_ids)
-        .values("assignee_id")
-        .annotate(last_assigned_at=Max("created_at"))
-    )
-    last_by_user = {row["assignee_id"]: row["last_assigned_at"] for row in last_assigned}
-
-    memberships_by_user = {
-        membership.workspace_member.member_id: membership.workspace_member_id
-        for membership in OrganizationalUnitMembership.objects.filter(
-            organizational_unit=unit, is_active=True
-        ).select_related("workspace_member")
-    }
-
-    candidates = [
+    # No requested mode: resolving one would refuse when the area has no policy
+    # allowing least_loaded, and this legacy entry point has always ranked on
+    # request. The resolution is read only for the load cap.
+    policy = resolve_policy(unit, project_id)
+    ranked = rank_candidates(unit, project_id, policy, exclude_user_ids=exclude_user_ids)
+    return [
         AssignmentCandidate(
-            user_id=user_id,
-            workspace_member_id=memberships_by_user.get(user_id),
-            open_issues=load_by_user.get(user_id, 0),
-            last_assigned_at=last_by_user.get(user_id),
+            user_id=candidate.user_id,
+            workspace_member_id=candidate.workspace_member_id,
+            open_issues=candidate.total_open,
+            last_assigned_at=candidate.last_auto_at,
         )
-        for user_id in eligible
+        for candidate in ranked.eligible
     ]
-
-    # Least loaded, then assigned longest ago (never-assigned first), then id.
-    candidates.sort(
-        key=lambda candidate: (
-            candidate.open_issues,
-            candidate.last_assigned_at is not None,
-            candidate.last_assigned_at,
-            str(candidate.user_id),
-        )
-    )
-    return candidates
 
 
 def assign_from_unit(issue: Issue, unit: OrganizationalUnit, mode=MODE_FILL_EMPTY):
     """
     Assign a work item to the least-loaded eligible member of a unit.
 
-    @description Never replaces existing assignees. In the default
-    ``fill_empty`` mode an item that already has an assignee is left alone; in
-    ``append`` mode a unit member is added alongside the current ones. Automatic
-    replacement is deliberately not implemented: it needs a clearer policy on
-    who owns a task.
+    @description Kept for the callers that already use it. The ranking is the
+    service's, and when the work item has a responsibility link for this unit
+    the whole allocation goes through ``assignment_service.allocate``: row
+    lock, routing state and decision log included.
+
+    An item with **no** link is assigned the old way, writing only the
+    ``IssueAssignee``. That path is the gap D0.6 closes when the endpoints move
+    to the service — an assignment with no recorded responsibility has no
+    queue state to update and nothing to write a decision against. It is left
+    working rather than removed so this change does not alter what the current
+    endpoint does.
+
+    Existing assignees are never replaced: ``fill_empty`` leaves an item that
+    already has one alone, and ``append`` asks for somebody who is not on it.
 
     @param issue: The work item to assign.
     @param unit: The responsible organizational unit.
@@ -172,17 +125,29 @@ def assign_from_unit(issue: Issue, unit: OrganizationalUnit, mode=MODE_FILL_EMPT
     if existing and mode == MODE_FILL_EMPTY:
         return None, "already_assigned"
 
-    ranked = candidates_for(unit, issue.project_id)
-    available = [candidate for candidate in ranked if candidate.user_id not in existing]
-    if not available:
+    ranked = candidates_for(unit, issue.project_id, exclude_user_ids=existing)
+    if not ranked:
         return None, "no_eligible_member"
 
-    chosen = available[0]
-    IssueAssignee.objects.create(
+    chosen = ranked[0]
+    link = IssueOrganizationalUnit.objects.filter(issue=issue, organizational_unit=unit).first()
+
+    if link is not None:
+        try:
+            allocate(
+                issue,
+                unit,
+                explicit_executor=chosen.user_id,
+                trigger=DecisionTrigger.INTERNAL_API,
+            )
+        except OrcaDomainError:
+            return None, "no_eligible_member"
+        return chosen, "assigned"
+
+    IssueAssignee.objects.get_or_create(
         issue=issue,
         assignee_id=chosen.user_id,
-        project_id=issue.project_id,
-        workspace_id=issue.workspace_id,
+        defaults={"project_id": issue.project_id, "workspace_id": issue.workspace_id},
     )
     return chosen, "assigned"
 

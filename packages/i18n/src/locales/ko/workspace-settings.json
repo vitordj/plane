@@ -680,6 +680,12 @@
           "work_item_not_found": "해당 작업 항목이 더 이상 없습니다.",
           "work_item_has_no_unit": "이 작업 항목을 담당하는 영역이 없습니다.",
           "invalid_assignment_mode": "그것은 배정 모드가 아닙니다.",
+          "unit_not_covering_project": "해당 영역은 이 프로젝트에 연결되어 있지 않습니다.",
+          "assignment_mode_not_allowed": "이 영역은 그 방식의 업무 배정을 허용하지 않습니다.",
+          "executor_not_eligible": "이 사람은 이 작업 항목을 맡을 수 없습니다.",
+          "work_item_already_claimed": "다른 사람이 이 작업 항목을 먼저 가져갔습니다.",
+          "decision_stale": "보고 있는 동안 이 작업 항목이 변경되었습니다. 새로 고친 뒤 다시 시도하십시오.",
+          "invalid_routing_transition": "이 작업 항목은 현재 상태에서 그 상태로 이동할 수 없습니다.",
           "directory_workspace_not_found": "해당 작업 공간이 더 이상 없습니다.",
           "directory_token_required": "디렉터리 프로비저닝을 켜기 전에 SCIM 토큰을 발급하십시오."
         }

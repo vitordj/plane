@@ -680,6 +680,12 @@
           "work_item_not_found": "Mục công việc đó không còn tồn tại.",
           "work_item_has_no_unit": "Không có khu vực nào phụ trách mục công việc này.",
           "invalid_assignment_mode": "Đó không phải là chế độ phân công.",
+          "unit_not_covering_project": "Khu vực đó không được liên kết với dự án này.",
+          "assignment_mode_not_allowed": "Khu vực đó không cho phép cách giao việc này.",
+          "executor_not_eligible": "Người đó không thể nhận mục công việc này.",
+          "work_item_already_claimed": "Người khác đã nhận mục công việc này trước.",
+          "decision_stale": "Mục công việc này đã thay đổi trong lúc bạn xem. Vui lòng tải lại và thử lại.",
+          "invalid_routing_transition": "Mục công việc này không thể chuyển sang trạng thái đó từ trạng thái hiện tại.",
           "directory_workspace_not_found": "Không gian làm việc đó không còn tồn tại.",
           "directory_token_required": "Hãy cấp token SCIM trước khi bật cấp phát từ thư mục."
         }

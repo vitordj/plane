@@ -119,6 +119,33 @@ python manage.py reconcile_organizational_access --workspace <slug>
 python manage.py reconcile_organizational_access --workspace <slug> --apply
 ```
 
+## Auditing the routing
+
+Two rules about assigned work cannot be database constraints, because they
+span tables a `CHECK` cannot see: an item a unit considers assigned must have
+its executor as a live assignee, and that executor must still be an active
+member of the unit and of the project. Ordinary Plane operations break them —
+removing an assignee in the work item, taking someone off a project, a
+directory sync withdrawing a membership — so they are checked on demand:
+
+```bash
+# Report (default)
+python manage.py audit_organizational_routing --workspace <slug>
+
+# Repair
+python manage.py audit_organizational_routing --workspace <slug> --write
+```
+
+`--write` returns the affected items to the unit's queue with the reason
+`executor_unavailable`, through the same service any other allocation goes
+through, so the repair is a recorded decision rather than an untraceable
+update. The assignee row itself is left alone: detaching a person is a human's
+call.
+
+Two findings are reported and never repaired — a queued item that already has
+an assignee (it may be a collaborator a coordinator added on purpose) and a
+policy whose default mode is outside its own allowed list.
+
 ## API
 
 All routes live under `/api/orca/`, matching the namespace the fork's existing
@@ -135,6 +162,8 @@ Admin; reads are open to workspace members.
 | `PATCH` `DELETE`       | `organizational-units/<id>/projects/<link_id>/`                       |
 | `GET`                  | `organizational-units/<id>/effective-access/`                         |
 | `GET`                  | `organizational-units/<id>/workload/`                                 |
+| `GET`                  | `organizational-units/<id>/policy/`                                   |
+| `GET`                  | `organizational-units/<id>/projects/<project_id>/policy/`             |
 | `GET`                  | `organizational-units/me/`                                            |
 | `GET` `PATCH`          | `directory/`                                                          |
 | `POST` `DELETE`        | `directory/token/`                                                    |
@@ -152,15 +181,96 @@ already active members of the workspace — a unit never sends invitations.
 
 ## Assignment
 
-A unit can be marked responsible for a work item. Because Plane requires an
-assignee to be a person who is an active project member, the engine turns that
-responsibility into a real assignee: it ranks the unit's members by open work
-across the unit's own live projects, least loaded first, breaking ties by
-whoever was assigned longest ago and then by user id.
+A unit can be marked responsible for a work item **in a project the unit
+covers** — one it is linked to, where the link is live and the project is not
+archived. Coverage is what grants the unit's members access in the first
+place, so an uncovered project would name a group that cannot act there: the
+API refuses it with `ORG_UNIT_NOT_COVERING_PROJECT` (4916), the ranking offers
+no candidate, and the picker in the work item only lists units that cover the
+project it belongs to. The unit payload carries `project_ids` for exactly that
+filter, with archived projects left out.
 
-Existing assignees are never replaced. The default mode assigns only when
-nobody holds the item; `mode=append` adds a unit member alongside the current
-ones. Triggering is manual in v1.
+Plane requires an assignee to be a person who is an active project member, so
+a unit being responsible is not the same as the work being handed out. The
+layer keeps both facts, side by side:
+
+| Field                | Meaning                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------ |
+| `organizational_unit`| The unit answerable for the item.                                                    |
+| `routing_state`      | `queued`, `assigned`, `allocation_failed` or `suspended`.                            |
+| `queue_reason`       | Why it is waiting: awaiting a coordinator, awaiting a claim, nobody eligible, …      |
+| `primary_executor`   | The person answerable for it. Set only while `assigned`, enforced by a `CHECK`.      |
+| `assignment_due_at`  | When the assignment SLA runs out, if the policy sets one.                            |
+
+The primary executor is always also a plain `IssueAssignee`, so the item looks
+normal everywhere in Plane. The reverse does not hold: other assignees are
+collaborators, and they do not count toward anybody's load.
+
+### Policies
+
+**What happens when a unit is made responsible** is the unit's *assignment
+policy*:
+
+| Mode           | Effect                                                           |
+| -------------- | ---------------------------------------------------------------- |
+| `manual`       | A coordinator will decide, so the item waits.                    |
+| `self_claim`   | It waits for someone in the unit to take it.                     |
+| `least_loaded` | It is handed to the least loaded eligible member on the spot.    |
+
+A policy can be set for the unit or for one of its projects, and the
+project's wins. A unit with no policy defaults to `manual` — nothing is handed
+out by itself — but permits any mode a caller asks for; once a policy sets
+`allowed_modes`, asking for a mode outside that list is refused with
+`ORG_ASSIGNMENT_MODE_NOT_ALLOWED` (4917) rather than quietly downgraded, since
+a caller told "assigned" about an item sitting in a queue nobody is watching
+is worse off than one told "no". `GET .../policy/` reports the resolved
+policy without writing anything, which is how the interface knows whether to
+offer "assign automatically" at all.
+
+`least_loaded` ranks the unit's members by open work — items where they are
+the primary executor and the state group is neither completed nor cancelled —
+then by open work in this unit, then by whoever went longest without an
+automatic assignment, then by user id, so two runs over the same data agree.
+People who are not assignable project members, bots, and anyone over the
+policy's `max_open_items_per_member` are excluded, and the decision records
+why. Concurrent allocations in one unit serialize on an advisory lock, so
+twenty items handed out at once spread evenly instead of piling onto whoever
+was least loaded when the first request arrived.
+
+### The record
+
+Every allocation writes an `AssignmentDecision`: the mode that governed it,
+where that mode came from, the ranking algorithm's version, everyone it
+considered with their load, who was chosen, who held it before, and how it
+ended. Decisions are append-only — a change writes a new one pointing at the
+one it supersedes — so "why does this person have this?" is answerable a week
+later. Changes of responsible unit write an `IssueResponsibilityEvent`,
+including clearing the unit, which deletes the link but keeps the history and
+leaves the assignees alone: the item goes back to being an ordinary Plane
+work item.
+
+### Triggering it
+
+Assignment is manual in v1: `POST .../organizational-unit-assign/` is the
+button. It asks for `least_loaded` regardless of the unit's default, because
+a person pressing "assign to whoever has least open work" is not the unit's
+policy acting on its own; a unit that excluded that mode refuses. Existing
+assignees are never replaced — the default leaves an item that already has one
+alone, and `mode=append` adds a unit member alongside the current ones.
+`mode` is the older vocabulary and is deprecated: it says what to do about
+people already on the item, not how to choose one, and `assignment_mode` is
+the field that names a mode.
+
+### What changed from v1
+
+The engine used to add the project to the unit's own list when it was
+missing, which turned "not covered" into "covered" and made work in a project
+the unit does not own count toward its members' load. Coverage is a
+precondition now. Load counts only the primary executor, so a collaborator
+left over from an earlier assignment is no longer pushed down the ranking for
+work they do not own. And an assignment made through the route leaves a
+responsibility link, a routing state and a decision, where before it wrote an
+assignee and nothing else.
 
 ## Directory sync
 
@@ -201,14 +311,23 @@ pytest plane/tests/unit/orca/
 
 The directory layer has its own files —
 `test_scim_endpoints.py`, `test_directory_projector.py`,
-`test_directory_admin_api.py` and `test_entra_provider.py`.
+`test_directory_admin_api.py` and `test_entra_provider.py` — and so does
+assignment: `test_assignment_service.py` (policy resolution, ranking, the four
+allocation paths, claim, reassign, transfer), `test_routing_transitions.py`
+(the state machine), `test_assignment_models.py` (append-only decisions,
+policy constraints), `test_assignment_concurrency.py`,
+`test_assignment_metrics.py` and `test_audit_routing_command.py`.
 
 They cover joining and leaving units, the strongest-role resolution across two
 units, manual access surviving removal, manual promotions never being
 reverted, manual demotions below the inherited floor being restored,
 workspace-role capping, idempotency, the read-only guarantee of `plan_access`,
-cross-workspace rejection, and the assignment engine's ranking and
-no-replacement rules.
+cross-workspace rejection, archiving a project withdrawing what the unit
+granted, and the ranking's own rules — least loaded first, collaborators not
+charged, finished work not counted, existing assignees never replaced.
+
+The concurrency file needs real transactions and threads; the pattern is in
+[apps/api/tests/RUNNING_TESTS.md](../apps/api/tests/RUNNING_TESTS.md).
 
 They also cover the hardening invariants: that the reconciliation task is
 registered on worker startup, that a responsible unit can be set, cleared and

@@ -277,6 +277,8 @@
         "assigned": "Atribuită membrului zonei cu cele mai puține activități deschise.",
         "already_assigned_title": "Deja atribuită",
         "already_assigned": "Această activitate are deja un responsabil.",
+        "queued_title": "În coada zonei",
+        "queued": "Această zonă distribuie munca manual, așa că activitatea așteaptă.",
         "nobody_title": "Nimeni disponibil",
         "nobody": "Niciun membru al acestei zone nu are acces la acest proiect.",
         "not_assigned": "Nu s-a atribuit"

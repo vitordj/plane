@@ -277,6 +277,8 @@
         "assigned": "Priradené členovi oblasti s najmenším počtom otvorených pracovných položiek.",
         "already_assigned_title": "Už priradené",
         "already_assigned": "Táto pracovná položka už má priradenú osobu.",
+        "queued_title": "Vo fronte oblasti",
+        "queued": "Táto oblasť prideľuje prácu ručne, takže pracovná položka čaká.",
         "nobody_title": "Nikto nie je k dispozícii",
         "nobody": "Žiadny člen tejto oblasti nemá prístup k tomuto projektu.",
         "not_assigned": "Nepriradené"

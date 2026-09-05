@@ -44,7 +44,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | Fase | Arquivo | Itens | Estado | Gate fechado em |
 | --- | --- | --- | --- | --- |
 | P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 18 | `[~]` 12/18 (P0.0–P0.4, P0.6, P0.7, P0.9, P0.10, P0.14, P0.15, P0.16) · P0.5 e P0.13 parciais | — |
-| D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 12 | `[ ]` 0/12 | — |
+| D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 12 | `[~]` 12/12 · suíte verde no CI — faltam migrações, `check:types` e a auditoria num dump | — |
 | 1 Contrato público | [01-public-contract.md](./01-public-contract.md) | 8 | `[ ]` 0/8 | — |
 | 2 Fila e coordenador | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6 | — |
 | 3 Disponibilidade | [03-availability.md](./03-availability.md) | 6 | `[ ]` 0/6 | — |
@@ -68,8 +68,15 @@ do Entra, nonce e timeouts) também entraram. Restam em P0: **P0.8** (suíte
 upstream no CI — precisa de uma execução real da suíte para saber o que
 excluir), **P0.11** (sync com o upstream 1.4.2), **P0.12** (apagar branches
 remotos), **P0.13** (versão e runbook), **P0.17** (documentação de implantação)
-e a metade do lockfile do **P0.5**. **D0.1** continua o melhor primeiro item do
-domínio.
+e a metade do lockfile do **P0.5**.
+
+No domínio, a **D0 está com os 12 itens entregues** e a suíte Orca verde no CI
+do PR #9. O que falta para fechar o gate não é código, são as três coisas que
+a sessão de agente não executa (AGENTS.md): aplicar e reverter as migrações
+`0135`–`0137` num banco com dados (com `makemigrations --check` limpo),
+`pnpm --filter web check:types`, e passar o `audit_organizational_routing`
+num dump de `stage`. Fechado o gate, a **Fase 1** (contrato público) é o
+próximo bloco.
 
 Pendências de operação abertas por esta branch, **uma delas bloqueante**:
 definir `TRUSTED_PROXIES` no ambiente de implantação **antes** de mesclar em
@@ -95,6 +102,7 @@ contas criadas pela versão antiga do `create_users.py` (procedimento em
 | --- | --- |
 | 2026-09-03 | Plano criado a partir do RFC rev. 2. Nenhum item iniciado. |
 | 2026-09-04 | PRs #5 e #6 mesclados em `stage` (`3a4c769`): hardening complementar da camada de Áreas (kill switch nas tarefas/comandos/SCIM, baseline ao elevar papel, rate limit SCIM pós-autenticação, rejeição de convidados Entra). Não fecha item P0/D0; registrado no cabeçalho de P0. |
+| 2026-09-04 | Revisão externa do commit `3a4c769` verificada contra o código. Achado novo: Compose apontava para o namespace do repositório-pai. Itens criados: P0.0, P0.14, P0.15, P0.16, D0.11, D0.12; critério novo em P0.10. P0.0 e P0.14 entregues no mesmo PR. |
 | 2026-09-05 | CI do PR #8 verde em tudo que terminou: `API Lint (ruff)`, `API Tests (pytest)`, `Code Quality Checks` (formato, lint, `check:sync`, tipos), proveniência do Compose, copyright e os **seis** builds. O log do build de PR confirma o P0.1: tag `pr-8-<sha>` e nenhuma publicação. |
 | 2026-09-05 | P0.12 verificado (falta executar): os três branches do enunciado confirmados como superados contra o código — inclusive o único commit que parecia valer um port, que corrige um bloco de settings inexistente em `stage` — e mais nove branches `claude/*` identificados como totalmente contidos em `stage`. A sessão não tem permissão para apagar branch remoto; comandos e SHAs registrados no item. |
 | 2026-09-05 | P0.13 parcial: `docs/release-runbook.md` escrito (fluxo em duas etapas, verificação pós-deploy, rollback por digest), template de RC e FORK.md §Phase 4 alinhados ao que os workflows fazem. O bump de versão fica para o PR do sync (P0.11); achado registrado: o sufixo `-plane.<upstream>` é um prerelease semver e o Release Please pode descartá-lo. |
@@ -107,4 +115,5 @@ contas criadas pela versão antiga do `create_users.py` (procedimento em
 | 2026-09-05 | P0.5 parcial: permissões mínimas por job em `stage.yml` e `prod.yml`. A metade do lockfile ficou bloqueada por um achado — `pnpm-lock.yaml` está defasado em relação ao catálogo do workspace desde o commit upstream `31853ab2` (46 dependências com `catalog:` no `package.json` e especificador resolvido no lockfile), então `--frozen-lockfile` falharia em todo run. Precisa de `pnpm install --lockfile-only` no mesmo commit da troca da flag. |
 | 2026-09-05 | P0.4 entregue na mesma branch: `promote-rc` passa a usar `gh`, verifica a existência de `prod`, e falha quando a RC não existe nem pôde ser criada. |
 | 2026-09-05 | P0.1, P0.2 e P0.3 entregues em `claude/loving-carson-n9x6eq`: PR constrói sem publicar; push em `stage` publica `:stage` e `:sha-<commit>` e retagueia por digest os serviços não reconstruídos, para que todo commit tenha os seis serviços; artifact `image-digests`; `prod.yml` resolve o commit de `stage` promovido e copia os digests daquele commit, falhando antes de qualquer retag se faltar imagem. |
-| 2026-09-04 | Revisão externa do commit `3a4c769` verificada contra o código. Achado novo: Compose apontava para o namespace do repositório-pai. Itens criados: P0.0, P0.14, P0.15, P0.16, D0.11, D0.12; critério novo em P0.10. P0.0 e P0.14 entregues no mesmo PR. |
+| 2026-09-05 | D0 completa (D0.1–D0.12) na branch `feat/orca-unit-project-coverage`: cobertura área↔projeto, herança de assignee removida da API pública, estado de fila, política e log de decisões, serviço único de alocação, endpoints internos falando com ele, comando de auditoria, métricas, matriz de testes, documentação, reconciliação no arquivamento e roster SCIM. Falta só a execução do Gate D0 (suíte, migrações, auditoria num dump). |
+| 2026-09-05 | PR #8 mesclado em `stage` (`1fb7a074`); `stage` mesclado na branch da D0, com a leitura de `default_assignee_id` recolocada — o git tinha aceitado a remoção do lado do #8 em silêncio e o resultado seria `NameError`. Primeira execução real da suíte D0: 19 falhas, das quais duas eram bug de produto — `routing_state` em `varchar(16)` recusando `allocation_failed` (17 caracteres) e `rank_candidates` sem checagem de cobertura. Corrigidas; PR #9 verde nas 16 checks. |

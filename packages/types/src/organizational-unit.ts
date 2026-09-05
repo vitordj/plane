@@ -16,6 +16,65 @@ export type TOrganizationalUnitMemberRole = "lead" | "member";
 /** Assignment behavior when a unit is asked to take a work item. */
 export type TOrganizationalUnitAssignMode = "fill_empty" | "append";
 
+/** Where a work item stands between "an area owns this" and "a person is on it". */
+export type TRoutingState = "queued" | "assigned" | "allocation_failed" | "suspended";
+
+/** Why an item is sitting in the queue — a coordinator needs to tell these apart. */
+export type TQueueReason =
+  | ""
+  | "new_item"
+  | "awaiting_coordinator"
+  | "awaiting_claim"
+  | "no_eligible_member"
+  | "executor_unavailable"
+  | "manually_returned";
+
+/** How an area hands work out. */
+export type TAssignmentMode = "manual" | "self_claim" | "least_loaded" | "explicit";
+
+/** One allocation, as the work item panel reads it. */
+export interface IAssignmentDecision {
+  id: string;
+  trigger: string;
+  requested_mode: string | null;
+  effective_mode: TAssignmentMode;
+  policy_source: "request" | "unit_project" | "unit" | "fallback";
+  policy_version: number | null;
+  algorithm_version: string;
+  outcome: "assigned" | "queued" | "allocation_failed" | "rejected";
+  chosen_assignee: string | null;
+  previous_primary_executor: string | null;
+  decided_by: string | null;
+  supersedes: string | null;
+  reason: string;
+  created_at: string;
+}
+
+/** The routing state of one work item under its responsible area. */
+export interface IIssueRouting {
+  id: string;
+  organizational_unit: IOrganizationalUnit;
+  routing_state: TRoutingState;
+  queue_reason: TQueueReason;
+  queued_at: string | null;
+  assignment_due_at: string | null;
+  primary_executor: string | null;
+  current_assignment_decision: IAssignmentDecision | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** The policy in force for an area, resolved for one project when asked. */
+export interface IAssignmentPolicyResolution {
+  effective_mode: TAssignmentMode;
+  policy_source: "request" | "unit_project" | "unit" | "fallback";
+  policy_version: number | null;
+  allowed_modes: TAssignmentMode[];
+  assignment_sla_seconds: number | null;
+  max_open_items_per_member: number | null;
+  policy: Record<string, unknown> | null;
+}
+
 /** What reconciliation would do, or did, for one person on one project. */
 export type TOrganizationalUnitAccessAction =
   | "none"
@@ -37,6 +96,11 @@ export interface IOrganizationalUnit {
   workspace: string;
   member_count: number;
   project_count: number;
+  /**
+   * Projects this area covers, and therefore may own work in. Excludes
+   * archived projects, matching the API's coverage rule.
+   */
+  project_ids: string[];
   /** Whether the unit was created by hand or pushed by the directory. */
   sync_source: TDirectorySyncSource;
   /** The directory group this unit mirrors; empty when it is not bound. */

@@ -277,6 +277,8 @@
         "assigned": "Given to the area member with the least open work.",
         "already_assigned_title": "Already assigned",
         "already_assigned": "This work item already has an assignee.",
+        "queued_title": "In the area's queue",
+        "queued": "This area hands work out by hand, so the work item is waiting.",
         "nobody_title": "Nobody available",
         "nobody": "No member of this area has access to this project.",
         "not_assigned": "Not assigned"

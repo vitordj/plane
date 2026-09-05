@@ -260,6 +260,7 @@ from .organizational_unit import (
     IssueOrganizationalUnitEndpoint,
     IssueOrganizationalUnitAssignEndpoint,
     OrcaConfigEndpoint,
+    OrganizationalUnitPolicyEndpoint,
 )
 from .orca_build_info import OrcaBuildInfoEndpoint
 from .orca_language import UserLanguagePreferenceEndpoint
