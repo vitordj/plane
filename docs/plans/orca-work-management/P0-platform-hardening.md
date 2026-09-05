@@ -214,7 +214,7 @@ comportamento correto, e o regenerado já grava `catalog:` na forma nova. Não
 
 - [x] `permissions:` global `contents: read` em `stage.yml` e `prod.yml`, com cada job declarando o seu escopo mínimo.
 - [x] `pnpm install --frozen-lockfile` no CI (`stage.yml`, job `ci`).
-- [x] CI verde em um PR que não altera dependências — verificado localmente com o comando exato do CI (exit 0, lockfile intacto); confirmado no CI deste PR.
+- [x] CI verde em um PR que não altera dependências — verificado localmente com o comando exato do CI (exit 0, lockfile intacto) e confirmado no CI: job `Code Quality Checks (CI)` do run 33974385564 (PR #10), **success** já com a flag trocada.
 - [x] CI vermelho em um PR que altera `package.json` sem atualizar `pnpm-lock.yaml` (teste descartável): `ERR_PNPM_OUTDATED_LOCKFILE`, exit 1, transcrito acima.
 
 **Arquivos:** `.github/workflows/stage.yml`, `.github/workflows/prod.yml`, `.github/workflows/release-please.yml`.
@@ -315,7 +315,7 @@ a ponta.
 
 ---
 
-## P0.8 — Suíte upstream no CI `[~]`
+## P0.8 — Suíte upstream no CI `[x]`
 
 **Problema.** `stage.yml`, job `api_tests`, roda só
 `pytest plane/tests/unit/orca/ -q`.
@@ -327,17 +327,36 @@ a ponta.
 - **Gatilho `workflow_dispatch` declarado.** Achado desta sessão: `api_tests`, `ci`, `changes` e outros já tinham `if: ... || github.event_name == 'workflow_dispatch'`, mas o workflow **não declarava o gatilho**. Todas essas condições eram código morto e não havia como rodar nada à mão.
 - `RUNNING_TESTS.md` ganha a seção "What CI runs" (os dois jobs, o comando de cada um, os serviços) e "Exclusions in CI", hoje vazia por decisão, não por omissão.
 
-**Por que continua `[~]`.** A sessão não roda pytest (sem daemon Docker no
-contêiner, sem PostgreSQL, sem as dependências Python instaladas), então a
-lista de exclusões é uma previsão até o CI deste PR executar. O critério
-fecha com o run verde — ou com as exclusões que ele exigir.
+**Execução real: verde, e sem exclusão nenhuma.** A sessão não roda pytest
+(sem daemon Docker no contêiner, sem PostgreSQL, sem as dependências Python),
+então a lista vazia de exclusões era uma previsão. O CI do PR #10 a
+confirmou: job `API Tests (pytest)` do run 33974385564, **success** em 9m45s
+— contra o run só-Orca de antes, o tempo a mais é justamente a suíte upstream
+executando, não um serviço faltando. Nenhum `--ignore` foi preciso, e a
+tabela "Exclusions in CI" do `RUNNING_TESTS.md` continua vazia por resultado,
+não só por decisão.
+
+A previsão tinha base: antes do run, os candidatos óbvios a falhar sem MinIO
+ou RabbitMQ foram lidos um a um. `settings/test_storage.py` e
+`bg_tasks/test_copy_s3_objects.py` mockam `boto3` inteiro;
+`bg_tasks/test_ssrf_advisories.py`, o mais suspeito de todos porque exercita
+IPs de metadata e redirects, faz `patch` em
+`plane.utils.ip_address.socket.getaddrinfo` e em
+`plane.utils.url_security.requests.Session`. Nada na suíte unit toca a rede.
+
+Os `ERROR` de constraint que aparecem no log do contêiner PostgreSQL do run
+(`orca_policy_unique_unit_default`,
+`issue_org_unit_assigned_requires_executor`,
+`issue_org_unit_executor_only_when_assigned`) são as asserções **negativas**
+dos testes do D0 — o banco recusando o que deve recusar. Registrado aqui
+porque, lido fora de contexto, um log de erro num run verde parece defeito.
 
 **Aceite.**
 
 - [x] `api_tests` seleciona `plane/tests/unit` inteiro, e não só `orca/`.
 - [x] Job manual separado para `contract/` e `smoke/` com os serviços extras.
-- [ ] CI de `stage` executa os testes upstream e fica verde.
-- [ ] Lista de exclusões tem no máximo os diretórios que exigem serviço ausente, cada um justificado.
+- [x] CI executa os testes upstream e fica verde (run 33974385564, job `API Tests (pytest)`, PR #10 contra `stage` — mesmo job que roda no push).
+- [x] Lista de exclusões tem no máximo os diretórios que exigem serviço ausente, cada um justificado: **zero exclusões**.
 
 **Arquivos:** `.github/workflows/stage.yml`, `apps/api/tests/RUNNING_TESTS.md`.
 
