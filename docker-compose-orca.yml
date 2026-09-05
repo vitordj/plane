@@ -84,6 +84,9 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Which of the four containers sharing the api image answered; read by
+      # `manage.py orca_build_info` and the build-info endpoint (P0.15).
+      - ORCA_SERVICE_NAME=${ORCA_SERVICE_NAME_API:-api}
       # Orca organizational layer. The same value has to reach the API, the
       # worker, the beat and the migrator: a worker without the kill switch
       # would keep writing ProjectMember rows after the API went dark.
@@ -129,6 +132,9 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Which of the four containers sharing the api image answered; read by
+      # `manage.py orca_build_info` and the build-info endpoint (P0.15).
+      - ORCA_SERVICE_NAME=${ORCA_SERVICE_NAME_WORKER:-worker}
       # Orca organizational layer. The same value has to reach the API, the
       # worker, the beat and the migrator: a worker without the kill switch
       # would keep writing ProjectMember rows after the API went dark.
@@ -168,6 +174,9 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Which of the four containers sharing the api image answered; read by
+      # `manage.py orca_build_info` and the build-info endpoint (P0.15).
+      - ORCA_SERVICE_NAME=${ORCA_SERVICE_NAME_BEAT_WORKER:-beat-worker}
       # Orca organizational layer. The same value has to reach the API, the
       # worker, the beat and the migrator: a worker without the kill switch
       # would keep writing ProjectMember rows after the API went dark.
@@ -207,6 +216,9 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Which of the four containers sharing the api image answered; read by
+      # `manage.py orca_build_info` and the build-info endpoint (P0.15).
+      - ORCA_SERVICE_NAME=${ORCA_SERVICE_NAME_MIGRATOR:-migrator}
       # Orca organizational layer. The same value has to reach the API, the
       # worker, the beat and the migrator: a worker without the kill switch
       # would keep writing ProjectMember rows after the API went dark.

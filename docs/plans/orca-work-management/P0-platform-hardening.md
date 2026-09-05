@@ -401,7 +401,7 @@ a promoção, mas `prod.yml` só promove com commit `chore(prod): release`.
 **Mudança.**
 - Decidir e aplicar `1.5.0-plane.1.4.2` em `package.json` e no manifest (ou deixar o Release Please calcular a partir dos `feat(orca)`; documentar qual dos dois).
 - `release_candidate.md`: descrever o fluxo real em duas etapas (merge em `prod` → Release Please abre PR de release → merge desse PR gera o commit `chore(prod): release` → `prod.yml` promove).
-- Novo `docs/release-runbook.md`: passo a passo de RC, promoção por digest (P0.3), verificação pós-deploy, rollback para os seis digests anteriores (comandos `docker pull <img>@sha256:...` + retag `:latest` + redeploy Coolify), e checklist de variáveis de ambiente novas por release.
+- Novo `docs/release-runbook.md`: passo a passo de RC, promoção por digest (P0.3), verificação pós-deploy — incluindo `GET /api/orca/build-info/` e `manage.py orca_build_info` em api, worker e beat, que devem devolver o mesmo SHA e o mesmo valor do kill switch (P0.14, P0.15) —, rollback para os seis digests anteriores (comandos `docker pull <img>@sha256:...` + retag `:latest` + redeploy Coolify), e checklist de variáveis de ambiente novas por release.
 - Ensaiar o runbook uma vez de ponta a ponta em staging e anotar duração e problemas.
 
 **Aceite.**
@@ -440,22 +440,33 @@ escreve).
 
 ---
 
-## P0.15 — Runtime expõe commit e versão implantados `[ ]`
+## P0.15 — Runtime expõe commit e versão implantados `[x]`
 
-**Problema.** Nada dentro de um contêiner diz de qual commit ele foi
+**Problema.** Nada dentro de um contêiner dizia de qual commit ele foi
 construído. Sem isso, P0.0–P0.3 provam a cadeia até o registry, mas não que
 o ambiente está executando aquele artefato.
 
-**Mudança.**
-- `build-push`: `build-args: GIT_SHA=${{ github.sha }}`; os seis Dockerfiles gravam `ORCA_BUILD_SHA` (e a tag `sha-<commit>` de P0.2) como variável de ambiente da imagem.
-- API: endpoint interno `GET /api/orca/build-info/` (sessão, admin de instância) e comando `orca_build_info` devolvendo `{"version", "git_sha", "service", "orca_org_units_enabled"}`; o digest da imagem não é conhecido de dentro do contêiner, então a proveniência primária é o SHA.
-- Web/admin: exibir o SHA no rodapé do god-mode (opcional nesta fase).
+**Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+- `build-push` passa `build-args: GIT_SHA=<commit>` e `IMAGE_TAG=sha-<commit>`; os seis Dockerfiles gravam `ORCA_BUILD_SHA` e `ORCA_IMAGE_TAG` como variáveis de ambiente da imagem. O bloco fica **no fim** do estágio final de cada Dockerfile de propósito: o valor muda a cada commit, e tudo o que estivesse abaixo dele seria reconstruído sem necessidade.
+- `plane/utils/orca_build_info.py`: `build_info()` devolve `{"service", "version", "git_sha", "image_tag", "orca_org_units_enabled"}`. Versão lida como o `register_instance` lê (`APP_VERSION`, senão `package.json`). Imagem construída fora do CI devolve `git_sha` e `image_tag` vazios — que é a resposta certa, não um palpite.
+- `GET /api/orca/build-info/` (`OrcaBuildInfoEndpoint`), restrito a admin de instância (`InstanceAdminPermission`) e **fora** do kill switch: o endpoint precisa responder justamente quando algo parece errado, switch mal configurado incluído.
+- Comando `manage.py orca_build_info` imprime o mesmo JSON. É o que permite perguntar ao worker e ao beat, que não têm superfície HTTP e são exatamente onde uma imagem velha se esconde.
+- `docker-compose-orca.yml` define `ORCA_SERVICE_NAME` em api, worker, beat e migrator: os quatro rodam a **mesma** imagem, então a variável é a única coisa que diz qual deles respondeu.
+- O digest não é conhecido de dentro do contêiner; a prova primária no runtime é o SHA, e o digest continua sendo o lado do registry (P0.2/P0.3).
+- Rodapé do god-mode com o SHA: não feito (era opcional nesta fase).
+
+**Testes.** `apps/api/plane/tests/unit/orca/test_build_info.py`: payload
+completo com as variáveis definidas; imagem sem CI devolve vazio em vez de
+adivinhar; o kill switch aparece no payload; endpoint responde 200 para admin
+de instância, recusa membro comum e anônimo, e continua respondendo com a
+camada desligada; o comando imprime exatamente o mesmo JSON.
 
 **Aceite.**
+- [x] Ruff limpo (`check` e `format --check`) nos arquivos novos. Testes escritos; a sessão não roda pytest (AGENTS.md) — confirmar no CI de `stage`.
 - [ ] Em staging, o endpoint devolve o SHA do merge que disparou o deploy.
 - [ ] `docs/release-runbook.md` (P0.13) inclui o passo "conferir build-info após o deploy".
 
-**Arquivos:** `.github/workflows/stage.yml`, Dockerfiles, `apps/api/plane/app/views/orca_build_info.py` (novo), `apps/api/plane/app/urls/orca.py`, docs.
+**Arquivos:** `.github/workflows/stage.yml`, os seis Dockerfiles, `docker-compose-orca.yml`, `apps/api/plane/utils/orca_build_info.py` (novo), `apps/api/plane/app/views/orca_build_info.py` (novo), `apps/api/plane/db/management/commands/orca_build_info.py` (novo), `apps/api/plane/app/urls/orca.py`, `apps/api/plane/app/views/__init__.py`, teste novo.
 
 ---
 

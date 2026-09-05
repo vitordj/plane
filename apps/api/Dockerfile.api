@@ -52,6 +52,15 @@ RUN mkdir -p /code/plane/logs
 RUN chmod +x ./bin/*
 RUN chmod -R 777 /code
 
+# Deployment provenance (P0.15): the commit this image was built from. The
+# stage workflow passes them as build args; a local build leaves them empty,
+# which is itself the answer. Declared at the end of the stage on purpose --
+# these change on every commit, and anything below them rebuilds.
+ARG GIT_SHA=""
+ENV ORCA_BUILD_SHA=$GIT_SHA
+ARG IMAGE_TAG=""
+ENV ORCA_IMAGE_TAG=$IMAGE_TAG
+
 # Expose container port and run entry point script
 EXPOSE 8000
 
