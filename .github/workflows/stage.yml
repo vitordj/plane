@@ -311,7 +311,11 @@ jobs:
       contents: read
     services:
       postgres:
-        image: postgres:16-alpine
+        # 15.7-alpine, the version every compose file in this repository
+        # deploys. Testing against a different major than the one that runs in
+        # production is a difference the suite cannot see and the deployment
+        # can (P0.16).
+        image: postgres:15.7-alpine
         env:
           POSTGRES_USER: plane
           POSTGRES_PASSWORD: plane

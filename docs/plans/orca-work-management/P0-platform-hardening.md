@@ -459,21 +459,23 @@ o ambiente está executando aquele artefato.
 
 ---
 
-## P0.16 — Fixar MinIO e alinhar a versão do PostgreSQL `[ ]`
+## P0.16 — Fixar MinIO e alinhar a versão do PostgreSQL `[x]`
 
-**Situação.** `docker-compose-orca.yml` usa `minio/minio` sem tag; o CI
-(`stage.yml`, job `api_tests`) usa `postgres:16-alpine` enquanto o Compose de
+**Situação.** `docker-compose-orca.yml` usava `minio/minio` sem tag; o CI
+(`stage.yml`, job `api_tests`) usava `postgres:16-alpine` enquanto o Compose de
 implantação e `docker-compose-test.yml` usam `postgres:15.7-alpine`.
 
-**Mudança.**
-- `minio/minio:RELEASE.<data>` (tag imutável) no Compose, com nota no runbook sobre como atualizar.
-- CI passa a `postgres:15.7-alpine`, igual ao ambiente implantado; ou, se a decisão for migrar o ambiente para 16, registrar em `apps/api/tests/RUNNING_TESTS.md` a matriz suportada e o plano de upgrade do banco. Decidir e registrar aqui.
+**Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+- `minio/minio:RELEASE.2025-09-07T16-13-09Z` no Compose Orca e também em `docker-compose-test.yml` — o mesmo argumento vale mais forte para o stack de teste, onde uma imagem móvel faz o veredito de um run depender do dia. A tag escolhida é a que o `:latest` apontava no momento da fixação, então a troca não muda comportamento.
+- **Decisão registrada:** o CI passa a `postgres:15.7-alpine`, igual ao ambiente implantado. Testar contra um major diferente do que roda em produção é uma diferença que a suíte não enxerga e o deploy enxerga. Migrar para 16 continua possível, mas então os quatro (Compose padrão, Orca, teste e CI) mudam juntos, com plano de upgrade do banco registrado em `RUNNING_TESTS.md`.
+- `apps/api/tests/RUNNING_TESTS.md`: tabela de imagens atualizada e seção "Image versions" com as duas regras acima.
+- Não tocados: `docker-compose-local.yml` e `docker-compose.yml` (o Compose principal é upstream, FORK.md §F). O `minio/minio` sem tag continua nos dois; vale corrigir no sync do P0.11.
 
 **Aceite.**
-- [ ] `grep -n "image:" docker-compose-orca.yml` não mostra imagem sem tag.
-- [ ] A versão de PostgreSQL do CI e a do Compose são a mesma, ou a matriz está documentada.
+- [x] `grep -n "image:" docker-compose-orca.yml` não mostra imagem sem tag.
+- [x] A versão de PostgreSQL do CI e a do Compose são a mesma (15.7), e a matriz está documentada em `RUNNING_TESTS.md`.
 
-**Arquivos:** `docker-compose-orca.yml`, `.github/workflows/stage.yml`, `apps/api/tests/RUNNING_TESTS.md`.
+**Arquivos:** `docker-compose-orca.yml`, `docker-compose-test.yml`, `.github/workflows/stage.yml`, `apps/api/tests/RUNNING_TESTS.md`.
 
 ---
 

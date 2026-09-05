@@ -317,7 +317,11 @@ services:
 
   plane-minio:
     container_name: plane-minio
-    image: minio/minio
+    # Pinned: an untagged image is whatever :latest resolved to on the day a
+    # container was pulled, so two environments -- or the same environment
+    # before and after a redeploy -- could run different MinIO builds. Bump
+    # deliberately; the tag below is what :latest pointed at when it was set.
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
     restart: always
     command: server /export --console-address ":9090"
     volumes:
