@@ -681,6 +681,11 @@
           "work_item_has_no_unit": "Nicio zonă nu răspunde de această activitate.",
           "invalid_assignment_mode": "Acesta nu este un mod de atribuire.",
           "unit_not_covering_project": "Această zonă nu este asociată acestui proiect.",
+          "assignment_mode_not_allowed": "Această zonă nu permite acest mod de repartizare a muncii.",
+          "executor_not_eligible": "Această persoană nu poate prelua această activitate.",
+          "work_item_already_claimed": "Altcineva a preluat această activitate înaintea dumneavoastră.",
+          "decision_stale": "Această activitate s-a schimbat între timp. Reîncărcați și încercați din nou.",
+          "invalid_routing_transition": "Această activitate nu poate trece în acea stare din cea curentă.",
           "directory_workspace_not_found": "Acest spațiu de lucru nu mai există.",
           "directory_token_required": "Emiteți un token SCIM înainte de a activa provizionarea din director."
         }

@@ -681,6 +681,11 @@
           "work_item_has_no_unit": "Bu iş öğesinden sorumlu bir alan yok.",
           "invalid_assignment_mode": "Bu bir atama modu değil.",
           "unit_not_covering_project": "Bu alan bu projeye bağlı değil.",
+          "assignment_mode_not_allowed": "Bu alan işi bu şekilde atamaya izin vermiyor.",
+          "executor_not_eligible": "Bu kişi bu iş öğesini üstlenemez.",
+          "work_item_already_claimed": "Bu iş öğesini önce başkası aldı.",
+          "decision_stale": "Bu iş öğesi siz bakarken değişti. Sayfayı yenileyip tekrar deneyin.",
+          "invalid_routing_transition": "Bu iş öğesi mevcut durumundan o duruma geçemez.",
           "directory_workspace_not_found": "Bu çalışma alanı artık yok.",
           "directory_token_required": "Dizin sağlamayı açmadan önce bir SCIM belirteci oluşturun."
         }

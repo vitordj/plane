@@ -681,6 +681,11 @@
           "work_item_has_no_unit": "Aucune zone n’est responsable de cet élément de travail.",
           "invalid_assignment_mode": "Ce n’est pas un mode d’attribution.",
           "unit_not_covering_project": "Cette zone n’est pas liée à ce projet.",
+          "assignment_mode_not_allowed": "Cette zone n’autorise pas ce mode d’attribution du travail.",
+          "executor_not_eligible": "Cette personne ne peut pas prendre en charge cet élément de travail.",
+          "work_item_already_claimed": "Quelqu’un d’autre a pris cet élément de travail avant vous.",
+          "decision_stale": "Cet élément de travail a changé entre-temps. Rechargez et réessayez.",
+          "invalid_routing_transition": "Cet élément de travail ne peut pas passer à cet état depuis son état actuel.",
           "directory_workspace_not_found": "Cet espace de travail n’existe plus.",
           "directory_token_required": "Émettez un jeton SCIM avant d’activer le provisionnement par annuaire."
         }

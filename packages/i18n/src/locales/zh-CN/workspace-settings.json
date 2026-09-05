@@ -681,6 +681,11 @@
           "work_item_has_no_unit": "没有区域负责此工作项。",
           "invalid_assignment_mode": "这不是一种分配模式。",
           "unit_not_covering_project": "该区域未关联到本项目。",
+          "assignment_mode_not_allowed": "该区域不允许这种分配方式。",
+          "executor_not_eligible": "该成员无法承接此工作项。",
+          "work_item_already_claimed": "此工作项已被他人先行认领。",
+          "decision_stale": "此工作项在您查看期间已变更。请重新加载后再试。",
+          "invalid_routing_transition": "此工作项无法从当前状态转到该状态。",
           "directory_workspace_not_found": "该工作区已不存在。",
           "directory_token_required": "请先签发 SCIM 令牌，再开启目录预配。"
         }

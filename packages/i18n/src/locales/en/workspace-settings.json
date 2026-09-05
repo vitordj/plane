@@ -457,6 +457,11 @@
           "work_item_has_no_unit": "No area is responsible for this work item.",
           "invalid_assignment_mode": "That is not an assignment mode.",
           "unit_not_covering_project": "That area is not linked to this project.",
+          "assignment_mode_not_allowed": "This area does not allow that way of assigning work.",
+          "executor_not_eligible": "That person cannot take this work item.",
+          "work_item_already_claimed": "Somebody else took this work item first.",
+          "decision_stale": "This work item changed while you were looking at it. Reload and try again.",
+          "invalid_routing_transition": "This work item cannot move to that state from where it is.",
           "directory_workspace_not_found": "That workspace no longer exists.",
           "directory_token_required": "Issue a SCIM token before turning directory provisioning on."
         }

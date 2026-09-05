@@ -36,6 +36,12 @@ export const ORCA_ERROR_CODE_KEYS: Record<number, string> = {
   4912: "workspace_settings.settings.organizational_units.errors.work_item_has_no_unit",
   4913: "workspace_settings.settings.organizational_units.errors.invalid_assignment_mode",
   4916: "workspace_settings.settings.organizational_units.errors.unit_not_covering_project",
+  // assignment service
+  4917: "workspace_settings.settings.organizational_units.errors.assignment_mode_not_allowed",
+  4918: "workspace_settings.settings.organizational_units.errors.executor_not_eligible",
+  4919: "workspace_settings.settings.organizational_units.errors.work_item_already_claimed",
+  4920: "workspace_settings.settings.organizational_units.errors.decision_stale",
+  4921: "workspace_settings.settings.organizational_units.errors.invalid_routing_transition",
   // directory provisioning
   4914: "workspace_settings.settings.organizational_units.errors.directory_workspace_not_found",
   4915: "workspace_settings.settings.organizational_units.errors.directory_token_required",
