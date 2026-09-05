@@ -756,11 +756,20 @@ def reassign(issue, new_executor, *, actor=None, reason="", expected_decision_id
         return AllocationResult(link, decision, DecisionOutcome.ASSIGNED, executor_id)
 
 
-def return_to_queue(issue, *, actor=None, reason="", queue_reason=QueueReason.MANUALLY_RETURNED) -> AllocationResult:
+def return_to_queue(
+    issue,
+    *,
+    actor=None,
+    reason="",
+    queue_reason=QueueReason.MANUALLY_RETURNED,
+    trigger: str = DecisionTrigger.RETURN_TO_QUEUE,
+) -> AllocationResult:
     """
     @description Put an assigned item back in the queue. The person keeps their
     ``IssueAssignee`` row — Plane shows assignees to everyone, and quietly
     detaching somebody is a human's call, not the allocator's.
+    @param trigger: What returned it; the audit command passes ``command`` so
+        its repairs are not read as somebody clicking in the interface.
     """
     with transaction.atomic():
         link = _locked_link(issue)
@@ -770,7 +779,7 @@ def return_to_queue(issue, *, actor=None, reason="", queue_reason=QueueReason.MA
         previous_executor_id = link.primary_executor_id
         decision = _record(
             link,
-            trigger=DecisionTrigger.RETURN_TO_QUEUE,
+            trigger=trigger,
             requested_mode=None,
             resolution=None,
             outcome=DecisionOutcome.QUEUED,

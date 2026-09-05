@@ -119,6 +119,33 @@ python manage.py reconcile_organizational_access --workspace <slug>
 python manage.py reconcile_organizational_access --workspace <slug> --apply
 ```
 
+## Auditing the routing
+
+Two rules about assigned work cannot be database constraints, because they
+span tables a `CHECK` cannot see: an item a unit considers assigned must have
+its executor as a live assignee, and that executor must still be an active
+member of the unit and of the project. Ordinary Plane operations break them —
+removing an assignee in the work item, taking someone off a project, a
+directory sync withdrawing a membership — so they are checked on demand:
+
+```bash
+# Report (default)
+python manage.py audit_organizational_routing --workspace <slug>
+
+# Repair
+python manage.py audit_organizational_routing --workspace <slug> --write
+```
+
+`--write` returns the affected items to the unit's queue with the reason
+`executor_unavailable`, through the same service any other allocation goes
+through, so the repair is a recorded decision rather than an untraceable
+update. The assignee row itself is left alone: detaching a person is a human's
+call.
+
+Two findings are reported and never repaired — a queued item that already has
+an assignee (it may be a collaborator a coordinator added on purpose) and a
+policy whose default mode is outside its own allowed list.
+
 ## API
 
 All routes live under `/api/orca/`, matching the namespace the fork's existing

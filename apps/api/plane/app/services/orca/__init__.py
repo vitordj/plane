@@ -53,6 +53,7 @@ from .language import (
     get_default_language,
     normalize_language,
 )
+from .routing_audit import Finding, audit_routing
 from .org_unit_reconciler import (
     AccessChange,
     cap_role_to_workspace_role,
@@ -75,6 +76,7 @@ __all__ = [
     "DecisionStale",
     "ExecutorNotEligible",
     "FALLBACK_LANGUAGE",
+    "Finding",
     "InvalidTransition",
     "MODE_APPEND",
     "MODE_FILL_EMPTY",
@@ -87,6 +89,7 @@ __all__ = [
     "UnitNotCoveringProject",
     "allocate",
     "assign_from_unit",
+    "audit_routing",
     "candidates_for",
     "cap_role_to_workspace_role",
     "claim",

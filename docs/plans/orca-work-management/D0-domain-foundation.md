@@ -263,24 +263,41 @@ solicitado, e um modo inexistente continua recusado.
 
 ---
 
-## D0.7 — Comando `audit_organizational_routing` `[ ]`
+## D0.7 — Comando `audit_organizational_routing` `[x]`
 
-**Arquivo.** `apps/api/plane/db/management/commands/audit_organizational_routing.py`,
-mesmo esqueleto de `reconcile_organizational_access.py` (flags `--workspace`,
-`--write`, saída tabular).
+**Arquivos.** A lógica ficou em
+`apps/api/plane/app/services/orca/routing_audit.py` (`audit_routing(workspace_id,
+write=False)` devolvendo uma lista de `Finding`) e o comando
+`apps/api/plane/db/management/commands/audit_organizational_routing.py` só
+imprime — mesmo esqueleto do `reconcile_organizational_access.py` (`--workspace`,
+`--write`, saída tabular, kill switch recusando o comando inteiro). Separar as
+duas coisas é o que deixa a auditoria testável sem `call_command` e reutilizável
+por uma tarefa periódica na Fase 2.
 
-**Verificações** (RFC §6.1 I3, I4): `assigned` sem `IssueAssignee` ativo do
-executor; `assigned` com executor que não é mais membro ativo da área ou do
-projeto; `queued`/`allocation_failed` com `IssueAssignee` ativo mas sem
-executor principal (mostrar; não corrigir automaticamente — pode ser
-colaborador); política com `default_mode` fora de `allowed_modes`.
+**Verificações** (RFC §6.1 I3, I4): `assigned` sem `IssueAssignee` do executor;
+`assigned` com executor que não é mais membro ativo da área ou do projeto
+(reusa `_assert_eligible`, então a auditoria e a alocação não podem divergir);
+`queued`/`allocation_failed` com `IssueAssignee` (mostrar; pode ser
+colaborador); política com `default_mode` fora de `allowed_modes` ou com modo
+desconhecido.
 
-`--write`: para os dois primeiros casos, `return_to_queue(...,
-queue_reason="executor_unavailable", trigger="command")`.
+`--write` devolve à fila os dois primeiros casos com
+`return_to_queue(..., queue_reason="executor_unavailable",
+trigger="command")` — `return_to_queue` ganhou o parâmetro `trigger` para
+isso, senão o reparo apareceria no histórico como alguém clicando na
+interface. A linha do `IssueAssignee` não é tocada: tirar alguém de um item é
+decisão de gente.
+
+**Testes.** `test_audit_routing_command.py`: um caso de cada violação, o
+workspace limpo, o isolamento por workspace, dry-run não escrevendo, `--write`
+devolvendo à fila com o motivo certo, o reparo virando decisão com
+`trigger=command` e `previous_primary_executor`, o item enfileirado com
+assignee ficando intacto, idempotência (rodar duas vezes não acha nada na
+segunda) e o kill switch fechando o comando.
 
 **Aceite.**
-- [ ] Teste `test_audit_routing_command.py` com um caso de cada violação, em dry-run e write.
-- [ ] Documentado em `docs/organizational-units.md` ao lado do reconcile.
+- [x] Teste `test_audit_routing_command.py` com um caso de cada violação, em dry-run e write.
+- [x] Documentado em `docs/organizational-units.md` ao lado do reconcile.
 
 ---
 
