@@ -47,18 +47,20 @@ class CycleWriteSerializer(BaseSerializer):
                 or self.context.get("project_id", None)
             )
             from plane.db.models import ProjectCustomSettings
+
             custom_settings = ProjectCustomSettings.objects.filter(project_id=project_id).first()
             cycle_auto_complete = custom_settings.cycle_auto_complete if custom_settings else False
-            
+
             if not cycle_auto_complete:
                 from django.utils import timezone
+
                 now = timezone.now()
                 view_props = data.get("view_props") or (self.instance.view_props if self.instance else {}) or {}
                 view_props = dict(view_props)
-                
+
                 # Only mark completed if manually_completed is passed
                 manually_completed = self.initial_data.get("manually_completed") in [True, "true", "True"]
-                
+
                 if manually_completed:
                     view_props["completed"] = True
                 elif new_end_date is not None and new_end_date > now:
@@ -66,7 +68,7 @@ class CycleWriteSerializer(BaseSerializer):
                     view_props["completed"] = False
                 elif new_end_date is None:
                     view_props["completed"] = False
-                    
+
                 data["view_props"] = view_props
 
         return data

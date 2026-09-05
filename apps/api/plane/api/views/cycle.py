@@ -556,10 +556,6 @@ class CycleDetailAPIEndpoint(BaseAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        request_data = request.data
-
-
-
         serializer = CycleUpdateSerializer(
             cycle, data=request.data, partial=True, context={"request": request, "project_id": project_id}
         )

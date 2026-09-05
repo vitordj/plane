@@ -154,7 +154,6 @@ class IssueSerializer(BaseSerializer):
 
         project_id = self.context["project_id"]
         workspace_id = self.context["workspace_id"]
-        default_assignee_id = self.context["default_assignee_id"]
 
         issue_type = validated_data.pop("type", None)
 
@@ -188,7 +187,9 @@ class IssueSerializer(BaseSerializer):
             except IntegrityError:
                 pass
         else:
-            # ORCA CUSTOM FEATURE: Default to assignees of user's last created issue with assignees in project
+            # ORCA CUSTOM FEATURE: Default to assignees of user's last created issue with assignees in project.
+            # The project's own `default_assignee_id` still reaches this serializer through the view context and
+            # is not applied here; RFC docs/orca-work-management-rfc.md §2.2 tracks that divergence as D2.
             last_assignee_ids = []
             user_id = created_by_id or (
                 self.context.get("request")

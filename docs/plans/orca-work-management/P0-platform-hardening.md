@@ -297,25 +297,44 @@ a ponta.
 
 ---
 
-## P0.9 — Ruff obrigatório `[ ]`
+## P0.9 — Ruff obrigatório `[x]`
 
-**Situação.** Nenhum workflow roda ruff. `apps/api/pyproject.toml` já exclui
-`**/migrations/*`, seleciona `E`, `F`, linha 120. `ruff check .` em `apps/api`
-hoje reporta 31 findings (arquivos de `serializers/project.py`,
-`views/project_label.py`, `views/issue/sub_issue.py`, `views/issue/label.py`,
-`serializers/intake.py`, `bgtasks/event_tracking_task.py`, etc.); `ruff format
---check .` reporta 66 arquivos.
+**Situação.** Nenhum workflow rodava ruff. `apps/api/pyproject.toml` já
+excluía `**/migrations/*`, selecionava `E`, `F`, linha 120 — configuração
+decorativa, porque nada a executava. Com o ruff da versão fixada no
+repositório (`0.9.7`, em `requirements/local.txt`), `ruff check .` em
+`apps/api` reportava **30** achados e `ruff format --check .`, **61**
+arquivos. (O enunciado dizia 31; a diferença é a versão do ruff usada na
+contagem — outra razão para o CI instalar exatamente a versão fixada.)
 
-**Mudança.**
-- Passo no job `ci` (ou novo job `api_lint` condicionado a `needs.changes.outputs.api`): `pip install ruff==<versão do requirements dev>` e `ruff check . && ruff format --check .` em `apps/api`.
-- Corrigir os 31 findings de lint. Para o format, corrigir apenas os arquivos tocados pelo fork (diff contra o commit upstream `5662b7610`); os demais 66 são upstream e entram numa exclusão temporária via `[tool.ruff.format] exclude` listada explicitamente, a ser removida na próxima sync.
+**Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+- Job novo `api_lint` em `stage.yml`, condicionado a `needs.changes.outputs.api`, roda `ruff check .` e `ruff format --check .` em `apps/api`. `build-push` depende dele.
+- A versão do ruff **não** está escrita no workflow: o job extrai o pin de `requirements/local.txt` com `sed` e falha se não achar. Ruff muda de resultado entre versões; CI e desenvolvedor têm que rodar a mesma.
+- Os 30 achados de lint foram corrigidos: 7 imports não usados (autofix), 4 atribuições mortas, 2 nomes ambíguos `l` → `label`, 1 import no meio do arquivo (`slugify` subiu para o topo em `views/project_state.py`) e 16 linhas longas (a maioria some no `format`; duas docstrings foram quebradas à mão).
+- Formatação: os **23** arquivos que o fork já tocou (diff contra o commit upstream `5662b7610`) foram formatados. Os **38** que vêm intactos do upstream entraram em `[tool.ruff.format] exclude`, **listados um a um** (nunca por diretório, para que um arquivo que o fork passe a editar tenha que sair da lista) e com comentário mandando apagar o bloco no sync do P0.11.
+
+**Duas atribuições mortas mereciam mais que `del`.** `default_assignee_id`
+era lido do contexto e ignorado em `api/serializers/issue.py` e
+`app/serializers/issue.py`: é o rastro do defeito **D2** (RFC §2.2) — a
+funcionalidade Orca de herdar os assignees do último item do criador
+substituiu o padrão do projeto. A linha saiu e no lugar ficou um comentário
+dizendo que o `default_assignee_id` continua chegando pelo contexto das views
+e não é aplicado ali, apontando para D2. As outras duas (`request_data` em
+`api/views/cycle.py`, `intake_id` em `app/views/intake/base.py`) eram sobras
+sem uso.
+
+**Custo aceito.** Vários dos 23 arquivos vinham formatados em 88 colunas
+(padrão do upstream) e foram para 120, o que é um diff grande e aumenta a
+área de conflito no próximo sync. É o que o item pedia; a alternativa
+(excluir também os arquivos do fork) deixaria o `format --check` sem efeito
+justamente onde o fork escreve.
 
 **Aceite.**
-- [ ] `ruff check .` limpo em `apps/api`.
-- [ ] `ruff format --check .` limpo com a exclusão temporária documentada no `pyproject.toml`.
+- [x] `ruff check .` limpo em `apps/api` (ruff 0.9.7, a versão fixada).
+- [x] `ruff format --check .` limpo com a exclusão temporária documentada no `pyproject.toml`.
 - [ ] Job vermelho num PR que introduz `import os` não usado (teste descartável).
 
-**Arquivos:** `.github/workflows/stage.yml`, `apps/api/pyproject.toml`, arquivos apontados pelo ruff.
+**Arquivos:** `.github/workflows/stage.yml`, `apps/api/pyproject.toml`, e os arquivos apontados pelo ruff.
 
 ---
 
