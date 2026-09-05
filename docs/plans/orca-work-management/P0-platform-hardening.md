@@ -34,12 +34,14 @@ repositório-pai: olhando o commit deste repositório não era possível afirmar
 qual código o ambiente executava. Achado da revisão externa de 04/09.
 
 **Mudança** (entregue em `claude/wayfinder-areas-review-yt98v5`).
+
 - Compose: `image: ${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}/<serviço>:${TAG:-stage}` nos nove serviços; comentário no topo do arquivo explica a regra.
 - Job `compose_provenance` em `stage.yml`: falha se o default divergir de `ghcr.io/<repositório em minúsculas>`, se houver `image: ghcr.io/...` fixo, se houver mais de um default ou se algum dos seis serviços não passar pela variável. `build-push` depende dele, então o drift bloqueia a publicação.
 - README (tabela de variáveis) e `.env.example` documentam `ORCA_IMAGE_REPOSITORY` e `TAG`.
 - Decisão: default com o namespace do fork em vez de `:?required`, para não derrubar o deploy Coolify existente na primeira subida. Promoção por digest fica em P0.2/P0.3; expor commit/digest no runtime fica em P0.15.
 
 **Aceite.**
+
 - [x] Script do check exercitado localmente contra o Compose atual (passa) e quatro variantes (namespace antigo, imagem fixa, dois defaults, serviço fora da variável — todas falham com a mensagem esperada).
 - [x] `docker-compose-orca.yml` continua YAML válido.
 - [ ] Primeiro deploy de staging após o merge: `docker inspect --format '{{.Config.Image}} {{index .RepoDigests 0}}' api` mostra `ghcr.io/vitordj/plane/api@sha256:...` (registrar data e digest no Gate P0). Só operação pode confirmar.
@@ -56,12 +58,14 @@ qual código o ambiente executava. Achado da revisão externa de 04/09.
 revisado.
 
 **Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+
 - No passo de build: `push: ${{ github.event_name != 'pull_request' }}` e `load: false`.
 - Novo passo `Resolve Image Tags`: em PR a tag é `ghcr.io/<repo>/<service>:pr-<n>-<sha>` (inerte, nada é publicado); em push para `stage` são duas tags (P0.2).
 - `Log in to GHCR` só roda quando há o que publicar ou retaguear — um PR não recebe credencial de registry.
 - Novo passo `Plan Work For <service>` decide, por serviço, entre `build`, `retag` e `skip`; todos os passos seguintes leem essa decisão em vez de repetir a expressão de mudança de path.
 
 **Aceite.**
+
 - [x] `stage.yml` continua YAML válido; todo bloco `run:` passa em `bash -n`; os scripts embutidos (`Resolve Image Tags`, registro e merge de digests, log do deploy) foram exercitados a seco fora do CI, com `GITHUB_ENV`/`GITHUB_OUTPUT` simulados.
 - [x] Confirmado no PR #8: o job `Build & Push api` construiu com `IMAGE_TAGS: ghcr.io/vitordj/plane/api:pr-8-<sha>` e o buildx registrou `WARNING: No output specified with docker-container driver. Build result will only remain in the build cache. To push result image into registry use --push` — ou seja, **nada foi publicado**. Os seis builds passaram.
 - [ ] `docker manifest inspect ghcr.io/<repo>/api:stage` antes e depois do PR retorna o mesmo digest (só quem tem acesso ao registry).
@@ -80,12 +84,14 @@ inerte e nada a publica) e não afeta P0.2/P0.3, que só produzem e promovem
 ## P0.2 — Publicar tag imutável por SHA e registrar digests `[x]`
 
 **Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+
 - Em push para `stage`, `tags:` passa a duas linhas: `:stage` e `:sha-<commit>` — mesmo digest, dois nomes.
 - **Serviço sem mudança no commit não é reconstruído, mas é retagueado**: `docker buildx imagetools create --tag <img>:sha-<commit> <img>:stage` copia o manifesto por digest (sem pull, sem re-push de camadas, manifesto multi-arch preservado). Sem isso, um commit que toca só `apps/api` deixaria os outros cinco serviços sem tag imutável e a promoção por SHA (P0.3) encontraria um buraco no conjunto. Pelo mesmo motivo, `build-push` e `image_digests` passaram a rodar em **todo** push para `stage`, inclusive quando nenhum path de serviço mudou (um commit só de documentação pode ser a cabeça de um release candidate).
 - Cada job da matriz grava `digests/<service>.json` (imagem, digest, tag e origem `build`/`retag`) e sobe o artifact `image-digest-<service>`; o job novo `image_digests` funde os seis em `image-digests.json`, publica como artifact `image-digests` (retenção 90 dias), expõe em `outputs.digests` e escreve a tabela no resumo do run. Serviço ausente vira `::warning` nomeando quais faltaram.
 - Novo passo no job `deploy` que loga os digests que o Coolify vai puxar — `:stage` é mutável, então o log do run é o único lugar que registra o que entrou em staging.
 
 **Aceite.**
+
 - [x] Script de registro e de merge dos digests exercitados a seco (três serviços, um deles pela via `retag`): `image-digests.json`, `outputs.digests` e o resumo saem com o formato esperado e os ausentes viram warning.
 - [ ] Após merge em `stage`, existem `api:stage` e `api:sha-<commit>` com o mesmo digest.
 - [ ] Artifact `image-digests` presente no run com seis entradas.
@@ -101,6 +107,7 @@ inerte e nada a publica) e não afeta P0.2/P0.3, que só produzem e promovem
 revisado.
 
 **Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+
 - `Resolve The Promoted Stage Commit`: `git fetch --no-tags origin stage` e `git merge-base HEAD refs/remotes/origin/stage`. O commit de release está em `prod`; o commit mais recente que `prod` e `stage` compartilham é exatamente a cabeça de `stage` que o release candidate mesclou — funciona tanto para merge commit quanto para fast-forward, e não depende de `stage` ter parado de andar. O checkout passou a `fetch-depth: 0`.
 - `Resolve Digests For The Promoted Commit`: resolve os seis digests de `<img>:sha-<commit>` **antes** de escrever qualquer tag. Se qualquer um faltar, o job falha nomeando os serviços e indicando o remédio (rodar o workflow de stage naquele commit); promoção parcial — três serviços na versão nova e três na antiga — é pior que nenhuma.
 - `Promote Docker Images`: `docker buildx imagetools create --tag :latest --tag :<versão> --tag :v<versão> <img>@<digest>`. Copiar por digest garante que as tags de produção caem nos bytes exatos do commit e não achata manifestos multi-arch, o que o `pull`/`tag`/`push` anterior fazia.
@@ -108,6 +115,7 @@ revisado.
 - `:stage` continua existindo só como ponteiro de conveniência para o ambiente de staging.
 
 **Aceite.**
+
 - [x] `prod.yml` continua YAML válido; blocos `run:` passam em `bash -n`; a montagem do bloco de digests do release foi exercitada a seco (a substituição de comando come a quebra de linha final, por isso a linha é acrescentada explicitamente).
 - [ ] Ensaio: merge de `stage` em `prod` com commit `chore(prod): release` num ambiente controlado promove exatamente os digests de `image-digests.json`.
 - [ ] Ensaio negativo: apagar a tag `sha-<sha>` de um serviço faz o job falhar antes de qualquer retag.
@@ -124,6 +132,7 @@ revisado.
 criação. O job passa mesmo sem PR.
 
 **Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+
 - O bloco de `curl` + Python foi substituído por `gh pr list`/`gh pr create`/`gh pr edit` (o runner já tem `gh`), com `set -euo pipefail`: erro de API derruba o passo em vez de virar string vazia. O corpo continua vindo de `release_candidate.md`.
 - `git fetch origin prod` mantém o `|| true` (o branch pode não existir num repositório novo), mas o passo passou a **verificar** `refs/remotes/origin/prod` e falhar com mensagem própria se não existir — antes, `git rev-list origin/prod..stage` num repositório sem `prod` derrubava o passo com um erro do git que não dizia o que fazer.
 - Ao final, `PR_NUMBER` vazio é `::error::RC PR not found nor created` + `exit 1`. O número vem da URL impressa pelo `gh pr create`, com `gh pr list` como fallback — um PR criado com sucesso não pode virar job vermelho por eventual consistency da API.
@@ -132,6 +141,7 @@ criação. O job passa mesmo sem PR.
 - Comentário no workflow registra o modo de falha operacional: `gh pr create` devolve 403 quando "Allow GitHub Actions to create and approve pull requests" (Settings → Actions → General) está desligado e o run usa o `GITHUB_TOKEN` padrão; o remédio é ligar a opção ou definir `RELEASE_PLEASE_TOKEN`. Entra no runbook em P0.13.
 
 **Aceite.**
+
 - [x] Ensaio a seco do passo fora do CI, com `gh` simulado e um repositório git local (`stage` à frente de `prod`, PR já aberta, `gh pr create` devolvendo 403, `stage` igual a `prod`, `prod` inexistente): cria e reaproveita a PR nos dois primeiros casos, sai `1` com a mensagem esperada nos casos 403 e `prod` ausente, e sai `0` sem criar nada quando não há o que promover.
 - [ ] Com `stage` à frente de `prod`, o job cria a PR ou falha com mensagem clara.
 - [ ] Teste negativo: rodar com token sem permissão → job vermelho.
@@ -141,10 +151,11 @@ criação. O job passa mesmo sem PR.
 
 ---
 
-## P0.5 — Lockfile congelado e permissões mínimas `[~]`
+## P0.5 — Lockfile congelado e permissões mínimas `[x]`
 
 **Mudança.**
-- ~~`pnpm install --no-frozen-lockfile` → `pnpm install --frozen-lockfile` em todos os jobs.~~ **Bloqueado, ver abaixo.**
+
+- `pnpm install --no-frozen-lockfile` → `pnpm install --frozen-lockfile` no job `ci` de `stage.yml`.
 - `permissions:` global em `stage.yml` e `prod.yml` passa a `contents: read`; cada job que precisa (labeler: `pull-requests: write`, `issues: write`; build-push: `packages: write`; promote-rc: `contents: write`, `pull-requests: write`; release: `contents: write`) declara o seu.
 
 **Entregue** (`claude/loving-carson-n9x6eq`): a metade das permissões.
@@ -157,40 +168,54 @@ declara o mínimo — `labeler` (`pull-requests`/`issues: write`), `build-push`
 `release-please.yml` fica como está: a action precisa de `contents: write` e
 `pull-requests: write` e não roda `pnpm install`.
 
-**Bloqueio do lockfile (achado desta sessão).** `pnpm install
---frozen-lockfile` **falha hoje**, antes de qualquer mudança nossa:
-`pnpm-workspace.yaml` tem 184 entradas de catálogo, `pnpm-lock.yaml` tem 173.
-As 11 que faltam — `typescript`, `vite`, `axios`, `uuid`, `lodash-es`,
+**Correção do "bloqueio do lockfile" registrado em 05/09.** A sessão anterior
+concluiu que `pnpm install --frozen-lockfile` **falharia** e deixou o item
+travado. **Não falha.** O comando foi executado nesta sessão, na íntegra, no
+commit `0e4ab05c`, com o pnpm 11.3.0 que o `packageManager` fixa: instalação
+completa (1459 pacotes em `node_modules/.pnpm`), **exit 0**, e
+`pnpm-lock.yaml` byte a byte idêntico depois. `pnpm install --lockfile-only`
+antes disso também não produziu diff nenhum — não há o que regenerar.
+
+O que a sessão anterior observou é real; a conclusão é que foi tirada dele.
+`pnpm-workspace.yaml` tem 184 entradas de catálogo e `pnpm-lock.yaml` tem 173. As 11 ausentes são `typescript`, `vite`, `axios`, `uuid`, `lodash-es`,
 `postcss`, `express`, `@types/express`, `@react-router/node`,
-`@tanstack/react-virtual`, `@tanstack/virtual-core` — foram movidas para
-`catalog:` nos `package.json` pelo commit upstream `31853ab2` sem que o
-lockfile fosse regenerado: 46 dependências de 17 workspaces têm
-`"catalog:"` no `package.json` e o especificador resolvido (ex.: `5.8.3`) no
-lockfile. As **versões** batem; o que diverge é a forma do especificador, que
-é exatamente o que o `--frozen-lockfile` compara. O `--no-frozen-lockfile`
-atual esconde isso reescrevendo o lockfile a cada run — é o próprio defeito
-que o item quer fechar.
+`@tanstack/react-virtual` e `@tanstack/virtual-core`. Duas delas
+(`@tanstack/react-virtual`, `@tanstack/virtual-core`) **não são referenciadas
+por nenhum workspace** — catálogo morto, que o pnpm nunca grava no lockfile.
+As outras nove são referenciadas com `"catalog:"` e o lockfile grava, nos
+`importers`, o especificador resolvido (`typescript: 5.8.3`) em vez de
+`catalog:` — resíduo do commit upstream `31853ab2`.
 
-Trocar a flag sem regenerar o lockfile deixa o CI vermelho em todo PR, então
-as duas coisas têm que entrar no mesmo commit. Comando para o desenvolvedor
-(a sessão de agente não roda `pnpm install`, AGENTS.md):
+Isso não é divergência porque **as nove estão pinadas no catálogo em versão
+exata**, igual ao especificador gravado (`typescript 5.8.3`, `axios 1.18.1`,
+`express 4.22.0`, ...), e o pnpm resolve `catalog:` antes de comparar. A
+comparação que o `--frozen-lockfile` faz é entre valores resolvidos, não
+entre as formas do texto.
 
-```bash
-pnpm install --lockfile-only   # regenera pnpm-lock.yaml a partir dos package.json
-git diff --stat pnpm-lock.yaml # deve mostrar só as 46 linhas de specifier + a seção catalogs
+Que a checagem é real, e não permissiva, foi verificado no sentido oposto:
+apontando `chroma-js` em `packages/utils/package.json` para `^3.0.0` (o
+catálogo tem `^3.2.0`), o comando falhou como esperado, com o diagnóstico
+exato — e o `package.json` foi restaurado em seguida:
+
+```text
+[ERR_PNPM_OUTDATED_LOCKFILE] Cannot install with "frozen-lockfile" because
+pnpm-lock.yaml is not up to date with <ROOT>/packages/utils/package.json
+  specifiers in the lockfile don't match specifiers in package.json:
+  - chroma-js (lockfile: catalog:, manifest: ^3.0.0)
 ```
 
-Depois disso, trocar `--no-frozen-lockfile` por `--frozen-lockfile` no job
-`ci` de `stage.yml` (o comentário no passo aponta para este item) e confirmar
-que um PR sem mudança de dependência fica verde. Alternativa, se a
-regeneração trouxer ruído demais: fazer a troca junto com o sync upstream
-(P0.11), que já vai mexer no lockfile.
+**Fragilidade que fica registrada.** As nove passam porque o pino do catálogo
+é exato. Trocar qualquer um deles por uma faixa (`^1.19.0` em vez de
+`1.18.1`) faz este passo falhar até o lockfile ser regenerado — que é o
+comportamento correto, e o regenerado já grava `catalog:` na forma nova. Não
+é dívida a pagar antes do tempo; é o próximo `pnpm install` que a paga.
 
 **Aceite.**
+
 - [x] `permissions:` global `contents: read` em `stage.yml` e `prod.yml`, com cada job declarando o seu escopo mínimo.
-- [ ] `pnpm install --frozen-lockfile` no CI (depende da regeneração do lockfile acima).
-- [ ] CI verde em um PR que não altera dependências.
-- [ ] CI vermelho em um PR que altera `package.json` sem atualizar `pnpm-lock.yaml` (teste descartável).
+- [x] `pnpm install --frozen-lockfile` no CI (`stage.yml`, job `ci`).
+- [x] CI verde em um PR que não altera dependências — verificado localmente com o comando exato do CI (exit 0, lockfile intacto); confirmado no CI deste PR.
+- [x] CI vermelho em um PR que altera `package.json` sem atualizar `pnpm-lock.yaml` (teste descartável): `ERR_PNPM_OUTDATED_LOCKFILE`, exit 1, transcrito acima.
 
 **Arquivos:** `.github/workflows/stage.yml`, `.github/workflows/prod.yml`, `.github/workflows/release-please.yml`.
 
@@ -206,6 +231,7 @@ literal continua no histórico do git — por isso o item inclui invalidar as
 contas já criadas, não só parar de criar novas.
 
 **Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+
 - Constante removida. Conta nova recebe `set_unusable_password()` + `is_password_autoset = True`, persistidos com `save(update_fields=[...])`. Divergência consciente do `AuthAdapter` (`authentication/adapter/base.py`), que usa `set_password(uuid4().hex)`: lá a conta nasce **durante** um login já verificado; aqui ninguém autenticou, então a conta fica sem senha alguma. O flag é o mesmo que os provedores OAuth gravam, então o fluxo de primeiro acesso (Entra ID ou magic link) e o "definir senha" sem senha antiga funcionam igual.
 - Conta que já existe não é tocada: o dono pode ter definido a própria senha, e uma re-execução da migração não pode trancá-lo para fora.
 - Script refatorado para expor `create_user_from_payload(member, workspace=None)` e um `MigratedMember` (NamedTuple), e o bootstrap do Django virou `bootstrap_django()`, que não faz nada quando o registro de apps já está pronto — sem isso, importar o módulo no teste apontaria `DJANGO_SETTINGS_MODULE` para produção e trocaria o banco debaixo da suíte.
@@ -222,6 +248,7 @@ O script vive fora de `apps/api` e o stack Docker de teste monta só
 não está montado (no CI, que roda do checkout completo, executam de verdade).
 
 **Aceite.**
+
 - [x] Nenhuma senha literal em `tools/`, `docs/` ou `README.md`: a constante saiu do script, a menção saiu do README da ferramenta, e o teste de regressão lê o fonte e falha se qualquer uma das duas voltar. As ocorrências que restam nesses arquivos são referências ao que foi removido (este enunciado e o comando de invalidação), nenhuma é uma credencial.
 - [x] Teste unitário que importa a função de criação e verifica `has_usable_password() is False` e `is_password_autoset is True`. Verde no CI do PR #8 (`API Tests (pytest)`).
 - [x] Ruff limpo (`check` e `format --check`, linha 120) no script e no teste novos.
@@ -250,6 +277,7 @@ registra e usa para rate limit. O mesmo default estava em
 `Caddyfile.aio.ce` (imagem all-in-one), que o item não citava.
 
 **Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+
 - `Caddyfile.ce` e `Caddyfile.aio.ce`: `trusted_proxies static {$TRUSTED_PROXIES}`, sem default, com comentário explicando por quê. Sem faixa nenhuma o resultado é fail-closed (nenhum proxy é confiável, o `X-Forwarded-For` de fora é ignorado) em vez de fail-open.
 - `docker-compose-orca.yml`: o serviço `proxy` passa a receber `TRUSTED_PROXIES: "${TRUSTED_PROXIES:?...}"` — obrigatório, com a mensagem dizendo o que preencher.
 - `docker-compose.yml` (stack padrão, Caddy publicado direto): recebe a variável com default de faixas privadas (`127.0.0.1/32,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16`), para o `docker compose up` do repositório continuar funcionando sem confiar na internet inteira. Mudança mínima no Compose principal, justificada por ser correção de segurança (FORK.md §F).
@@ -262,6 +290,7 @@ registra e usa para rate limit. O mesmo default estava em
 faixa antes de mesclar em `stage` (pendência já registrada no quadro).
 
 **Aceite.**
+
 - [x] Os dois Caddyfiles e os dois Composes conferidos: nenhum deles tem mais faixa aberta, e ambos os Composes continuam YAML válido. O que resta de `0.0.0.0/0` no repositório são os comentários que explicam a remoção e os `nginx.conf` do web/admin/space (ver achado adjacente).
 - [ ] `docker compose -f docker-compose-orca.yml config` falha sem a variável.
 - [ ] Com a variável correta, `curl -H "X-Forwarded-For: 1.2.3.4"` de fora da faixa não altera o IP visto pela aplicação (verificar em log de autenticação ou endpoint de debug temporário).
@@ -286,16 +315,27 @@ a ponta.
 
 ---
 
-## P0.8 — Suíte upstream no CI `[ ]`
+## P0.8 — Suíte upstream no CI `[~]`
 
 **Problema.** `stage.yml`, job `api_tests`, roda só
 `pytest plane/tests/unit/orca/ -q`.
 
-**Mudança.**
-- Rodar `pytest plane/tests/unit -q -m "unit"` (inclui orca). Se algum diretório falhar por dependência ausente no runner (MinIO, RabbitMQ), excluir com `--ignore` e listar cada exclusão com motivo em `apps/api/tests/RUNNING_TESTS.md` (seção "Exclusões no CI").
-- Job separado, manual (`workflow_dispatch`), para `plane/tests/contract` e `plane/tests/smoke` com os serviços extras, usando `docker-compose-test.yml`.
+**Mudança** (entregue nesta branch).
+
+- `api_tests` passa a rodar `pytest plane/tests/unit -q -m unit`, o que inclui os 21 arquivos upstream em `bg_tasks/`, `middleware/`, `models/`, `serializers/`, `settings/`, `utils/` e `views/` além dos 32 de `orca/`. Sem `--ignore`: o job já sobe PostgreSQL 15.7 e Valkey, e nada fora de `contract/` e `smoke/` pede mais que isso. Se a execução real provar o contrário, cada exclusão entra na tabela de `RUNNING_TESTS.md` com o serviço que falta — nunca só no workflow.
+- Job novo `api_integration_tests`, manual, roda `plane/tests/contract` e `plane/tests/smoke` pelo `docker-compose-test.yml` (RabbitMQ e MinIO inclusos), com `setup.sh` para gerar `apps/api/.env` e `down -v` em `always()`.
+- **Gatilho `workflow_dispatch` declarado.** Achado desta sessão: `api_tests`, `ci`, `changes` e outros já tinham `if: ... || github.event_name == 'workflow_dispatch'`, mas o workflow **não declarava o gatilho**. Todas essas condições eram código morto e não havia como rodar nada à mão.
+- `RUNNING_TESTS.md` ganha a seção "What CI runs" (os dois jobs, o comando de cada um, os serviços) e "Exclusions in CI", hoje vazia por decisão, não por omissão.
+
+**Por que continua `[~]`.** A sessão não roda pytest (sem daemon Docker no
+contêiner, sem PostgreSQL, sem as dependências Python instaladas), então a
+lista de exclusões é uma previsão até o CI deste PR executar. O critério
+fecha com o run verde — ou com as exclusões que ele exigir.
 
 **Aceite.**
+
+- [x] `api_tests` seleciona `plane/tests/unit` inteiro, e não só `orca/`.
+- [x] Job manual separado para `contract/` e `smoke/` com os serviços extras.
 - [ ] CI de `stage` executa os testes upstream e fica verde.
 - [ ] Lista de exclusões tem no máximo os diretórios que exigem serviço ausente, cada um justificado.
 
@@ -314,6 +354,7 @@ arquivos. (O enunciado dizia 31; a diferença é a versão do ruff usada na
 contagem — outra razão para o CI instalar exatamente a versão fixada.)
 
 **Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+
 - Job novo `api_lint` em `stage.yml`, condicionado a `needs.changes.outputs.api`, roda `ruff check .` e `ruff format --check .` em `apps/api`. `build-push` depende dele.
 - A versão do ruff **não** está escrita no workflow: o job extrai o pin de `requirements/local.txt` com `sed` e falha se não achar. Ruff muda de resultado entre versões; CI e desenvolvedor têm que rodar a mesma.
 - Os 30 achados de lint foram corrigidos: 7 imports não usados (autofix), 4 atribuições mortas, 2 nomes ambíguos `l` → `label`, 1 import no meio do arquivo (`slugify` subiu para o topo em `views/project_state.py`) e 16 linhas longas (a maioria some no `format`; duas docstrings foram quebradas à mão).
@@ -336,6 +377,7 @@ sem uso.
 justamente onde o fork escreve.
 
 **Aceite.**
+
 - [x] `ruff check .` limpo em `apps/api` (ruff 0.9.7, a versão fixada). O job `API Lint (ruff)` rodou verde no PR #8, instalando a versão a partir de `requirements/local.txt`.
 - [x] `ruff format --check .` limpo com a exclusão temporária documentada no `pyproject.toml`.
 - [ ] Job vermelho num PR que introduz `import os` não usado (teste descartável).
@@ -354,6 +396,7 @@ timeout. Sem `nonce`: um id token capturado de outro login (mesmo tenant, mesma
 aplicação, outra pessoa) era indistinguível do que o fluxo tinha pedido.
 
 **Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+
 - `EntraOAuthProvider.decode_id_token`: `PyJWKClient` por tenant (cacheado no processo; o cliente guarda o key set por 5 min e só volta ao Microsoft quando aparece um `kid` novo, que é o que torna a rotação de chaves transparente), `timeout=10` na busca das chaves, e `jwt.decode(..., algorithms=["RS256"], audience=<client id>, issuer=https://login.microsoftonline.com/<tenant>/v2.0, options={"require": ["exp","iat","nbf","aud","iss","tid"]})`. Sem o `require`, o PyJWT só valida a claim que por acaso estiver presente: um token sem `exp` nunca expiraria.
 - Falha de qualquer natureza — assinatura, claim, ou JWKS inalcançável — vira `ENTRA_ID_TOKEN_INVALID`. **Fail closed**: token que ninguém consegue conferir é recusado, não presumido bom. O motivo específico vai para o log (`Entra id token failed verification`), nunca para o navegador, que diria ao atacante qual verificação falta passar.
 - `nonce` de uso único: gerado no início do fluxo nas duas views (app e space), guardado na sessão em `entra_nonce`, mandado no `authorize`, exigido igual na volta e **consumido mesmo quando não confere**, para que um callback capturado não possa ser repetido contra a mesma sessão. Erro próprio: `ENTRA_NONCE_MISMATCH`.
@@ -380,6 +423,7 @@ códigos Entra entre a tabela Python, os dois helpers e as 19 locales — nada n
 build comparava isso.
 
 **Aceite.**
+
 - [x] Ruff (`check` e `format --check`, versão fixada) limpo nos arquivos tocados; paridade dos códigos e das 19 locales verificada fora do pytest; comportamento do PyJWT para **todos** os 16 casos de token exercitado num harness com a versão fixada (`PyJWT==2.13.0`, `cryptography==50.0.0`) antes de escrever as asserções. Suíte verde no CI do PR #8 (`API Tests (pytest)`), e `Code Quality Checks` verde cobre `check:sync` das 19 locales e os tipos dos dois helpers.
 - [x] Doc `docs/entra-directory-sync.md` §Troubleshooting descreve os dois erros novos, com as causas em ordem de probabilidade, e §"Why the tenant is pinned" ganhou a verificação completa do token, o nonce e a exigência do GUID.
 - [x] `test_entra_provider.py` não usa mais `StubProvider`.
@@ -401,6 +445,7 @@ conflitos, abrir PR para `stage`. Registrar no PR o SHA upstream usado.
 Atualizar `package.json` para `...-plane.1.4.2` (ver P0.13).
 
 **Aceite.**
+
 - [ ] CI verde no PR de sync.
 - [ ] `docs/` e `FORK.md` mencionam 1.4.2 como base.
 
@@ -411,11 +456,11 @@ Atualizar `package.json` para `...-plane.1.4.2` (ver P0.13).
 **Verificação feita** (`claude/loving-carson-n9x6eq`, 05/09). O levantamento de
 03/09 confirmado contra o código, e não só contra os títulos dos commits:
 
-| Branch | Commits à frente de `stage` | Veredito |
-| --- | --- | --- |
-| `claude/azure-aad-integration-review-5if6pz` | 34 | Superado. Abordagem "oidc-free", substituída pelo provider Entra que está em `stage` (PR #2). |
-| `claude/sync-remote-azure-auth-m6618f` | 14 | Superado. Mesma abordagem, port para a base Orca. |
-| `claude/aad-end-to-end-egj4dm` | 1 | Superado. Versão anterior de "sign in with Microsoft Entra ID". |
+| Branch                                       | Commits à frente de `stage` | Veredito                                                                                      |
+| -------------------------------------------- | --------------------------- | --------------------------------------------------------------------------------------------- |
+| `claude/azure-aad-integration-review-5if6pz` | 34                          | Superado. Abordagem "oidc-free", substituída pelo provider Entra que está em `stage` (PR #2). |
+| `claude/sync-remote-azure-auth-m6618f`       | 14                          | Superado. Mesma abordagem, port para a base Orca.                                             |
+| `claude/aad-end-to-end-egj4dm`               | 1                           | Superado. Versão anterior de "sign in with Microsoft Entra ID".                               |
 
 O único commit desses três que parecia valer um port —
 `16494934 fix(api): normalise SECURE_PROXY_SSL_HEADER and document the proxy
@@ -426,8 +471,16 @@ vars` — **não se aplica**: ele corrige um bloco `USE_X_FORWARDED_*` /
 `settings/production.py` (`("HTTP_X_FORWARDED_PROTO", "https")`), e a falsificação
 que ele permitiria é justamente o que o P0.7 fechou no Caddy. Nada a portar.
 
-**Branches `claude/*` totalmente contidos em `stage`** (todo commit já está lá;
-apagar não perde nada), com o SHA registrado para poder recriar:
+**Levantamento refeito em 05/09** contra `origin/stage` = `0e4ab05c`, com
+`git merge-base --is-ancestor` em cada branch remoto — e não pela lista
+anterior. Duas mudanças em relação ao registro de antes: os tips dos três
+branches superados agora estão anotados (faltavam dois), e **dois branches
+novos entraram na lista de apagar**, porque seus PRs foram mesclados desde
+então (`claude/loving-carson-n9x6eq`, PR #8; `feat/orca-unit-project-coverage`,
+PR #9).
+
+**Totalmente contidos em `stage`** (todo commit já está lá; apagar não perde
+nada), com o SHA do tip para poder recriar:
 
 ```text
 dc4a596d  claude/area-membership-extension-ndwdoq
@@ -439,23 +492,32 @@ ca0ab6a0  claude/parecer-final-arquitetura-4ng4yo
 dc4a596d  claude/pending-tests-xnxc3s
 343e7f9e  claude/repository-evaluation-s419b6
 a349fd4c  claude/wayfinder-areas-review-yt98v5
+a495565e  claude/loving-carson-n9x6eq            (PR #8, mesclado)
+d1ec40ba  feat/orca-unit-project-coverage        (PR #9, mesclado)
 ```
 
-**Não apagar:** `claude/codex-prompts-bocxeh` (3 commits à frente) e
+**Superados, com commits que se perdem ao apagar** — daí os SHAs, que são a
+única forma de recriá-los:
+
+```text
+2ac95330  claude/aad-end-to-end-egj4dm            ( 1 commit à frente)
+16494934  claude/azure-aad-integration-review-5if6pz (34)
+7abf01b8  claude/sync-remote-azure-auth-m6618f    (14)
+```
+
+**Não apagar:** `claude/codex-prompts-bocxeh` (3 à frente) e
 `claude/continue-implementations-bquse8` (7) não estão mesclados e não constam
 do enunciado; `feat/orca-work-management` (34) idem;
-`claude/loving-carson-n9x6eq` é a branch desta sessão.
+`release-please--branches--prod--components--plane-orca` é branch de trabalho
+da action, não lixo.
 
-**Por que continua `[~]`.** A sessão de agente não tem permissão para apagar
-branch remoto (a ação é destrutiva e foi barrada). Comandos prontos, para
-quem tiver:
+**Por que continua `[~]`.** A sessão de agente continua sem permissão para
+apagar branch remoto: `git push origin --delete` foi barrado de novo nesta
+sessão, pelo classificador, e não há ferramenta de deleção de branch no
+servidor MCP do GitHub. Comandos prontos, para quem tiver:
 
 ```bash
-# Superados (verificados acima)
-git push origin --delete claude/azure-aad-integration-review-5if6pz \
-  claude/sync-remote-azure-auth-m6618f claude/aad-end-to-end-egj4dm
-
-# Já mesclados em stage
+# Contidos em stage (nada se perde)
 git push origin --delete claude/area-membership-extension-ndwdoq \
   claude/avaliacao-implementacoes-pendencias-wt5ign \
   claude/azure-areamembership-cleanup-gfep3c \
@@ -464,12 +526,19 @@ git push origin --delete claude/area-membership-extension-ndwdoq \
   claude/parecer-final-arquitetura-4ng4yo \
   claude/pending-tests-xnxc3s \
   claude/repository-evaluation-s419b6 \
-  claude/wayfinder-areas-review-yt98v5
+  claude/wayfinder-areas-review-yt98v5 \
+  claude/loving-carson-n9x6eq \
+  feat/orca-unit-project-coverage
+
+# Superados (verificados acima; os commits se perdem)
+git push origin --delete claude/azure-aad-integration-review-5if6pz \
+  claude/sync-remote-azure-auth-m6618f claude/aad-end-to-end-egj4dm
 
 # Recriar um deles, se for preciso: git push origin <sha>:refs/heads/<nome>
 ```
 
 **Aceite.**
+
 - [x] Conteúdo dos três branches do enunciado verificado contra o código de `stage`; nada a portar (e o motivo registrado, não só a conclusão).
 - [ ] `git ls-remote --heads origin | grep claude/` lista só branches com trabalho em andamento.
 
@@ -483,6 +552,7 @@ na mesma linha; o template `release_candidate.md` afirmava que o merge dispara
 a promoção, mas `prod.yml` só promove com commit `chore(prod): release`.
 
 **Entregue** (`claude/loving-carson-n9x6eq`): a parte de documentação.
+
 - `docs/release-runbook.md` (novo): o fluxo em duas etapas, o que checar antes de cortar a RC, o que o job de promoção faz e como ele falha, verificação pós-deploy (`docker inspect`, `/api/orca/build-info/`, `orca_build_info` em api/worker/beat, paridade do kill switch), variáveis de ambiente, rollback por digest com os comandos prontos, e a manutenção de que o release depende (tags fixas, PostgreSQL igual no CI e na implantação). Tabela de ensaio no fim, vazia — é ela que fecha o critério.
 - `release_candidate.md`: descreve o fluxo real. O aviso principal agora é "**mesclar este PR não implanta nada**", com os dois passos e a conferência da versão proposta pelo Release Please.
 - `FORK.md` §Phase 4: reescrita para o mesmo fluxo (a versão anterior dizia que o merge da RC puxava `:stage` e reimplantava).
@@ -503,6 +573,7 @@ explícito no runbook §2, com as duas saídas (corrigir no PR ou configurar
 PR do sync, junto com a decisão de prerelease acima.
 
 **Aceite.**
+
 - [x] Template e FORK.md §Phase 4 descrevem o mesmo fluxo que os workflows executam.
 - [x] Runbook escrito, com verificação pós-deploy e rollback por digest.
 - [ ] Runbook ensaiado, com data e resultado no próprio arquivo (tabela "Rehearsal log").
@@ -523,6 +594,7 @@ worker podiam divergir (API desligada, worker no default ligado). Achados da
 revisão externa de 04/09 e pendência registrada no PR #6.
 
 **Mudança** (entregue em `claude/wayfinder-areas-review-yt98v5`).
+
 - `apps/api/plane/utils/orca_env.py`: `parse_env_flag`/`env_flag` aceitam `1/true/yes/on` e `0/false/no/off` (case-insensitive, espaços tolerados); vazio → default; qualquer outro valor → `ImproperlyConfigured` no boot. `settings/common.py` usa `env_flag` só para o switch Orca; flags upstream não foram tocadas.
 - `reconcile_access` retorna `[]` sem escrever quando a camada está desligada (defesa em profundidade; os chamadores mantêm o guard).
 - `docker-compose-orca.yml` encaminha `ORCA_ORG_UNITS_ENABLED`, `ORCA_ORG_SYNC_MAX_EDGES`, `SCIM_RATE_LIMIT` e `SCIM_AUTH_FAILURE_RATE_LIMIT` a `api`, `worker`, `beat-worker` e `migrator` a partir de uma única variável cada.
@@ -534,6 +606,7 @@ nome da variável na mensagem); dois testes novos em `test_orca_hardening.py`
 escreve).
 
 **Aceite.**
+
 - [x] Ruff limpo nos arquivos tocados. Testes escritos; a sessão não roda pytest (AGENTS.md) — confirmar no CI de `stage`.
 - [ ] Em staging, `docker compose exec <api|bgworker|beatworker> printenv ORCA_ORG_UNITS_ENABLED` devolve o mesmo valor nos três (registrar no Gate P0).
 
@@ -548,6 +621,7 @@ construído. Sem isso, P0.0–P0.3 provam a cadeia até o registry, mas não que
 o ambiente está executando aquele artefato.
 
 **Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+
 - `build-push` passa `build-args: GIT_SHA=<commit>` e `IMAGE_TAG=sha-<commit>`; os seis Dockerfiles gravam `ORCA_BUILD_SHA` e `ORCA_IMAGE_TAG` como variáveis de ambiente da imagem. O bloco fica **no fim** do estágio final de cada Dockerfile de propósito: o valor muda a cada commit, e tudo o que estivesse abaixo dele seria reconstruído sem necessidade.
 - `plane/utils/orca_build_info.py`: `build_info()` devolve `{"service", "version", "git_sha", "image_tag", "orca_org_units_enabled"}`. Versão lida como o `register_instance` lê (`APP_VERSION`, senão `package.json`). Imagem construída fora do CI devolve `git_sha` e `image_tag` vazios — que é a resposta certa, não um palpite.
 - `GET /api/orca/build-info/` (`OrcaBuildInfoEndpoint`), restrito a admin de instância (`InstanceAdminPermission`) e **fora** do kill switch: o endpoint precisa responder justamente quando algo parece errado, switch mal configurado incluído.
@@ -563,6 +637,7 @@ de instância, recusa membro comum e anônimo, e continua respondendo com a
 camada desligada; o comando imprime exatamente o mesmo JSON.
 
 **Aceite.**
+
 - [x] Ruff limpo (`check` e `format --check`) nos arquivos novos; testes verdes no CI do PR #8 (`API Tests (pytest)`). Os seis builds passaram com `build-arg:GIT_SHA` presente no metadata, então o `ARG`/`ENV` novo nos Dockerfiles não quebrou nenhuma imagem.
 - [ ] Em staging, o endpoint devolve o SHA do merge que disparou o deploy.
 - [x] `docs/release-runbook.md` (P0.13) inclui o passo "conferir build-info após o deploy" — §4, exigindo o mesmo SHA em api, worker e beat.
@@ -578,12 +653,14 @@ camada desligada; o comando imprime exatamente o mesmo JSON.
 implantação e `docker-compose-test.yml` usam `postgres:15.7-alpine`.
 
 **Mudança** (entregue em `claude/loving-carson-n9x6eq`).
+
 - `minio/minio:RELEASE.2025-09-07T16-13-09Z` no Compose Orca e também em `docker-compose-test.yml` — o mesmo argumento vale mais forte para o stack de teste, onde uma imagem móvel faz o veredito de um run depender do dia. A tag escolhida é a que o `:latest` apontava no momento da fixação, então a troca não muda comportamento.
 - **Decisão registrada:** o CI passa a `postgres:15.7-alpine`, igual ao ambiente implantado. Testar contra um major diferente do que roda em produção é uma diferença que a suíte não enxerga e o deploy enxerga. Migrar para 16 continua possível, mas então os quatro (Compose padrão, Orca, teste e CI) mudam juntos, com plano de upgrade do banco registrado em `RUNNING_TESTS.md`.
 - `apps/api/tests/RUNNING_TESTS.md`: tabela de imagens atualizada e seção "Image versions" com as duas regras acima.
 - Não tocados: `docker-compose-local.yml` e `docker-compose.yml` (o Compose principal é upstream, FORK.md §F). O `minio/minio` sem tag continua nos dois; vale corrigir no sync do P0.11.
 
 **Aceite.**
+
 - [x] `grep -n "image:" docker-compose-orca.yml` não mostra imagem sem tag.
 - [x] A versão de PostgreSQL do CI e a do Compose são a mesma (15.7), e a matriz está documentada em `RUNNING_TESTS.md`.
 
@@ -591,7 +668,7 @@ implantação e `docker-compose-test.yml` usam `postgres:15.7-alpine`.
 
 ---
 
-## P0.17 — Documentação de implantação não presume Coolify `[ ]`
+## P0.17 — Documentação de implantação não presume Coolify `[~]`
 
 **Situação.** README, `docker-compose-orca.yml`, os workflows e este plano
 falam em Coolify como se fosse o alvo de implantação. Isso vem do ambiente da
@@ -606,17 +683,30 @@ explicitamente que o Coolify é um caminho suportado entre outros. Os jobs de
 deploy já são opt-in por `COOLIFY_DEPLOY_ENABLED`, então nada quebra enquanto
 a decisão não sai — o que existe é documentação que descreve outro ambiente.
 
-**Aceite.**
-- [ ] Alvo de implantação da 4UM registrado (aqui e no README).
-- [ ] Nenhuma instrução de implantação afirma Coolify sem qualificar.
+**Entregue nesta branch: a metade da qualificação.**
 
-**Arquivos:** `README.md`, `docker-compose-orca.yml`, `.github/workflows/{stage,prod}.yml`, este plano.
+- README §Self-Hosting: o Compose deixa de ser apresentado como coisa de Coolify e passa a ser o que é — um arquivo Compose que qualquer runtime de Compose sobe. O "Quick Start (Coolify)" vira um Quick Start em três condições neutras (o Compose é a unidade de implantação; o tráfego chega no serviço `proxy` na porta 80 e `TRUSTED_PROXIES` é obrigatório; segredos antes do primeiro boot), com os passos do Coolify preservados num `<details>` rotulado como exemplo. Fica dito ali que `SERVICE_FQDN_PROXY` — de onde `DOMAIN_NAME` se resolve por padrão — é uma variável que o Coolify fornece, e que em qualquer outro alvo `DOMAIN_NAME` é explícito.
+- Tabela de destaques: "VPS & Coolify Ready" → "VPS & PaaS Ready".
+- `FORK.md` §Phase 3: o passo "Staging Deploy" dizia que o merge dispara o redeploy do Coolify, sem qualificar. Agora diz que é opt-in por `COOLIFY_DEPLOY_ENABLED` e que, com a variável desligada, as imagens são publicadas do mesmo jeito e um ambiente que não é Coolify as puxa por digest.
+- README aponta este item para quem for registrar a decisão.
+
+**Não entregue, e por quê.** Qual é o alvo real da 4UM é decisão de
+negócio/operação, não achado de código. Enquanto ela não sai, os jobs de
+deploy continuam opt-in e nada quebra — o que existia era documentação
+descrevendo outro ambiente, e isso é o que foi corrigido.
+
+**Aceite.**
+
+- [ ] Alvo de implantação da 4UM registrado (aqui e no README) — **pendência de negócio**.
+- [x] Nenhuma instrução de implantação afirma Coolify sem qualificar.
+
+**Arquivos:** `README.md`, `FORK.md`, `docker-compose-orca.yml`, `.github/workflows/{stage,prod}.yml`, este plano.
 
 ---
 
 ## Gate P0
 
-- [ ] Todos os 17 itens `[x]` ou `[-]` com motivo.
+- [ ] Todos os 18 itens (P0.0–P0.17) `[x]` ou `[-]` com motivo.
 - [ ] CI de `stage` verde com suíte upstream (P0.8) e ruff (P0.9).
 - [ ] Ensaio completo de RC documentado em `docs/release-runbook.md`: PR criada pelo job, promoção por digest, deploy em staging, rollback.
 - [ ] Nenhuma conta com a senha antiga da migração em nenhum ambiente.
@@ -624,4 +714,4 @@ a decisão não sai — o que existe é documentação que descreve outro ambien
 - [ ] Staging comprovadamente executando imagens de `ghcr.io/vitordj/plane` (P0.0, `docker inspect`), com data e digest registrados aqui.
 - [ ] `ORCA_ORG_UNITS_ENABLED` com o mesmo valor em api, worker e beat em staging (P0.14).
 
-Data do gate: ____
+Data do gate: \_\_\_\_
