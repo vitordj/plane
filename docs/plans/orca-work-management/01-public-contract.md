@@ -54,9 +54,16 @@ um vínculo e liberar a chave externa. Ambos os comportamentos têm teste.
 
 **Aceite.**
 
-- [ ] `makemigrations --check` limpo; migração depende de `0137` (a sessão de agente não roda o comando; a migração foi escrita à mão a partir do modelo, como a `0135`–`0137`).
+- [x] `makemigrations --check --dry-run` → **"No changes detected"**. A migração foi escrita à mão, mas desta vez foi possível prová-la: a sessão subiu um PostgreSQL 16 local (o `initdb` recusa root, então sob um usuário sem privilégio) e instalou as dependências, o que também permitiu aplicar as 182 migrações num banco limpo, **reverter** a `0138` e **reaplicá-la** — as três com exit 0.
 - [x] Migração declara `("db", "0137_orca_assignment_decision")` como dependência e o `swappable_dependency` do usuário.
 - [x] Testes das duas unicidades, do `request_hash` de 64 chars, do `status` e do `operation_type` inválidos, do soft-delete que **não** libera a chave, e da FK nova nos dois sentidos. **19 testes, executados e verdes.**
+
+**Comportamento medido, não suposto.** Revogar um `APIToken` (`delete()`, que
+é soft) faz o cascade do Plane **anular** `AutomationOperation.api_token` e
+**não** apagar o recibo: a credencial é retirada, o registro do que ela fez
+permanece. Duas versões erradas deste teste passaram por aqui antes da
+medição — uma supunha que `delete()` apagava a linha, outra que o cascade
+soft-deletava o recibo. Só a execução resolveu. **19 testes, executados e verdes.**
 
 **Comportamento medido, não suposto.** Revogar um `APIToken` (`delete()`, que
 é soft) faz o cascade do Plane **anular** `AutomationOperation.api_token` e
