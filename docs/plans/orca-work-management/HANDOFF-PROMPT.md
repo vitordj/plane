@@ -22,6 +22,10 @@ Leia, nesta ordem, antes de qualquer alteração:
 4. O arquivo da fase do item (ex.: docs/plans/orca-work-management/D0-domain-foundation.md).
 
 Item desta sessão: <FASE.ITEM — ex.: D0.1 — Área precisa cobrir o projeto>
+(Para o bloco 1.4 → 1.8: "Bloco 1.4 → 1.8 de 01-public-contract.md, na ordem
+da tabela 'Ordem, tamanho e o que prova cada passo', na branch
+claude/plano-blocos-1-4-1-8-reo0t9". As decisões B1–B15 já estão tomadas;
+não as reabra sem registrar em RFC §4.2.)
 
 Regras de execução:
 - Um item = um PR pequeno contra `stage`. Branch a partir de `origin/stage`
@@ -43,8 +47,14 @@ Regras de execução:
 - Testes acompanham o item. Todo item que toca alocação termina com teste de
   concorrência (RFC §10; padrão em D0.5). Marque @pytest.mark.unit.
 - O que você pode rodar na sessão: ruff check/format em apps/api, grep, leitura,
-  git. O que você não roda (AGENTS.md): pnpm check/build/check:types, pytest
-  completo, docker, migrate. Liste os comandos exatos para o desenvolvedor.
+  git — e, com o ambiente local da seção "Ambiente local" deste arquivo,
+  pytest (suíte Orca, um arquivo, ou a suíte inteira quando o item pede),
+  `makemigrations --check` e `migrate` num banco vazio. O que continua fora:
+  pnpm check/build/check:types (sem node_modules), docker, deploy, e qualquer
+  verificação que precise de um banco com dados. Para essas, liste os comandos
+  exatos para o desenvolvedor.
+- Um item só é marcado `[x]` com os seus testes executados e verdes na sessão,
+  não só escritos. Diga no relatório o comando e o resultado.
 - Ao terminar: marque o item `[x]` no arquivo da fase e atualize a contagem no
   README.md do plano no mesmo PR; se descobriu algo que muda o desenho, escreva
   em docs/orca-work-management-rfc.md §4.2. Commit e push na sua branch.
@@ -68,7 +78,78 @@ Contexto que você não precisa redescobrir:
 
 ---
 
+## Ambiente local para rodar a suíte na sessão
+
+Confirmado duas vezes (PR #12 e a sessão de planejamento do bloco 1.4 → 1.8).
+O contêiner da sessão não tem Docker, mas tem os binários do PostgreSQL 16,
+o `redis-server` e Python 3.11. Três coisas que não são óbvias e custaram
+tempo: `initdb` recusa rodar como root (usar o usuário `postgres`, com o
+`PGDATA` num diretório que ele consiga atravessar — o scratchpad da sessão
+não serve); o `pip` do sistema não substitui o PyJWT do Debian (usar um
+venv); `psycopg-c` precisa de headers do libpq que não existem
+(`psycopg-binary` já está no requirements, então basta filtrar a linha).
+
+```bash
+# 1. venv + dependências (≈3 min)
+python3 -m venv /tmp/orca-venv
+/tmp/orca-venv/bin/pip install -q --upgrade pip 'setuptools>=70' wheel
+grep -v '^psycopg-c' apps/api/requirements/base.txt > /tmp/req-base.txt
+grep -v '^psycopg-c' apps/api/requirements/test.txt | grep -v '^-r' > /tmp/req-test.txt
+/tmp/orca-venv/bin/pip install -q -r /tmp/req-base.txt -r /tmp/req-test.txt
+
+# 2. PostgreSQL 16 sob o usuário postgres
+PGDATA=/var/lib/postgresql/pgdata
+mkdir -p $PGDATA && chown postgres:postgres $PGDATA && chmod 700 $PGDATA
+su postgres -c "/usr/lib/postgresql/16/bin/initdb -D $PGDATA -U postgres --auth=trust"
+su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $PGDATA -l /var/lib/postgresql/pg.log \
+  -o '-p 5432 -c listen_addresses=127.0.0.1' start"
+su postgres -c "psql -h 127.0.0.1 -U postgres -c \"CREATE ROLE plane WITH LOGIN SUPERUSER PASSWORD 'plane';\""
+su postgres -c "psql -h 127.0.0.1 -U postgres -c \"CREATE DATABASE plane OWNER plane;\""
+
+# 3. Redis
+redis-server --daemonize yes --port 6379 --bind 127.0.0.1
+
+# 4. Variáveis (as mesmas do job api_tests em .github/workflows/stage.yml)
+export DATABASE_URL=postgres://plane:plane@127.0.0.1:5432/plane
+export REDIS_URL=redis://127.0.0.1:6379/
+export SECRET_KEY=local-session-secret-key-not-used-outside-tests
+export DJANGO_SETTINGS_MODULE=plane.settings.test
+export APP_BASE_URL=http://localhost:3000 WEB_URL=http://localhost:3000
+export PATH=/tmp/orca-venv/bin:$PATH
+
+# 5. Rodar (sempre a partir de apps/api)
+cd apps/api
+pytest plane/tests/unit/orca -q -m unit -p no:cacheprovider          # suíte Orca
+pytest plane/tests/unit/orca/test_public_work_items.py -q            # um arquivo
+pytest plane/tests/unit -q -m unit                                    # o que o CI roda (≈10 min)
+pytest plane/tests/contract/test_orca_public_contract.py -q           # contrato (1.8)
+python manage.py makemigrations --check --dry-run                     # migração bate com os modelos
+python manage.py migrate && python manage.py migrate db 0137 && python manage.py migrate   # ida e volta
+```
+
+O que o AGENTS.md protege ao vetar "testes completos" na sessão é o volume de
+saída no contexto, não a execução em si: rodar sempre com `-q` e `| tail -20`
+(ou redirecionar para um arquivo e ler só o resumo), nunca com `-vs` solto.
+`--reuse-db` está no `pytest.ini`: depois de uma migração nova, rodar uma vez
+com `--create-db`. PostgreSQL aqui é 16 e no CI é 15.7; nada até agora
+dependeu disso, mas é o primeiro lugar a olhar se divergirem. O ambiente
+morre com o contêiner — a receita é o que fica.
+
+
 ## Variantes
+
+**Sessão de execução do bloco 1.4 → 1.8:**
+
+```text
+Execute o bloco 1.4 → 1.8 de docs/plans/orca-work-management/01-public-contract.md
+na branch claude/plano-blocos-1-4-1-8-reo0t9 (já cortada da ponta do PR #12).
+Primeiro suba o ambiente local (HANDOFF-PROMPT.md §Ambiente local) e rode a
+suíte Orca como baseline. Depois siga a tabela "Ordem, tamanho e o que prova
+cada passo": um commit por passo, teste executado antes de marcar, ruff limpo
+antes de cada commit. As decisões B1–B15 estão tomadas. Ao fim de cada item,
+atualize o arquivo da fase e o README do plano. Não abra PR; descreva a PR
+proposta no relatório final, e diga o que foi verificado e como.
+```
 
 **Sessão de revisão (sem implementar):**
 
