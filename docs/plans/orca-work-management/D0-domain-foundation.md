@@ -166,80 +166,53 @@ forma correta de mudar uma decisão.
 
 ---
 
-## D0.5 — `assignment_service.py`: resolução, ranking `lb-1`, alocação, claim, reatribuição, devolução, transferência `[ ]`
+## D0.5 — `assignment_service.py`: resolução, ranking `lb-1`, alocação, claim, reatribuição, devolução, transferência `[x]`
 
-**Arquivo novo.** `apps/api/plane/app/services/orca/assignment_service.py`.
-`assignment_engine.py` passa a delegar (`assign_from_unit` chama
-`allocate(..., requested_mode="least_loaded")`) e recebe docstring "legado,
-mantido para compatibilidade dos chamadores atuais; remover na Fase 2".
+**Entregue** (`feat/orca-unit-project-coverage`).
+`apps/api/plane/app/services/orca/assignment_service.py`, com
+`resolve_policy`, `rank_candidates`, `allocate`, `claim`, `reassign`,
+`return_to_queue`, `transfer_unit` e `set_responsibility`, mais
+`unit_allocation_lock`. Erros de domínio em `services/orca/errors.py`, todos
+com `error_code` e `http_status`, para a view converter a família inteira num
+`except OrcaDomainError`.
 
-**Funções e contratos** (docstrings no formato `@description/@param/@returns`):
+**Decisões que o enunciado deixava em aberto.**
+- `rank_candidates` ganhou `exclude_user_ids`. O modo `append` do caminho legado quer alguém que **não** esteja no item; sem isso o ranking devolveria a própria pessoa já atribuída e o "acrescentar" não acrescentaria ninguém.
+- SLA e teto de carga caem de projeto para área **independentemente**: uma política de projeto que não diz nada sobre SLA herda o da área em vez de zerar.
+- `claim` exige que a política efetiva permita `self_claim`. O bypass "ou coordenador/admin" do RFC §6.3 não entrou: o papel de coordenador é da Fase 2 e não existe no modelo ainda. Fica registrado como pendência do D0.6/Fase 2.
+- Cinco códigos novos (4917–4921) nos três lugares, com mensagem nas 19 locales.
 
-```python
-resolve_policy(unit, project_id, requested_mode: str | None) -> PolicyResolution
-    # RFC §6.3. Levanta AssignmentModeNotAllowed (mapeada para ORG_ASSIGNMENT_MODE_NOT_ALLOWED).
+**`assignment_engine.py` virou casca.** O docstring diz isso e aponta para o
+serviço. `candidates_for` delega para `rank_candidates`; `assign_from_unit`
+delega para `allocate` **quando o item tem vínculo com aquela área** —
+caminho completo, com lock, estado e decisão. Um item **sem** vínculo continua
+sendo atribuído como antes, gravando só o `IssueAssignee`: é a lacuna que o
+D0.6 fecha quando os endpoints passarem a falar com o serviço, e foi deixada
+funcionando de propósito para que este item não mude o que o endpoint atual
+faz. `workload_snapshot` continua no engine: é a consulta do painel, não
+ranking.
 
-rank_candidates(unit, project_id, policy: OrganizationalUnitAssignmentPolicy | None) -> RankedCandidates
-    # RFC §6.4 algoritmo "lb-1". Retorna eleitos ordenados + excluídos com excluded_reason.
-    # Só executor principal conta (IssueOrganizationalUnit.primary_executor, routing_state=assigned,
-    # state.group not in CLOSED_STATE_GROUPS). Desempate final por user_id.
+**Concorrência.** `allocate` abre `transaction.atomic()`, tira advisory lock
+por área **só** em `least_loaded` (é onde a carga lida precisa incluir a
+alocação anterior) e faz `select_for_update` na linha do vínculo em todos os
+caminhos. O claim usa só o lock de linha: o segundo espera o primeiro comitar
+e então vê um item já atribuído, o que é a resposta certa — `AlreadyClaimed`
+carrega o vencedor para o perdedor não precisar recarregar.
 
-allocate(issue, unit, *, requested_mode=None, explicit_executor=None, collaborators=(),
-         actor=None, trigger, operation=None, assignment_due_at=None) -> AllocationResult
-    # Transação: advisory lock por unidade (só para least_loaded), select_for_update no link,
-    # valida I2 e I4, cria/atualiza IssueAssignee, atualiza routing_state/queue_reason/queued_at/
-    # primary_executor/current_assignment_decision, grava AssignmentDecision. Nunca remove
-    # IssueAssignee existentes.
-
-claim(issue, user, *, actor) -> AllocationResult
-    # select_for_update; exige routing_state in (queued, allocation_failed) e política efetiva
-    # self_claim (ou actor coordenador/admin); perdedor → AlreadyClaimed com vencedor.
-
-reassign(issue, new_executor, *, actor, reason, expected_decision_id) -> AllocationResult
-    # If-Match semântico: expected_decision_id deve ser current_assignment_decision; senão DecisionStale.
-    # Executor anterior permanece como colaborador (IssueAssignee mantido); decisão com supersedes.
-
-return_to_queue(issue, *, actor, reason, queue_reason="manually_returned") -> AllocationResult
-    # Remove primary_executor (mantém IssueAssignee), routing_state=queued, decisão.
-
-transfer_unit(issue, to_unit, *, actor, source, reason) -> TransferResult
-    # RFC §6.8: valida I2 em to_unit, evento from→to, devolve à fila se executor não pertence a
-    # to_unit, resolve política em to_unit e aplica como criação.
-
-set_responsibility(issue, unit, *, actor, source, requested_mode=None, ...) -> AllocationResult
-    # Caminho de "marcar área" (POST organizational-unit): cria o link se não existe (evento
-    # from=None), ou delega a transfer_unit se já existe outra área, e então allocate.
-```
-
-**Lock.** Helper `unit_allocation_lock(unit_id)` que executa
-`SELECT pg_advisory_xact_lock(hashtext(%s))` dentro de `transaction.atomic()`.
-Em SQLite (não usado nos testes: o runner é Postgres) o helper é no-op.
-
-**Erros.** Exceções de domínio em `services/orca/errors.py`
-(`AssignmentModeNotAllowed`, `UnitNotCoveringProject`, `ExecutorNotEligible`,
-`AlreadyClaimed`, `DecisionStale`, `InvalidTransition`) com atributo
-`error_code` apontando para o nome em `ORCA_ERROR_CODES`. As views convertem
-com um único `except OrcaDomainError as e: return orca_error(e.error_code,
-e.http_status)`.
-
-**Códigos novos** (três lugares): `ORG_ASSIGNMENT_MODE_NOT_ALLOWED`,
-`ORG_EXECUTOR_NOT_ELIGIBLE`, `ORG_WORK_ITEM_ALREADY_CLAIMED`,
-`ORG_DECISION_STALE`, `ORG_INVALID_ROUTING_TRANSITION`.
-
-**Métricas/logs.** Logger `plane.orca.assignment` com `extra=` contendo
-`workspace_id, unit_id, issue_id, decision_id, mode, outcome, trigger`.
-
-**Testes** (`test_assignment_service.py`, `test_assignment_concurrency.py`):
-toda a linha "Resolução de política", "Ranking lb-1", "Estados", "Decisões",
-"Encaminhamento" e "Concorrência" da matriz do RFC §10. Concorrência com
-`@pytest.mark.django_db(transaction=True)`, `ThreadPoolExecutor`, uma
-conexão por thread (`connection.close()` no fim de cada), 4 membros e 20
-alocações → 5/5/5/5; 10 claims → 1 sucesso e 9 `AlreadyClaimed`.
+**Testes.** `test_assignment_service.py` (resolução com e sem política, herança
+projeto→área, recusa de modo fora do permitido; ranking por carga, trabalho
+concluído fora da conta, só executor principal contando, exclusões com motivo,
+teto de carga, determinismo; os quatro caminhos de `allocate`; claim,
+reatribuição com If-Match, devolução, transferência; e um teste de que o
+serviço não escreve `ProjectMember`) e `test_assignment_concurrency.py`
+(20 alocações simultâneas → 5/5/5/5; 10 claims → 1 vencedor e 9
+`AlreadyClaimed`, com `transaction=True`, `ThreadPoolExecutor` e
+`connection.close()` por thread).
 
 **Aceite.**
-- [ ] Testes verdes, incluindo concorrência no runner Docker (`docker compose -f docker-compose-test.yml run --rm api-tests pytest plane/tests/unit/orca/test_assignment_concurrency.py -q`).
-- [ ] `assignment_engine.py` não contém mais lógica própria de ranking.
-- [ ] Nenhuma escrita em `ProjectMember` no módulo (grep).
+- [ ] Testes verdes, incluindo concorrência no runner Docker (`docker compose -f docker-compose-test.yml run --rm api-tests pytest plane/tests/unit/orca/test_assignment_concurrency.py -q`). A sessão não roda pytest.
+- [x] `assignment_engine.py` não contém mais lógica própria de ranking.
+- [x] Nenhuma escrita em `ProjectMember` no módulo (grep, e um teste que compara o conjunto de ids antes e depois).
 
 ---
 
