@@ -43,7 +43,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 
 | Fase | Arquivo | Itens | Estado | Gate fechado em |
 | --- | --- | --- | --- | --- |
-| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 18 | `[~]` 12/18 (P0.0–P0.4, P0.6, P0.7, P0.9, P0.10, P0.14, P0.15, P0.16) · P0.5 parcial | — |
+| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 18 | `[~]` 12/18 (P0.0–P0.4, P0.6, P0.7, P0.9, P0.10, P0.14, P0.15, P0.16) · P0.5 e P0.13 parciais | — |
 | D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 12 | `[ ]` 0/12 | — |
 | 1 Contrato público | [01-public-contract.md](./01-public-contract.md) | 8 | `[ ]` 0/8 | — |
 | 2 Fila e coordenador | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6 | — |
@@ -84,6 +84,7 @@ contas criadas pela versão antiga do `create_users.py` (procedimento em
 | --- | --- | --- | --- |
 | A5 | Confirmar comportamento do Plane Compose em re-push com mesmo id e ausência de campo de área | pessoa com acesso à doc oficial | Fase 4 |
 | — | Faixa de rede do proxy/ingress da 4UM para `TRUSTED_PROXIES` | operação | P0.7 |
+| — | Alvo real de implantação (o repositório documenta Coolify, que é o ambiente da Orca, não o da 4UM) | negócio/operação | P0.17 |
 | — | Tenant Azure de testes para validar P0.10 de ponta a ponta | operação | fim de P0 (o item é implementável com testes unitários antes) |
 | — | Definir quem é coordenador de cada área piloto | negócio | Fase 2 |
 | — | Área piloto e projeto piloto para o primeiro uso real da fila | negócio | Gate 2-mínimo |
@@ -94,6 +95,7 @@ contas criadas pela versão antiga do `create_users.py` (procedimento em
 | --- | --- |
 | 2026-09-03 | Plano criado a partir do RFC rev. 2. Nenhum item iniciado. |
 | 2026-09-04 | PRs #5 e #6 mesclados em `stage` (`3a4c769`): hardening complementar da camada de Áreas (kill switch nas tarefas/comandos/SCIM, baseline ao elevar papel, rate limit SCIM pós-autenticação, rejeição de convidados Entra). Não fecha item P0/D0; registrado no cabeçalho de P0. |
+| 2026-09-05 | P0.13 parcial: `docs/release-runbook.md` escrito (fluxo em duas etapas, verificação pós-deploy, rollback por digest), template de RC e FORK.md §Phase 4 alinhados ao que os workflows fazem. O bump de versão fica para o PR do sync (P0.11); achado registrado: o sufixo `-plane.<upstream>` é um prerelease semver e o Release Please pode descartá-lo. |
 | 2026-09-05 | P0.10 entregue: `id_token` do Entra verificado por completo contra o JWKS do tenant (assinatura, `aud`, `iss`, janela de validade, claims obrigatórias), nonce de uso único no fluxo, timeouts em todas as chamadas OAuth, dois códigos de erro novos nos cinco lugares que os espelham, e testes com par de chaves RSA. Item novo P0.17 (documentação de implantação presume Coolify, que não é o ambiente da 4UM). |
 | 2026-09-05 | P0.15 entregue: as imagens gravam o commit (`ORCA_BUILD_SHA`/`ORCA_IMAGE_TAG`), `GET /api/orca/build-info/` responde a admin de instância e `manage.py orca_build_info` responde no worker e no beat, que não têm HTTP. Fecha no runtime a cadeia que P0.0–P0.3 fecharam no registry. |
 | 2026-09-05 | P0.16 entregue: MinIO fixado em tag imutável no Compose Orca e no de teste; CI passa a rodar PostgreSQL 15.7, igual ao ambiente implantado, com a decisão registrada em `RUNNING_TESTS.md`. |

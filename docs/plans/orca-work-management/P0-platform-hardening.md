@@ -414,22 +414,39 @@ já mesclados.
 
 ---
 
-## P0.13 — Versão 1.5.0, Release Please e runbook `[ ]`
+## P0.13 — Versão 1.5.0, Release Please e runbook `[~]`
 
 **Situação.** `package.json` em `1.4.0-plane.1.4.1`;
 `.github/release-please-manifest.json` e `.github/release-please-config.json`
-na mesma linha; o template `release_candidate.md` afirma que o merge dispara
+na mesma linha; o template `release_candidate.md` afirmava que o merge dispara
 a promoção, mas `prod.yml` só promove com commit `chore(prod): release`.
 
-**Mudança.**
-- Decidir e aplicar `1.5.0-plane.1.4.2` em `package.json` e no manifest (ou deixar o Release Please calcular a partir dos `feat(orca)`; documentar qual dos dois).
-- `release_candidate.md`: descrever o fluxo real em duas etapas (merge em `prod` → Release Please abre PR de release → merge desse PR gera o commit `chore(prod): release` → `prod.yml` promove).
-- Novo `docs/release-runbook.md`: passo a passo de RC, promoção por digest (P0.3), verificação pós-deploy — incluindo `GET /api/orca/build-info/` e `manage.py orca_build_info` em api, worker e beat, que devem devolver o mesmo SHA e o mesmo valor do kill switch (P0.14, P0.15) —, rollback para os seis digests anteriores (comandos `docker pull <img>@sha256:...` + retag `:latest` + redeploy Coolify), e checklist de variáveis de ambiente novas por release.
-- Ensaiar o runbook uma vez de ponta a ponta em staging e anotar duração e problemas.
+**Entregue** (`claude/loving-carson-n9x6eq`): a parte de documentação.
+- `docs/release-runbook.md` (novo): o fluxo em duas etapas, o que checar antes de cortar a RC, o que o job de promoção faz e como ele falha, verificação pós-deploy (`docker inspect`, `/api/orca/build-info/`, `orca_build_info` em api/worker/beat, paridade do kill switch), variáveis de ambiente, rollback por digest com os comandos prontos, e a manutenção de que o release depende (tags fixas, PostgreSQL igual no CI e na implantação). Tabela de ensaio no fim, vazia — é ela que fecha o critério.
+- `release_candidate.md`: descreve o fluxo real. O aviso principal agora é "**mesclar este PR não implanta nada**", com os dois passos e a conferência da versão proposta pelo Release Please.
+- `FORK.md` §Phase 4: reescrita para o mesmo fluxo (a versão anterior dizia que o merge da RC puxava `:stage` e reimplantava).
+
+**Achado que muda a decisão da versão.** O convênio do fork
+(`v<fork>-plane.<upstream>`, FORK.md) é, em semver, um **prerelease**:
+`1.4.0-plane.1.4.1` é um pré-lançamento de `1.4.0`. O Release Please está
+configurado **sem** estratégia de prerelease, então há um risco concreto de ele
+propor uma versão **sem** o sufixo `-plane.<upstream>` — o que apagaria o
+marcador de base upstream. Não dá para confirmar sem rodar; o PR de release é
+onde isso aparece, e ele é editável antes do merge. Registrado como passo
+explícito no runbook §2, com as duas saídas (corrigir no PR ou configurar
+`prerelease: true`).
+
+**Não entregue, e por quê.** O bump para `1.5.0-plane.1.4.2` pressupõe o
+**P0.11** (sync com o upstream 1.4.2), que não aconteceu: marcar
+`-plane.1.4.2` hoje afirmaria uma base que o código não tem. O bump entra no
+PR do sync, junto com a decisão de prerelease acima.
 
 **Aceite.**
-- [ ] Runbook ensaiado, com data e resultado no próprio arquivo.
-- [ ] Template e FORK.md §Phase 4 descrevem o mesmo fluxo que os workflows executam.
+- [x] Template e FORK.md §Phase 4 descrevem o mesmo fluxo que os workflows executam.
+- [x] Runbook escrito, com verificação pós-deploy e rollback por digest.
+- [ ] Runbook ensaiado, com data e resultado no próprio arquivo (tabela "Rehearsal log").
+- [ ] `package.json` e manifest em `1.5.0-plane.1.4.2` — depende do P0.11.
+- [ ] Decidido e registrado se o Release Please calcula a versão ou se o sufixo é mantido à mão (o runbook descreve as duas saídas; a decisão sai no primeiro release).
 
 **Arquivos:** `package.json`, `.github/release-please-manifest.json`, `.github/release-please-config.json`, `.github/PULL_REQUEST_TEMPLATE/release_candidate.md`, `FORK.md`, `docs/release-runbook.md`.
 
@@ -487,7 +504,7 @@ camada desligada; o comando imprime exatamente o mesmo JSON.
 **Aceite.**
 - [x] Ruff limpo (`check` e `format --check`) nos arquivos novos. Testes escritos; a sessão não roda pytest (AGENTS.md) — confirmar no CI de `stage`.
 - [ ] Em staging, o endpoint devolve o SHA do merge que disparou o deploy.
-- [ ] `docs/release-runbook.md` (P0.13) inclui o passo "conferir build-info após o deploy".
+- [x] `docs/release-runbook.md` (P0.13) inclui o passo "conferir build-info após o deploy" — §4, exigindo o mesmo SHA em api, worker e beat.
 
 **Arquivos:** `.github/workflows/stage.yml`, os seis Dockerfiles, `docker-compose-orca.yml`, `apps/api/plane/utils/orca_build_info.py` (novo), `apps/api/plane/app/views/orca_build_info.py` (novo), `apps/api/plane/db/management/commands/orca_build_info.py` (novo), `apps/api/plane/app/urls/orca.py`, `apps/api/plane/app/views/__init__.py`, teste novo.
 
