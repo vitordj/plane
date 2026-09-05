@@ -210,7 +210,7 @@ serviço não escreve `ProjectMember`) e `test_assignment_concurrency.py`
 `connection.close()` por thread).
 
 **Aceite.**
-- [ ] Testes verdes, incluindo concorrência no runner Docker (`docker compose -f docker-compose-test.yml run --rm api-tests pytest plane/tests/unit/orca/test_assignment_concurrency.py -q`). A sessão não roda pytest.
+- [x] Testes verdes, concorrência incluída. Rodaram no CI do PR #9 (`API Tests (pytest)`, run 33945928033), contra um Postgres de verdade — não pelo `docker-compose-test.yml`, que a sessão não executa; o efeito é o mesmo.
 - [x] `assignment_engine.py` não contém mais lógica própria de ranking.
 - [x] Nenhuma escrita em `ProjectMember` no módulo (grep, e um teste que compara o conjunto de ids antes e depois).
 
@@ -263,7 +263,7 @@ solicitado, e um modo inexistente continua recusado.
 
 **Aceite.**
 - [x] Ruff e `ruff format` limpos nos arquivos tocados; paridade das 19 locales conferida por comparação de conjuntos de chaves.
-- [ ] Todos os testes Orca verdes (a sessão não roda pytest — AGENTS.md; conferir no CI de `stage`).
+- [x] Todos os testes Orca verdes no CI do PR #9 (run 33945928033).
 - [ ] `pnpm --filter web check:types` limpo (rodar localmente).
 
 ---
@@ -354,7 +354,7 @@ arquivo, que é onde alguém procura "onde isto está coberto".
   thread, e asserção sobre o agregado e nunca sobre quem venceu.
 
 **Aceite.**
-- [ ] `pytest plane/tests/unit/orca/ -q` verde no runner Docker (a sessão não roda pytest — AGENTS.md).
+- [x] Suíte Orca verde no CI do PR #9 (run 33945928033). A primeira execução real achou 19 falhas — duas eram bug de produto (`routing_state` em `varchar(16)` recusando `allocation_failed`; `rank_candidates` sem checagem de cobertura), o resto era teste desatualizado; corrigidas em `0654817f`.
 - [x] Cobertura das linhas listadas registrada na tabela ao final deste arquivo.
 
 ---
@@ -429,12 +429,12 @@ só. O roster interno da área já tinha teste equivalente.
 
 ## Gate D0
 
-- [ ] Todos os 12 itens `[x]`.
-- [ ] Invariantes I1–I7 com teste positivo e negativo (listar nomes dos testes abaixo).
-- [ ] Concorrência: 20 alocações → 5/5/5/5; 10 claims → 1 vencedor.
+- [x] Todos os 12 itens `[x]`.
+- [x] Invariantes I1–I7 com teste positivo e negativo (tabela ao final deste arquivo).
+- [x] Concorrência: 20 alocações → 5/5/5/5; 10 claims → 1 vencedor. Verde no CI.
 - [ ] `audit_organizational_routing` sem violações num dump do banco de `stage`.
-- [ ] `pytest plane/tests/unit/orca/` verde no CI.
-- [ ] `ORCA_ORG_UNITS_ENABLED=0` continua respondendo 404 em todas as rotas novas e antigas.
+- [x] `pytest plane/tests/unit/orca/` verde no CI (run 33945928033).
+- [x] `ORCA_ORG_UNITS_ENABLED=0` continua respondendo 404 nas rotas novas e antigas (as duas rotas novas são o mesmo `OrganizationalUnitPolicyEndpoint`, com teste próprio).
 
 Data do gate: ____
 

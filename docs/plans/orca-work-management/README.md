@@ -44,7 +44,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | Fase | Arquivo | Itens | Estado | Gate fechado em |
 | --- | --- | --- | --- | --- |
 | P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md) | 18 | `[~]` 12/18 (P0.0–P0.4, P0.6, P0.7, P0.9, P0.10, P0.14, P0.15, P0.16) · P0.5 e P0.13 parciais | — |
-| D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 12 | `[~]` 12/12 — aguardando o Gate D0 | — |
+| D0 Fundação do domínio | [D0-domain-foundation.md](./D0-domain-foundation.md) | 12 | `[~]` 12/12 · suíte verde no CI — faltam migrações, `check:types` e a auditoria num dump | — |
 | 1 Contrato público | [01-public-contract.md](./01-public-contract.md) | 8 | `[ ]` 0/8 | — |
 | 2 Fila e coordenador | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6 | — |
 | 3 Disponibilidade | [03-availability.md](./03-availability.md) | 6 | `[ ]` 0/6 | — |
@@ -70,12 +70,13 @@ excluir), **P0.11** (sync com o upstream 1.4.2), **P0.12** (apagar branches
 remotos), **P0.13** (versão e runbook), **P0.17** (documentação de implantação)
 e a metade do lockfile do **P0.5**.
 
-No domínio, a **D0 está com os 12 itens entregues** e aguardando o Gate D0. O
-que falta ali não é código: rodar `pytest plane/tests/unit/orca/` no runner
-Docker, aplicar as migrações `0135`–`0137` e passar o
-`audit_organizational_routing` num dump de `stage` — as três coisas que a
-sessão de agente não executa (AGENTS.md). Fechado o gate, a **Fase 1**
-(contrato público) é o próximo bloco.
+No domínio, a **D0 está com os 12 itens entregues** e a suíte Orca verde no CI
+do PR #9. O que falta para fechar o gate não é código, são as três coisas que
+a sessão de agente não executa (AGENTS.md): aplicar e reverter as migrações
+`0135`–`0137` num banco com dados (com `makemigrations --check` limpo),
+`pnpm --filter web check:types`, e passar o `audit_organizational_routing`
+num dump de `stage`. Fechado o gate, a **Fase 1** (contrato público) é o
+próximo bloco.
 
 Pendências de operação abertas por esta branch, **uma delas bloqueante**:
 definir `TRUSTED_PROXIES` no ambiente de implantação **antes** de mesclar em
@@ -115,3 +116,4 @@ contas criadas pela versão antiga do `create_users.py` (procedimento em
 | 2026-09-05 | P0.4 entregue na mesma branch: `promote-rc` passa a usar `gh`, verifica a existência de `prod`, e falha quando a RC não existe nem pôde ser criada. |
 | 2026-09-05 | P0.1, P0.2 e P0.3 entregues em `claude/loving-carson-n9x6eq`: PR constrói sem publicar; push em `stage` publica `:stage` e `:sha-<commit>` e retagueia por digest os serviços não reconstruídos, para que todo commit tenha os seis serviços; artifact `image-digests`; `prod.yml` resolve o commit de `stage` promovido e copia os digests daquele commit, falhando antes de qualquer retag se faltar imagem. |
 | 2026-09-05 | D0 completa (D0.1–D0.12) na branch `feat/orca-unit-project-coverage`: cobertura área↔projeto, herança de assignee removida da API pública, estado de fila, política e log de decisões, serviço único de alocação, endpoints internos falando com ele, comando de auditoria, métricas, matriz de testes, documentação, reconciliação no arquivamento e roster SCIM. Falta só a execução do Gate D0 (suíte, migrações, auditoria num dump). |
+| 2026-09-05 | PR #8 mesclado em `stage` (`1fb7a074`); `stage` mesclado na branch da D0, com a leitura de `default_assignee_id` recolocada — o git tinha aceitado a remoção do lado do #8 em silêncio e o resultado seria `NameError`. Primeira execução real da suíte D0: 19 falhas, das quais duas eram bug de produto — `routing_state` em `varchar(16)` recusando `allocation_failed` (17 caracteres) e `rank_candidates` sem checagem de cobertura. Corrigidas; PR #9 verde nas 16 checks. |
