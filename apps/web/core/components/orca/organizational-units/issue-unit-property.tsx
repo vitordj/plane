@@ -9,6 +9,7 @@ import { observer } from "mobx-react";
 import { Sparkles } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
+import type { IIssueRouting } from "@plane/types";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import { CustomSearchSelect } from "@plane/ui";
@@ -38,6 +39,7 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
   const { t } = useTranslation();
 
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  const [routing, setRouting] = useState<IIssueRouting | null>(null);
   const [isAssigning, setIsAssigning] = useState(false);
 
   useEffect(() => {
@@ -48,10 +50,16 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
     let cancelled = false;
     const loadResponsibleUnit = async () => {
       try {
-        const unit = await store.fetchIssueUnit(workspaceSlug, projectId, issueId);
-        if (!cancelled) setSelectedUnitId(unit?.id ?? null);
+        const { unit, routing: state } = await store.fetchIssueUnit(workspaceSlug, projectId, issueId);
+        if (!cancelled) {
+          setSelectedUnitId(unit?.id ?? null);
+          setRouting(state);
+        }
       } catch {
-        if (!cancelled) setSelectedUnitId(null);
+        if (!cancelled) {
+          setSelectedUnitId(null);
+          setRouting(null);
+        }
       }
     };
     void loadResponsibleUnit();
@@ -78,11 +86,14 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
 
   const handleChange = async (unitId: string) => {
     const previous = selectedUnitId;
+    const previousRouting = routing;
     setSelectedUnitId(unitId);
     try {
-      await store.setIssueUnit(workspaceSlug, projectId, issueId, unitId);
+      const { routing: state } = await store.setIssueUnit(workspaceSlug, projectId, issueId, unitId);
+      setRouting(state);
     } catch {
       setSelectedUnitId(previous);
+      setRouting(previousRouting);
       setToast({ type: TOAST_TYPE.ERROR, title: t(`${KEY}.toast.area_unchanged`), message: t(TRY_AGAIN) });
     }
   };
@@ -92,6 +103,7 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
     setIsAssigning(true);
     try {
       const result = await store.assignIssueFromUnit(workspaceSlug, projectId, issueId, { unitId: selectedUnitId });
+      setRouting(result.routing);
       if (result.assigned) {
         setToast({
           type: TOAST_TYPE.SUCCESS,
@@ -99,6 +111,14 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
           message: t(`${KEY}.toast.assigned`),
         });
         onAssigned?.();
+      } else if (result.reason === "queued") {
+        // The area allocates by hand or waits for someone to claim it, so
+        // nobody was picked and nothing went wrong.
+        setToast({
+          type: TOAST_TYPE.INFO,
+          title: t(`${KEY}.toast.queued_title`),
+          message: t(`${KEY}.toast.queued`),
+        });
       } else if (result.reason === "already_assigned") {
         setToast({
           type: TOAST_TYPE.INFO,
@@ -136,7 +156,11 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
         buttonClassName={`text-body-xs-regular justify-between ${selectedUnit ? "" : "text-placeholder"}`}
         noResultsMessage={t(`${KEY}.no_match`)}
       />
-      {selectedUnitId && !disabled && (
+      {/* The button is the manual trigger for the area's allocation, so it has
+          no job once somebody is on the item: clicking it only ever produced
+          the "already assigned" toast. The full queue view — who is waiting,
+          why, and since when — is Phase 2. */}
+      {selectedUnitId && !disabled && routing?.routing_state !== "assigned" && (
         <Button
           className="shrink-0"
           variant="ghost"

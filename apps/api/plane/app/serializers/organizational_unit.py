@@ -9,9 +9,12 @@ from rest_framework import serializers
 
 # Module imports
 from plane.db.models import (
+    AssignmentDecision,
+    IssueOrganizationalUnit,
     OrganizationalDirectoryConnection,
     OrganizationalDirectoryIdentity,
     OrganizationalUnit,
+    OrganizationalUnitAssignmentPolicy,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
 )
@@ -276,5 +279,80 @@ class OrganizationalDirectoryIdentitySerializer(BaseSerializer):
             "workspace_member_display_name",
             "last_seen_at",
             "created_at",
+        ]
+        read_only_fields = fields
+
+
+class AssignmentPolicySerializer(BaseSerializer):
+    """How an area hands work out, as the interface needs to read it."""
+
+    class Meta:
+        model = OrganizationalUnitAssignmentPolicy
+        fields = [
+            "id",
+            "organizational_unit",
+            "unit_project",
+            "default_mode",
+            "allowed_modes",
+            "assignment_sla_seconds",
+            "max_open_items_per_member",
+            "is_active",
+            "version",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "organizational_unit", "version", "created_at", "updated_at"]
+
+
+class AssignmentDecisionSerializer(BaseSerializer):
+    """
+    One allocation, as the interface shows it.
+
+    @description ``candidates_snapshot`` is deliberately **not** exposed: it
+    carries the load of every person the ranking considered, which is a
+    performance-shaped view of a team that a work item panel has no business
+    publishing. The audit path can read the row directly.
+    """
+
+    class Meta:
+        model = AssignmentDecision
+        fields = [
+            "id",
+            "trigger",
+            "requested_mode",
+            "effective_mode",
+            "policy_source",
+            "policy_version",
+            "algorithm_version",
+            "outcome",
+            "chosen_assignee",
+            "previous_primary_executor",
+            "decided_by",
+            "supersedes",
+            "reason",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class IssueRoutingSerializer(BaseSerializer):
+    """Where a work item stands between "an area owns this" and "a person is on it"."""
+
+    organizational_unit = OrganizationalUnitSerializer(read_only=True)
+    current_assignment_decision = AssignmentDecisionSerializer(read_only=True)
+
+    class Meta:
+        model = IssueOrganizationalUnit
+        fields = [
+            "id",
+            "organizational_unit",
+            "routing_state",
+            "queue_reason",
+            "queued_at",
+            "assignment_due_at",
+            "primary_executor",
+            "current_assignment_decision",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = fields

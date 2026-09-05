@@ -277,6 +277,8 @@
         "assigned": "En az açık işi olan alan üyesine verildi.",
         "already_assigned_title": "Zaten atanmış",
         "already_assigned": "Bu iş öğesinin zaten bir atananı var.",
+        "queued_title": "Alanın kuyruğunda",
+        "queued": "Bu alan işi elle dağıtır, bu yüzden iş öğesi bekliyor.",
         "nobody_title": "Uygun kimse yok",
         "nobody": "Bu alanın hiçbir üyesinin bu projeye erişimi yok.",
         "not_assigned": "Atanmadı"

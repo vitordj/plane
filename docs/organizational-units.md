@@ -135,6 +135,8 @@ Admin; reads are open to workspace members.
 | `PATCH` `DELETE`       | `organizational-units/<id>/projects/<link_id>/`                       |
 | `GET`                  | `organizational-units/<id>/effective-access/`                         |
 | `GET`                  | `organizational-units/<id>/workload/`                                 |
+| `GET`                  | `organizational-units/<id>/policy/`                                   |
+| `GET`                  | `organizational-units/<id>/projects/<project_id>/policy/`             |
 | `GET`                  | `organizational-units/me/`                                            |
 | `GET` `PATCH`          | `directory/`                                                          |
 | `POST` `DELETE`        | `directory/token/`                                                    |
@@ -162,13 +164,32 @@ project it belongs to. The unit payload carries `project_ids` for exactly that
 filter, with archived projects left out.
 
 Because Plane requires an assignee to be a person who is an active project
-member, the engine turns responsibility into a real assignee: it ranks the
-unit's members by open work across the unit's own live projects, least loaded
-first, breaking ties by whoever was assigned longest ago and then by user id.
+member, the layer turns responsibility into a real assignee: it ranks the
+unit's members by open work, least loaded first, breaking ties by whoever went
+longest without an automatic assignment and then by user id.
 
-Existing assignees are never replaced. The default mode assigns only when
-nobody holds the item; `mode=append` adds a unit member alongside the current
-ones. Triggering is manual in v1.
+**What happens when a unit is made responsible** is the unit's *assignment
+policy*: `manual` (a coordinator will decide, so the item waits),
+`self_claim` (it waits for someone to take it) or `least_loaded` (it is
+handed out on the spot). A policy can be set for the unit or for one of its
+projects, and the project's wins. A unit with no policy defaults to `manual`
+— nothing is handed out by itself — but permits any mode a caller asks for;
+once a policy sets `allowed_modes`, asking for a mode outside that list is
+refused rather than quietly downgraded. `GET .../policy/` reports the
+resolved policy without writing anything, which is how the interface knows
+whether to offer "assign automatically" at all.
+
+Every allocation is recorded: which mode governed it, who was considered and
+with what load, who was chosen, and what state the item ended in — assigned,
+queued, or queued because nobody was eligible. Changes of responsible unit
+are recorded too, including clearing it.
+
+The assign route is the manual trigger for the ranking, so it asks for
+`least_loaded` regardless of the unit's default; a unit that excluded that
+mode refuses with `ORG_ASSIGNMENT_MODE_NOT_ALLOWED` (4917). Existing assignees
+are never replaced: the default leaves an item that already has one alone, and
+`mode=append` (deprecated, superseded by `assignment_mode`) adds a unit member
+alongside the current ones. Triggering is manual in v1.
 
 ## Directory sync
 

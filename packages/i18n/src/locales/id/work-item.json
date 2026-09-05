@@ -277,6 +277,8 @@
         "assigned": "Diberikan kepada anggota area dengan pekerjaan terbuka paling sedikit.",
         "already_assigned_title": "Sudah ditugaskan",
         "already_assigned": "Item kerja ini sudah memiliki penugas.",
+        "queued_title": "Dalam antrean area",
+        "queued": "Area ini membagikan pekerjaan secara manual, jadi item kerja ini menunggu.",
         "nobody_title": "Tidak ada yang tersedia",
         "nobody": "Tidak ada anggota area ini yang memiliki akses ke proyek ini.",
         "not_assigned": "Tidak ditugaskan"

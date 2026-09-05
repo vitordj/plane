@@ -216,24 +216,49 @@ serviço não escreve `ProjectMember`) e `test_assignment_concurrency.py`
 
 ---
 
-## D0.6 — Endpoints internos passam a usar o serviço; GET de política `[ ]`
+## D0.6 — Endpoints internos passam a usar o serviço; GET de política `[x]`
 
 **Mudança** em `apps/api/plane/app/views/organizational_unit.py` e
 `apps/api/plane/app/urls/orca.py`:
-- `IssueOrganizationalUnitEndpoint.post` → `set_responsibility(...)`; resposta inclui `routing_state`, `queue_reason`, `primary_executor`, `decision`.
-- `IssueOrganizationalUnitEndpoint.get` → inclui os mesmos campos.
-- `IssueOrganizationalUnitEndpoint.delete` → grava `IssueResponsibilityEvent(to_unit=None)` antes de apagar.
-- `IssueOrganizationalUnitAssignEndpoint.post` → `allocate(..., requested_mode=request.data.get("mode","least_loaded"), trigger="internal_api")`; aceita ainda `mode=append` por compatibilidade mapeando para colaborador adicional (documentar como deprecated).
-- Novo `OrganizationalUnitPolicyEndpoint` (`GET .../organizational-units/{unit_id}/policy/` e `GET .../projects/{pk}/policy/`) devolvendo a política efetiva resolvida (sem `requested_mode`) — permissão Admin/Member/Guest do workspace, como os demais GETs.
-- Serializers em `apps/api/plane/app/serializers/organizational_unit.py`: `AssignmentPolicySerializer`, `AssignmentDecisionSerializer`, `IssueRoutingSerializer`.
-- Frontend mínimo para não quebrar: `packages/types/src/organizational-unit.ts` ganha os tipos; `issue-unit-property.tsx` exibe `routing_state` e executor principal (a UI completa é Fase 2).
+- `IssueOrganizationalUnitEndpoint.post` → `set_responsibility(...)`; a resposta virou `{organizational_unit, routing}`, com `routing_state`, `queue_reason`, `primary_executor`, `assignment_due_at` e a decisão corrente.
+- `IssueOrganizationalUnitEndpoint.get` → mesmo par; item sem área devolve `{"organizational_unit": null, "routing": null}`.
+- `IssueOrganizationalUnitEndpoint.delete` → grava `IssueResponsibilityEvent(to_unit=None)` na mesma transação, antes de apagar o vínculo (I6). Os assignees ficam: o item volta a ser um item comum.
+- `IssueOrganizationalUnitAssignEndpoint.post` → `set_responsibility(...)`, que **cria o vínculo** quando o chamador nomeia a área. É o fechamento da lacuna aberta no D0.5: não existe mais atribuição por área que não deixe estado de fila nem decisão.
+- Cobertura (D1) continua checada na rota antes do serviço: a resposta do serviço seria "ninguém elegível", verdadeira e inútil; a rota sabe dizer que o projeto foi desvinculado ou arquivado.
 
-**Testes.** Atualizar `test_issue_organizational_unit_http.py` e
-`test_organizational_unit_http.py` para o novo payload; adicionar caso de
-`delete` gerando evento.
+**A rota de atribuição pede `least_loaded`.** É gente apertando um botão que
+diz "atribuir a quem tem menos trabalho aberto", não a política da área
+agindo sozinha: usar o `default_mode` faria o botão responder enfileirando o
+item de novo em toda área `manual`. Área que declarou `allowed_modes` sem
+`least_loaded` recusa com `ORG_ASSIGNMENT_MODE_NOT_ALLOWED` (4917) — I7 vale.
+`assignment_mode` no corpo pede outro modo.
+
+**Fallback de política alargado** (desvio consciente do RFC §6.3, registrado
+lá). Sem nenhuma política, `allowed_modes` passou a ser a lista inteira em vez
+de `["manual"]`. O default continua `manual` — área não configurada não
+distribui nada sozinha —, mas com a lista antiga o botão recusaria em **toda**
+área existente, já que a UI de política é da Fase 2. Uma área que declarou
+`allowed_modes` decide de verdade.
+
+- `mode=fill_empty`/`append` continuam sendo a forma antiga da rota: dizem o que fazer com quem já está no item, não como escolher. `append` vira `exclude_user_ids` na alocação. Deprecados em favor de `assignment_mode`.
+- Novo `OrganizationalUnitPolicyEndpoint` (`GET .../organizational-units/{unit_id}/policy/` e `.../{unit_id}/projects/{project_id}/policy/`) devolvendo a política efetiva resolvida — Admin/Member/Guest do workspace, como os demais GETs.
+- Serializers: `AssignmentPolicySerializer`, `AssignmentDecisionSerializer` (sem `candidates_snapshot`: é auditoria, não payload de tela), `IssueRoutingSerializer`.
+- Frontend: tipos em `packages/types`, serviço e store devolvendo `routing`, e `issue-unit-property.tsx` escondendo o botão quando o item já está atribuído e mostrando o aviso de fila (`queued`) — duas chaves novas nas 19 locales. A UI completa da fila é Fase 2.
+
+**Testes.** `test_issue_organizational_unit_http.py`: o payload de roteamento,
+a rota de política, o `delete` gerando evento, a transferência gerando os
+dois, e três casos novos na atribuição — o vínculo e a decisão criados pela
+própria rota, a recusa da área que proíbe o ranking, e `self_claim`
+respondendo `queued` em vez de erro. Dois testes de carga passaram a montar o
+vínculo: a carga é contada pelo executor principal desde o D0.5, então um
+`IssueAssignee` solto não pesa mais — e o de determinismo apaga o vínculo
+entre as rodadas, senão a segunda rodada ranqueia estado diferente.
+`test_assignment_service.py`: o fallback agora aceita qualquer modo
+solicitado, e um modo inexistente continua recusado.
 
 **Aceite.**
-- [ ] Todos os testes Orca verdes.
+- [x] Ruff e `ruff format` limpos nos arquivos tocados; paridade das 19 locales conferida por comparação de conjuntos de chaves.
+- [ ] Todos os testes Orca verdes (a sessão não roda pytest — AGENTS.md; conferir no CI de `stage`).
 - [ ] `pnpm --filter web check:types` limpo (rodar localmente).
 
 ---

@@ -277,6 +277,8 @@
         "assigned": "Dem Bereichsmitglied mit den wenigsten offenen Arbeitselementen zugewiesen.",
         "already_assigned_title": "Bereits zugewiesen",
         "already_assigned": "Dieses Arbeitselement hat bereits eine zuständige Person.",
+        "queued_title": "In der Warteschlange des Bereichs",
+        "queued": "Dieser Bereich verteilt Arbeit manuell, daher wartet das Arbeitselement.",
         "nobody_title": "Niemand verfügbar",
         "nobody": "Kein Mitglied dieses Bereichs hat Zugriff auf dieses Projekt.",
         "not_assigned": "Nicht zugewiesen"

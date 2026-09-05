@@ -6,6 +6,7 @@
 
 import { API_BASE_URL } from "@plane/constants";
 import type {
+  IIssueRouting,
   IOrganizationalUnit,
   IOrganizationalUnitAccessChange,
   IOrganizationalUnitMembership,
@@ -217,7 +218,7 @@ export class OrganizationalUnitService extends APIService {
     workspaceSlug: string,
     projectId: string,
     issueId: string
-  ): Promise<{ organizational_unit: IOrganizationalUnit | null }> {
+  ): Promise<{ organizational_unit: IOrganizationalUnit | null; routing: IIssueRouting | null }> {
     return this.get(
       `/api/orca/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/organizational-unit/`
     )
@@ -232,7 +233,7 @@ export class OrganizationalUnitService extends APIService {
     projectId: string,
     issueId: string,
     unitId: string
-  ): Promise<{ organizational_unit: IOrganizationalUnit }> {
+  ): Promise<{ organizational_unit: IOrganizationalUnit; routing: IIssueRouting | null }> {
     return this.post(
       `/api/orca/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/organizational-unit/`,
       { organizational_unit_id: unitId }
@@ -262,7 +263,11 @@ export class OrganizationalUnitService extends APIService {
     projectId: string,
     issueId: string,
     options?: { unitId?: string; mode?: TOrganizationalUnitAssignMode }
-  ): Promise<{ assigned: { user_id: string; open_issues: number } | null; reason: string }> {
+  ): Promise<{
+    assigned: { user_id: string; open_issues: number; last_assigned_at: string | null } | null;
+    reason: string;
+    routing: IIssueRouting | null;
+  }> {
     return this.post(
       `/api/orca/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/organizational-unit-assign/`,
       {

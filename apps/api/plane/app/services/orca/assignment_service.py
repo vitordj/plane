@@ -93,6 +93,9 @@ ASSIGNABLE_ROLE = 15
 # Modes a caller may ask for; `explicit` bypasses resolution (RFC §6.3).
 RESOLVABLE_MODES = {AssignmentMode.MANUAL, AssignmentMode.SELF_CLAIM, AssignmentMode.LEAST_LOADED}
 
+# What an area with no policy of its own permits.
+FALLBACK_ALLOWED_MODES = tuple(sorted(mode.value for mode in RESOLVABLE_MODES))
+
 # Why an item is queued, per mode, when nobody was assigned.
 QUEUE_REASON_FOR_MODE = {
     AssignmentMode.MANUAL: QueueReason.AWAITING_COORDINATOR,
@@ -206,7 +209,12 @@ def resolve_policy(unit, project_id, requested_mode: Optional[str] = None) -> Po
     policy_unit = policies.filter(unit_project__isnull=True).first()
 
     governing = policy_project or policy_unit
-    allowed = tuple((governing.allowed_modes if governing else None) or [AssignmentMode.MANUAL.value])
+    # An area with no policy has decided nothing, so it forbids nothing: a
+    # caller may ask for any of the three modes and gets what it asked for.
+    # What the absent policy does decide is the *default* — manual, below —
+    # so an unconfigured area still never hands work out on its own. Once a
+    # policy exists its `allowed_modes` is the whole list, and I7 applies.
+    allowed = tuple((governing.allowed_modes if governing else None) or FALLBACK_ALLOWED_MODES)
 
     # SLA and the load cap fall back independently: a project policy that says
     # nothing about the SLA should inherit the area's, not silently drop it.
@@ -837,6 +845,7 @@ def set_responsibility(
     source=ResponsibilitySource.INTERNAL_API,
     requested_mode: Optional[str] = None,
     explicit_executor=None,
+    exclude_user_ids: Iterable = (),
     reason="",
     assignment_due_at=None,
 ) -> AllocationResult:
@@ -845,6 +854,8 @@ def set_responsibility(
     first use (event with ``from_unit=None``), delegates to ``transfer_unit``
     when another area already owns the item, and then allocates under the
     area's policy.
+    @param exclude_user_ids: People the ranking must not choose, for a caller
+        adding somebody alongside whoever is already on the item.
     @raises UnitNotCoveringProject: The area does not cover the project (I2).
     """
     if not unit_covers_project(unit, issue.project_id):
@@ -882,6 +893,7 @@ def set_responsibility(
         unit,
         requested_mode=requested_mode,
         explicit_executor=explicit_executor,
+        exclude_user_ids=exclude_user_ids,
         actor=actor,
         trigger=DecisionTrigger.INTERNAL_API,
         assignment_due_at=assignment_due_at,

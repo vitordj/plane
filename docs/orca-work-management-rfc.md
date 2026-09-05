@@ -195,7 +195,7 @@ registrar na seção 4 o motivo e o impacto.
 | F1 | **Uma área accountable por item.** Duas áreas com entrega própria são dois itens ligados por `blocked_by`/`blocking`. Outra área "consultada" não é responsabilidade. |
 | F2 | **Fila é estado.** `IssueOrganizationalUnit` ganha `routing_state` e `queue_reason`. Executor vazio é válido apenas com `routing_state = queued` ou `allocation_failed`. |
 | F3 | **Políticas v1:** `manual`, `self_claim`, `least_loaded`. Não existe política `queue` nem `specific_member`. Atribuição a pessoa específica é `assignment.mode = explicit`. |
-| F4 | **Política mora em área↔projeto, com fallback na área, com fallback `manual`.** A requisição pode solicitar uma política, mas só entre as permitidas pelo vínculo área↔projeto. Fora disso, rejeita. |
+| F4 | **Política mora em área↔projeto, com fallback na área, com fallback `manual`.** A requisição pode solicitar uma política, mas só entre as permitidas pelo vínculo área↔projeto. Fora disso, rejeita. Sem política nenhuma, o default é `manual` e qualquer modo pode ser solicitado (§6.3). |
 | F5 | **Executor principal existe na camada lateral** e deve coincidir com um `IssueAssignee` ativo do mesmo item. Nunca coluna em `Issue`. |
 | F6 | **Carga v1 é contagem simples de itens abertos como executor principal**, ordenando por total no workspace, depois na área, depois última atribuição automática, depois id estável. Não configurável na v1. |
 | F7 | **Encaminhamento entre áreas troca a área ativa no mesmo item e grava evento append-only** em `IssueResponsibilityEvent`. Nova entrega é novo item. |
@@ -516,7 +516,7 @@ Entrada: `unit`, `project`, `requested_mode` (opcional). Saída:
    policy_unit    = AssignmentPolicy(unit, unit_project=null, is_active)
    allowed = policy_project.allowed_modes if policy_project
              else policy_unit.allowed_modes if policy_unit
-             else ["manual"]
+             else ["manual", "self_claim", "least_loaded"]
 2. se requested_mode em (manual, self_claim, least_loaded):
        se requested_mode ∉ allowed: REJEITAR (ORG_ASSIGNMENT_MODE_NOT_ALLOWED)
        senão: effective = requested_mode; source = request
@@ -526,6 +526,14 @@ Entrada: `unit`, `project`, `requested_mode` (opcional). Saída:
        senão: effective = manual; source = fallback
 3. policy = policy_project or policy_unit or null; policy_version = policy.version or null
 ```
+
+Sem nenhuma política, `allowed` é a lista inteira: uma área que não
+configurou nada não proibiu nada, e a versão original desta linha
+(`["manual"]`) deixava o botão "atribuir automaticamente" recusando em toda
+área recém-criada, já que a UI de política é da Fase 2. O que a ausência de
+política decide é o **default** — `manual`, passo 2 —, então uma área não
+configurada continua sem distribuir trabalho sozinha. I7 vale para a área que
+declarou `allowed_modes`.
 
 `assignment.mode = explicit` não passa pela resolução: valida I4 para o
 `primary_executor` informado e grava decisão com `effective_mode = explicit`,
@@ -1016,7 +1024,7 @@ separadas; documentar em `apps/api/tests/TESTING_GUIDE.md`.
 | Área | Casos mínimos |
 | --- | --- |
 | I2 cobertura | área cobre → 200; área não cobre → 400; área inativa → 400; vínculo área↔projeto removido depois → auditoria aponta |
-| Resolução de política | sem política → `manual`/`fallback`; só área → área; área+projeto → projeto; solicitada permitida; solicitada proibida → 400; `explicit` ignora política |
+| Resolução de política | sem política → `manual`/`fallback`, com qualquer modo solicitável; só área → área; área+projeto → projeto; solicitada permitida; solicitada proibida → 400; `explicit` ignora política |
 | Ranking `lb-1` | menos carregado vence; empate total → menos na área; empate → nunca alocado antes de já alocado; empate → menor id; colaborador não conta; item concluído não conta; bot excluído; Guest excluído; `max_open_items` exclui |
 | Estados | cada transição da tabela 6.2 (positivo) e cada transição ausente (negativo, 409); CHECKs do banco |
 | Decisões | toda transição cria decisão; reversão tem `supersedes`; `candidates_snapshot` sem PII além de id; append-only (update falha em teste de modelo) |

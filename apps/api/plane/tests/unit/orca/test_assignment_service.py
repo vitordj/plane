@@ -135,9 +135,23 @@ class TestPolicyResolution:
         with pytest.raises(AssignmentModeNotAllowed):
             resolve_policy(unit, project.id, AssignmentMode.LEAST_LOADED.value)
 
-    def test_with_no_policy_only_manual_may_be_requested(self, unit, project, covered):
+    def test_with_no_policy_any_mode_may_be_requested(self, unit, project, covered):
+        """
+        An area that has configured nothing forbids nothing. The absent policy
+        still decides the *default* — manual, so an unconfigured area never
+        hands work out on its own — but a caller that asks for the ranking gets
+        it, which is what the assignment route does. I7 governs areas whose
+        `allowed_modes` was actually set.
+        """
+        resolution = resolve_policy(unit, project.id, AssignmentMode.LEAST_LOADED.value)
+
+        assert resolution.effective_mode == AssignmentMode.LEAST_LOADED
+        assert resolution.policy_source == PolicySource.REQUEST
+        assert resolution.policy is None
+
+    def test_an_unknown_mode_is_refused_even_with_no_policy(self, unit, project, covered):
         with pytest.raises(AssignmentModeNotAllowed):
-            resolve_policy(unit, project.id, AssignmentMode.LEAST_LOADED.value)
+            resolve_policy(unit, project.id, "whatever")
 
     def test_the_sla_falls_back_from_project_to_area(self, unit, project, covered, workspace_with_members):
         """A project policy silent about the SLA inherits the area's, not none."""

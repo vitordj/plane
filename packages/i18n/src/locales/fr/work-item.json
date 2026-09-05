@@ -277,6 +277,8 @@
         "assigned": "Confié au membre du domaine ayant le moins de travail en cours.",
         "already_assigned_title": "Déjà assigné",
         "already_assigned": "Cet élément de travail a déjà un assigné.",
+        "queued_title": "Dans la file du domaine",
+        "queued": "Ce domaine répartit le travail à la main ; l’élément de travail est donc en attente.",
         "nobody_title": "Aucune personne disponible",
         "nobody": "Aucun membre de ce domaine n’a accès à ce projet.",
         "not_assigned": "Non assigné"

@@ -289,6 +289,14 @@ def workload_url(slug, unit_id):
     return f"{units_url(slug)}{unit_id}/workload/"
 
 
+def unit_policy_url(slug, unit_id):
+    return f"{units_url(slug)}{unit_id}/policy/"
+
+
+def unit_project_policy_url(slug, unit_id, project_id):
+    return f"{units_url(slug)}{unit_id}/projects/{project_id}/policy/"
+
+
 def issue_unit_url(slug, project_id, issue_id):
     return f"/api/orca/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/organizational-unit/"
 
