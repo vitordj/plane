@@ -349,7 +349,7 @@ concorrência" com o padrão usado.
 
 ---
 
-## D0.11 — Arquivar projeto dispara reconciliação `[ ]`
+## D0.11 — Arquivar projeto dispara reconciliação `[x]`
 
 **Problema** (pendência do PR #6). `_active_sources` já ignora projetos
 arquivados e `projects_in_workspace` só devolve não arquivados, então o
@@ -359,32 +359,43 @@ inclui o projeto. O `ProjectMember` herdado fica ativo até alguém reconciliar
 aquele projeto explicitamente.
 
 **Mudança.**
-- `ProjectArchiveUnarchiveEndpoint` (`views/project/base.py`): após gravar `archived_at`, chamar `dispatch_reconciliation(workspace_id, project_ids=[project_id])`; ao desarquivar, idem (o acesso volta).
-- `reconcile_access` com `project_ids` explícitos deve aceitar projeto arquivado como alvo (só a coleta de *fontes* o ignora), para que a reconciliação possa desativar o que ele herdou.
+- `ProjectArchiveUnarchiveEndpoint` (`views/project/base.py`): depois de gravar `archived_at`, chama `dispatch_reconciliation(workspace_id, project_ids=[project.id])`; ao desarquivar, idem (o acesso volta). Um projeto é uma aresta na estimativa de fan-out, então roda inline e a resposta já reflete a retirada.
+- `reconcile_access` com `project_ids` explícitos **já** aceitava projeto arquivado como alvo: só `_active_sources` o ignora; o `state_filter` de `_collect_context` traz os pares que a camada já escreveu, arquivado ou não. Nada a mudar aqui — verificado antes de escrever código.
 
-**Testes** (`test_org_unit_reconciler.py`): arquivar → `ProjectMember` herdado
-desativado, baseline manual preservado; desarquivar → restaurado.
+**Testes** (`test_org_unit_reconciler.py`, classe `TestArchivingAProject`, pela
+rota HTTP e não pelo serviço, porque o que estava faltando era o gatilho):
+arquivar → `ProjectMember` herdado desativado; desarquivar → restaurado;
+acesso manual sobrevive ao arquivamento com o papel de baseline; kill switch
+desligado → arquivar funciona e a camada não age.
 
 **Aceite.**
-- [ ] Testes acima verdes; `ORCA_ORG_UNITS_ENABLED=0` faz o arquivamento não reconciliar (o guard de `reconcile_access` cobre).
+- [x] Testes acima escritos; `ORCA_ORG_UNITS_ENABLED=0` faz o arquivamento não reconciliar (o guard de `reconcile_access` cobre, e há teste).
 
 ---
 
-## D0.12 — Roster SCIM de grupo exclui memberships removidos logicamente `[ ]`
+## D0.12 — Roster SCIM de grupo exclui memberships removidos logicamente `[x]`
 
 **Problema** (pendência do PR #6). `members_of(unit)` em
 `views/orca_scim/groups.py` atravessa `group_memberships__organizational_unit_id`
 sem filtrar `deleted_at`; um membership soft-deleted pode reaparecer na
 resposta de `GET /Groups/{id}`, e o Entra passa a considerar a pessoa membro.
 
-**Mudança.**
-- `members_of` filtra `group_memberships__deleted_at__isnull=True`; revisar `remove_members`/`replace_members` para que a remoção seja consistente com o filtro.
+**Mudança.** `members_of` passou a fazer duas consultas em vez de uma junção:
+seleciona os memberships vivos pelo manager padrão e depois as identidades por
+id. Filtrar `group_memberships__deleted_at__isnull=True` na junção resolveria o
+caso, mas deixaria a próxima pessoa que escrever `identity__...` com a mesma
+armadilha; a junção reversa monta pelo manager base e simplesmente não conhece
+o soft delete. `remove_members` já apaga pelo manager padrão (soft), e
+`add_members` usa `get_or_create` — a constraint única é parcial (só linhas
+vivas), então readicionar quem saiu grava uma linha nova em vez de estourar.
 
-**Testes** (`test_scim_endpoints.py`): membership removido não aparece no
-`GET`; `PATCH remove` seguido de `GET` devolve roster vazio.
+**Testes** (`test_scim_endpoints.py`): membership removido some do
+`GET /Groups/{id}` e a linha continua existindo em `all_objects` (a retirada é
+proveniência, não apagamento); sair e voltar ao grupo lista a pessoa uma vez
+só. O roster interno da área já tinha teste equivalente.
 
 **Aceite.**
-- [ ] Testes acima verdes.
+- [x] Testes acima escritos (CI de `stage` confirma).
 
 ---
 

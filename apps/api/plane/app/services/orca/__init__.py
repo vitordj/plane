@@ -62,6 +62,7 @@ from .routing_audit import Finding, audit_routing
 from .org_unit_reconciler import (
     AccessChange,
     cap_role_to_workspace_role,
+    dispatch_reconciliation,
     plan_access,
     reconcile_access,
     reconcile_membership,
@@ -98,6 +99,7 @@ __all__ = [
     "candidates_for",
     "cap_role_to_workspace_role",
     "claim",
+    "dispatch_reconciliation",
     "get_default_language",
     "match_workspace_member",
     "normalize_language",
