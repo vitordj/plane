@@ -807,7 +807,9 @@
             "replaced": "nahrazuje: {outcome}, {when}"
           },
           "suggestion": "návrh: {name}",
-          "suggestion_accept": "přidělit"
+          "suggestion_accept": "přidělit",
+          "process_step": "krok {step} ({done}/{total})",
+          "process_group": "{name} — hotovo {done} z {total} kroků"
         },
         "coordinators": {
           "select_person": "Vyberte osobu",

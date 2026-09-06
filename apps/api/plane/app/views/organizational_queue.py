@@ -75,6 +75,8 @@ from plane.db.models import (
     AssignmentDecision,
     AssignmentMode,
     Issue,
+    ProcessInstanceItem,
+    StateGroup,
     IssueOrganizationalUnit,
     OrganizationalUnit,
     OrganizationalUnitAssignmentPolicy,
@@ -166,13 +168,54 @@ class OrganizationalUnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
             queryset = queryset.filter(primary_executor_id=executor_id)
 
         rows = list(queryset.select_related("issue__project", "issue__state")[:limit])
+        steps, progress = self._process_context(rows)
         return Response(
             {
                 "capabilities": unit_capabilities(request.user, unit),
-                "items": QueueItemSerializer(rows, many=True, context={"now": now}).data,
+                "items": QueueItemSerializer(
+                    rows,
+                    many=True,
+                    context={"now": now, "process_steps": steps, "process_progress": progress},
+                ).data,
             },
             status=status.HTTP_200_OK,
         )
+
+    def _process_context(self, rows):
+        """
+        @description Which of these rows are steps of a process, and how far
+        each of those processes has got (item 4.6). Two queries for the whole
+        page rather than two per row — a queue of two hundred items would
+        otherwise be four hundred queries to draw a progress count.
+
+        The progress counts **every** step of the instance, including the ones
+        in other areas: "3 of 5" is a fact about the onboarding, not about how
+        much of it happens to be visible on this screen.
+        @param rows: The queue's ``IssueOrganizationalUnit`` rows.
+        @returns ``(steps_by_issue_id, progress_by_instance_id)``.
+        """
+        if not rows:
+            return {}, {}
+
+        steps = {
+            step.issue_id: step
+            for step in ProcessInstanceItem.objects.filter(issue_id__in=[row.issue_id for row in rows]).select_related(
+                "process_instance"
+            )
+        }
+        if not steps:
+            return {}, {}
+
+        progress = {}
+        instance_ids = {step.process_instance_id for step in steps.values()}
+        for instance_id, group in ProcessInstanceItem.objects.filter(process_instance_id__in=instance_ids).values_list(
+            "process_instance_id", "issue__state__group"
+        ):
+            entry = progress.setdefault(instance_id, {"done": 0, "total": 0})
+            entry["total"] += 1
+            if group in (StateGroup.COMPLETED.value, StateGroup.CANCELLED.value):
+                entry["done"] += 1
+        return steps, progress
 
 
 class OrganizationalUnitDecisionsEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):

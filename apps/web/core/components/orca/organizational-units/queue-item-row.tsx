@@ -97,6 +97,16 @@ export const QueueItemRow = observer(function QueueItemRow(props: Props) {
         <div className="text-xs text-custom-text-300 flex flex-wrap items-center gap-2">
           <span>{t(`${OU}.work.state.${item.routing_state}`)}</span>
           {item.queue_reason && <span>· {t(`${OU}.work.reason.${item.queue_reason}`)}</span>}
+          {item.process && (
+            <span>
+              ·{" "}
+              {t(`${OU}.work.process_step`, {
+                step: item.process.step_key,
+                done: item.process.done,
+                total: item.process.total,
+              })}
+            </span>
+          )}
           {item.age_seconds !== null && item.queued_at && (
             <span>· {t(`${OU}.work.waiting_for`, { duration: calculateTimeAgoShort(item.queued_at) })}</span>
           )}

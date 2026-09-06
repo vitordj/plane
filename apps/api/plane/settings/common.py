@@ -631,6 +631,15 @@ REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["orca_public"] = ORCA_PUBLIC_API_RATE_L
 # Same strict parser as the two switches above.
 ORCA_AVAILABILITY_ENABLED = env_flag("ORCA_AVAILABILITY_ENABLED", default=False)
 
+# Fourth switch, in front of the process projection (RFC §7.2, Phase 4). Off,
+# the automation API refuses a ``process`` block outright rather than accepting
+# it and dropping it, and ``complete/`` refuses the same way — both with
+# ``ORG_PROCESS_PROJECTION_DISABLED``, so the caller learns which switch it hit
+# rather than guessing at a bare 404. An integration that believes Plane is
+# tracking its process instances when it is not would be wrong in the one place
+# nobody looks. Off is also the state an instance with no orchestrator wants.
+ORCA_PROCESS_PROJECTION_ENABLED = env_flag("ORCA_PROCESS_PROJECTION_ENABLED", default=False)
+
 ENABLE_DRF_SPECTACULAR = os.environ.get("ENABLE_DRF_SPECTACULAR", "0") == "1"
 
 if ENABLE_DRF_SPECTACULAR:

@@ -583,7 +583,9 @@
             "replaced": "substitui: {outcome}, {when}"
           },
           "suggestion": "sugestão: {name}",
-          "suggestion_accept": "atribuir"
+          "suggestion_accept": "atribuir",
+          "process_step": "etapa {step} ({done}/{total})",
+          "process_group": "{name} — {done} de {total} etapas concluídas"
         },
         "coordinators": {
           "select_person": "Escolha uma pessoa",

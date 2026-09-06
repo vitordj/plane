@@ -421,6 +421,31 @@ class QueueItemSerializer(BaseSerializer):
     assignment_overdue = serializers.BooleanField(read_only=True, default=False)
     age_seconds = serializers.SerializerMethodField()
     primary_executor_detail = serializers.SerializerMethodField()
+    process = serializers.SerializerMethodField()
+
+    def get_process(self, obj) -> dict:
+        """
+        @description Which step of which process instance this row is, when it
+        is one (item 4.6). The instance's progress is not counted here — that
+        would be a query per row — but read from the context, where the view
+        computed it once for the whole page.
+        @param obj: The ``IssueOrganizationalUnit`` row.
+        @returns dict or ``None``.
+        """
+        step = self.context.get("process_steps", {}).get(obj.issue_id)
+        if step is None:
+            return None
+        progress = self.context.get("process_progress", {}).get(step.process_instance_id, {})
+        return {
+            "instance_id": str(step.process_instance_id),
+            "source": step.process_instance.external_source,
+            "external_instance_id": step.process_instance.external_instance_id,
+            "template_name": step.process_instance.template_name,
+            "step_key": step.step_key,
+            "completion_mode": step.completion_mode,
+            "done": progress.get("done", 0),
+            "total": progress.get("total", 0),
+        }
 
     def get_age_seconds(self, obj) -> int:
         """
@@ -473,6 +498,7 @@ class QueueItemSerializer(BaseSerializer):
             "last_alerted_at",
             "primary_executor",
             "primary_executor_detail",
+            "process",
             "current_assignment_decision",
             "created_at",
             "updated_at",

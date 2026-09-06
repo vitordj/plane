@@ -46,6 +46,7 @@ const queuePayload = (overrides: Partial<IUnitQueue> = {}): IUnitQueue => ({
       primary_executor: null,
       primary_executor_detail: null,
       current_assignment_decision: "decision-1",
+      process: null,
       created_at: "2026-09-06T10:00:00Z",
       updated_at: "2026-09-06T10:00:00Z",
     },

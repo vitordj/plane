@@ -47,6 +47,7 @@ from rest_framework.response import Response
 # Module imports
 from plane.api.serializers import IssueSerializer
 from plane.api.serializers.orca import (
+    CompleteStepSerializer,
     ReassignSerializer,
     TransferSerializer,
     WorkItemAutomationSerializer,
@@ -60,7 +61,12 @@ from plane.app.services.orca import (
     WorkItemHasNoUnit,
     WorkItemNotFound,
     begin_operation,
+    complete_step,
+    instance_payload,
+    project_process,
     reassign,
+    record_service_level,
+    resolve_policy,
     return_to_queue,
     set_responsibility,
     transfer_unit,
@@ -75,10 +81,14 @@ from plane.db.models import (
     Issue,
     IssueOrganizationalUnit,
     OrganizationalUnit,
+    ProcessInstanceReference,
     Project,
     ProjectMember,
     RequestedAssignmentMode,
     ResponsibilitySource,
+    ServiceLevelSource,
+    Workspace,
+    WorkspaceMember,
 )
 from plane.utils.exception_logger import log_exception
 from plane.utils.host import base_host
@@ -86,6 +96,7 @@ from plane.utils.host import base_host
 from .base import (
     VALIDATION_ERROR,
     OrcaPublicBaseAPIView,
+    error_body,
     domain_error_response,
     read_idempotency_key,
     replay_response,
@@ -233,6 +244,8 @@ class WorkItemAutomationEndpoint(OrcaWorkItemBaseEndpoint):
             unit = self.resolve_unit(project.workspace_id, responsibility["unit"])
             issue, binding, created = self._bind(request, project, external)
             link, decision = self._place(request, handle, issue, unit, mode, explicit, assignment, responsibility)
+            process = self._project_process(issue, data.get("process"), project.workspace_id)
+            self._record_deadlines(request, issue, link, responsibility, process)
 
             body = work_item_envelope(
                 issue,
@@ -252,6 +265,42 @@ class WorkItemAutomationEndpoint(OrcaWorkItemBaseEndpoint):
                 self._announce(request, project, issue)
 
         return body, issue
+
+    def _project_process(self, issue, block, workspace_id):
+        """
+        @description Record which step of which process instance this item is,
+        when the caller sent a ``process`` block (item 4.3). Inside the same
+        transaction as everything else, and idempotent, because the
+        orchestrator retries.
+        @returns The ``ProcessInstanceItem`` or ``None``.
+        """
+        if not block:
+            return None
+        return project_process(issue, block, workspace_id=workspace_id)
+
+    def _record_deadlines(self, request, issue, link, responsibility, process):
+        """
+        @description Write the item's service level when the caller sent a
+        completion deadline, or when a process step set one (RFC §5.2). The
+        assignment deadline is already on the routing link — the queue reads it
+        on every page — and this is the record around it: where it came from,
+        which version of that source, and what it originally was.
+        @returns None.
+        """
+        completion_due_at = responsibility.get("completion_due_at")
+        if completion_due_at is None and process is None:
+            return
+
+        source = ServiceLevelSource.PROCESS if process is not None else ServiceLevelSource.UNIT
+        version = process.process_instance.template_version if process is not None else ""
+        record_service_level(
+            issue,
+            assignment_due_at=link.assignment_due_at if link else None,
+            completion_due_at=completion_due_at,
+            source=source,
+            source_version=version,
+            actor=request.user,
+        )
 
     def _place(self, request, handle, issue, unit, mode, explicit, assignment, responsibility):
         """
@@ -587,9 +636,110 @@ class WorkItemTransferEndpoint(OrcaWorkItemBaseEndpoint):
         return body, issue
 
 
+class WorkItemCompleteEndpoint(OrcaWorkItemBaseEndpoint):
+    """
+    ``POST .../work-items/{issue_id}/complete/`` (RFC §7.2)
+
+    @description A claim from outside that a step of a process is finished.
+    What happens next is the step's own ``completion_mode``: ``automatic``
+    moves the item to a completed state, ``automatic_with_review`` moves it to
+    the area's review state (or labels it, when the area named none) and leaves
+    it open, and ``manual`` refuses with ``ORG_COMPLETION_MANUAL_ONLY``.
+
+    Behind an ``Idempotency-Key`` like every other mutation here, because the
+    orchestrator retries and closing a step twice should be one closure and one
+    answer, not two.
+
+    Note this is the one mutation that does not touch the assignment: a step
+    being done says nothing about who did it, which is why it writes a
+    ``ProcessCompletionEvent`` and not an ``AssignmentDecision``.
+    """
+
+    def post(self, request, slug, project_id, issue_id):
+        project = self.resolve_project(slug, project_id)
+        issue = self._resolve_issue(project, issue_id)
+        return self.run_operation(
+            request,
+            project.workspace,
+            AutomationOperationType.COMPLETE,
+            lambda handle: self._complete(request, handle, project, issue),
+        )
+
+    def _complete(self, request, handle, project, issue):
+        payload = CompleteStepSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        data = payload.validated_data
+
+        # The area's policy is what names the states a completed or
+        # under-review step lands in, so it is resolved for the item's own
+        # project rather than assumed.
+        link = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
+        policy = resolve_policy(link.organizational_unit, issue.project_id).policy if link is not None else None
+
+        event, item = complete_step(
+            issue,
+            evidence=data.get("evidence") or {},
+            rule_version=data.get("rule_version", ""),
+            source=data.get("source", ""),
+            event_id=data.get("event_id", ""),
+            actor=request.user,
+            policy=policy,
+        )
+
+        issue.refresh_from_db()
+        body = self.envelope_for(
+            issue,
+            project,
+            link,
+            link.current_assignment_decision if link else None,
+            operation=handle.operation,
+        )
+        body["completion"] = {
+            "mode": event.mode,
+            "applied": event.applied,
+            "event_id": str(event.id),
+            "state": issue.state.name if issue.state_id else None,
+            "step_key": item.step_key if item is not None else None,
+        }
+        return body, issue
+
+
+class ProcessInstanceEndpoint(OrcaPublicBaseAPIView):
+    """
+    ``GET /api/v1/orca/workspaces/{slug}/process-instances/{source}/{instance_id}/``
+
+    @description One run of a process, with its steps as Plane sees them: the
+    native state, the routing state, the executor and the deadlines.
+
+    ``status`` is derived from the steps rather than read off the row — the
+    column is a cache the completion path keeps, and a person closing the last
+    step in the interface finishes the instance just as truly as the
+    orchestrator does.
+    """
+
+    use_read_replica = True
+
+    def get(self, request, slug, source, instance_id):
+        workspace = Workspace.objects.filter(slug=slug).first()
+        if workspace is None:
+            return Response(error_body("ORG_DIRECTORY_WORKSPACE_NOT_FOUND"), status=status.HTTP_404_NOT_FOUND)
+        if not WorkspaceMember.objects.filter(workspace=workspace, member=request.user, is_active=True).exists():
+            return Response(error_body("ORG_UNIT_PERMISSION_DENIED"), status=status.HTTP_403_FORBIDDEN)
+
+        instance = ProcessInstanceReference.objects.filter(
+            workspace=workspace, external_source=source, external_instance_id=instance_id
+        ).first()
+        if instance is None:
+            return Response(error_body("ORG_WORK_ITEM_NOT_FOUND"), status=status.HTTP_404_NOT_FOUND)
+
+        return Response(instance_payload(instance), status=status.HTTP_200_OK)
+
+
 __all__ = [
+    "ProcessInstanceEndpoint",
     "WorkItemAutomationEndpoint",
     "WorkItemByExternalEndpoint",
+    "WorkItemCompleteEndpoint",
     "WorkItemReassignEndpoint",
     "WorkItemTransferEndpoint",
 ]

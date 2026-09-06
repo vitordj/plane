@@ -32,7 +32,12 @@ from django.conf import settings
 from rest_framework import serializers
 
 # Module imports
-from plane.app.services.orca import AssigneesNotAllowedHere, ProcessProjectionDisabled
+from plane.app.services.orca import (
+    AssigneesNotAllowedHere,
+    ProcessProjectionDisabled,
+    orca_process_projection_enabled,
+)
+from plane.db.models import CompletionMode
 from plane.db.models import Issue, RequestedAssignmentMode
 
 from .base import StrictSerializer
@@ -106,15 +111,37 @@ class ResponsibilitySerializer(StrictSerializer):
     unit = serializers.CharField(max_length=100)
     assignment = AssignmentSerializer(required=False)
     assignment_due_at = serializers.DateTimeField(required=False, allow_null=True)
-    # Accepted in the RFC's example body, refused until Phase 4 gives it
-    # somewhere to live (IssueServiceLevel). Taking it and dropping it would be
-    # a lie the caller cannot see.
+    # Stored in ``IssueServiceLevel`` once the projection is on. Refused while
+    # it is off rather than accepted and dropped: taking a deadline and
+    # discarding it is a lie the caller cannot see.
     completion_due_at = serializers.DateTimeField(required=False, allow_null=True)
 
     def validate_completion_due_at(self, value):
-        raise serializers.ValidationError(
-            "Completion deadlines arrive with process projection (Phase 4). Use assignment_due_at."
-        )
+        if value is not None and not orca_process_projection_enabled():
+            raise serializers.ValidationError(
+                "Completion deadlines need process projection (ORCA_PROCESS_PROJECTION_ENABLED). Use assignment_due_at."
+            )
+        return value
+
+
+class ProcessBlockSerializer(StrictSerializer):
+    """
+    Which step of which process instance this work item is (RFC §7.2).
+
+    @description ``template_version`` is required, and that is the field worth
+    defending: a process whose definition changed halfway through has
+    instances that ran under two different rules, and an instance that cannot
+    say which one ran it is one nobody can audit afterwards.
+    """
+
+    source = serializers.CharField(max_length=255)
+    instance_id = serializers.CharField(max_length=255)
+    template_name = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")
+    template_version = serializers.CharField(max_length=64)
+    step_key = serializers.CharField(max_length=255)
+    completion_mode = serializers.ChoiceField(
+        choices=[mode.value for mode in CompletionMode], required=False, default=CompletionMode.MANUAL.value
+    )
 
 
 class WorkItemAutomationSerializer(StrictSerializer):
@@ -123,10 +150,13 @@ class WorkItemAutomationSerializer(StrictSerializer):
     external = ExternalReferenceSerializer()
     work_item = WorkItemBodySerializer()
     responsibility = ResponsibilitySerializer()
-    process = serializers.DictField(required=False)
+    process = ProcessBlockSerializer(required=False)
 
     def to_internal_value(self, data):
-        if isinstance(data, dict) and "process" in data:
+        # Refused with its own code rather than as an unknown field: an
+        # integration sending it is not wrong, it is talking to an instance
+        # that has the projection switched off, and the code says which.
+        if isinstance(data, dict) and "process" in data and not orca_process_projection_enabled():
             raise ProcessProjectionDisabled()
         return super().to_internal_value(data)
 
@@ -226,3 +256,20 @@ def work_item_envelope(issue, project, link, decision, *, binding, binding_creat
         },
         "operation": None if operation is None else {"idempotency_key": operation.idempotency_key, "replay": replay},
     }
+
+
+class CompleteStepSerializer(StrictSerializer):
+    """
+    A claim that a step of a process is finished (RFC §7.2).
+
+    @description Everything is optional except the claim itself, because the
+    caller's own vocabulary is what the evidence is written in and this API
+    does not get to define it. What it does define is that the claim is kept
+    verbatim and append-only: "who said this was done, and on what?" is asked
+    afterwards.
+    """
+
+    evidence = serializers.DictField(required=False, default=dict)
+    rule_version = serializers.CharField(max_length=64, required=False, allow_blank=True, default="")
+    source = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")
+    event_id = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")

@@ -36,6 +36,7 @@ from plane.app.services.orca import (
     MODE_FILL_EMPTY,
     OrcaDomainError,
     orca_availability_enabled,
+    orca_process_projection_enabled,
     orca_public_api_enabled,
     organizational_units_enabled,
     plan_access,
@@ -150,6 +151,11 @@ class OrcaConfigEndpoint(BaseAPIView):
                 # ranking ignores absences, so a form for recording them would
                 # be collecting something the product does not act on.
                 "availability_enabled": orca_availability_enabled(),
+                # Fourth switch. The queue groups by process instance from the
+                # rows themselves, so the app does not strictly need this — it
+                # is here so one read answers "which halves of this layer are
+                # on?" completely, instead of three quarters of the way.
+                "process_projection_enabled": orca_process_projection_enabled(),
             },
             status=status.HTTP_200_OK,
         )

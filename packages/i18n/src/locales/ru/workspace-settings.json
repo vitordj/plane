@@ -807,7 +807,9 @@
             "replaced": "заменяет: {outcome}, {when}"
           },
           "suggestion": "предложение: {name}",
-          "suggestion_accept": "назначить"
+          "suggestion_accept": "назначить",
+          "process_step": "шаг {step} ({done}/{total})",
+          "process_group": "{name} — {done} из {total} шагов выполнено"
         },
         "coordinators": {
           "select_person": "Выберите человека",

@@ -48,7 +48,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois | —               |
 | 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[~]` 5/6 · 2.3 falta só o teste de componente (stack de teste de UI inexistente no repositório)      | —               |
 | 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[x]` 6/6 · código completo atrás de `ORCA_AVAILABILITY_ENABLED` (desligada); Gate 3 pede staging     | —               |
-| 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                             | —               |
+| 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[~]` 6/7 · 4.1 aberto por falta de acesso à doc oficial do Compose (A5), não por trabalho pendente   | —               |
 | 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                             | —               |
 
 ## Próximo item recomendado

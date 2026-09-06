@@ -807,7 +807,9 @@
             "replaced": "înlocuiește: {outcome}, {when}"
           },
           "suggestion": "sugestie: {name}",
-          "suggestion_accept": "atribuie"
+          "suggestion_accept": "atribuie",
+          "process_step": "pasul {step} ({done}/{total})",
+          "process_group": "{name} — {done} din {total} pași finalizați"
         },
         "coordinators": {
           "select_person": "Alege o persoană",

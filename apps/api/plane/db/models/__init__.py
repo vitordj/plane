@@ -79,6 +79,15 @@ from .organizational_unit import (
     UnavailabilityReason,
     WorkspaceMemberAvailability,
 )
+from .organizational_process import (
+    CompletionMode,
+    IssueServiceLevel,
+    ProcessCompletionEvent,
+    ProcessInstanceItem,
+    ProcessInstanceReference,
+    ProcessInstanceStatus,
+    ServiceLevelSource,
+)
 from .organizational_assignment import (
     AssignmentDecision,
     AssignmentMode,

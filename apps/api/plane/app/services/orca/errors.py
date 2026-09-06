@@ -185,14 +185,29 @@ class AssigneesNotAllowedHere(OrcaDomainError):
 
 
 class ProcessProjectionDisabled(OrcaDomainError):
-    """A ``process`` block arrived before Phase 4 exists.
+    """A ``process`` block arrived while the projection is switched off.
 
     @description The block is part of the published contract, so it is refused
     with its own code rather than as an unknown field: an integration that
-    sends it is not wrong, it is early, and the code says so.
+    sends it is not wrong, it is either early or talking to an instance that
+    has ``ORCA_PROCESS_PROJECTION_ENABLED=0``, and the code says which.
     """
 
     error_code = "ORG_PROCESS_PROJECTION_DISABLED"
+
+
+class CompletionManualOnly(OrcaDomainError):
+    """A robot claimed a step that only a person finishes.
+
+    @description 409 rather than 400: the request is well formed and the
+    caller may well be right that the work is done — but this step's
+    completion mode says a person closes it, and a machine overruling that is
+    how a checklist stops meaning anything. The claim is recorded before the
+    refusal, so a robot that keeps making it is visible.
+    """
+
+    error_code = "ORG_COMPLETION_MANUAL_ONLY"
+    http_status = status.HTTP_409_CONFLICT
 
 
 class IfMatchRequired(OrcaDomainError):

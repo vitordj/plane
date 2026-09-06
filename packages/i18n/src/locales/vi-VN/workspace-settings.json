@@ -807,7 +807,9 @@
             "replaced": "thay thế: {outcome}, {when}"
           },
           "suggestion": "gợi ý: {name}",
-          "suggestion_accept": "giao"
+          "suggestion_accept": "giao",
+          "process_step": "bước {step} ({done}/{total})",
+          "process_group": "{name} — hoàn thành {done}/{total} bước"
         },
         "coordinators": {
           "select_person": "Chọn một người",

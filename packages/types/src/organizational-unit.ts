@@ -196,9 +196,24 @@ export interface IQueueItem {
   last_alerted_at: string | null;
   primary_executor: string | null;
   primary_executor_detail: { id: string; display_name: string; avatar_url: string } | null;
+  /** Which step of which process instance this item is, when it is one. */
+  process: IQueueItemProcess | null;
   current_assignment_decision: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/** One work item's place in a process instance, as the queue shows it. */
+export interface IQueueItemProcess {
+  instance_id: string;
+  source: string;
+  external_instance_id: string;
+  template_name: string;
+  step_key: string;
+  completion_mode: "automatic" | "automatic_with_review" | "manual";
+  /** Steps of the whole instance, including ones in other areas. */
+  done: number;
+  total: number;
 }
 
 /**

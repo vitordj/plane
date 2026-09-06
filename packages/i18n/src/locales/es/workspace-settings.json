@@ -807,7 +807,9 @@
             "replaced": "sustituye: {outcome}, {when}"
           },
           "suggestion": "sugerencia: {name}",
-          "suggestion_accept": "asignar"
+          "suggestion_accept": "asignar",
+          "process_step": "etapa {step} ({done}/{total})",
+          "process_group": "{name} — {done} de {total} etapas completadas"
         },
         "coordinators": {
           "select_person": "Elige una persona",

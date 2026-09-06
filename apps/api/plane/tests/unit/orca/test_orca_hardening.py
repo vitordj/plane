@@ -564,6 +564,39 @@ class TestFeatureFlagClosesTheLayer:
         assert response.status_code == 200
         assert response.data["organizational_units_enabled"] is True
 
+    def test_the_config_endpoint_answers_for_all_four_switches(
+        self, settings, admin_client, workspace_with_members
+    ):
+        # One read, the whole picture: an app that has to guess at one of the
+        # four switches will guess wrong on some instance.
+        settings.ORCA_ORG_UNITS_ENABLED = True
+        settings.ORCA_PUBLIC_API_ENABLED = True
+        settings.ORCA_AVAILABILITY_ENABLED = False
+        settings.ORCA_PROCESS_PROJECTION_ENABLED = True
+
+        response = admin_client.get(f"/api/orca/workspaces/{workspace_with_members.slug}/config/")
+
+        assert response.status_code == 200
+        assert response.data["organizational_units_enabled"] is True
+        assert response.data["public_api_enabled"] is True
+        assert response.data["availability_enabled"] is False
+        assert response.data["process_projection_enabled"] is True
+
+    def test_the_kill_switch_closes_every_other_switch_in_the_config(
+        self, settings, admin_client, workspace_with_members
+    ):
+        # The layer's own switch is upstream of the other three: with it off,
+        # an app that read "process projection: on" would render a surface
+        # every route behind it answers 404 to.
+        settings.ORCA_ORG_UNITS_ENABLED = False
+        settings.ORCA_PROCESS_PROJECTION_ENABLED = True
+        settings.ORCA_AVAILABILITY_ENABLED = True
+
+        response = admin_client.get(f"/api/orca/workspaces/{workspace_with_members.slug}/config/")
+
+        assert response.data["process_projection_enabled"] is False
+        assert response.data["availability_enabled"] is False
+
     def test_the_layer_works_normally_while_enabled(self, settings, admin_client, workspace_with_members, unit):
         settings.ORCA_ORG_UNITS_ENABLED = True
 

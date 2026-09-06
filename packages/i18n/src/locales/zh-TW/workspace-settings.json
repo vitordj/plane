@@ -807,7 +807,9 @@
             "replaced": "取代：{outcome}，{when}"
           },
           "suggestion": "建議：{name}",
-          "suggestion_accept": "指派"
+          "suggestion_accept": "指派",
+          "process_step": "步驟 {step}（{done}/{total}）",
+          "process_group": "{name} — 共 {total} 步，已完成 {done} 步"
         },
         "coordinators": {
           "select_person": "選擇成員",

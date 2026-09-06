@@ -177,6 +177,27 @@ class OrganizationalUnitAssignmentPolicy(BaseModel):
     max_open_items_per_member = models.PositiveIntegerField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     version = models.PositiveIntegerField(default=1)
+    # Where an automatically completed step of a process lands (item 4.3).
+    # Optional, and null means "the project's first completed state by
+    # sequence": most areas never need to say, and the ones that do usually
+    # have a project with two completed states and an opinion about which.
+    completed_state = models.ForeignKey(
+        "db.State",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orca_policies_completing_here",
+    )
+    # And where one that needs a review lands. Null falls back to a label on
+    # the item, because a project without a review state still needs the
+    # difference between "done" and "somebody says it is done" to be visible.
+    review_state = models.ForeignKey(
+        "db.State",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orca_policies_reviewing_here",
+    )
 
     class Meta:
         constraints = [

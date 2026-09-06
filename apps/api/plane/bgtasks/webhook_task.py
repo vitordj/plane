@@ -52,6 +52,7 @@ from plane.db.models import (
 from plane.license.utils.instance_value import get_email_configuration
 from plane.utils.email import generate_plain_text_from_html
 from plane.utils.exception_logger import log_exception
+from plane.app.services.orca.webhook_payload import extend_issue_payload
 from plane.utils.url_security import pinned_fetch
 
 
@@ -161,7 +162,19 @@ def get_model_data(event: str, event_id: Union[str, List[str]], many: bool = Fal
                 issue_id = queryset.id
                 queryset = model.objects.filter(pk=issue_id).prefetch_related(*issue_prefetches).first()
 
-            return serializer(queryset, many=many, context={"expand": ["labels", "assignees"]}).data
+            data = serializer(queryset, many=many, context={"expand": ["labels", "assignees"]}).data
+            # Fork (Orca): one hook, on the one event that needs it. The area
+            # that owns a work item, where it stands in that area's queue and
+            # which process step it is do not exist upstream, and an
+            # orchestrator listening for "this step changed" would otherwise
+            # have to follow every webhook with a read to find out whether the
+            # change mattered. Adds nothing for a workspace that uses no areas.
+            if many:
+                for item, payload in zip(queryset, data):
+                    extend_issue_payload(payload, item.id)
+            else:
+                extend_issue_payload(data, event_id)
+            return data
         else:
             return serializer(queryset, many=many).data
     except ObjectDoesNotExist:

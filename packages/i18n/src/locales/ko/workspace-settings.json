@@ -807,7 +807,9 @@
             "replaced": "대체함: {outcome}, {when}"
           },
           "suggestion": "추천: {name}",
-          "suggestion_accept": "배정"
+          "suggestion_accept": "배정",
+          "process_step": "단계 {step} ({done}/{total})",
+          "process_group": "{name} — {total}단계 중 {done}단계 완료"
         },
         "coordinators": {
           "select_person": "사람 선택",

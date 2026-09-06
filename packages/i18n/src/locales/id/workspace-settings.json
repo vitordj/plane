@@ -807,7 +807,9 @@
             "replaced": "menggantikan: {outcome}, {when}"
           },
           "suggestion": "saran: {name}",
-          "suggestion_accept": "tugaskan"
+          "suggestion_accept": "tugaskan",
+          "process_step": "langkah {step} ({done}/{total})",
+          "process_group": "{name} — {done} dari {total} langkah selesai"
         },
         "coordinators": {
           "select_person": "Pilih orang",

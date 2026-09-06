@@ -69,3 +69,24 @@ def orca_availability_enabled() -> bool:
     @returns: ``True`` when availability may exclude people and return work.
     """
     return bool(organizational_units_enabled() and getattr(settings, "ORCA_AVAILABILITY_ENABLED", False))
+
+
+def orca_process_projection_enabled() -> bool:
+    """
+    Whether the ``process`` block and ``complete/`` are accepted.
+
+    @description Off by default (RFC §7.2). Off, the automation API refuses a
+    process block instead of accepting and dropping it — an integration that
+    believes Plane is tracking its instances when it is not would be wrong in
+    the one place nobody looks — and ``complete/`` is refused the same way,
+    with ``ORG_PROCESS_PROJECTION_DISABLED`` rather than a bare 404.
+
+    Gated by the layer's kill switch and by the public API's own switch is
+    *not* implied here: the projection is also read by the app, so this asks
+    only about the layer.
+
+    Read at call time, like the others.
+
+    @returns: ``True`` when process projection may be written and read.
+    """
+    return bool(organizational_units_enabled() and getattr(settings, "ORCA_PROCESS_PROJECTION_ENABLED", False))

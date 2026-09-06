@@ -807,7 +807,9 @@
             "replaced": "şunun yerine geçer: {outcome}, {when}"
           },
           "suggestion": "öneri: {name}",
-          "suggestion_accept": "ata"
+          "suggestion_accept": "ata",
+          "process_step": "adım {step} ({done}/{total})",
+          "process_group": "{name} — {total} adımdan {done} tanesi tamam"
         },
         "coordinators": {
           "select_person": "Bir kişi seçin",

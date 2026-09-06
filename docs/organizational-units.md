@@ -584,6 +584,90 @@ available, everybody accepting, no limit — the ranking is `lb-2` in name only,
 the routes answer 404, and the sweep writes nothing. A switch whose off
 position changes the answers is a switch nobody flips during an incident.
 
+## Processes
+
+Some work is not one item, it is five: an onboarding, a monthly close, a
+client's document review. The five steps live in different areas, run in an
+order, and are only meaningful together — and a flat queue shows five unrelated
+rows.
+
+**Orca does not run the process.** What knows an onboarding has five steps,
+which one comes next and when they are due is an orchestrator that lives
+outside Plane (FORK.md §1.B). What Orca records is the projection of that run:
+which step of which instance a work item is, under which version of the
+template, and what "finished" is allowed to mean for it.
+
+The division is the same one the whole layer is built on. The orchestrator
+knows the process and nothing about who is on holiday; the area knows who is on
+holiday and nothing about what an onboarding is. Neither guesses at the other's
+half.
+
+### What it stores
+
+| Row                        | What it is                                                                                      |
+| -------------------------- | ----------------------------------------------------------------------------------------------- |
+| `ProcessInstanceReference` | One run: source, instance id, template name and version, when it started and finished.          |
+| `ProcessInstanceItem`      | One step: the work item, its key in the template, and its `completion_mode`.                    |
+| `ProcessCompletionEvent`   | Append-only. Somebody claimed a step was done: who, on what evidence, under which rule version. |
+| `IssueServiceLevel`        | The deadlines an item is held to, where they came from, and what they **originally** were.      |
+
+An instance keeps the template version it **started** under. A step arriving
+later under a different version is accepted and logged, and does not rewrite the
+run: an instance that ran under `v3` still says `v3` a year later, whatever
+`v4` says today. Without that, a process whose definition changed halfway has
+runs nobody can audit.
+
+### What "finished" is allowed to mean
+
+A step's `completion_mode` is set when the step is created, and it decides what
+an outside claim of completion may do:
+
+| Mode                    | A `complete/` call…                                                                                                         |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `automatic`             | moves the item to a completed state — the area's configured `completed_state`, or the project's first by sequence.          |
+| `automatic_with_review` | moves it to the area's `review_state`, or applies the `aguardando-validacao` label when the area named none. It stays open. |
+| `manual`                | is **refused**. The item does not move; the claim is recorded with `applied: false`.                                        |
+
+`manual` is the default, and refusing it is the point: some steps are only ever
+finished by the person doing them, and a robot saying otherwise turns a
+checklist into a lie. Recording the refusal matters too — a robot that keeps
+declaring a manual step done is a fact somebody should be able to see.
+
+`completed_state` and `review_state` are set per area↔project policy, alongside
+the assignment rules. Both fallbacks work without them; both are worse than a
+deliberate choice.
+
+An instance's `status` is **derived from its steps**, never trusted from the
+column: a person closing the last step in Plane's own interface finishes the
+run just as truly as an API call does.
+
+### In the queue
+
+An area's inbox splits in two. Items that belong to no process stay in the
+ordinary list; items that are steps of one are grouped under their instance,
+with the run's progress in the heading — `onboarding-cliente · cliente-123
+(2/5)`. The count is the **whole** instance, steps in other areas included,
+because "we are waiting on Legal" is the useful fact and it is not visible from
+one area's rows.
+
+Each grouped row also carries its step key, so a person who opens the queue
+mid-run knows which part of the run they are looking at.
+
+### Outward
+
+Plane's own `issue` webhook payload gains an `orca` key for items an area owns:
+the area, the routing state, the executor id, the assignment deadline, and the
+process step when there is one. Ids and slugs, no names or emails — a webhook
+goes somewhere this instance does not control, and people's names belong on the
+queue's own screens. An item no area owns has no `orca` key, so a workspace not
+using areas sees exactly the payload it saw before.
+
+Everything above is behind `ORCA_PROCESS_PROJECTION_ENABLED`, which ships
+**off** — see [the runbook](./orca-processes-runbook.md) for what keeps working
+when it is off (everything except creating steps and completing them), and
+[the contract](./orca-orchestrator-contract.md) for what an orchestrator may
+assume of the API.
+
 ## Directory sync
 
 Microsoft Entra ID can supply unit membership over SCIM 2.0, so onboarding
@@ -603,11 +687,12 @@ in [entra-directory-sync.md](./entra-directory-sync.md).
 
 ## Settings
 
-| Setting                     | Default | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| --------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ORCA_ORG_UNITS_ENABLED`    | `1`     | Kill switch. Accepts `1/true/yes/on` and `0/false/no/off` (any other value refuses to start). Set to `0` and every `/api/orca/` organizational-unit route answers 404 — the directory connection endpoints and the SCIM provisioning endpoints included — both management commands refuse to run, the hourly directory pass and any queued reconciliation task return without writing, and the UI hides the layer. The switch is read where the write would happen, so a task already on the queue when it is flipped does not land afterwards. Existing inherited `ProjectMember` rows are left exactly as they are — the switch stops the layer acting, it does not withdraw access it already granted. Re-enable and reconcile to resume. |
-| `ORCA_ORG_SYNC_MAX_EDGES`   | `100`   | Fan-out threshold for inline vs. Celery reconciliation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `ORCA_AVAILABILITY_ENABLED` | `0`     | Absences and per-membership limits. Off, the ranking ignores both, the availability routes answer 404 and the hourly sweep writes nothing — the behaviour the layer had before Phase 3. On, `lb-2` excludes people who are away, who stopped accepting work from an area, or who are at a ceiling, and the sweep returns work held by somebody who became unavailable. Same accepted spellings as the switches above.                                                                                                                                                                                                                                                                                                                        |
+| Setting                           | Default | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ORCA_ORG_UNITS_ENABLED`          | `1`     | Kill switch. Accepts `1/true/yes/on` and `0/false/no/off` (any other value refuses to start). Set to `0` and every `/api/orca/` organizational-unit route answers 404 — the directory connection endpoints and the SCIM provisioning endpoints included — both management commands refuse to run, the hourly directory pass and any queued reconciliation task return without writing, and the UI hides the layer. The switch is read where the write would happen, so a task already on the queue when it is flipped does not land afterwards. Existing inherited `ProjectMember` rows are left exactly as they are — the switch stops the layer acting, it does not withdraw access it already granted. Re-enable and reconcile to resume. |
+| `ORCA_ORG_SYNC_MAX_EDGES`         | `100`   | Fan-out threshold for inline vs. Celery reconciliation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `ORCA_AVAILABILITY_ENABLED`       | `0`     | Absences and per-membership limits. Off, the ranking ignores both, the availability routes answer 404 and the hourly sweep writes nothing — the behaviour the layer had before Phase 3. On, `lb-2` excludes people who are away, who stopped accepting work from an area, or who are at a ceiling, and the sweep returns work held by somebody who became unavailable. Same accepted spellings as the switches above.                                                                                                                                                                                                                                                                                                                        |
+| `ORCA_PROCESS_PROJECTION_ENABLED` | `0`     | Process projection. Off, the `process` block and `POST .../complete/` are refused with `ORG_PROCESS_PROJECTION_DISABLED` (the whole call, so no half-written work item), `completion_due_at` is refused rather than dropped, and the queue stops grouping by run — every existing step stays an ordinary work item in its area, and reading a run still answers. Same accepted spellings as the switches above.                                                                                                                                                                                                                                                                                                                              |
 
 Directory provisioning is configured per workspace, not per instance — a
 workspace admin issues the SCIM token from **Workspace settings → Areas**.
@@ -637,7 +722,12 @@ and the sweep's refusals). Availability has three: `test_availability.py` (the
 window's arithmetic and what `lb-2` excludes), `test_availability_api.py` (who
 may write whose absence, and the sweep's five reasons) and
 `test_availability_closing.py` (the round trip, and that nothing moves without
-a decision).
+a decision). Processes have two:
+`test_process_projection.py` (the instance and the step, the three completion
+modes, the derived status, the deadlines' provenance and the webhook's `orca`
+key) and `test_process_replay.py` (twenty events delivered twice produce one of
+everything, a run that died halfway completes on replay, and a changed body
+under a spent key is refused rather than applied).
 
 They cover joining and leaving units, the strongest-role resolution across two
 units, manual access surviving removal, manual promotions never being

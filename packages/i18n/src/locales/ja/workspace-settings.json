@@ -807,7 +807,9 @@
             "replaced": "置き換え: {outcome}（{when}）"
           },
           "suggestion": "候補: {name}",
-          "suggestion_accept": "割り当て"
+          "suggestion_accept": "割り当て",
+          "process_step": "ステップ {step}（{done}/{total}）",
+          "process_group": "{name} — {total} ステップ中 {done} 完了"
         },
         "coordinators": {
           "select_person": "担当者を選択",

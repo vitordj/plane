@@ -193,6 +193,48 @@ while it sat in a queue.
 `assignment_due_at` is when somebody must be _on_ the item — a deadline for
 the allocation, not for the work.
 
+`completion_due_at` is the other one — by when the work must be done. It needs
+`ORCA_PROCESS_PROJECTION_ENABLED`, because it is stored in the service-level
+record that arrived with it; while that is off the field is **refused**, not
+accepted and dropped. Both deadlines are recorded with where they came from and
+what they originally were, so a deadline that moved says so.
+
+### `process` — when the item is a step of something bigger
+
+Optional, and only accepted while `ORCA_PROCESS_PROJECTION_ENABLED` is on
+(otherwise `400 ORG_PROCESS_PROJECTION_DISABLED`, and the work item is not
+created — the whole call is refused).
+
+```json
+"process": {
+  "source": "orca-orchestrator",
+  "instance_id": "cliente-123",
+  "template_name": "onboarding-cliente",
+  "template_version": "3",
+  "step_key": "kyc",
+  "completion_mode": "automatic_with_review"
+}
+```
+
+`source`, `instance_id`, `template_version` and `step_key` are required;
+`template_name` is optional and `completion_mode` defaults to `manual`.
+
+This is what makes four work items read as four steps of one onboarding rather
+than four unrelated items. It is find-or-create like everything else here: the
+first step to arrive creates the instance, the rest join it, and a redelivered
+event finds the step it already made.
+
+`template_version` is the field worth defending. An instance keeps the version
+it **started** under; a later step arriving under a different version is
+accepted and logged and does not rewrite the run. A process whose definition
+changed halfway has instances that ran under two different rules, and an
+instance that cannot say which one ran it is one nobody can audit afterwards.
+
+`completion_mode` decides what `complete/` below is allowed to do to this step.
+
+The orchestrator that sends this block lives outside Plane; what it may and may
+not assume is [`docs/orca-orchestrator-contract.md`](./orca-orchestrator-contract.md).
+
 ### What "assigned" and "queued" mean in the answer
 
 `responsibility.routing_state` tells you where the item stands:
@@ -244,6 +286,45 @@ What the area has waiting, **overdue first, then oldest first**. Filters:
 Visible to members of the area and to workspace admins — these rows carry the
 titles of real work.
 
+```http
+GET /api/v1/orca/workspaces/{slug}/process-instances/{source}/{instance_id}/
+```
+
+One run of a process: every step with its native state, `routing_state`, area,
+executor and both deadlines.
+
+```json
+{
+  "source": "orca-orchestrator",
+  "instance_id": "cliente-123",
+  "template": { "name": "onboarding-cliente", "version": "3" },
+  "status": "running",
+  "started_at": "2026-09-20T09:00:00Z",
+  "completed_at": null,
+  "steps": [
+    {
+      "step_key": "kyc",
+      "completion_mode": "automatic_with_review",
+      "issue_id": "0f0e...",
+      "sequence_id": 128,
+      "identifier": "ONB-128",
+      "name": "Validate registration documents",
+      "state": { "name": "In review", "group": "started" },
+      "routing_state": "assigned",
+      "unit": "compliance",
+      "primary_executor": "3c7d...",
+      "assignment_due_at": "2026-09-25T12:00:00Z",
+      "completion_due_at": "2026-09-30T18:00:00Z"
+    }
+  ]
+}
+```
+
+`status` is **derived from the steps**, not read off a column: a person who
+closes the last step in Plane's own interface finishes the run just as truly as
+an API call does, and the next read says so. Readable by any active member of
+the workspace.
+
 ---
 
 ## Changing who holds it
@@ -294,6 +375,65 @@ receiving area does not cover the project, the transfer is refused
 
 ---
 
+## Saying a step is finished
+
+```http
+POST .../work-items/{issue_id}/complete/
+```
+
+```bash
+curl -sS -X POST ".../work-items/0f0e.../complete/" \
+  -H "X-Api-Key: $PLANE_API_KEY" \
+  -H "Idempotency-Key: orca-..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "evidence": {"document_id": "DOC-991", "checked_by": "kyc-rules"},
+    "rule_version": "2026.09",
+    "source": "kyc-service",
+    "event_id": "evt-10024"
+  }'
+```
+
+Everything in the body is optional: the claim itself is the message. `evidence`
+is stored **verbatim** and never interpreted — it is written in the caller's
+vocabulary and this API does not get to define it.
+
+What actually happens is the step's own `completion_mode`, not the caller's
+wish:
+
+| Mode                    | What happens                                                                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `automatic`             | The item moves to a completed state — the area's configured one, or the project's first by sequence. `applied: true`.       |
+| `automatic_with_review` | It moves to the area's review state, or gets the `aguardando-validacao` label when the area named none, and stays **open**. |
+| `manual`                | `409 ORG_COMPLETION_MANUAL_ONLY`. The item does not move — but the claim **is recorded**, with `applied: false`.            |
+
+`manual` is the default, and refusing it is the point: some steps are only ever
+finished by the person doing them, and a robot saying otherwise turns a
+checklist into a lie. Recording the refused claim matters too — a robot that
+keeps declaring a manual step done is a fact somebody should be able to see.
+
+The answer is the ordinary envelope plus:
+
+```json
+"completion": {
+  "mode": "automatic_with_review",
+  "applied": true,
+  "event_id": "1c9e...",
+  "state": "In review",
+  "step_key": "kyc"
+}
+```
+
+This is the one mutation that does not touch the assignment: a step being done
+says nothing about who did it, so it writes a `ProcessCompletionEvent` and not
+an `AssignmentDecision`. The events are append-only — correcting a step means a
+person changing the item's state, which the instance read then reflects.
+
+Needs `ORCA_PROCESS_PROJECTION_ENABLED`; otherwise
+`400 ORG_PROCESS_PROJECTION_DISABLED`.
+
+---
+
 ## Errors
 
 Every failure carries three fields: `error` (English prose, for logs and
@@ -309,27 +449,28 @@ prose may be reworded, the codes are permanent once shipped.
 }
 ```
 
-| Code | Name                               | HTTP    | When                                                      |
-| ---- | ---------------------------------- | ------- | --------------------------------------------------------- |
-| 4900 | `ORG_UNIT_NOT_FOUND`               | 404     | The area in the URL does not exist here                   |
-| 4906 | `ORG_UNIT_NOT_IN_WORKSPACE`        | 400     | The `unit` in the body does not exist, or is retired      |
-| 4911 | `ORG_WORK_ITEM_NOT_FOUND`          | 404     | No such item in this project, or no binding for that key  |
-| 4912 | `ORG_WORK_ITEM_HAS_NO_UNIT`        | 400     | The item exists but no area is responsible for it         |
-| 4916 | `ORG_UNIT_NOT_COVERING_PROJECT`    | 400     | The area is not linked to that project                    |
-| 4917 | `ORG_ASSIGNMENT_MODE_NOT_ALLOWED`  | 400     | The area's policy forbids the mode you asked for          |
-| 4918 | `ORG_EXECUTOR_NOT_ELIGIBLE`        | 400     | That person cannot hold work of this area on this project |
-| 4919 | `ORG_WORK_ITEM_ALREADY_CLAIMED`    | 409     | Somebody took it first                                    |
-| 4920 | `ORG_DECISION_STALE`               | **412** | Your `If-Match` is not the current decision               |
-| 4921 | `ORG_INVALID_ROUTING_TRANSITION`   | 400     | The item cannot move that way from where it is            |
-| 4922 | `ORG_PUBLIC_API_DISABLED`          | 404     | This instance has the automation API switched off         |
-| 4923 | `ORG_IDEMPOTENCY_KEY_REQUIRED`     | 400     | Header missing, empty, or over 255 characters             |
-| 4924 | `ORG_IDEMPOTENCY_PAYLOAD_MISMATCH` | 409     | Key reused with a different body                          |
-| 4925 | `ORG_OPERATION_IN_PROGRESS`        | 409     | The first call with this key is still running             |
-| 4926 | `ORG_EXTERNAL_BINDING_CONFLICT`    | 409     | That external key belongs to another work item            |
-| 4927 | `ORG_ASSIGNEES_NOT_ALLOWED_HERE`   | 400     | `assignees` in the `work_item` block                      |
-| 4928 | `ORG_IF_MATCH_REQUIRED`            | 428     | `reassign` without `If-Match`                             |
-| 4929 | `ORG_PROCESS_PROJECTION_DISABLED`  | 400     | A `process` block (Phase 4)                               |
-| 4931 | `ORG_INTERNAL_ERROR`               | 500     | The operation failed and was recorded as failed           |
+| Code | Name                               | HTTP    | When                                                                               |
+| ---- | ---------------------------------- | ------- | ---------------------------------------------------------------------------------- |
+| 4900 | `ORG_UNIT_NOT_FOUND`               | 404     | The area in the URL does not exist here                                            |
+| 4906 | `ORG_UNIT_NOT_IN_WORKSPACE`        | 400     | The `unit` in the body does not exist, or is retired                               |
+| 4911 | `ORG_WORK_ITEM_NOT_FOUND`          | 404     | No such item in this project, or no binding for that key                           |
+| 4912 | `ORG_WORK_ITEM_HAS_NO_UNIT`        | 400     | The item exists but no area is responsible for it                                  |
+| 4916 | `ORG_UNIT_NOT_COVERING_PROJECT`    | 400     | The area is not linked to that project                                             |
+| 4917 | `ORG_ASSIGNMENT_MODE_NOT_ALLOWED`  | 400     | The area's policy forbids the mode you asked for                                   |
+| 4918 | `ORG_EXECUTOR_NOT_ELIGIBLE`        | 400     | That person cannot hold work of this area on this project                          |
+| 4919 | `ORG_WORK_ITEM_ALREADY_CLAIMED`    | 409     | Somebody took it first                                                             |
+| 4920 | `ORG_DECISION_STALE`               | **412** | Your `If-Match` is not the current decision                                        |
+| 4921 | `ORG_INVALID_ROUTING_TRANSITION`   | 400     | The item cannot move that way from where it is                                     |
+| 4922 | `ORG_PUBLIC_API_DISABLED`          | 404     | This instance has the automation API switched off                                  |
+| 4923 | `ORG_IDEMPOTENCY_KEY_REQUIRED`     | 400     | Header missing, empty, or over 255 characters                                      |
+| 4924 | `ORG_IDEMPOTENCY_PAYLOAD_MISMATCH` | 409     | Key reused with a different body                                                   |
+| 4925 | `ORG_OPERATION_IN_PROGRESS`        | 409     | The first call with this key is still running                                      |
+| 4926 | `ORG_EXTERNAL_BINDING_CONFLICT`    | 409     | That external key belongs to another work item                                     |
+| 4927 | `ORG_ASSIGNEES_NOT_ALLOWED_HERE`   | 400     | `assignees` in the `work_item` block                                               |
+| 4928 | `ORG_IF_MATCH_REQUIRED`            | 428     | `reassign` without `If-Match`                                                      |
+| 4929 | `ORG_PROCESS_PROJECTION_DISABLED`  | 400     | A `process` block, `complete/`, or `completion_due_at` while the projection is off |
+| 4930 | `ORG_COMPLETION_MANUAL_ONLY`       | 409     | `complete/` on a step whose mode is `manual`                                       |
+| 4931 | `ORG_INTERNAL_ERROR`               | 500     | The operation failed and was recorded as failed                                    |
 
 A malformed body that is not one of these answers `400` with
 `"error_message": "VALIDATION_ERROR"` and a `detail` object naming the
@@ -344,12 +485,13 @@ own web app receives `409` for the same condition. The public API answers
 The token grants nothing of its own — the effective permission is that of the
 **user the token belongs to** (RFC §7.1):
 
-| Route                                        | Requires                                      |
-| -------------------------------------------- | --------------------------------------------- |
-| `POST work-items/`, `reassign/`, `transfer/` | Active project member, role Member or Admin   |
-| `GET by-external/`                           | Active member of the item's project, any role |
-| `GET units/`                                 | Active workspace member                       |
-| `GET units/{slug}/queue/`                    | Member of that area, or workspace Admin       |
+| Route                                                     | Requires                                      |
+| --------------------------------------------------------- | --------------------------------------------- |
+| `POST work-items/`, `reassign/`, `transfer/`, `complete/` | Active project member, role Member or Admin   |
+| `GET by-external/`                                        | Active member of the item's project, any role |
+| `GET units/`                                              | Active workspace member                       |
+| `GET units/{slug}/queue/`                                 | Member of that area, or workspace Admin       |
+| `GET process-instances/{source}/{id}/`                    | Active workspace member                       |
 
 Rate limit: `ORCA_PUBLIC_API_RATE_LIMIT`, default `300/minute`, **per token**,
 answering `429` with `{"error_code": 5900, "error_message": "RATE_LIMIT_EXCEEDED"}`.
@@ -383,13 +525,16 @@ if result.replayed:
 
 ## Not here yet
 
-| Wanted                                          | Where it is                                                                                                                             |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `process` block (template, instance, step)      | Phase 4 — refused with `ORG_PROCESS_PROJECTION_DISABLED` today                                                                          |
-| `completion_due_at`                             | Phase 4, with the service-level record that stores it. Refused rather than accepted and dropped                                         |
-| `POST .../complete/`                            | Phase 4                                                                                                                                 |
-| Coordinator access to another area's queue      | Shipped in Phase 2, for the app's own API (`/api/orca/`); this namespace still scopes a queue read to areas the token's user belongs to |
-| Availability and holidays affecting the ranking | Phase 3                                                                                                                                 |
+| Wanted                                     | Where it is                                                                                                                             |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Coordinator access to another area's queue | Shipped in Phase 2, for the app's own API (`/api/orca/`); this namespace still scopes a queue read to areas the token's user belongs to |
+| Ordering between steps (`depends_on`)      | The orchestrator's, not this API's — via native `blocked_by` relations, or late creation. See the contract document                     |
+| Un-completing a step                       | Not an API operation. A person changes the item's state; the instance read follows                                                      |
+| Skills, rotation, estimate-weighted load   | Open decisions A1, A2, A7 in the RFC                                                                                                    |
 
 The full design, including the invariants these endpoints preserve, is in
-[`docs/orca-work-management-rfc.md`](./orca-work-management-rfc.md).
+[`docs/orca-work-management-rfc.md`](./orca-work-management-rfc.md). If you are
+building the service that drives processes through this API, start from
+[`docs/orca-orchestrator-contract.md`](./orca-orchestrator-contract.md); if you
+are the one who gets paged when it misbehaves,
+[`docs/orca-processes-runbook.md`](./orca-processes-runbook.md).

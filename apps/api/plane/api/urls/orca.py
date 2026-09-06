@@ -17,10 +17,12 @@ already depends on.
 from django.urls import path
 
 from plane.api.views.orca import (
+    ProcessInstanceEndpoint,
     UnitListEndpoint,
     UnitQueueEndpoint,
     WorkItemAutomationEndpoint,
     WorkItemByExternalEndpoint,
+    WorkItemCompleteEndpoint,
     WorkItemReassignEndpoint,
     WorkItemTransferEndpoint,
 )
@@ -58,5 +60,20 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/projects/<uuid:project_id>/work-items/<uuid:issue_id>/transfer/",
         WorkItemTransferEndpoint.as_view(http_method_names=["post"]),
         name="orca-work-item-transfer",
+    ),
+    # A step of a process saying it is finished. Behind the same idempotency
+    # rule as the other mutations, and behind ORCA_PROCESS_PROJECTION_ENABLED.
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/work-items/<uuid:issue_id>/complete/",
+        WorkItemCompleteEndpoint.as_view(http_method_names=["post"]),
+        name="orca-work-item-complete",
+    ),
+    # One run of a process, read back. `source` and `instance_id` stay `str`
+    # for the same reason the external key does: they are the calling system's,
+    # not ours.
+    path(
+        "orca/workspaces/<str:slug>/process-instances/<str:source>/<str:instance_id>/",
+        ProcessInstanceEndpoint.as_view(http_method_names=["get"]),
+        name="orca-process-instance",
     ),
 ]
