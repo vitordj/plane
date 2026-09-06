@@ -15,6 +15,7 @@ from django.core.cache import cache
 from rest_framework.test import APIClient
 
 from plane.db.models import (
+    APIToken,
     Issue,
     OrganizationalDirectoryConnection,
     OrganizationalDirectoryGroupMembership,
@@ -303,6 +304,67 @@ def issue_unit_url(slug, project_id, issue_id):
 
 def issue_assign_url(slug, project_id, issue_id):
     return f"/api/orca/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/organizational-unit-assign/"
+
+
+# --- public automation API (/api/v1/orca/, item 1.4) --------------------------
+#
+# A separate block, and separate builders, because the prefix is the point: the
+# routes above are session-authenticated and internal, these are API-key and
+# public, and a test that mixes them up would prove the opposite of what it
+# says. Gate 1 asserts the two never accept each other's credentials.
+
+
+def public_units_url(slug):
+    return f"/api/v1/orca/workspaces/{slug}/units/"
+
+
+def public_queue_url(slug, unit_slug):
+    return f"/api/v1/orca/workspaces/{slug}/units/{unit_slug}/queue/"
+
+
+def public_work_items_url(slug, project_id):
+    return f"/api/v1/orca/workspaces/{slug}/projects/{project_id}/work-items/"
+
+
+def public_by_external_url(slug, source, external_id):
+    return f"/api/v1/orca/workspaces/{slug}/work-items/by-external/{source}/{external_id}/"
+
+
+def public_reassign_url(slug, project_id, issue_id):
+    return f"{public_work_items_url(slug, project_id)}{issue_id}/reassign/"
+
+
+def public_transfer_url(slug, project_id, issue_id):
+    return f"{public_work_items_url(slug, project_id)}{issue_id}/transfer/"
+
+
+@pytest.fixture
+def public_api_on(settings):
+    """Both switches on: the automation API ships off (item 1.2)."""
+    settings.ORCA_ORG_UNITS_ENABLED = True
+    settings.ORCA_PUBLIC_API_ENABLED = True
+    return settings
+
+
+@pytest.fixture
+def token_client(db, public_api_on):
+    """
+    An API-key client for a given user.
+
+    @description Authenticates the way an integration does — ``X-Api-Key``
+    against an ``APIToken`` — rather than with ``force_authenticate``. The
+    difference matters here: the throttle and the receipt both key on the
+    token, and a forced session has none.
+    """
+
+    def _client(user, workspace=None):
+        token = APIToken.objects.create(user=user, workspace=workspace, label=f"token-{user.email}")
+        client = APIClient()
+        client.credentials(HTTP_X_API_KEY=token.token)
+        client.orca_token = token
+        return client
+
+    return _client
 
 
 # --- directory (SCIM) fixtures -----------------------------------------------

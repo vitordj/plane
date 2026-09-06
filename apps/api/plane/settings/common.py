@@ -592,6 +592,30 @@ SEED_DIR = os.path.join(BASE_DIR, "seeds")
 ORCA_ORG_UNITS_ENABLED = env_flag("ORCA_ORG_UNITS_ENABLED", default=True)
 ORCA_ORG_SYNC_MAX_EDGES = int(os.environ.get("ORCA_ORG_SYNC_MAX_EDGES", 100))
 
+# Second switch, in front of /api/v1/orca/ only. The organizational layer can
+# be on for the UI while the automation API stays shut: an outside system
+# creating work items and allocating people is a wider blast radius than a
+# person doing the same thing in the app, and it is reached with a long-lived
+# API key rather than a session. Default off, and it stays off in production
+# until Gate 2-minimum (RFC §9).
+#
+# Same strict parser as the kill switch above, not upstream's `== "1"`: P0.14
+# closed exactly that defect, where ORCA_ORG_UNITS_ENABLED=true read as
+# *disabled*. A second switch spelled the old way would reintroduce it.
+ORCA_PUBLIC_API_ENABLED = env_flag("ORCA_PUBLIC_API_ENABLED", default=False)
+
+# Per-token budget for the automation API. Keyed on the API token rather than
+# the address, because every call from one integration arrives from the same
+# host and an address-keyed limit would let one workspace's automation
+# throttle another's.
+ORCA_PUBLIC_API_RATE_LIMIT = os.environ.get("ORCA_PUBLIC_API_RATE_LIMIT", "300/minute")
+
+# Registered here rather than in the REST_FRAMEWORK literal above, which is
+# defined before this block: keeping every Orca setting together is worth more
+# than the literal's tidiness, and the file already extends REST_FRAMEWORK
+# after the fact for drf-spectacular below.
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["orca_public"] = ORCA_PUBLIC_API_RATE_LIMIT
+
 ENABLE_DRF_SPECTACULAR = os.environ.get("ENABLE_DRF_SPECTACULAR", "0") == "1"
 
 if ENABLE_DRF_SPECTACULAR:

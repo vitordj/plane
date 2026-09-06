@@ -463,7 +463,17 @@
           "decision_stale": "This work item changed while you were looking at it. Reload and try again.",
           "invalid_routing_transition": "This work item cannot move to that state from where it is.",
           "directory_workspace_not_found": "That workspace no longer exists.",
-          "directory_token_required": "Issue a SCIM token before turning directory provisioning on."
+          "directory_token_required": "Issue a SCIM token before turning directory provisioning on.",
+          "public_api_disabled": "The automation API is turned off on this instance.",
+          "idempotency_key_required": "This request needs an Idempotency-Key header.",
+          "idempotency_payload_mismatch": "That key was already used for a different request.",
+          "operation_in_progress": "An identical request is still running. Try again in a moment.",
+          "external_binding_conflict": "That external key already points at another work item.",
+          "assignees_not_allowed_here": "The area decides who takes this work item, so this request cannot set assignees.",
+          "if_match_required": "This request needs an If-Match header with the current decision.",
+          "process_projection_disabled": "Process projection is turned off on this instance.",
+          "completion_manual_only": "This work item can only be completed by a person.",
+          "internal_error": "Something went wrong. The operation was recorded as failed."
         }
       },
       "projects": {

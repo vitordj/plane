@@ -30,3 +30,21 @@ def organizational_units_enabled() -> bool:
     @returns: ``True`` when the layer may read and write.
     """
     return bool(getattr(settings, "ORCA_ORG_UNITS_ENABLED", True))
+
+
+def orca_public_api_enabled() -> bool:
+    """
+    Whether ``/api/v1/orca/`` answers on this instance.
+
+    @description Two switches, and both have to be on. The layer being enabled
+    is not consent for machines to drive it: the automation API creates work
+    items and allocates people through a long-lived API key, which is a wider
+    blast radius than a person doing the same thing in the app. So an operator
+    can run the layer for the UI while the API stays shut, which is how this
+    instance ships and how production stays until Gate 2-minimum (RFC §9).
+
+    Read at call time, for the same reason as above.
+
+    @returns: ``True`` when the public automation API may answer.
+    """
+    return bool(organizational_units_enabled() and getattr(settings, "ORCA_PUBLIC_API_ENABLED", False))

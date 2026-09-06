@@ -41,7 +41,11 @@ from plane.app.services.orca import (
 from plane.db.models import (
     AssignmentDecision,
     AssignmentMode,
+    AutomationOperation,
+    AutomationOperationStatus,
+    AutomationOperationType,
     DecisionOutcome,
+    DecisionTrigger,
     IssueAssignee,
     IssueOrganizationalUnit,
     IssueResponsibilityEvent,
@@ -49,6 +53,7 @@ from plane.db.models import (
     PolicySource,
     ProjectMember,
     QueueReason,
+    ResponsibilitySource,
     RoutingState,
     StateGroup,
 )
@@ -587,3 +592,188 @@ def test_the_service_never_writes_project_member(unit, project, staffed, make_is
     set_responsibility(issue, unit)
 
     assert set(ProjectMember.objects.values_list("id", flat=True)) == before
+
+
+@pytest.fixture
+def operation(workspace_with_members):
+    """A receipt for a public-API call, to hang decisions off (item 1.4)."""
+    return AutomationOperation.objects.create(
+        workspace=workspace_with_members,
+        idempotency_key="key-for-the-service-tests",
+        request_hash="0" * 64,
+        operation_type=AutomationOperationType.CREATE_WORK_ITEM,
+        status=AutomationOperationStatus.IN_PROGRESS,
+    )
+
+
+@pytest.mark.unit
+class TestSpeakingForThePublicApi:
+    """
+    What item 1.4 needed from this service, and why it is parameters rather
+    than a second implementation.
+
+    The public API allocates under exactly the rules the interface does — the
+    coverage check, eligibility at decision time, the advisory lock, the
+    decision record. What differs is only what the audit trail should say
+    afterwards: which caller, and under which call. So the service grew three
+    parameters, each defaulting to the value it always wrote, and the endpoints
+    pass them. A parallel implementation would have been a second copy of the
+    rules, which is the thing D0.5 exists to prevent.
+    """
+
+    def test_the_trigger_reaches_the_decision_and_the_event(self, unit, project, staffed, make_issue):
+        issue = make_issue(project)
+
+        result = set_responsibility(
+            issue, unit, source=ResponsibilitySource.PUBLIC_API, trigger=DecisionTrigger.PUBLIC_API
+        )
+
+        assert result.decision.trigger == DecisionTrigger.PUBLIC_API
+        event = IssueResponsibilityEvent.objects.get(issue=issue)
+        assert event.source == ResponsibilitySource.PUBLIC_API
+
+    def test_existing_callers_still_write_the_internal_trigger(self, unit, project, staffed, make_issue):
+        # The defaults are the point: no D0 caller passes a trigger, and none
+        # of them may start writing a different one.
+        issue = make_issue(project)
+
+        result = set_responsibility(issue, unit)
+
+        assert result.decision.trigger == DecisionTrigger.INTERNAL_API
+        assert IssueResponsibilityEvent.objects.get(issue=issue).source == ResponsibilitySource.INTERNAL_API
+
+    def test_the_operation_is_recorded_on_an_allocation(self, unit, project, staffed, make_issue, operation):
+        issue = make_issue(project)
+
+        result = set_responsibility(issue, unit, trigger=DecisionTrigger.PUBLIC_API, automation_operation=operation)
+
+        assert result.decision.automation_operation_id == operation.id
+        assert operation.assignment_decisions.count() == 1
+
+    def test_the_operation_is_recorded_on_a_reassignment(self, unit, project, staffed, make_issue, operation):
+        first, second = staffed
+        issue = make_issue(project)
+        set_responsibility(issue, unit, explicit_executor=first)
+
+        result = reassign(issue, second, trigger=DecisionTrigger.PUBLIC_API, automation_operation=operation)
+
+        assert result.decision.trigger == DecisionTrigger.PUBLIC_API
+        assert result.decision.automation_operation_id == operation.id
+
+    def test_the_operation_is_recorded_on_a_transfer(
+        self, unit, second_unit, project, staffed, link_project, add_member, grant_manual_access, make_issue, operation
+    ):
+        link_project(second_unit, project, ROLE_MEMBER)
+        first, _ = staffed
+        issue = make_issue(project)
+        set_responsibility(issue, unit)
+
+        transfer = transfer_unit(issue, second_unit, trigger=DecisionTrigger.PUBLIC_API, automation_operation=operation)
+
+        assert transfer.allocation is not None
+        assert transfer.allocation.decision.automation_operation_id == operation.id
+
+    def test_a_revoked_token_does_not_take_the_decisions_with_it(
+        self, unit, project, staffed, make_issue, operation, workspace_with_members
+    ):
+        # The receipt is SET_NULL on the decision for the same reason it is
+        # SET_NULL on the token: withdrawing a credential must not erase the
+        # record of what it did.
+        issue = make_issue(project)
+        result = set_responsibility(issue, unit, automation_operation=operation)
+
+        operation.delete()
+
+        result.decision.refresh_from_db()
+        assert result.decision.automation_operation_id is None
+        assert AssignmentDecision.objects.filter(pk=result.decision.pk).exists()
+
+
+@pytest.mark.unit
+class TestCollaborators:
+    """
+    People attached to the item who are not answerable for it (RFC §7.2,
+    ``assignment.mode=explicit``). They are ordinary Plane assignees; what
+    makes them collaborators is that no decision names them.
+    """
+
+    def test_a_collaborator_is_attached_without_becoming_the_executor(
+        self, unit, project, staffed, make_issue, second_user, plain_user
+    ):
+        issue = make_issue(project)
+
+        result = set_responsibility(issue, unit, explicit_executor=plain_user, collaborators=[second_user])
+
+        assert result.chosen_user_id == plain_user.id
+        assert result.link.primary_executor_id == plain_user.id
+        assert IssueAssignee.objects.filter(issue=issue, assignee=second_user).exists()
+        # The decision names the executor and nobody else: "who is answerable"
+        # has exactly one answer (I3).
+        assert result.decision.chosen_assignee_id == plain_user.id
+
+    def test_a_collaborator_outside_the_area_is_refused(
+        self, unit, project, staffed, make_issue, guest_user, plain_user
+    ):
+        issue = make_issue(project)
+
+        with pytest.raises(ExecutorNotEligible):
+            set_responsibility(issue, unit, explicit_executor=plain_user, collaborators=[guest_user])
+
+        # Refused before anything was written: the eligibility check runs
+        # inside the same transaction as the allocation.
+        assert not IssueAssignee.objects.filter(issue=issue).exists()
+        assert not AssignmentDecision.objects.filter(issue=issue).exists()
+
+    def test_collaborators_survive_a_transfer_to_another_area(
+        self,
+        unit,
+        second_unit,
+        project,
+        staffed,
+        link_project,
+        add_member,
+        grant_manual_access,
+        make_issue,
+        second_user,
+    ):
+        link_project(second_unit, project, ROLE_MEMBER)
+        add_member(second_unit, second_user)
+        first, _ = staffed
+        issue = make_issue(project)
+        set_responsibility(issue, unit, explicit_executor=first)
+
+        transfer_unit(issue, second_unit, collaborators=[second_user])
+
+        assert IssueAssignee.objects.filter(issue=issue, assignee=second_user).exists()
+
+
+@pytest.mark.unit
+class TestReturningToTheQueueOptimistically:
+    """
+    ``expected_decision_id`` on ``return_to_queue``: the same If-Match
+    ``reassign`` already had, added because the public API offers
+    ``{"return_to_queue": true}`` on the same route as a reassignment and both
+    halves must be equally safe to retry.
+    """
+
+    def test_a_matching_decision_id_is_accepted(self, unit, project, staffed, make_issue, plain_user):
+        issue = make_issue(project)
+        assigned = set_responsibility(issue, unit, explicit_executor=plain_user)
+
+        result = return_to_queue(issue, expected_decision_id=assigned.decision.id)
+
+        assert result.outcome == DecisionOutcome.QUEUED
+
+    def test_a_stale_decision_id_is_refused(self, unit, project, staffed, make_issue):
+        first, second = staffed
+        issue = make_issue(project)
+        stale = set_responsibility(issue, unit, explicit_executor=first)
+        reassign(issue, second)
+
+        with pytest.raises(DecisionStale):
+            return_to_queue(issue, expected_decision_id=stale.decision.id)
+
+        # Still assigned: the refusal happened under the row lock, before the
+        # state moved.
+        link = IssueOrganizationalUnit.objects.get(issue=issue)
+        assert link.routing_state == RoutingState.ASSIGNED

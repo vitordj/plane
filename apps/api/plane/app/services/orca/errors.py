@@ -104,3 +104,117 @@ class InvalidTransition(OrcaDomainError):
     """The routing state cannot go from where it is to where it was asked to go (RFC §6.2)."""
 
     error_code = "ORG_INVALID_ROUTING_TRANSITION"
+
+
+class IdempotencyKeyRequired(OrcaDomainError):
+    """A mutation on the public API arrived without ``Idempotency-Key``.
+
+    @description Required rather than optional because the callers are
+    programs that retry: without a key, a redelivered webhook is
+    indistinguishable from a second piece of work, and the API would create
+    two work items for one event.
+    """
+
+    error_code = "ORG_IDEMPOTENCY_KEY_REQUIRED"
+
+
+class IdempotencyPayloadMismatch(OrcaDomainError):
+    """The key was already used, with a different payload.
+
+    @description The one branch of §6.7 that must never be answered as a
+    replay. The caller either reused a key by mistake or two events collided
+    on one key; returning the earlier response would silently drop the second
+    request, and executing it would break the promise the key makes.
+    """
+
+    error_code = "ORG_IDEMPOTENCY_PAYLOAD_MISMATCH"
+    http_status = status.HTTP_409_CONFLICT
+
+
+class OperationInProgress(OrcaDomainError):
+    """The same key is being processed right now.
+
+    @description A retry that arrived before the first call finished. Answered
+    rather than queued: the caller should back off and retry, and holding the
+    request would tie up a worker for the length of the first one.
+    """
+
+    error_code = "ORG_OPERATION_IN_PROGRESS"
+    http_status = status.HTTP_409_CONFLICT
+
+
+class UnitNotInWorkspace(OrcaDomainError):
+    """The caller named an area this workspace does not have, or has retired.
+
+    @description 400 rather than 404: the area is a field of the body, not the
+    address of the request, and a client that sends a stale slug needs to see
+    a rejected field rather than believe the whole route moved.
+    """
+
+    error_code = "ORG_UNIT_NOT_IN_WORKSPACE"
+
+
+class WorkItemNotFound(OrcaDomainError):
+    """No work item with that id in this project, or no binding for that key."""
+
+    error_code = "ORG_WORK_ITEM_NOT_FOUND"
+    http_status = status.HTTP_404_NOT_FOUND
+
+
+class WorkItemHasNoUnit(OrcaDomainError):
+    """The work item exists but no area is responsible for it.
+
+    @description 400, not 404: the item is there, it just is not the kind of
+    item this API can act on. Answering 404 would send the caller looking for a
+    missing route.
+    """
+
+    error_code = "ORG_WORK_ITEM_HAS_NO_UNIT"
+
+
+class AssigneesNotAllowedHere(OrcaDomainError):
+    """The caller put ``assignees`` in the work item block.
+
+    @description Not ignored, refused. The area decides who does the work, and
+    a client whose assignees were silently dropped would believe it had
+    assigned somebody. The way to name a person on this API is
+    ``assignment.mode = explicit``.
+    """
+
+    error_code = "ORG_ASSIGNEES_NOT_ALLOWED_HERE"
+
+
+class ProcessProjectionDisabled(OrcaDomainError):
+    """A ``process`` block arrived before Phase 4 exists.
+
+    @description The block is part of the published contract, so it is refused
+    with its own code rather than as an unknown field: an integration that
+    sends it is not wrong, it is early, and the code says so.
+    """
+
+    error_code = "ORG_PROCESS_PROJECTION_DISABLED"
+
+
+class IfMatchRequired(OrcaDomainError):
+    """A reassignment arrived without ``If-Match``.
+
+    @description 428 rather than 400: the request is well formed, and the
+    server is refusing to act on it until the caller says which decision it
+    believes it is replacing. Two coordinators reassigning at once is the case
+    this exists for.
+    """
+
+    error_code = "ORG_IF_MATCH_REQUIRED"
+    http_status = status.HTTP_428_PRECONDITION_REQUIRED
+
+
+class ExternalBindingConflict(OrcaDomainError):
+    """The external key already points at a different work item.
+
+    @description Carries ``issue_id`` of the item that holds the binding, so
+    the caller can look at it instead of guessing which of its own records
+    collided.
+    """
+
+    error_code = "ORG_EXTERNAL_BINDING_CONFLICT"
+    http_status = status.HTTP_409_CONFLICT

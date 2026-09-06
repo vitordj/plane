@@ -687,7 +687,17 @@
           "decision_stale": "Dieses Arbeitselement hat sich inzwischen geändert. Bitte neu laden und erneut versuchen.",
           "invalid_routing_transition": "Dieses Arbeitselement kann aus seinem aktuellen Zustand nicht in diesen wechseln.",
           "directory_workspace_not_found": "Diesen Arbeitsbereich gibt es nicht mehr.",
-          "directory_token_required": "Erst ein SCIM-Token ausstellen, dann die Verzeichnisbereitstellung einschalten."
+          "directory_token_required": "Erst ein SCIM-Token ausstellen, dann die Verzeichnisbereitstellung einschalten.",
+          "public_api_disabled": "Die Automatisierungs-API ist auf dieser Instanz ausgeschaltet.",
+          "idempotency_key_required": "Für diese Anfrage wird ein Idempotency-Key-Header benötigt.",
+          "idempotency_payload_mismatch": "Dieser Schlüssel wurde bereits für eine andere Anfrage verwendet.",
+          "operation_in_progress": "Eine identische Anfrage läuft noch. Bitte gleich erneut versuchen.",
+          "external_binding_conflict": "Dieser externe Schlüssel verweist bereits auf ein anderes Arbeitselement.",
+          "assignees_not_allowed_here": "Der Bereich entscheidet, wer dieses Arbeitselement übernimmt, daher kann diese Anfrage keine Zuständigen setzen.",
+          "if_match_required": "Für diese Anfrage wird ein If-Match-Header mit der aktuellen Entscheidung benötigt.",
+          "process_projection_disabled": "Die Prozessprojektion ist auf dieser Instanz ausgeschaltet.",
+          "completion_manual_only": "Dieses Arbeitselement kann nur von einer Person abgeschlossen werden.",
+          "internal_error": "Etwas ist schiefgelaufen. Der Vorgang wurde als fehlgeschlagen vermerkt."
         }
       }
     },

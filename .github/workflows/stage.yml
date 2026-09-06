@@ -395,6 +395,26 @@ jobs:
         working-directory: ./apps/api
         run: pytest plane/tests/unit -q -m unit
 
+      # The one contract file that belongs in the merge gate (item 1.8). The
+      # rest of plane/tests/contract needs RabbitMQ and MinIO and stays in the
+      # manual job below; this one needs a live HTTP server and PostgreSQL,
+      # both of which this job already has.
+      #
+      # It runs without a broker because the endpoint queues its native
+      # activity in `transaction.on_commit` and logs rather than raises when
+      # the queue is unreachable — the work item is committed by then, and
+      # failing the response would tell a caller its work was lost when it was
+      # not. That is asserted by a unit test, not assumed here.
+      #
+      # It is here rather than there because of what it proves: that replaying
+      # fifty operations leaves the same number of rows, and that two callers
+      # racing on one idempotency key produce one work item. Neither is
+      # observable from a test that shares a transaction with the server, and
+      # both are promises an integration is built on — so they gate the merge.
+      - name: Run Orca Public API Contract Tests
+        working-directory: ./apps/api
+        run: pytest plane/tests/contract/test_orca_public_contract.py -q
+
   # ---------------------------------------------------------------------------
   # Contract and smoke suites (P0.8). Manual, not part of the merge gate: they
   # need RabbitMQ and MinIO on top of PostgreSQL and Valkey, which is what

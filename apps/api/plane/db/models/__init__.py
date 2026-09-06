@@ -84,6 +84,12 @@ from .organizational_assignment import (
     RequestedAssignmentMode,
     ResponsibilitySource,
 )
+from .organizational_automation import (
+    AutomationOperation,
+    AutomationOperationStatus,
+    AutomationOperationType,
+    ExternalWorkItemBinding,
+)
 from .organizational_directory import (
     OrganizationalDirectoryConnection,
     OrganizationalDirectoryGroupMembership,

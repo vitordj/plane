@@ -687,7 +687,17 @@
           "decision_stale": "Această activitate s-a schimbat între timp. Reîncărcați și încercați din nou.",
           "invalid_routing_transition": "Această activitate nu poate trece în acea stare din cea curentă.",
           "directory_workspace_not_found": "Acest spațiu de lucru nu mai există.",
-          "directory_token_required": "Emiteți un token SCIM înainte de a activa provizionarea din director."
+          "directory_token_required": "Emiteți un token SCIM înainte de a activa provizionarea din director.",
+          "public_api_disabled": "API-ul de automatizare este dezactivat pe această instanță.",
+          "idempotency_key_required": "Această cerere necesită antetul Idempotency-Key.",
+          "idempotency_payload_mismatch": "Această cheie a fost deja folosită pentru altă cerere.",
+          "operation_in_progress": "O cerere identică este încă în curs. Încercați din nou peste un moment.",
+          "external_binding_conflict": "Această cheie externă indică deja altă activitate.",
+          "assignees_not_allowed_here": "Zona decide cine preia această activitate, așa că această cerere nu poate stabili responsabili.",
+          "if_match_required": "Această cerere necesită antetul If-Match cu decizia în vigoare.",
+          "process_projection_disabled": "Proiecția proceselor este dezactivată pe această instanță.",
+          "completion_manual_only": "Această activitate poate fi finalizată doar de o persoană.",
+          "internal_error": "Ceva nu a funcționat. Operațiunea a fost înregistrată ca eșuată."
         }
       }
     },

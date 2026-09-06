@@ -687,7 +687,17 @@
           "decision_stale": "此工作项在您查看期间已变更。请重新加载后再试。",
           "invalid_routing_transition": "此工作项无法从当前状态转到该状态。",
           "directory_workspace_not_found": "该工作区已不存在。",
-          "directory_token_required": "请先签发 SCIM 令牌，再开启目录预配。"
+          "directory_token_required": "请先签发 SCIM 令牌，再开启目录预配。",
+          "public_api_disabled": "此实例已关闭自动化 API。",
+          "idempotency_key_required": "此请求需要 Idempotency-Key 标头。",
+          "idempotency_payload_mismatch": "该密钥已用于另一个请求。",
+          "operation_in_progress": "相同的请求仍在处理中。请稍后再试。",
+          "external_binding_conflict": "该外部键已指向另一个工作项。",
+          "assignees_not_allowed_here": "由区域决定谁承接此工作项，因此此请求无法设置负责人。",
+          "if_match_required": "此请求需要携带当前决定的 If-Match 标头。",
+          "process_projection_disabled": "此实例已关闭流程投影。",
+          "completion_manual_only": "此工作项只能由人完成。",
+          "internal_error": "出现问题。该操作已记录为失败。"
         }
       }
     },

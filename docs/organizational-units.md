@@ -179,6 +179,30 @@ without writing anything.
 Adding a member takes `workspace_member_ids` and only accepts people who are
 already active members of the workspace — a unit never sends invitations.
 
+### The automation API is a different namespace
+
+Programs do not use the routes above. They use `/api/v1/orca/`, which is
+authenticated by API key rather than by session, and which the two namespaces
+keep strictly apart: an API key is refused on `/api/orca/`, and a browser
+session is refused on `/api/v1/orca/`. That separation is asserted by the
+contract suite, not just intended.
+
+| Method | Path (under `/api/v1/orca/workspaces/<slug>/`) |
+| ------ | ---------------------------------------------- |
+| `GET`  | `units/` |
+| `GET`  | `units/<unit_slug>/queue/` |
+| `GET`  | `work-items/by-external/<source>/<id>/` |
+| `POST` | `projects/<project_id>/work-items/` |
+| `POST` | `projects/<project_id>/work-items/<issue_id>/reassign/` |
+| `POST` | `projects/<project_id>/work-items/<issue_id>/transfer/` |
+
+It is switched off by default and gated by a second flag,
+`ORCA_PUBLIC_API_ENABLED`, on top of `ORCA_ORG_UNITS_ENABLED`. Every mutation
+requires an `Idempotency-Key`, because the callers are programs and programs
+retry. The whole contract, with `curl` examples and the error table, is in
+[`orca-public-api.md`](./orca-public-api.md); a reference client is in
+[`tools/orca-client/`](../tools/orca-client/README.md).
+
 ## Assignment
 
 A unit can be marked responsible for a work item **in a project the unit

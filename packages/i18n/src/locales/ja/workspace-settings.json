@@ -687,7 +687,17 @@
           "decision_stale": "この作業項目は表示中に変更されました。再読み込みしてからもう一度お試しください。",
           "invalid_routing_transition": "この作業項目は現在の状態からその状態へは移行できません。",
           "directory_workspace_not_found": "そのワークスペースは存在しません。",
-          "directory_token_required": "ディレクトリからのプロビジョニングを有効にする前に、SCIM トークンを発行してください。"
+          "directory_token_required": "ディレクトリからのプロビジョニングを有効にする前に、SCIM トークンを発行してください。",
+          "public_api_disabled": "自動化 API はこのインスタンスでは無効です。",
+          "idempotency_key_required": "このリクエストには Idempotency-Key ヘッダーが必要です。",
+          "idempotency_payload_mismatch": "このキーは別のリクエストですでに使用されています。",
+          "operation_in_progress": "同じリクエストがまだ実行中です。少し待ってからもう一度お試しください。",
+          "external_binding_conflict": "この外部キーはすでに別の作業項目を指しています。",
+          "assignees_not_allowed_here": "この作業項目を誰が担当するかはエリアが決めるため、このリクエストで担当者を指定することはできません。",
+          "if_match_required": "このリクエストには、現在の決定を含む If-Match ヘッダーが必要です。",
+          "process_projection_disabled": "プロセス投影はこのインスタンスでは無効です。",
+          "completion_manual_only": "この作業項目は人によってのみ完了できます。",
+          "internal_error": "問題が発生しました。この操作は失敗として記録されました。"
         }
       }
     },

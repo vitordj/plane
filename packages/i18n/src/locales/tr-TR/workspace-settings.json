@@ -687,7 +687,17 @@
           "decision_stale": "Bu iş öğesi siz bakarken değişti. Sayfayı yenileyip tekrar deneyin.",
           "invalid_routing_transition": "Bu iş öğesi mevcut durumundan o duruma geçemez.",
           "directory_workspace_not_found": "Bu çalışma alanı artık yok.",
-          "directory_token_required": "Dizin sağlamayı açmadan önce bir SCIM belirteci oluşturun."
+          "directory_token_required": "Dizin sağlamayı açmadan önce bir SCIM belirteci oluşturun.",
+          "public_api_disabled": "Otomasyon API’si bu örnekte kapalı.",
+          "idempotency_key_required": "Bu istek bir Idempotency-Key başlığı gerektiriyor.",
+          "idempotency_payload_mismatch": "Bu anahtar daha önce başka bir istek için kullanıldı.",
+          "operation_in_progress": "Aynı istek hâlâ sürüyor. Birazdan tekrar deneyin.",
+          "external_binding_conflict": "Bu dış anahtar zaten başka bir iş öğesine işaret ediyor.",
+          "assignees_not_allowed_here": "Bu iş öğesini kimin üstleneceğine alan karar verir, bu nedenle bu istek atanan kişileri belirleyemez.",
+          "if_match_required": "Bu istek, geçerli kararı taşıyan bir If-Match başlığı gerektiriyor.",
+          "process_projection_disabled": "Süreç izdüşümü bu örnekte kapalı.",
+          "completion_manual_only": "Bu iş öğesi yalnızca bir kişi tarafından tamamlanabilir.",
+          "internal_error": "Bir şeyler ters gitti. İşlem başarısız olarak kaydedildi."
         }
       }
     },

@@ -462,10 +462,18 @@ def _record(
     previous_executor_id=None,
     decided_by=None,
     reason="",
+    automation_operation=None,
 ) -> AssignmentDecision:
-    """@description Write the decision and point the link at it (I5). @returns The new decision."""
+    """
+    @description Write the decision and point the link at it (I5).
+    @param automation_operation: The ``AutomationOperation`` that caused this,
+        when the change came in over the public API. Answers "which call did
+        this?" without joining through timestamps.
+    @returns The new decision.
+    """
     superseded = link.current_assignment_decision
     decision = AssignmentDecision.objects.create(
+        automation_operation=automation_operation,
         issue_id=link.issue_id,
         organizational_unit_id=link.organizational_unit_id,
         project_id=link.project_id,
@@ -585,6 +593,7 @@ def allocate(
     actor=None,
     trigger: str = DecisionTrigger.INTERNAL_API,
     assignment_due_at=None,
+    automation_operation=None,
 ) -> AllocationResult:
     """
     @description Decide who does this work item, and record why (RFC §6.3-6.5).
@@ -602,6 +611,8 @@ def allocate(
     @param actor: Who is acting; ``None`` means the system decided.
     @param trigger: Member of ``DecisionTrigger``.
     @param assignment_due_at: Explicit SLA deadline, which wins over policy.
+    @param automation_operation: The public-API operation behind this call, if
+        any; recorded on every decision the call produces.
     @returns What happened, including the decision that was written.
     @raises UnitNotCoveringProject, AssignmentModeNotAllowed, ExecutorNotEligible
     """
@@ -640,6 +651,7 @@ def allocate(
                 chosen_user_id=executor_id,
                 previous_executor_id=previous_executor_id,
                 decided_by=actor,
+                automation_operation=automation_operation,
             )
             _apply_assigned(link, decision, executor_id)
             return AllocationResult(link, decision, DecisionOutcome.ASSIGNED, executor_id)
@@ -660,6 +672,7 @@ def allocate(
                     chosen_user_id=chosen.user_id,
                     previous_executor_id=previous_executor_id,
                     decided_by=actor,
+                    automation_operation=automation_operation,
                 )
                 _apply_assigned(link, decision, chosen.user_id)
                 return AllocationResult(link, decision, DecisionOutcome.ASSIGNED, chosen.user_id)
@@ -679,6 +692,7 @@ def allocate(
                 snapshot=ranked.snapshot(),
                 previous_executor_id=previous_executor_id,
                 decided_by=actor,
+                automation_operation=automation_operation,
             )
             _apply_queued(
                 link,
@@ -703,6 +717,7 @@ def allocate(
             snapshot=[],
             previous_executor_id=previous_executor_id,
             decided_by=actor,
+            automation_operation=automation_operation,
         )
         _apply_queued(
             link,
@@ -757,11 +772,23 @@ def claim(issue, user, *, actor=None) -> AllocationResult:
         return AllocationResult(link, decision, DecisionOutcome.ASSIGNED, user_id)
 
 
-def reassign(issue, new_executor, *, actor=None, reason="", expected_decision_id=None) -> AllocationResult:
+def reassign(
+    issue,
+    new_executor,
+    *,
+    actor=None,
+    reason="",
+    expected_decision_id=None,
+    trigger: str = DecisionTrigger.REASSIGN,
+    automation_operation=None,
+) -> AllocationResult:
     """
     @description Hand the item to somebody else. ``expected_decision_id`` is
     this layer's If-Match: two coordinators reassigning at once must not have
     the second silently overwrite the first.
+    @param trigger: What reassigned it; the public API passes ``public_api`` so
+        a robot's reassignment is not read as a coordinator clicking.
+    @param automation_operation: The public-API operation behind this call.
     @raises DecisionStale: The item moved since the caller read it.
     @raises ExecutorNotEligible: The new person cannot hold this work.
     """
@@ -781,7 +808,7 @@ def reassign(issue, new_executor, *, actor=None, reason="", expected_decision_id
 
         decision = _record(
             link,
-            trigger=DecisionTrigger.REASSIGN,
+            trigger=trigger,
             requested_mode=RequestedAssignmentMode.EXPLICIT,
             resolution=None,
             outcome=DecisionOutcome.ASSIGNED,
@@ -790,6 +817,7 @@ def reassign(issue, new_executor, *, actor=None, reason="", expected_decision_id
             previous_executor_id=previous_executor_id,
             decided_by=actor,
             reason=reason,
+            automation_operation=automation_operation,
         )
         _apply_assigned(link, decision, executor_id)
         return AllocationResult(link, decision, DecisionOutcome.ASSIGNED, executor_id)
@@ -802,6 +830,8 @@ def return_to_queue(
     reason="",
     queue_reason=QueueReason.MANUALLY_RETURNED,
     trigger: str = DecisionTrigger.RETURN_TO_QUEUE,
+    expected_decision_id=None,
+    automation_operation=None,
 ) -> AllocationResult:
     """
     @description Put an assigned item back in the queue. The person keeps their
@@ -809,9 +839,17 @@ def return_to_queue(
     detaching somebody is a human's call, not the allocator's.
     @param trigger: What returned it; the audit command passes ``command`` so
         its repairs are not read as somebody clicking in the interface.
+    @param expected_decision_id: The same optimistic check ``reassign`` makes,
+        for callers that offer If-Match on "return this to the queue" as well.
+        Compared under the row lock rather than by the caller, so two returns
+        arriving together cannot both pass their own read.
+    @param automation_operation: The public-API operation behind this call.
+    @raises DecisionStale: The item moved since the caller read it.
     """
     with transaction.atomic():
         link = _locked_link(issue)
+        if expected_decision_id is not None and str(link.current_assignment_decision_id) != str(expected_decision_id):
+            raise DecisionStale(current_decision_id=str(link.current_assignment_decision_id))
         if link.routing_state not in (RoutingState.ASSIGNED, RoutingState.SUSPENDED):
             raise InvalidTransition(routing_state=link.routing_state)
 
@@ -826,18 +864,35 @@ def return_to_queue(
             previous_executor_id=previous_executor_id,
             decided_by=actor,
             reason=reason,
+            automation_operation=automation_operation,
         )
         link.queued_at = None  # the wait starts now, not when it was first queued
         _apply_queued(link, decision, state=RoutingState.QUEUED, queue_reason=queue_reason)
         return AllocationResult(link, decision, DecisionOutcome.QUEUED, None, queue_reason)
 
 
-def transfer_unit(issue, to_unit, *, actor=None, source=ResponsibilitySource.INTERNAL_API, reason="") -> TransferResult:
+def transfer_unit(
+    issue,
+    to_unit,
+    *,
+    actor=None,
+    source=ResponsibilitySource.INTERNAL_API,
+    reason="",
+    collaborators: Iterable = (),
+    trigger: str = DecisionTrigger.INTERNAL_API,
+    automation_operation=None,
+) -> TransferResult:
     """
     @description Move responsibility to another area (RFC §6.8): record the
     event, drop the executor if they do not belong to the new area, then apply
     the new area's policy as if the item had just arrived.
+    @param collaborators: People to attach alongside whoever ends up primary.
+        Checked against the **new** area, because that is the one answerable
+        for the item once this returns.
+    @param trigger: What moved it; the public API passes ``public_api``.
+    @param automation_operation: The public-API operation behind this call.
     @raises UnitNotCoveringProject: The new area does not cover the project (I2).
+    @raises ExecutorNotEligible: A collaborator cannot hold work of the new area.
     """
     if not unit_covers_project(to_unit, issue.project_id):
         raise UnitNotCoveringProject(unit_id=str(to_unit.id), project_id=str(issue.project_id))
@@ -861,6 +916,15 @@ def transfer_unit(issue, to_unit, *, actor=None, source=ResponsibilitySource.INT
         link.organizational_unit = to_unit
         link.save(update_fields=["organizational_unit", "updated_at"])
 
+        # Attached here rather than passed down to ``allocate``, because two of
+        # the three branches below never reach it — an item whose executor
+        # belongs to the new area is left alone, and one returned to the queue
+        # allocates nothing.
+        for collaborator in collaborators:
+            collaborator_id = getattr(collaborator, "id", collaborator)
+            _assert_eligible(to_unit, link.project_id, collaborator_id)
+            _ensure_assignee(issue, collaborator_id)
+
         executor_id = link.primary_executor_id
         keeps_executor = (
             executor_id is not None
@@ -875,13 +939,19 @@ def transfer_unit(issue, to_unit, *, actor=None, source=ResponsibilitySource.INT
         if executor_id is not None and not keeps_executor:
             # Back to the queue under the new area, with the old executor kept
             # as a collaborator so the item does not silently lose its history.
-            allocation = return_to_queue(issue, actor=actor, reason=reason, queue_reason=QueueReason.MANUALLY_RETURNED)
+            allocation = return_to_queue(
+                issue,
+                actor=actor,
+                reason=reason,
+                queue_reason=QueueReason.MANUALLY_RETURNED,
+                automation_operation=automation_operation,
+            )
             return TransferResult(event=event, allocation=allocation)
 
         if executor_id is not None:
             return TransferResult(event=event, allocation=None)
 
-        allocation = allocate(issue, to_unit, actor=actor, trigger=DecisionTrigger.INTERNAL_API)
+        allocation = allocate(issue, to_unit, actor=actor, trigger=trigger, automation_operation=automation_operation)
         return TransferResult(event=event, allocation=allocation)
 
 
@@ -894,8 +964,11 @@ def set_responsibility(
     requested_mode: Optional[str] = None,
     explicit_executor=None,
     exclude_user_ids: Iterable = (),
+    collaborators: Iterable = (),
     reason="",
     assignment_due_at=None,
+    trigger: str = DecisionTrigger.INTERNAL_API,
+    automation_operation=None,
 ) -> AllocationResult:
     """
     @description The "mark this area responsible" path. Creates the link on
@@ -904,14 +977,31 @@ def set_responsibility(
     area's policy.
     @param exclude_user_ids: People the ranking must not choose, for a caller
         adding somebody alongside whoever is already on the item.
+    @param collaborators: People to attach alongside the executor, answerable
+        for nothing; each is checked for eligibility like an executor would be.
+    @param trigger: Member of ``DecisionTrigger``. Defaults to the internal API
+        so every existing caller keeps the trigger it has always written.
+    @param automation_operation: The public-API operation behind this call,
+        recorded on every decision it produces.
     @raises UnitNotCoveringProject: The area does not cover the project (I2).
+    @raises ExecutorNotEligible: A named executor or collaborator cannot hold
+        this work.
     """
     if not unit_covers_project(unit, issue.project_id):
         raise UnitNotCoveringProject(unit_id=str(unit.id), project_id=str(issue.project_id))
 
     existing = IssueOrganizationalUnit.objects.filter(issue=issue).first()
     if existing is not None and existing.organizational_unit_id != unit.id:
-        transfer = transfer_unit(issue, unit, actor=actor, source=source, reason=reason)
+        transfer = transfer_unit(
+            issue,
+            unit,
+            actor=actor,
+            source=source,
+            reason=reason,
+            collaborators=collaborators,
+            trigger=trigger,
+            automation_operation=automation_operation,
+        )
         if transfer.allocation is not None:
             return transfer.allocation
         # The executor belongs to the new area too, so the transfer left the
@@ -942,7 +1032,9 @@ def set_responsibility(
         requested_mode=requested_mode,
         explicit_executor=explicit_executor,
         exclude_user_ids=exclude_user_ids,
+        collaborators=collaborators,
         actor=actor,
-        trigger=DecisionTrigger.INTERNAL_API,
+        trigger=trigger,
         assignment_due_at=assignment_due_at,
+        automation_operation=automation_operation,
     )
