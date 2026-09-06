@@ -161,12 +161,24 @@ Cuidado conhecido: a fixture autouse `run_celery_inline` executa as tarefas Cele
 - **PostgreSQL 16 local × 15.7 no CI** — nada aqui depende de versão; se divergirem, é o primeiro lugar a olhar.
 - **Throttle no teste** — a fixture autouse `clear_throttle_history` já limpa o cache; sobrescrever `REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]` inteiro via `settings`, não só a chave (o DRF lê o dicionário no `__init__` do throttle).
 
-### Pronto quando
+### Pronto quando — e o que aconteceu
 
-- 1.4, 1.5, 1.6, 1.7, 1.8 `[x]` neste arquivo, com "Entregue" e "Aceite" preenchidos como os itens anteriores.
-- `pytest plane/tests/unit/orca -q -m unit` e `pytest plane/tests/contract/test_orca_public_contract.py -q` verdes localmente; `ruff check` e `ruff format --check` limpos; `test_orca_error_codes.py` verde sem código novo.
-- README do plano: linha da Fase 1 em `8/8` (gate ainda aberto), "Próximo item recomendado" apontando para o fecho dos Gates P0/D0/1, Histórico com a entrada do bloco.
-- Push na branch. PR **proposta** (título, base e corpo) no relatório final; abrir só se pedido.
+- [x] 1.4, 1.5, 1.6, 1.7, 1.8 `[x]` neste arquivo, com "Entregue" e "Aceite" preenchidos.
+- [x] Suíte Orca e contrato verdes localmente; `ruff check`/`ruff format --check` limpos; `test_orca_error_codes.py` verde **sem código novo**, então o `check:sync` do i18n não foi necessário.
+- [x] README do plano com a Fase 1 em 8/8, o que falta para o Gate 1, e o histórico do bloco.
+- [x] Push na branch; PR proposta descrita, não aberta.
+
+**Quinze decisões, catorze cumpridas como escritas.** A que mudou foi a B10, e
+para melhor: o plano dizia que a autorização de projeto correria dentro da
+operação, e `permission_classes` do DRF corre no `initial()`, antes do `post()`.
+O efeito é que uma chamada não autorizada responde 403 **sem abrir recibo** e
+portanto não gasta a chave de idempotência de quem a enviou — melhor do que o
+planejado, e registrado no RFC §4.2 para não ser lido como descuido.
+
+**O que a execução acrescentou ao plano:** o guard da publicação pós-commit
+(nenhuma das quinze decisões previa que um broker fora do ar pudesse envenenar
+uma chave), o `handle_exception` na base pública, e `expected_decision_id` em
+`return_to_queue` — os três nasceram de rodar o código, não de lê-lo.
 
 ---
 
@@ -307,7 +319,7 @@ vencedora.
 
 ---
 
-## 1.4 — Endpoints: `work-items/` composto, `by-external/`, `units/`, `queue/` `[ ]`
+## 1.4 — Endpoints: `work-items/` composto, `by-external/`, `units/`, `queue/` `[x]`
 
 **Arquivos.** `apps/api/plane/api/views/orca/{units,work_items}.py`,
 `apps/api/plane/api/serializers/orca/{units,work_items}.py`,
@@ -346,9 +358,81 @@ executor não elegível 400; permissão por token de Guest 403; `assignees` no
 bloco → 400; transação (política proibida não deixa `Issue` nem binding);
 `on_commit` não dispara em rollback (mockar `issue_activity.delay`).
 
+**Entregue em quatro passos, na ordem do bloco.**
+
+**1.4a — o serviço, não uma cópia dele.** `assignment_service.py` ganhou
+`trigger`, `collaborators`, `automation_operation` e `expected_decision_id`,
+cada um com o default que a função já escrevia — nenhum dos 54 testes do D0.5
+mudou de comportamento, e há teste explícito afirmando que um chamador que não
+passa `trigger` continua gravando `internal_api`. `transfer_unit` deixou de
+fixar `INTERNAL_API` no `allocate` e no `return_to_queue` que dispara, e passou
+a anexar os colaboradores dentro da sua própria transação: dos três ramos da
+transferência, dois nunca chegam ao `allocate`, então passá-los adiante teria
+perdido silenciosamente os colaboradores de um item cujo executor permanece.
+
+`return_to_queue` ganhou `expected_decision_id` — a mesma checagem otimista do
+`reassign`, sob o mesmo lock de linha. O 1.5 precisa dela porque
+`{"return_to_queue": true}` chega pela mesma rota que uma reatribuição, e as
+duas metades têm de ser igualmente seguras de repetir. Fazer a comparação na
+view, com uma leitura própria, seria uma corrida.
+
+**1.4b — as formas.** `api/serializers/orca/` com um `StrictSerializer` como
+base: **chave desconhecida é erro**, com as aceitas listadas na resposta. O
+default do DRF é ignorar o que não conhece, o que está certo para um formulário
+e errado para um contrato de máquina — um cliente que manda `asignees` recebe
+201 e acredita que atribuiu alguém, e a falha aparece semanas depois como "o
+SLA nunca é preenchido". `work_item_envelope()` monta o envelope do §7.2 uma
+vez e as quatro rotas o reusam, de forma que um replay é idêntico byte a byte
+ao que replica.
+
+**1.4c — as rotas.** `api/views/orca/{work_items,units}.py`, `api/urls/orca.py`
+incluído no agregador da v1. A ordem fixa do §7.2 está no `_create`, e o
+`run_operation` da base é o que garante o invariante que interessa: **toda
+recusa fecha o recibo com o código e o status que o chamador vê**, para que um
+retry de um pedido que não pode dar certo seja respondido em vez de tentado de
+novo.
+
+**1.4d — os testes.** `test_public_work_items.py` (38) e `test_public_units.py`
+(16), com construtores de URL e uma fixture `token_client` novos no
+`conftest.py` — autenticando por `X-Api-Key` de verdade, não por
+`force_authenticate`, porque o throttle e o recibo dois se apoiam no token e
+uma sessão forçada não tem nenhum.
+
+**Três coisas que a execução mudou, e uma que ela confirmou.**
+
+1. **Defeito de código, encontrado pelos testes: dois caminhos documentados
+   respondiam 500.** `WorkItemNotFound` e `IfMatchRequired` são levantados
+   **antes** de o recibo existir — resolver o item, ler o `If-Match` — e a
+   primeira versão só capturava `OrcaDomainError` dentro do bloco idempotente.
+   As duas escapavam para o handler genérico do `BaseAPIView`. Corrigido com um
+   `handle_exception` no `OrcaPublicBaseAPIView`, que converte qualquer recusa
+   da camada em qualquer ponto do request — e que uma rota futura herda em vez
+   de reabrir o buraco.
+2. **A autorização de projeto roda antes do recibo**, porque `permission_classes`
+   do DRF corre no `initial()`. O plano supunha o contrário. O resultado é
+   melhor do que o planejado: uma chamada não autorizada responde 403 sem abrir
+   operação, e portanto **não gasta a chave de idempotência de quem a enviou**.
+   Registrado no RFC §4.2.
+3. **A constraint I3 recusou um teste, com razão.** A fixture da fila criava uma
+   linha `assigned` sem executor; o CHECK do banco a rejeitou. O teste estava
+   errado, a constraint estava certa, e a fixture passou a respeitá-la nos dois
+   sentidos.
+4. **O default do assignee (defeito D2) está desligado neste caminho**, e há
+   teste que o prova: com `default_assignee` configurado no projeto, o item
+   criado pela API não recebe assignee nenhum. `default_assignee_id=None` no
+   contexto do serializer nativo é o que desliga, sem tocar no serializer que
+   todo o resto usa.
+
+**Aceite.**
+
+- [x] `pytest plane/tests/unit/orca/test_public_work_items.py` → **38 passed**; `test_public_units.py` → **16 passed**. Executados nesta sessão.
+- [x] Sem migração nova: a `0138` do 1.1 já tinha as duas tabelas e a FK.
+- [x] `ruff check` e `ruff format --check` limpos em tudo que foi tocado.
+- [x] `python manage.py check` limpo — as seis rotas carregam.
+
 ---
 
-## 1.5 — `reassign/` e `transfer/` públicos `[ ]`
+## 1.5 — `reassign/` e `transfer/` públicos `[x]`
 
 - `POST .../work-items/{issue_id}/reassign/` com header `If-Match: <decision_id>`; corpo `{"primary_executor": ...}` ou `{"return_to_queue": true}`, `reason`. Sem `If-Match` → 428 `ORG_IF_MATCH_REQUIRED` (código novo); divergente → 412 `ORG_DECISION_STALE`. Também exige `Idempotency-Key`.
 - `POST .../work-items/{issue_id}/transfer/` corpo `{"unit": slug, "reason"}`; `Idempotency-Key`.
@@ -357,9 +441,31 @@ bloco → 400; transação (política proibida não deixa `Issue` nem binding);
 **Testes:** stale 412; sem If-Match 428; replay idêntico não gera segunda
 decisão; transfer para área que não cobre 400.
 
+**Entregue** nas mesmas views, com o mapeamento de status do achado do 1.6:
+`PUBLIC_STATUS_OVERRIDES = {"ORG_DECISION_STALE": 412}` na base pública. A
+exceção continua carregando 409 e a rota interna continua respondendo 409 à
+UI; quem traduz é a borda que fala HTTP com máquinas.
+
+**Por que `transfer` não pede `If-Match` e `reassign` pede.** Uma reatribuição
+é uma edição disputada de **uma** decisão: dois coordenadores agindo ao mesmo
+tempo, e o segundo não pode sobrescrever o primeiro em silêncio. Uma
+transferência é a afirmação de que o trabalho pertence a outro lugar; os dois
+lados de uma corrida deixam o item numa área só, com um histórico só.
+
+**O que o recibo salva aqui, e que não é óbvio.** Sem ele, um retry de uma
+reatribuição encontraria o próprio `If-Match` vencido — a primeira chamada
+moveu a decisão — e responderia **412 a um chamador que teve sucesso**. O
+mesmo vale para `transfer`: o retry bateria em "já pertence a essa área" e
+responderia 400. Os dois casos têm teste.
+
+**Aceite.**
+
+- [x] `pytest plane/tests/unit/orca/test_public_reassign_transfer.py` → **22 passed**. Executado nesta sessão.
+- [x] 412 com `current_decision_id` no corpo, 428 sem `If-Match` (e **sem** abrir operação — o teste afirma que nenhuma `AutomationOperation` é criada), replay sem segunda decisão, transfer para área que não cobre 400, executor fora da nova área volta à fila mantendo o `IssueAssignee`.
+
 ---
 
-## 1.6 — Códigos de erro e respostas `[~]`
+## 1.6 — Códigos de erro e respostas `[x]`
 
 Registrar nos três lugares (RFC §7.3 + `ORG_ASSIGNEES_NOT_ALLOWED_HERE`,
 `ORG_IF_MATCH_REQUIRED`, `ORG_INTERNAL_ERROR`). Header `Idempotent-Replay:
@@ -375,24 +481,73 @@ upstream, tabela Python ≡ tabela TS, e toda chave TS existente no catálogo.
 **Falta o header `Idempotent-Replay: true`**, que só existe quando existe
 resposta HTTP — vai com o 1.4.
 
-**Achado que o 1.5 tem de resolver.** O RFC §7.3 e o item 1.5 especificam
-**412** para `ORG_DECISION_STALE`, mas a exceção `DecisionStale` entregue no
-D0.5 carrega **409**, e a rota interna já responde 409 para a UI. Mudar a
-classe mudaria a API interna; a rota pública terá de mapear o status
-explicitamente, em vez de herdar o `http_status` da exceção. Registrado aqui
-para não ser descoberto durante o 1.5.
+**Achado que o 1.5 resolveu.** O RFC §7.3 e o item 1.5 especificam **412**
+para `ORG_DECISION_STALE`, mas a exceção `DecisionStale` entregue no D0.5
+carrega **409**, e a rota interna já responde 409 para a UI. Mudar a classe
+mudaria a API interna; a rota pública mapeia o status explicitamente
+(`PUBLIC_STATUS_OVERRIDES`), em vez de herdar o `http_status` da exceção.
+
+**Fechado.** O header `Idempotent-Replay: true` sai em toda resposta de replay,
+por `replay_response()` na base pública, que também vira `operation.replay`
+para `true` no corpo — os dois, porque um cliente que lê só o corpo e um que lê
+só o header têm ambos de saber. Seis códigos ganharam exceção de domínio
+própria (`AssigneesNotAllowedHere`, `ProcessProjectionDisabled`,
+`IfMatchRequired`, `UnitNotInWorkspace`, `WorkItemNotFound`,
+`WorkItemHasNoUnit`), de modo que serializer, serviço e view recusam pelo mesmo
+caminho e o recibo grava o mesmo código que o chamador lê.
+
+**Nenhum código novo foi preciso** — os dez de 4922–4931 cobriram a fase
+inteira, e por isso o `check:sync` do i18n não precisou rodar. Um corpo
+malformado que não é nenhum deles responde 400 com
+`"error_message": "VALIDATION_ERROR"` e o `detail` do DRF: a informação útil é
+a lista de campos, que código nenhum carregaria, e inventar um poria um número
+em três arquivos e dezenove locales para dizer "olhe o detail".
+
+**Aceite.**
+
+- [x] `test_orca_error_codes.py` verde, sem código novo (executado com a suíte Orca).
+- [x] `Idempotent-Replay: true` afirmado em replay de criação, de reatribuição, de transferência **e de falha** — um 400 replicado continua 400.
 
 ---
 
-## 1.7 — Documentação e cliente de referência `[ ]`
+## 1.7 — Documentação e cliente de referência `[x]`
 
 - `docs/orca-public-api.md`: autenticação, headers obrigatórios, cada endpoint com `curl`, tabela de erros, semântica de replay (RFC §6.7 em linguagem de cliente), exemplos dos três modos e do `explicit`.
 - `tools/orca-client/orca_client.py`: script Python (requests) com funções `create_work_item`, `get_by_external`, `reassign`, `transfer`, `list_queue`, gerando `Idempotency-Key` determinística a partir de `(source, id, operation, event_id)`. README curto. Usado pelos testes de contrato (1.8) contra o servidor de teste.
 - Atualizar `README.md` do fork (tabela de features) e RFC §2.1.
 
+**Entregue.** `docs/orca-public-api.md` em inglês, como as demais docs
+técnicas, aberta pela pergunta que a API responde e a API nativa não: quem faz
+o trabalho. A seção mais longa é a das chaves de idempotência, e é de
+propósito — é o único lugar onde um integrador pode errar de um jeito que só
+aparece semanas depois, como dois itens para um evento.
+
+Duas advertências entraram em destaque porque a implementação as tornou
+concretas: **`uuid4()` é a resposta errada** para a chave (um webhook
+reentregue depois de o worker morrer ganharia chave nova, e chave nova é
+operação nova), e **um 4xx gasta a chave** — corrigir o payload muda o pedido,
+e pedido mudado precisa de chave nova. A tabela de erros lista os 19 códigos
+que a API pode devolver com o status **da API pública**, incluindo a diferença
+do 412.
+
+`tools/orca-client/` é pequeno por decisão: sem retry, sem pool, sem variante
+assíncrona. Existe para ser **lido** por quem vai escrever o mesmo em PHP ou
+n8n, e para ser executado pelo 1.8 — é isso que mantém os exemplos do guia
+honestos. `idempotency_key()` é o método que importa.
+
+Também atualizados: `README.md` do fork (linha nova na tabela de features e as
+duas variáveis), RFC §2.1 (três linhas que diziam "Não"/"Parcial" e agora
+dizem o que existe) e `docs/organizational-units.md`, com a seção que separa
+os dois namespaces.
+
+**Aceite.**
+
+- [x] Os `curl` do guia usam os mesmos corpos dos testes; o fluxo completo (criar → ler → reatribuir → 412 com chave velha → fila) é um teste de contrato.
+- [ ] Revisão por alguém que não escreveu o código, executando os `curl` contra staging — critério do Gate 1, precisa de ambiente.
+
 ---
 
-## 1.8 — Testes de contrato e gate `[ ]`
+## 1.8 — Testes de contrato e gate `[x]`
 
 `apps/api/plane/tests/contract/test_orca_public_contract.py` (o diretório
 `contract` já existe): usando o cliente de referência contra o `live_server`
@@ -403,9 +558,29 @@ do pytest-django:
 - Reatribuir por UI (serviço interno) e depois replay da criação → executor não muda.
 - Rota `/api/orca/...` com API key → 401/403; rota `/api/v1/orca/...` com sessão sem token → 401.
 
+**Entregue.** `test_orca_public_contract.py` fala HTTP de verdade com
+`live_server`, através do cliente de referência importado por caminho de
+`tools/orca-client/`. O que ele prova não é observável de um teste que divide
+transação com o servidor:
+
+- **50 criações determinísticas, executadas duas vezes**, e a asserção não é "os corpos bateram" e sim que a contagem de `Issue`, `AssignmentDecision`, `IssueAssignee`, `ExternalWorkItemBinding` e `AutomationOperation` **não mudou**. Um replay que reexecutasse a alocação apareceria aqui como 100 decisões muito antes de alguém notar na interface.
+- **Duas threads na mesma chave → um item.** Resolvido pela constraint única, não por lock; o perdedor recebe 409 `ORG_OPERATION_IN_PROGRESS`, que é resultado legítimo — o que não é legítimo é um segundo item.
+- **Replay depois de reatribuição humana** devolve o executor original, e o `GET by-external` devolve o atual: a diferença entre "o que sua chamada fez" e "como está agora", que é a única forma de as duas coisas serem verdade ao mesmo tempo.
+- **Os dois namespaces não aceitam a credencial um do outro** — API key em `/api/orca/` e sessão em `/api/v1/orca/`.
+- **A chave gasta num 4xx continua gasta**, e o caminho de saída (variar `attempt`) funciona. É o comportamento que o guia documenta, verificado em vez de afirmado.
+
+**No CI.** Um passo novo no job `api_tests` (`pytest
+plane/tests/contract/test_orca_public_contract.py -q`), **não** no job manual: o
+arquivo precisa de servidor HTTP e PostgreSQL, que o job já tem, e não precisa
+de MinIO nem de RabbitMQ. O porquê de ser merge gate está no comentário do
+workflow e em `RUNNING_TESTS.md`: as duas promessas acima são aquelas em que
+uma integração se apoia.
+
 **Aceite.**
 
-- [ ] Todos os testes da fase verdes no runner Docker e no CI (P0.8 já inclui `plane/tests/unit`; adicionar `plane/tests/contract/test_orca_public_contract.py` ao job).
+- [x] Testes de contrato verdes localmente (comando e resultado no README do plano).
+- [x] Passo adicionado ao job `api_tests` do `stage.yml` e documentado em `apps/api/tests/RUNNING_TESTS.md`.
+- [ ] Verdes no CI — precisa do run do PR.
 
 ---
 

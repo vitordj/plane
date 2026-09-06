@@ -45,7 +45,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | -------------------------- | ------------------------------------------------------------ | ----------------- | ----------------------------------------------------------------------------------------------------- | --------------- |
 | P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 18                | `[~]` 15/18 (P0.0–P0.11, P0.14, P0.15, P0.16) · P0.12, P0.13 e P0.17 parciais                         | —               |
 | D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · suíte verde no CI — faltam migrações, `check:types` e a auditoria num dump              | —               |
-| 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[~]` 3/8 (1.1, 1.2, 1.3) · 1.6 parcial · **iniciada com os gates abertos** · bloco 1.4→1.8 planejado | —               |
+| 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois | —               |
 | 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6                                                                                             | —               |
 | 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6                                                                                             | —               |
 | 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                             | —               |
@@ -53,22 +53,30 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 
 ## Próximo item recomendado
 
-**Estado em 05/09, fim do dia — leia isto primeiro.** `stage` está em
-`89becdc7`. O **PR #12** (1.1, 1.2, 1.3, 1.6 parcial) está aberto, verde nos
-16 checks e sem conflito; falta só o merge. O **próximo bloco é 1.4 → 1.8**
-(endpoints, `reassign`/`transfer`, fecho do 1.6, doc + cliente, contrato) e
-está **planejado passo a passo** em
-[`01-public-contract.md` §"Bloco 1.4 → 1.8"](./01-public-contract.md): ordem,
-arquivos, teste que prova cada passo, quinze decisões já fechadas (B1–B15) e
-os riscos com resposta. A branch do bloco é
-`claude/plano-blocos-1-4-1-8-reo0t9`, cortada da **ponta do PR #12** — não de
-`stage` — porque o 1.4 importa o que o #12 entrega; o repositório mescla com
-merge commit, então a PR do bloco mostra só o delta depois do merge do #12.
+**Estado em 06/09 — leia isto primeiro.** `stage` está em `89becdc7`. O
+**PR #12** (1.1, 1.2, 1.3, 1.6 parcial) está aberto, verde nos 16 checks e sem
+conflito; falta só o merge. **A Fase 1 está com os 8 itens entregues**: o bloco
+1.4 → 1.8 foi executado na branch `claude/plano-blocos-1-4-1-8-reo0t9`, cortada
+da **ponta do PR #12** — não de `stage` — porque o 1.4 importa o que o #12
+entrega. O repositório mescla com merge commit, então a PR do bloco mostra só o
+delta depois do merge do #12. O plano do bloco, com as quinze decisões fechadas
+(B1–B15), continua em [`01-public-contract.md`](./01-public-contract.md) como
+registro do que foi decidido e por quê.
 
-Depois do bloco, o que resta na Fase 1 não é código: os critérios do Gate 1
-que só staging responde (revisão do doc por quem não escreveu, os `curl`
-contra staging, a medição p50/p95) e os **Gates P0 e D0**, que o bloco não
-fecha e que continuam sendo a condição do Gate 1.
+**O que a Fase 1 entregou:** seis rotas em `/api/v1/orca/` (criação composta
+idempotente, leitura por chave externa, áreas, fila, reatribuição com
+`If-Match`, transferência), o serviço de idempotência do §6.7 ligado a elas, a
+fila como serviço que a Fase 2 reaproveita, `docs/orca-public-api.md`, um
+cliente de referência em `tools/orca-client/` e testes de contrato sobre HTTP
+real que entram no merge gate. Tudo atrás de `ORCA_PUBLIC_API_ENABLED`, que
+continua `0`.
+
+**O que falta na Fase 1 não é código**: os critérios do Gate 1 que só staging
+responde (revisão do doc por quem não escreveu, os `curl` contra staging, a
+medição p50/p95) e os **Gates P0 e D0**, que este bloco não fecha e que
+continuam sendo a condição do Gate 1. Fechados os três, a **Fase 2** (fila e
+coordenador) é o próximo bloco — e o item 2.2 já tem a consulta da fila pronta
+em `app/services/orca/queue.py`.
 
 **O que a sessão de agente pode e não pode fazer mudou.** A receita para
 rodar pytest e migrações dentro da sessão está no
@@ -170,6 +178,7 @@ as contas criadas pela versão antiga do `create_users.py` (procedimento em
 
 | Data       | Evento                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-09-06 | **Bloco 1.4 → 1.8 executado inteiro.** Seis rotas em `/api/v1/orca/`, o serviço D0.5 estendido em vez de copiado (`trigger`, `collaborators`, `automation_operation`, `expected_decision_id`, todos com o default que a função já escrevia), a fila como serviço que o 2.2 reaproveita, `docs/orca-public-api.md`, `tools/orca-client/` e testes de contrato sobre HTTP real no merge gate. Local: **114 testes novos verdes** (38 criação, 16 áreas/fila, 22 reatribuição/transferência, 9 contrato em 2m01s, mais os do serviço); suíte Orca inteira verde. **Três defeitos que só a execução pegou**, dois deles de código: (1) `WorkItemNotFound` e `IfMatchRequired` são levantados antes de o recibo existir e escapavam do `try` do bloco idempotente — dois caminhos documentados como 404 e 428 respondiam **500**; corrigido com `handle_exception` na base pública, que uma rota futura herda. (2) **O pior achado**: `transaction.on_commit` dispara a atividade nativa *depois* do commit, e um broker fora do ar propagava a exceção — o item ficava criado, o recibo virava `failed` e **todo retry daquela chave replicava o 500 para sempre**, deixando trabalho real que o sistema chamador acredita não existir. A publicação passou a registrar em log em vez de estourar; é também o que permite o arquivo de contrato rodar no job sem RabbitMQ. (3) A constraint I3 recusou uma fixture que criava `assigned` sem executor — o teste estava errado, a constraint certa. Registrados no RFC §4.2 mais dois esclarecimentos: 412 público × 409 interno para `ORG_DECISION_STALE`, e que a autorização de projeto roda antes do recibo (uma chamada não autorizada não gasta a chave de quem a enviou). |
 | 2026-09-05 | **Bloco 1.4 → 1.8 planejado** em `01-public-contract.md`: ordem em oito passos com commit e prova por passo, quinze decisões fechadas (B1–B15: 412 público × 409 interno para `ORG_DECISION_STALE`; serviço D0.5 ganha `trigger`/`collaborators`/`automation_operation`/`expected_decision_id` com defaults que preservam o comportamento; recibo antes da validação; `default_assignee_id=None` para desligar o D2 no caminho público; `completion_due_at` recusado até a Fase 4; fila como serviço reutilizável pelo 2.2; contrato entra no job `api_tests`). Branch do bloco cortada da ponta do PR #12. Ambiente local refeito e confirmado (receita no `HANDOFF-PROMPT.md`): baseline `pytest plane/tests/unit/orca -q -m unit` sobre a ponta do PR #12 → **663 passed, 0 failed** em 8m08s (255 deselecionados são os testes do diretório sem o marker `unit`); o `HANDOFF-PROMPT.md` deixou de afirmar que a sessão não roda pytest.                                                                                                                                                                                                                                                                                                                  |
 | 2026-09-03 | Plano criado a partir do RFC rev. 2. Nenhum item iniciado.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | 2026-09-04 | PRs #5 e #6 mesclados em `stage` (`3a4c769`): hardening complementar da camada de Áreas (kill switch nas tarefas/comandos/SCIM, baseline ao elevar papel, rate limit SCIM pós-autenticação, rejeição de convidados Entra). Não fecha item P0/D0; registrado no cabeçalho de P0.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
