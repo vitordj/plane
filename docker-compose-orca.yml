@@ -4,6 +4,16 @@
 # else's build of the code you reviewed; the `compose_provenance` CI job fails
 # when the two drift apart. Override ORCA_IMAGE_REPOSITORY only to deploy a
 # mirror, and prefer an immutable TAG (sha-<commit>) over the moving `stage`.
+#
+# Every credential below is required (`${VAR:?...}`), never defaulted. A
+# fallback such as `${SERVICE_PASSWORD_DATABASE:-plane}` does not fail when the
+# platform forgets to inject the variable -- it boots the stack on a password
+# published in this repository, and nothing in the deployment says so. The
+# database, the queue, the object store and both secret keys therefore stop the
+# stack instead of starting it insecurely; the `compose_credentials` CI job
+# fails if any of them regains a default. Coolify generates the
+# SERVICE_USER_*/SERVICE_PASSWORD_*/SERVICE_HEX_64_* names on its own, and
+# `docker compose` reads them from the environment or a local `.env`.
 version: '3.8'
 
 services:
@@ -71,15 +81,15 @@ services:
     command: ./bin/docker-entrypoint-api.sh
     environment:
       - SERVICE_HEX_64_DJANGO
-      - SECRET_KEY=${SERVICE_HEX_64_DJANGO}
+      - "SECRET_KEY=${SERVICE_HEX_64_DJANGO:?set a 64-char hex Django secret, e.g. openssl rand -hex 32}"
       - SERVICE_HEX_64_LIVE
-      - LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE}
+      - "LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE:?set a 64-char hex live-server secret, e.g. openssl rand -hex 32}"
       - DOMAIN_NAME=${SERVICE_FQDN_PROXY:-localhost}
-      - DATABASE_URL=postgres://${SERVICE_USER_DATABASE:-plane}:${SERVICE_PASSWORD_DATABASE:-plane}@plane-db:5432/${POSTGRES_DB:-plane}
+      - "DATABASE_URL=postgres://${SERVICE_USER_DATABASE:?set the PostgreSQL user}:${SERVICE_PASSWORD_DATABASE:?set a generated PostgreSQL password, there is no default}@plane-db:5432/${POSTGRES_DB:-plane}"
       - REDIS_URL=redis://plane-redis:6379/0
-      - AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:-plane}:${SERVICE_PASSWORD_RABBITMQ:-plane}@plane-mq:5672//
-      - AWS_ACCESS_KEY_ID=${SERVICE_USER_AWS:-access-key}
-      - AWS_SECRET_ACCESS_KEY=${SERVICE_PASSWORD_AWS:-secret-key}
+      - "AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:?set the RabbitMQ user}:${SERVICE_PASSWORD_RABBITMQ:?set a generated RabbitMQ password, there is no default}@plane-mq:5672//"
+      - "AWS_ACCESS_KEY_ID=${SERVICE_USER_AWS:?set the MinIO or S3 access key id}"
+      - "AWS_SECRET_ACCESS_KEY=${SERVICE_PASSWORD_AWS:?set a generated MinIO or S3 secret key, there is no default}"
       - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
@@ -120,14 +130,14 @@ services:
     x-exclude_from_hc: true
     command: ./bin/docker-entrypoint-worker.sh
     environment:
-      - SECRET_KEY=${SERVICE_HEX_64_DJANGO}
-      - LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE}
+      - "SECRET_KEY=${SERVICE_HEX_64_DJANGO:?set a 64-char hex Django secret, e.g. openssl rand -hex 32}"
+      - "LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE:?set a 64-char hex live-server secret, e.g. openssl rand -hex 32}"
       - DOMAIN_NAME=${SERVICE_FQDN_PROXY:-localhost}
-      - DATABASE_URL=postgres://${SERVICE_USER_DATABASE:-plane}:${SERVICE_PASSWORD_DATABASE:-plane}@plane-db:5432/${POSTGRES_DB:-plane}
+      - "DATABASE_URL=postgres://${SERVICE_USER_DATABASE:?set the PostgreSQL user}:${SERVICE_PASSWORD_DATABASE:?set a generated PostgreSQL password, there is no default}@plane-db:5432/${POSTGRES_DB:-plane}"
       - REDIS_URL=redis://plane-redis:6379/0
-      - AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:-plane}:${SERVICE_PASSWORD_RABBITMQ:-plane}@plane-mq:5672//
-      - AWS_ACCESS_KEY_ID=${SERVICE_USER_AWS:-access-key}
-      - AWS_SECRET_ACCESS_KEY=${SERVICE_PASSWORD_AWS:-secret-key}
+      - "AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:?set the RabbitMQ user}:${SERVICE_PASSWORD_RABBITMQ:?set a generated RabbitMQ password, there is no default}@plane-mq:5672//"
+      - "AWS_ACCESS_KEY_ID=${SERVICE_USER_AWS:?set the MinIO or S3 access key id}"
+      - "AWS_SECRET_ACCESS_KEY=${SERVICE_PASSWORD_AWS:?set a generated MinIO or S3 secret key, there is no default}"
       - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
@@ -162,14 +172,14 @@ services:
     x-exclude_from_hc: true
     command: ./bin/docker-entrypoint-beat.sh
     environment:
-      - SECRET_KEY=${SERVICE_HEX_64_DJANGO}
-      - LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE}
+      - "SECRET_KEY=${SERVICE_HEX_64_DJANGO:?set a 64-char hex Django secret, e.g. openssl rand -hex 32}"
+      - "LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE:?set a 64-char hex live-server secret, e.g. openssl rand -hex 32}"
       - DOMAIN_NAME=${SERVICE_FQDN_PROXY:-localhost}
-      - DATABASE_URL=postgres://${SERVICE_USER_DATABASE:-plane}:${SERVICE_PASSWORD_DATABASE:-plane}@plane-db:5432/${POSTGRES_DB:-plane}
+      - "DATABASE_URL=postgres://${SERVICE_USER_DATABASE:?set the PostgreSQL user}:${SERVICE_PASSWORD_DATABASE:?set a generated PostgreSQL password, there is no default}@plane-db:5432/${POSTGRES_DB:-plane}"
       - REDIS_URL=redis://plane-redis:6379/0
-      - AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:-plane}:${SERVICE_PASSWORD_RABBITMQ:-plane}@plane-mq:5672//
-      - AWS_ACCESS_KEY_ID=${SERVICE_USER_AWS:-access-key}
-      - AWS_SECRET_ACCESS_KEY=${SERVICE_PASSWORD_AWS:-secret-key}
+      - "AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:?set the RabbitMQ user}:${SERVICE_PASSWORD_RABBITMQ:?set a generated RabbitMQ password, there is no default}@plane-mq:5672//"
+      - "AWS_ACCESS_KEY_ID=${SERVICE_USER_AWS:?set the MinIO or S3 access key id}"
+      - "AWS_SECRET_ACCESS_KEY=${SERVICE_PASSWORD_AWS:?set a generated MinIO or S3 secret key, there is no default}"
       - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
@@ -204,14 +214,14 @@ services:
     x-exclude_from_hc: true
     command: ./bin/docker-entrypoint-migrator.sh
     environment:
-      - SECRET_KEY=${SERVICE_HEX_64_DJANGO}
-      - LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE}
+      - "SECRET_KEY=${SERVICE_HEX_64_DJANGO:?set a 64-char hex Django secret, e.g. openssl rand -hex 32}"
+      - "LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE:?set a 64-char hex live-server secret, e.g. openssl rand -hex 32}"
       - DOMAIN_NAME=${SERVICE_FQDN_PROXY:-localhost}
-      - DATABASE_URL=postgres://${SERVICE_USER_DATABASE:-plane}:${SERVICE_PASSWORD_DATABASE:-plane}@plane-db:5432/${POSTGRES_DB:-plane}
+      - "DATABASE_URL=postgres://${SERVICE_USER_DATABASE:?set the PostgreSQL user}:${SERVICE_PASSWORD_DATABASE:?set a generated PostgreSQL password, there is no default}@plane-db:5432/${POSTGRES_DB:-plane}"
       - REDIS_URL=redis://plane-redis:6379/0
-      - AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:-plane}:${SERVICE_PASSWORD_RABBITMQ:-plane}@plane-mq:5672//
-      - AWS_ACCESS_KEY_ID=${SERVICE_USER_AWS:-access-key}
-      - AWS_SECRET_ACCESS_KEY=${SERVICE_PASSWORD_AWS:-secret-key}
+      - "AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:?set the RabbitMQ user}:${SERVICE_PASSWORD_RABBITMQ:?set a generated RabbitMQ password, there is no default}@plane-mq:5672//"
+      - "AWS_ACCESS_KEY_ID=${SERVICE_USER_AWS:?set the MinIO or S3 access key id}"
+      - "AWS_SECRET_ACCESS_KEY=${SERVICE_PASSWORD_AWS:?set a generated MinIO or S3 secret key, there is no default}"
       - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
@@ -239,15 +249,15 @@ services:
     pull_policy: always
     restart: always
     environment:
-      - SECRET_KEY=${SERVICE_HEX_64_DJANGO}
-      - LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE}
+      - "SECRET_KEY=${SERVICE_HEX_64_DJANGO:?set a 64-char hex Django secret, e.g. openssl rand -hex 32}"
+      - "LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE:?set a 64-char hex live-server secret, e.g. openssl rand -hex 32}"
       - DOMAIN_NAME=${SERVICE_FQDN_PROXY:-localhost}
-      - DATABASE_URL=postgres://${SERVICE_USER_DATABASE:-plane}:${SERVICE_PASSWORD_DATABASE:-plane}@plane-db:5432/${POSTGRES_DB:-plane}
+      - "DATABASE_URL=postgres://${SERVICE_USER_DATABASE:?set the PostgreSQL user}:${SERVICE_PASSWORD_DATABASE:?set a generated PostgreSQL password, there is no default}@plane-db:5432/${POSTGRES_DB:-plane}"
       - REDIS_URL=redis://plane-redis:6379/0
       - API_BASE_URL=http://api:8000
-      - AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:-plane}:${SERVICE_PASSWORD_RABBITMQ:-plane}@plane-mq:5672//
-      - AWS_ACCESS_KEY_ID=${SERVICE_USER_AWS:-access-key}
-      - AWS_SECRET_ACCESS_KEY=${SERVICE_PASSWORD_AWS:-secret-key}
+      - "AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:?set the RabbitMQ user}:${SERVICE_PASSWORD_RABBITMQ:?set a generated RabbitMQ password, there is no default}@plane-mq:5672//"
+      - "AWS_ACCESS_KEY_ID=${SERVICE_USER_AWS:?set the MinIO or S3 access key id}"
+      - "AWS_SECRET_ACCESS_KEY=${SERVICE_PASSWORD_AWS:?set a generated MinIO or S3 secret key, there is no default}"
       - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
@@ -274,12 +284,12 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${SERVICE_USER_DATABASE:-plane}
+      POSTGRES_USER: "${SERVICE_USER_DATABASE:?set the PostgreSQL user}"
       POSTGRES_DB: ${POSTGRES_DB:-plane}
-      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_DATABASE:-plane}
+      POSTGRES_PASSWORD: "${SERVICE_PASSWORD_DATABASE:?set a generated PostgreSQL password, there is no default}"
       PGDATA: /var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-plane} -d $${POSTGRES_DB:-plane}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB:-plane}"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -311,8 +321,8 @@ services:
     image: rabbitmq:3.13.6-management-alpine
     restart: always
     environment:
-      RABBITMQ_DEFAULT_USER: ${SERVICE_USER_RABBITMQ:-plane}
-      RABBITMQ_DEFAULT_PASS: ${SERVICE_PASSWORD_RABBITMQ:-plane}
+      RABBITMQ_DEFAULT_USER: "${SERVICE_USER_RABBITMQ:?set the RabbitMQ user}"
+      RABBITMQ_DEFAULT_PASS: "${SERVICE_PASSWORD_RABBITMQ:?set a generated RabbitMQ password, there is no default}"
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
@@ -339,8 +349,8 @@ services:
     volumes:
       - uploads:/export
     environment:
-      MINIO_ROOT_USER: ${SERVICE_USER_AWS:-access-key}
-      MINIO_ROOT_PASSWORD: ${SERVICE_PASSWORD_AWS:-secret-key}
+      MINIO_ROOT_USER: "${SERVICE_USER_AWS:?set the MinIO or S3 access key id}"
+      MINIO_ROOT_PASSWORD: "${SERVICE_PASSWORD_AWS:?set a generated MinIO or S3 secret key, there is no default}"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
       interval: 10s

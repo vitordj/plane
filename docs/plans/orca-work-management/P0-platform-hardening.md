@@ -757,14 +757,63 @@ descrevendo outro ambiente, e isso é o que foi corrigido.
 
 ---
 
+## P0.18 — Credenciais do Compose de implantação sem default `[x]`
+
+**Problema.** O P0.7 tirou o fallback aberto do `TRUSTED_PROXIES` e o P0.16
+fixou as imagens, mas as **credenciais** do `docker-compose-orca.yml`
+continuaram com default: `${SERVICE_USER_DATABASE:-plane}`,
+`${SERVICE_PASSWORD_DATABASE:-plane}`, os dois equivalentes do RabbitMQ e
+`${SERVICE_USER_AWS:-access-key}` / `${SERVICE_PASSWORD_AWS:-secret-key}` —
+em cinco serviços cada, mais os contêineres de banco, fila e MinIO. Os dois
+segredos (`SERVICE_HEX_64_DJANGO`, `SERVICE_HEX_64_LIVE`) eram lidos sem
+guarda nenhuma, então uma variável ausente virava `SECRET_KEY` vazio em vez
+de erro.
+
+Um default não falha quando a plataforma esquece de injetar a variável: ele
+**sobe a stack com uma senha publicada neste repositório**, e o deploy fica
+verde enquanto isso. É a mesma classe do P0.7 — degradação silenciosa em vez
+de recusa — aplicada a banco, fila e object store de uma vez.
+
+Agravante de documentação: o README documentava `POSTGRES_USER` /
+`POSTGRES_PASSWORD` com defaults `plane` / `plane123` e
+`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` com `plane-access-key` /
+`plane-secret-key`. Nenhum desses seis nomes é lido pelo Compose Orca, e
+nenhum desses valores era o default real. Quem seguisse a tabela configurava
+variáveis que o arquivo ignora e continuava com as senhas do repositório.
+
+**Mudança.**
+
+- `docker-compose-orca.yml`: as oito variáveis passam à forma obrigatória `${VAR:?mensagem}`, com a mensagem dizendo o que preencher — mesma forma que o P0.7 já usava no `TRUSTED_PROXIES`. Sem elas o `docker compose` recusa a subir em vez de usar valor conhecido. O `POSTGRES_DB:-plane` fica: é nome de schema, não credencial. O `pg_isready -U $${POSTGRES_USER:-plane}` do healthcheck perde o fallback, que já era código morto.
+- `stage.yml`, job `compose_credentials`: falha se qualquer uma das oito voltar a ter default (`:-`) ou a ser lida sem guarda, e se `plane`, `plane123`, `access-key` ou `secret-key` reaparecer como default. Gateia `build-push`, igual ao `compose_provenance` do P0.0.
+- README, tabela de variáveis: os nomes reais (`SERVICE_*`), todos marcados **Required: Yes**, com a razão de não haver default e a nota de que o Coolify gera esses nomes sozinho.
+- Não tocados: `.env.example` e `docker-compose.yml`. São o caminho upstream de dev local (FORK.md §F) e não alimentam o Compose Orca — que agora recusa subir mesmo que alguém copie o `.env.example` para `.env`, porque os nomes ali não são os que ele lê.
+
+**Pré-requisito operacional.** O próximo deploy do Compose Orca **falha** se as
+oito variáveis não estiverem definidas no ambiente. No Coolify elas são as
+variáveis mágicas `SERVICE_USER_*` / `SERVICE_PASSWORD_*` / `SERVICE_HEX_64_*`,
+geradas na criação do recurso; em qualquer outro alvo, definir antes de
+mesclar em `stage`.
+
+**Aceite.**
+
+- [x] `docker compose -f docker-compose-orca.yml config` com o ambiente vazio falha, nomeando a primeira variável ausente.
+- [x] Com as oito definidas, o mesmo comando renderiza `DATABASE_URL`, `AMQP_URL`, `POSTGRES_PASSWORD` e `MINIO_ROOT_PASSWORD` com os valores fornecidos.
+- [x] O job `compose_credentials` passa no arquivo corrigido e falha nas três reversões plantadas (senha do banco com `:-plane`, `SECRET_KEY` sem guarda, segredo do MinIO com `:-secret-key`).
+- [ ] Staging e produção com as oito variáveis definidas, e **nenhum** ambiente rodando com as antigas — verificar e, se alguma estiver em uso, rotacionar (banco, RabbitMQ e MinIO aceitam troca de senha sem recriar o volume; `SECRET_KEY` derruba as sessões, o que é o efeito desejado se ele vazou).
+
+**Arquivos:** `docker-compose-orca.yml`, `.github/workflows/stage.yml`, `README.md`, este plano.
+
+---
+
 ## Gate P0
 
-- [ ] Todos os 18 itens (P0.0–P0.17) `[x]` ou `[-]` com motivo.
+- [ ] Todos os 19 itens (P0.0–P0.18) `[x]` ou `[-]` com motivo.
 - [ ] CI de `stage` verde com suíte upstream (P0.8) e ruff (P0.9).
 - [ ] Ensaio completo de RC documentado em `docs/release-runbook.md`: PR criada pelo job, promoção por digest, deploy em staging, rollback.
 - [ ] Nenhuma conta com a senha antiga da migração em nenhum ambiente.
 - [ ] `TRUSTED_PROXIES` configurado em staging e produção com a faixa real.
 - [ ] Staging comprovadamente executando imagens de `ghcr.io/vitordj/plane` (P0.0, `docker inspect`), com data e digest registrados aqui.
 - [ ] `ORCA_ORG_UNITS_ENABLED` com o mesmo valor em api, worker e beat em staging (P0.14).
+- [ ] Nenhum ambiente rodando com as credenciais que eram default do Compose (P0.18); rotacionadas se estavam em uso.
 
 Data do gate: \_\_\_\_
