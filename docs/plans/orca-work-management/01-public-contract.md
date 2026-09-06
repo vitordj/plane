@@ -164,7 +164,7 @@ Cuidado conhecido: a fixture autouse `run_celery_inline` executa as tarefas Cele
 ### Pronto quando — e o que aconteceu
 
 - [x] 1.4, 1.5, 1.6, 1.7, 1.8 `[x]` neste arquivo, com "Entregue" e "Aceite" preenchidos.
-- [x] Suíte Orca e contrato verdes localmente; `ruff check`/`ruff format --check` limpos; `test_orca_error_codes.py` verde **sem código novo**, então o `check:sync` do i18n não foi necessário.
+- [x] `pytest plane/tests/unit/orca plane/tests/contract/test_orca_public_contract.py` → **1017 passed, 0 failed** (34m31s); `ruff check`/`ruff format --check` limpos; `test_orca_error_codes.py` verde **sem código novo**, então o `check:sync` do i18n não foi necessário.
 - [x] README do plano com a Fase 1 em 8/8, o que falta para o Gate 1, e o histórico do bloco.
 - [x] Push na branch; PR proposta descrita, não aberta.
 
