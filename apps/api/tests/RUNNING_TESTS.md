@@ -89,15 +89,33 @@ Test-time env overrides live in the compose file itself (`POSTGRES_HOST=test-db`
 
 Two jobs in `.github/workflows/stage.yml`, split by what they need to stand up:
 
-| Job                     | Command                                            | Services                                 | When                         |
-| ----------------------- | -------------------------------------------------- | ---------------------------------------- | ---------------------------- |
-| `api_tests`             | `pytest plane/tests/unit -q -m unit`               | PostgreSQL, Valkey                       | every PR and push to `stage` |
-| `api_integration_tests` | `pytest plane/tests/contract plane/tests/smoke -q` | the full `docker-compose-test.yml` stack | manual (`workflow_dispatch`) |
+| Job                     | Command                                                       | Services                                 | When                         |
+| ----------------------- | ------------------------------------------------------------- | ---------------------------------------- | ---------------------------- |
+| `api_tests`             | `pytest plane/tests/unit -q -m unit`                          | PostgreSQL, Valkey                       | every PR and push to `stage` |
+| `api_tests`             | `pytest plane/tests/contract/test_orca_public_contract.py -q` | PostgreSQL, Valkey                       | every PR and push to `stage` |
+| `api_integration_tests` | `pytest plane/tests/contract plane/tests/smoke -q`            | the full `docker-compose-test.yml` stack | manual (`workflow_dispatch`) |
 
 The merge gate is the whole unit suite, upstream directories included — not
 just `plane/tests/unit/orca/`. This fork deploys the upstream code as much as
 its own, so an upstream regression carried into `stage` is ours either way
 (P0.8).
+
+**Why one contract file is in the merge gate.** `test_orca_public_contract.py`
+is the only file under `plane/tests/contract/` that `api_tests` runs, and it is
+there for what it proves rather than where it lives: that replaying fifty
+operations leaves the same number of rows in every table, and that two callers
+racing on one idempotency key produce one work item. Neither is observable from
+a test sharing a transaction with the server — the second is settled by a
+database constraint — and both are promises integrations are built on. It needs
+a live HTTP server and PostgreSQL, which the job already provides, and nothing
+from the Docker stack.
+
+It runs without RabbitMQ because the creation endpoint queues its native
+activity in `transaction.on_commit` and **logs rather than raises** when the
+queue is unreachable. That is a deliberate choice, not a test accommodation:
+those callbacks run after the work item is committed, so letting a broker
+outage propagate would answer 500 for an operation that succeeded and poison
+its idempotency key forever. A unit test asserts the behaviour.
 
 ### Exclusions in CI
 
