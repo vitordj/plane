@@ -41,15 +41,15 @@ dois gates fechados. As demais são sequenciais.
 
 Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` descartado (registrar motivo).
 
-| Fase                       | Arquivo                                                      | Itens             | Estado                                                                                                | Gate fechado em |
-| -------------------------- | ------------------------------------------------------------ | ----------------- | ----------------------------------------------------------------------------------------------------- | --------------- |
-| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 18                | `[~]` 15/18 (P0.0–P0.11, P0.14, P0.15, P0.16) · P0.12, P0.13 e P0.17 parciais                         | —               |
-| D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · suíte verde no CI — faltam migrações, `check:types` e a auditoria num dump              | —               |
-| 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois | —               |
-| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[x]` 6/6 · 2.3 fechado com o teste de componente; Gate 2 continua pedindo a área piloto em staging   | —               |
-| 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[x]` 6/6 · código completo atrás de `ORCA_AVAILABILITY_ENABLED` (desligada); Gate 3 pede staging     | —               |
-| 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[~]` 6/7 · 4.1 aberto por falta de acesso à doc oficial do Compose (A5), não por trabalho pendente   | —               |
-| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[~]` 3/4 · 5.2 é condicional e a condição é uma medição em staging que ninguém fez ainda             | —               |
+| Fase                       | Arquivo                                                      | Itens             | Estado                                                                                                                                     | Gate fechado em |
+| -------------------------- | ------------------------------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------- |
+| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 18                | `[~]` 15/18 (P0.0–P0.11, P0.14, P0.15, P0.16) · P0.12, P0.13 e P0.17 parciais                                                              | —               |
+| D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · `check:types`, `check:sync` e `makemigrations --check` fechados em 06/09; falta o banco **com dados** e a auditoria num dump | —               |
+| 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois                                      | —               |
+| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[x]` 6/6 · 2.3 fechado com o teste de componente; Gate 2 continua pedindo a área piloto em staging                                        | —               |
+| 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[x]` 6/6 · código completo atrás de `ORCA_AVAILABILITY_ENABLED` (desligada); Gate 3 pede staging                                          | —               |
+| 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[~]` 6/7 · 4.1 aberto por falta de acesso à doc oficial do Compose (A5), não por trabalho pendente                                        | —               |
+| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[~]` 3/4 · 5.2 é condicional e a condição é uma medição em staging que ninguém fez ainda                                                  | —               |
 
 ## Próximo item recomendado
 

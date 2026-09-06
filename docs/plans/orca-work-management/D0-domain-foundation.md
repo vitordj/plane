@@ -21,11 +21,13 @@ suíte completa (AGENTS.md).
 ## D0.1 — Área precisa cobrir o projeto (defeito D1) `[x]`
 
 **Onde estava o defeito.**
+
 - `apps/api/plane/app/views/organizational_unit.py`, `IssueOrganizationalUnitEndpoint.post`: validava só `workspace_id`.
 - `apps/web/core/components/orca/organizational-units/issue-unit-property.tsx` l.67: filtrava só `unit.is_active` — com um comentário logo acima afirmando que só áreas que cobrem o projeto apareciam. O comentário descrevia a intenção; o código não a implementava.
 - `apps/api/plane/app/services/orca/assignment_engine.py` ~l.105: acrescentava `project_id` a `unit_project_ids` quando não estava lá, o que transformava "não coberto" em "coberto" **e** fazia trabalho de um projeto que a área não possui contar na carga dos membros dela.
 
 **Mudança** (entregue em `feat/orca-unit-project-coverage`).
+
 - `services/orca/coverage.py` (novo): `unit_covers_project(unit, project_id)` — área ativa, link vivo (o manager padrão já exclui soft-deleted) e projeto não arquivado. Projeto arquivado não concede nada, então uma área ligada só a projetos arquivados não cobre nenhum.
 - `IssueOrganizationalUnitEndpoint.post` e `IssueOrganizationalUnitAssignEndpoint.post` chamam o helper; falha → `ORG_UNIT_NOT_COVERING_PROJECT` (4916). A checagem é feita **de novo** na rota de atribuição, não só na criação do vínculo: o projeto pode ser desvinculado ou arquivado depois que o item já estava marcado como da área.
 - Engine: o `append` saiu. Coberto passou a ser pré-condição, verificada logo no começo de `candidates_for`, que devolve `[]` quando não é o caso.
@@ -45,8 +47,9 @@ responsável passaram a ligar o projeto antes (fixture `covering_unit`) — o
 comportamento mudou, e é isso que eles agora afirmam.
 
 **Aceite.**
+
 - [x] Ruff limpo nos arquivos tocados; paridade dos quatro lugares do código de erro conferida fora do pytest (17 códigos, mapa TS e catálogo en batem). Testes escritos; a sessão não roda pytest (AGENTS.md) — confirmar no CI de `stage`.
-- [ ] `check:sync` do i18n verde (a sessão não tem `node_modules`; a paridade de chaves das 19 locales foi conferida com uma comparação equivalente de conjuntos de chaves).
+- [x] `check:sync` do i18n verde. Rodado de verdade em 06/09 (`pnpm --filter @plane/i18n check:sync`): 19 locales a 100%. A premissa de que a sessão não teria `node_modules` era falsa — `pnpm install --frozen-lockfile` roda aqui em segundos.
 
 **Migração.** Nenhuma — o defeito era de validação, não de esquema.
 
@@ -66,6 +69,7 @@ bloco em `apps/api/plane/app/serializers/issue.py`: sem `assignees`, o item
 copiava os assignees do último item criado pela mesma pessoa naquele projeto.
 
 **Mudança** (entregue em `feat/orca-unit-project-coverage`).
+
 - O bloco upstream foi restaurado **literalmente** (copiado de `5662b7610`) nos dois serializers: sem `assignees`, usa o `default_assignee` do projeto se ele ainda for um membro ativo com papel ≥ 15; nada além disso.
 - **Decisão tomada nesta sessão:** removido também do serializer interno, não só do público. O plano deixava a alternativa de manter na UI atrás de `ProjectCustomSettings.remember_last_assignees`; ninguém reivindicou o comportamento, e o próprio enunciado manda remover nesse caso. Um toggle que ninguém pediu é código morto com migração junto. Se aparecer demanda, a lógica está no histórico e vira item próprio.
 
@@ -85,6 +89,7 @@ Os dois lados têm um teste que **fixa a ausência** da herança — é o que pe
 o comportamento voltando.
 
 **Aceite.**
+
 - [x] Criar item via `/api/v1` sem `assignees` em projeto sem `default_assignee` → zero assignees (teste direto do serializer).
 - [x] Criar item via `/api/v1` sem `assignees` em projeto com `default_assignee` → esse assignee.
 - [ ] Registrar a mudança de comportamento nas notas do próximo release. O `CHANGELOG` é gerado pelo Release Please a partir das mensagens de commit, e o corpo do commit deste item descreve a mudança; **não** foi marcado `BREAKING CHANGE:` de propósito — com a versão em 1.x isso dispararia um bump major.
@@ -97,6 +102,7 @@ o comportamento voltando.
 ## D0.3 — Migração 0135: estado de fila e executor principal `[x]`
 
 **Mudança** (entregue em `feat/orca-unit-project-coverage`).
+
 - `IssueOrganizationalUnit` ganhou `routing_state`, `queue_reason`, `queued_at`, `assignment_due_at` e `primary_executor` (FK `User`, `SET_NULL`, `related_name="orca_primary_executions"`). `RoutingState` e `QueueReason` são `TextChoices` no mesmo arquivo.
 - Dois CHECKs: `assigned` exige executor, e executor só existe em `assigned`. O primeiro impede o estado que a fila leria como "alguém está com isso" sem ninguém estar; o segundo impede o executor esquecido, que continuaria sendo cobrado na contagem de carga e mudaria quem o alocador escolhe.
 - Dois índices: `(workspace, organizational_unit, routing_state)` para a fila do coordenador e `(primary_executor, routing_state)` para a carga.
@@ -128,8 +134,9 @@ dependência aqui) — inclusive a idempotência e o fato de links já limpos n�
 serem reescritos.
 
 **Aceite.**
-- [ ] `makemigrations --check` limpo após a migração (comando acima; a sessão não roda Django).
-- [ ] Migração aplicada e revertida com sucesso num banco local com dados.
+
+- [x] `makemigrations --check` limpo. Rodado em 06/09 contra PostgreSQL 16 local: "No changes detected". A sessão roda Django, sim (receita no `HANDOFF-PROMPT.md` §Ambiente local).
+- [ ] Migração aplicada e revertida com sucesso num banco local **com dados**. O banco montado nesta sessão nasce vazio; a ida e volta foi feita nele (aplicar → reverter → reaplicar, limpo), o que não é a mesma prova. Continua pendendo de um dump.
 - [x] Testes escritos; ruff limpo. Verdes a confirmar no CI.
 
 ---
@@ -139,6 +146,7 @@ serem reescritos.
 **Mudança** (entregue em `feat/orca-unit-project-coverage`).
 Novo `apps/api/plane/db/models/organizational_assignment.py`, exportado em
 `db/models/__init__.py`:
+
 - `OrganizationalUnitAssignmentPolicy` — modo padrão, modos permitidos, SLA, teto de carga, `is_active` e `version`. `save()` incrementa a versão, preenche `allowed_modes` com o próprio `default_mode` quando vem vazio e desnormaliza `workspace`. `clean()` recusa `allowed_modes` que não seja lista, que traga modo desconhecido, ou que não contenha o `default_mode` — esta última é a que faria toda alocação sob a política rejeitar justamente o modo para o qual ela cai.
 - `AssignmentDecision` e `IssueResponsibilityEvent`, ambos herdando de `AppendOnlyModel` (novo, abstrato): `save()` numa linha existente levanta `ValueError`, e o soft delete também, porque soft delete é uma escrita. Um `update()` de queryset passa por fora, como em qualquer modelo — a guarda torna a regra óbvia, não é um sistema de permissão. Está documentado no docstring.
 - Duas constraints parciais de unicidade na política, uma para `unit_project IS NULL` e outra para `IS NOT NULL`: com uma só, o Postgres trataria os NULLs como distintos e uma área juntaria quantas políticas "padrão" quisesse, deixando o resolvedor escolhendo arbitrariamente entre elas.
@@ -161,7 +169,8 @@ delete liberar a vaga; validação dos `allowed_modes` e incremento de
 forma correta de mudar uma decisão.
 
 **Aceite.**
-- [ ] `makemigrations --check` limpo (comando no D0.3).
+
+- [x] `makemigrations --check` limpo. Rodado em 06/09: "No changes detected".
 - [x] Testes escritos; ruff limpo. Verdes a confirmar no CI.
 
 ---
@@ -177,6 +186,7 @@ com `error_code` e `http_status`, para a view converter a família inteira num
 `except OrcaDomainError`.
 
 **Decisões que o enunciado deixava em aberto.**
+
 - `rank_candidates` ganhou `exclude_user_ids`. O modo `append` do caminho legado quer alguém que **não** esteja no item; sem isso o ranking devolveria a própria pessoa já atribuída e o "acrescentar" não acrescentaria ninguém.
 - SLA e teto de carga caem de projeto para área **independentemente**: uma política de projeto que não diz nada sobre SLA herda o da área em vez de zerar.
 - `claim` exige que a política efetiva permita `self_claim`. O bypass "ou coordenador/admin" do RFC §6.3 não entrou: o papel de coordenador é da Fase 2 e não existe no modelo ainda. Fica registrado como pendência do D0.6/Fase 2.
@@ -210,6 +220,7 @@ serviço não escreve `ProjectMember`) e `test_assignment_concurrency.py`
 `connection.close()` por thread).
 
 **Aceite.**
+
 - [x] Testes verdes, concorrência incluída. Rodaram no CI do PR #9 (`API Tests (pytest)`, run 33945928033), contra um Postgres de verdade — não pelo `docker-compose-test.yml`, que a sessão não executa; o efeito é o mesmo.
 - [x] `assignment_engine.py` não contém mais lógica própria de ranking.
 - [x] Nenhuma escrita em `ProjectMember` no módulo (grep, e um teste que compara o conjunto de ids antes e depois).
@@ -220,6 +231,7 @@ serviço não escreve `ProjectMember`) e `test_assignment_concurrency.py`
 
 **Mudança** em `apps/api/plane/app/views/organizational_unit.py` e
 `apps/api/plane/app/urls/orca.py`:
+
 - `IssueOrganizationalUnitEndpoint.post` → `set_responsibility(...)`; a resposta virou `{organizational_unit, routing}`, com `routing_state`, `queue_reason`, `primary_executor`, `assignment_due_at` e a decisão corrente.
 - `IssueOrganizationalUnitEndpoint.get` → mesmo par; item sem área devolve `{"organizational_unit": null, "routing": null}`.
 - `IssueOrganizationalUnitEndpoint.delete` → grava `IssueResponsibilityEvent(to_unit=None)` na mesma transação, antes de apagar o vínculo (I6). Os assignees ficam: o item volta a ser um item comum.
@@ -262,9 +274,10 @@ que ranqueia duas vezes sem escrever nada.
 solicitado, e um modo inexistente continua recusado.
 
 **Aceite.**
+
 - [x] Ruff e `ruff format` limpos nos arquivos tocados; paridade das 19 locales conferida por comparação de conjuntos de chaves.
 - [x] Todos os testes Orca verdes no CI do PR #9 (run 33945928033).
-- [ ] `pnpm --filter web check:types` limpo (rodar localmente).
+- [x] `pnpm --filter web check:types` limpo. Rodado em 06/09 via `pnpm turbo run check:types --filter=web` (que constrói os pacotes antes): exit 0.
 
 ---
 
@@ -301,6 +314,7 @@ assignee ficando intacto, idempotência (rodar duas vezes não acha nada na
 segunda) e o kill switch fechando o comando.
 
 **Aceite.**
+
 - [x] Teste `test_audit_routing_command.py` com um caso de cada violação, em dry-run e write.
 - [x] Documentado em `docs/organizational-units.md` ao lado do reconcile.
 
@@ -324,6 +338,7 @@ a anterior escolheu: alocar um item que estava na fila, ou confirmar a mesma
 pessoa, não passou por cima de ninguém.
 
 **Aceite.**
+
 - [x] `test_assignment_metrics.py`: nomes e rótulos de cada contador, o desfecho enfileirado contando, `considered` distinguindo área vazia de teto atingido, alocação bem-sucedida sem `no_candidate`, reatribuição e devolução contando como superseded, alocação de item enfileirado não contando — e um teste de que nenhuma entrada carrega e-mail, nome de exibição ou título de item.
 
 ---
@@ -337,6 +352,7 @@ numeração da RFC muda, o nome fica). O rastro fica na tabela ao final deste
 arquivo, que é onde alguém procura "onde isto está coberto".
 
 **Lacunas encontradas e fechadas.**
+
 - **Estados**: a máquina de estados de §6.2 só era exercida de lado, por cada
   operação no estado em que ela costuma rodar. `test_routing_transitions.py`
   percorre a tabela: cada transição permitida acontece e cada transição
@@ -354,6 +370,7 @@ arquivo, que é onde alguém procura "onde isto está coberto".
   thread, e asserção sobre o agregado e nunca sobre quem venceu.
 
 **Aceite.**
+
 - [x] Suíte Orca verde no CI do PR #9 (run 33945928033). A primeira execução real achou 19 falhas — duas eram bug de produto (`routing_state` em `varchar(16)` recusando `allocation_failed`; `rank_candidates` sem checagem de cobertura), o resto era teste desatualizado; corrigidas em `0654817f`.
 - [x] Cobertura das linhas listadas registrada na tabela ao final deste arquivo.
 
@@ -387,6 +404,7 @@ inclui o projeto. O `ProjectMember` herdado fica ativo até alguém reconciliar
 aquele projeto explicitamente.
 
 **Mudança.**
+
 - `ProjectArchiveUnarchiveEndpoint` (`views/project/base.py`): depois de gravar `archived_at`, chama `dispatch_reconciliation(workspace_id, project_ids=[project.id])`; ao desarquivar, idem (o acesso volta). Um projeto é uma aresta na estimativa de fan-out, então roda inline e a resposta já reflete a retirada.
 - `reconcile_access` com `project_ids` explícitos **já** aceitava projeto arquivado como alvo: só `_active_sources` o ignora; o `state_filter` de `_collect_context` traz os pares que a camada já escreveu, arquivado ou não. Nada a mudar aqui — verificado antes de escrever código.
 
@@ -397,6 +415,7 @@ acesso manual sobrevive ao arquivamento com o papel de baseline; kill switch
 desligado → arquivar funciona e a camada não age.
 
 **Aceite.**
+
 - [x] Testes acima escritos; `ORCA_ORG_UNITS_ENABLED=0` faz o arquivamento não reconciliar (o guard de `reconcile_access` cobre, e há teste).
 
 ---
@@ -423,6 +442,7 @@ proveniência, não apagamento); sair e voltar ao grupo lista a pessoa uma vez
 só. O roster interno da área já tinha teste equivalente.
 
 **Aceite.**
+
 - [x] Testes acima escritos (CI de `stage` confirma).
 
 ---
@@ -436,37 +456,37 @@ só. O roster interno da área já tinha teste equivalente.
 - [x] `pytest plane/tests/unit/orca/` verde no CI (run 33945928033).
 - [x] `ORCA_ORG_UNITS_ENABLED=0` continua respondendo 404 nas rotas novas e antigas (as duas rotas novas são o mesmo `OrganizationalUnitPolicyEndpoint`, com teste próprio).
 
-Data do gate: ____
+Data do gate: \_\_\_\_
 
 ### Testes por invariante
 
 Arquivos em `apps/api/plane/tests/unit/orca/`.
 
-| Invariante | Testes |
-| --- | --- |
-| I1 — uma área ativa por item | `test_issue_organizational_unit_http.py::test_replacing_the_responsible_unit_keeps_a_single_link`; a constraint parcial existente é do PR anterior |
-| I2 — área ativa cobrindo o projeto | `test_issue_unit_coverage.py` inteiro (a regra, as duas rotas, o engine, o serializer); `test_assignment_service.py::test_an_area_that_does_not_cover_the_project_is_refused`, `::test_marking_an_area_that_does_not_cover_the_project_is_refused`, `::test_a_transfer_to_an_area_that_does_not_cover_the_project_is_refused` |
-| I3 — `assigned` ⇔ executor ⇔ `IssueAssignee` | positivo: `test_routing_state.py::test_assigned_with_an_executor_is_accepted`, `::test_assigned_without_an_executor_is_rejected`, `::test_an_executor_in_any_other_state_is_rejected` (CHECKs). O terceiro elo não é constraint: `test_audit_routing_command.py::test_an_executor_who_is_no_longer_an_assignee` e `::test_write_returns_the_item_to_the_queue` |
-| I4 — executor elegível na hora da decisão | `test_assignment_service.py::test_an_explicit_executor_outside_the_area_is_refused`, `::test_an_explicit_executor_outside_the_project_is_refused`, `::test_someone_outside_the_area_cannot_claim`; auditoria: `test_audit_routing_command.py::test_an_executor_who_left_the_area`, `::test_an_executor_who_lost_project_access` |
-| I5 — toda mudança gera decisão | `test_assignment_service.py::test_every_allocation_leaves_a_decision`, `::test_the_second_decision_supersedes_the_first`; append-only em `test_assignment_models.py::test_a_decision_cannot_be_edited`, `::test_a_decision_cannot_be_soft_deleted`, `::test_superseding_is_how_a_decision_changes`; pela rota em `test_issue_organizational_unit_http.py::test_assigning_makes_the_area_responsible_and_records_the_decision` |
-| I6 — toda troca de área gera evento | `test_assignment_service.py::test_marking_an_area_creates_the_link_and_the_event`, `::test_a_transfer_records_both_areas`; pela rota em `test_issue_organizational_unit_http.py::test_clearing_the_area_leaves_the_event_behind`, `::test_moving_an_item_between_areas_records_both`; append-only em `test_assignment_models.py::test_a_responsibility_event_cannot_be_edited` |
+| Invariante                                                  | Testes                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I1 — uma área ativa por item                                | `test_issue_organizational_unit_http.py::test_replacing_the_responsible_unit_keeps_a_single_link`; a constraint parcial existente é do PR anterior                                                                                                                                                                                                                                                                                                                |
+| I2 — área ativa cobrindo o projeto                          | `test_issue_unit_coverage.py` inteiro (a regra, as duas rotas, o engine, o serializer); `test_assignment_service.py::test_an_area_that_does_not_cover_the_project_is_refused`, `::test_marking_an_area_that_does_not_cover_the_project_is_refused`, `::test_a_transfer_to_an_area_that_does_not_cover_the_project_is_refused`                                                                                                                                     |
+| I3 — `assigned` ⇔ executor ⇔ `IssueAssignee`                | positivo: `test_routing_state.py::test_assigned_with_an_executor_is_accepted`, `::test_assigned_without_an_executor_is_rejected`, `::test_an_executor_in_any_other_state_is_rejected` (CHECKs). O terceiro elo não é constraint: `test_audit_routing_command.py::test_an_executor_who_is_no_longer_an_assignee` e `::test_write_returns_the_item_to_the_queue`                                                                                                    |
+| I4 — executor elegível na hora da decisão                   | `test_assignment_service.py::test_an_explicit_executor_outside_the_area_is_refused`, `::test_an_explicit_executor_outside_the_project_is_refused`, `::test_someone_outside_the_area_cannot_claim`; auditoria: `test_audit_routing_command.py::test_an_executor_who_left_the_area`, `::test_an_executor_who_lost_project_access`                                                                                                                                   |
+| I5 — toda mudança gera decisão                              | `test_assignment_service.py::test_every_allocation_leaves_a_decision`, `::test_the_second_decision_supersedes_the_first`; append-only em `test_assignment_models.py::test_a_decision_cannot_be_edited`, `::test_a_decision_cannot_be_soft_deleted`, `::test_superseding_is_how_a_decision_changes`; pela rota em `test_issue_organizational_unit_http.py::test_assigning_makes_the_area_responsible_and_records_the_decision`                                     |
+| I6 — toda troca de área gera evento                         | `test_assignment_service.py::test_marking_an_area_creates_the_link_and_the_event`, `::test_a_transfer_records_both_areas`; pela rota em `test_issue_organizational_unit_http.py::test_clearing_the_area_leaves_the_event_behind`, `::test_moving_an_item_between_areas_records_both`; append-only em `test_assignment_models.py::test_a_responsibility_event_cannot_be_edited`                                                                                    |
 | I7 — modo fora de `allowed_modes` recusado, nunca degradado | `test_assignment_service.py::test_a_requested_mode_outside_the_allowed_list_is_refused`, `::test_an_unknown_mode_is_refused_even_with_no_policy`, `::test_claiming_is_refused_when_the_policy_does_not_allow_it`; pela rota em `test_issue_organizational_unit_http.py::test_an_area_that_forbids_the_ranking_refuses_the_button`. O fallback sem política aceita qualquer modo por decisão registrada no D0.6: `::test_with_no_policy_any_mode_may_be_requested` |
-| I8 — binding externo | Fase 1 (API pública). Sem modelo nesta fase. |
-| I9 — idempotência | Fase 1 (API pública). Sem modelo nesta fase. |
-| I10 — nada escreve `ProjectMember` fora dos reconciliadores | `test_assignment_service.py::test_the_service_never_writes_project_member` |
+| I8 — binding externo                                        | Fase 1 (API pública). Sem modelo nesta fase.                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| I9 — idempotência                                           | Fase 1 (API pública). Sem modelo nesta fase.                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| I10 — nada escreve `ProjectMember` fora dos reconciliadores | `test_assignment_service.py::test_the_service_never_writes_project_member`                                                                                                                                                                                                                                                                                                                                                                                        |
 
 ### Linhas do RFC §10 cobertas nesta fase
 
-| Linha | Onde |
-| --- | --- |
-| I2 cobertura | `test_issue_unit_coverage.py` |
-| Resolução de política | `test_assignment_service.py::TestPolicyResolution`; rota em `test_issue_organizational_unit_http.py::TestThePolicyRoute` |
-| Ranking `lb-1` | `test_assignment_service.py::TestRanking` (carga, trabalho concluído, colaborador, Guest, bot, teto, determinismo, motivo da exclusão) |
-| Estados | `test_routing_transitions.py` (tabela §6.2, positivo e negativo) e `test_routing_state.py` (CHECKs e backfill) |
-| Decisões | `test_assignment_models.py` e `test_assignment_service.py::TestAllocate` (toda alocação deixa decisão, e a segunda supersede a primeira) |
-| Concorrência | `test_assignment_concurrency.py` (20 alocações → 5/5/5/5; 10 claims → 1 vencedor; alocação × claim → um executor) |
-| Encaminhamento | `test_assignment_service.py::TestResponsibilityAndTransfer` |
-| Kill switches | `test_issue_organizational_unit_http.py::TestThePolicyRoute::test_the_kill_switch_closes_it`, `test_audit_routing_command.py::test_the_kill_switch_closes_the_command`, `test_org_unit_reconciler.py::TestArchivingAProject::test_the_kill_switch_stops_the_reconciliation`, e a cobertura anterior das rotas da camada |
-| Permissões | `test_issue_organizational_unit_http.py` (Admin/Member/Guest/fora do workspace nas rotas de item e na rota de política) |
-| Observabilidade | `test_assignment_metrics.py` |
-| Disponibilidade, API pública, Frontend | Fase 1 e Fase 2 |
+| Linha                                  | Onde                                                                                                                                                                                                                                                                                                                    |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I2 cobertura                           | `test_issue_unit_coverage.py`                                                                                                                                                                                                                                                                                           |
+| Resolução de política                  | `test_assignment_service.py::TestPolicyResolution`; rota em `test_issue_organizational_unit_http.py::TestThePolicyRoute`                                                                                                                                                                                                |
+| Ranking `lb-1`                         | `test_assignment_service.py::TestRanking` (carga, trabalho concluído, colaborador, Guest, bot, teto, determinismo, motivo da exclusão)                                                                                                                                                                                  |
+| Estados                                | `test_routing_transitions.py` (tabela §6.2, positivo e negativo) e `test_routing_state.py` (CHECKs e backfill)                                                                                                                                                                                                          |
+| Decisões                               | `test_assignment_models.py` e `test_assignment_service.py::TestAllocate` (toda alocação deixa decisão, e a segunda supersede a primeira)                                                                                                                                                                                |
+| Concorrência                           | `test_assignment_concurrency.py` (20 alocações → 5/5/5/5; 10 claims → 1 vencedor; alocação × claim → um executor)                                                                                                                                                                                                       |
+| Encaminhamento                         | `test_assignment_service.py::TestResponsibilityAndTransfer`                                                                                                                                                                                                                                                             |
+| Kill switches                          | `test_issue_organizational_unit_http.py::TestThePolicyRoute::test_the_kill_switch_closes_it`, `test_audit_routing_command.py::test_the_kill_switch_closes_the_command`, `test_org_unit_reconciler.py::TestArchivingAProject::test_the_kill_switch_stops_the_reconciliation`, e a cobertura anterior das rotas da camada |
+| Permissões                             | `test_issue_organizational_unit_http.py` (Admin/Member/Guest/fora do workspace nas rotas de item e na rota de política)                                                                                                                                                                                                 |
+| Observabilidade                        | `test_assignment_metrics.py`                                                                                                                                                                                                                                                                                            |
+| Disponibilidade, API pública, Frontend | Fase 1 e Fase 2                                                                                                                                                                                                                                                                                                         |
