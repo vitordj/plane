@@ -117,15 +117,15 @@ Consequências diretas:
 | Papel `lead` na área | Só rótulo | `OrganizationalUnitMemberRole`; nenhuma permissão decorre disso |
 | "Minhas áreas" e carga por integrante | Sim | `UserOrganizationalUnitsEndpoint`, `OrganizationalUnitWorkloadEndpoint` em `apps/api/plane/app/views/organizational_unit.py` |
 | Tela da área | Só membros e projetos | `apps/web/core/components/orca/organizational-units/unit-detail.tsx` |
-| Rotas Orca por API key | Não | tudo em `apps/api/plane/app/urls/orca.py`, autenticação de sessão |
+| Rotas Orca por API key | Sim | `/api/v1/orca/` (`apps/api/plane/api/urls/orca.py`, views em `api/views/orca/`), atrás de `ORCA_PUBLIC_API_ENABLED`, desligada até o Gate 2-mínimo |
 | Códigos de erro Orca traduzíveis | Sim | `apps/api/plane/utils/orca_error_codes.py` + `packages/constants/src/orca/error-codes.ts` + catálogo i18n |
 | Kill switch | Sim | `OrganizationalUnitFeatureMixin` |
-| Rate limit dedicado | Só SCIM | `apps/api/plane/throttles/scim.py` |
+| Rate limit dedicado | SCIM e API pública | `apps/api/plane/throttles/scim.py`, `throttles/orca_public.py` (por token) |
 | Disponibilidade, férias, capacidade | Não | — |
 | Estado de fila | Sim | `IssueOrganizationalUnit.routing_state`/`queue_reason`/`queued_at`/`assignment_due_at`; máquina de estados em §6.2 |
 | Executor principal | Sim | `IssueOrganizationalUnit.primary_executor`; auditado por `audit_organizational_routing` |
 | Reatribuição quando alguém sai | Parcial | `audit_organizational_routing --write` devolve à fila quem perdeu elegibilidade; automático no evento é Fase 3 |
-| Política automática na criação | Parcial | `OrganizationalUnitAssignmentPolicy` existe e resolve (§6.3); criar item já com área é da API pública, Fase 1 |
+| Política automática na criação | Sim | `POST /api/v1/orca/.../work-items/` cria o item, marca a área e aplica a política numa operação idempotente (Fase 1, itens 1.4-1.5) |
 | Dashboard da área / executivo | Não | — |
 
 ### 2.2 Defeitos que precisam fechar antes de qualquer automação
@@ -238,6 +238,7 @@ registrar na seção 4 o motivo e o impacto.
 
 | Data | Mudança |
 | --- | --- |
+| 2026-09-05 | Rev. 5: quatro esclarecimentos de mecanismo abertos pela implementação da Fase 1 (nenhuma decisão F1–F24 tocada). (1) **`ORG_DECISION_STALE` responde 412 na API pública e 409 na interna**: a exceção `DecisionStale` entregue no D0.5 carrega 409, a UI já depende disso, e §7.3 especifica 412 — a view pública mapeia o status por código em vez de herdá-lo. (2) **`completion_due_at` é recusado**, não aceito e ignorado, até a Fase 4 criar a `IssueServiceLevel` que o guarda: aceitar e descartar seria uma mentira que o cliente não vê. (3) **Uma chave de idempotência gasta num 4xx continua gasta**: §6.7 grava a falha e o replay a reproduz com o status original, então corrigir o payload exige chave nova — documentado em destaque no guia do cliente. (4) **A autorização de projeto roda antes do recibo**, porque `permission_classes` do DRF corre no `initial()`: uma chamada não autorizada responde 403 sem abrir operação, e portanto não gasta a chave de quem a enviou. |
 | 2026-09-03 | Rev. 1: RFC inicial com 23 dúvidas e 5 fases. |
 | 2026-09-03 | Rev. 2: 24 decisões fechadas (F1–F24); fila vira estado; executor principal; binding + operação; `AssignmentDecision` append-only; Fase 0 dividida em P0 e D0; Compose retirado dos bloqueios; contrato REST detalhado. |
 | 2026-09-05 | Rev. 4: refinamento de mecanismo em P0.2/P0.3 (nenhuma decisão F1–F24 tocada). A promoção por SHA exige que **todos** os seis serviços tenham `:sha-<commit>`; como o CI só reconstrói serviços cujo path mudou, o commit passa a retaguear por digest (`imagetools create`) os serviços não reconstruídos, e `build-push` roda em todo push para `stage`. A promoção copia manifesto por digest em vez de `pull`/`tag`/`push`, preservando manifestos multi-arch. |

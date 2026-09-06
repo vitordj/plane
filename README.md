@@ -16,6 +16,7 @@ Plane Orca enhances official Plane Community Edition with extended workflow capa
 | **🚀 Productivity**    | Quick Copy Details                 | Copy work item title and clean, single-spaced formatted description from context menus in one action.                                                    |
 |                        | Form Value Retention               | Preserves user input across creation forms when using "Create More".                                                                                     |
 |                        | Enhanced Bulk Operations           | Multi-select and update work item properties with clear, streamlined multi-value dropdowns.                                                              |
+| **🤖 Automation API**  | Work by area over an API key       | Composed, idempotent `/api/v1/orca/` endpoints that create work and let an **area** decide who does it ([guide](./docs/orca-public-api.md), [client](./tools/orca-client/README.md)). Off by default. |
 | **🛠️ Data Migration**  | Plane-to-Plane Migration Tool      | Built-in CLI migration utility ([tools/migration](./tools/migration/README.md)) to migrate issues, cycles, labels, and projects between Plane instances. |
 | **🎨 UI & Privacy**    | Clean & Distraction-Free UI        | Removed telemetry trackers and promotional ads for a faster, clutter-free workspace.                                                                     |
 | **🐳 Self-Hosting**    | VPS & PaaS Ready                   | Optimized low-memory footprint stack ([docker-compose-orca.yml](./docker-compose-orca.yml)) running smoothly under 3GB RAM.                              |
@@ -62,6 +63,8 @@ Whatever runs the stack, three things have to be true:
 | `TAG`                                         |    No    | Image tag for all six services; prefer an immutable `sha-<commit>` for production                                                                                                       | `stage`                                    |
 | `TRUSTED_PROXIES`                             | **Yes**  | CIDR range(s) of the ingress or reverse proxy in front of Caddy, comma-separated. Only these sources may set the client IP via `X-Forwarded-For`; the stack refuses to start without it | _User-provided (e.g. `10.0.0.0/8`)_        |
 | `ORCA_ORG_UNITS_ENABLED`                      |    No    | Kill switch of the organizational layer (Areas); forwarded to api, worker, beat and migrator. `1/true/yes/on` or `0/false/no/off`                                                       | `1`                                        |
+| `ORCA_PUBLIC_API_ENABLED`                     |    No    | Second switch, in front of the automation API at `/api/v1/orca/`. Requires `ORCA_ORG_UNITS_ENABLED` as well; the namespace answers 404 while it is off                                  | `0`                                        |
+| `ORCA_PUBLIC_API_RATE_LIMIT`                  |    No    | Budget per API token for the automation API. Read at process start, so a change needs a restart                                                                                        | `300/minute`                               |
 
 ### 🚀 Fork Workflow & Git Strategy
 
