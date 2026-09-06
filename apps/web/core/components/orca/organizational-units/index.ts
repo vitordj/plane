@@ -8,6 +8,8 @@ export * from "./assign-member-modal";
 export * from "./availability-form";
 export * from "./coordinators-tab";
 export * from "./decision-timeline";
+export * from "./executive-drilldown";
+export * from "./executive-table";
 export * from "./directory-sync-panel";
 export * from "./issue-unit-property";
 export * from "./member-allocation-toggle";

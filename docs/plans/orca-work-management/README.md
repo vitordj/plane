@@ -49,9 +49,55 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[~]` 5/6 · 2.3 falta só o teste de componente (stack de teste de UI inexistente no repositório)      | —               |
 | 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[x]` 6/6 · código completo atrás de `ORCA_AVAILABILITY_ENABLED` (desligada); Gate 3 pede staging     | —               |
 | 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[~]` 6/7 · 4.1 aberto por falta de acesso à doc oficial do Compose (A5), não por trabalho pendente   | —               |
-| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                             | —               |
+| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[~]` 3/4 · 5.2 é condicional e a condição é uma medição em staging que ninguém fez ainda             | —               |
 
 ## Próximo item recomendado
+
+**Estado em 06/09 (terceira sessão) — leia isto primeiro.** As **Fases 4 e 5
+estão entregues** na branch `claude/implementacao-ponta-a-ponta-vfbofq`, com um
+item aberto em cada, e nenhum dos dois é trabalho de código:
+
+- **4.1** exige ler a documentação oficial do Plane Compose para fechar a
+  pendência A5. A política de rede deste ambiente bloqueia a saída para
+  `developers.plane.so`. Nada do que a Fase 4 entregou depende do resultado.
+- **5.2** é condicional por desenho ("só se 5.1 exceder 2 s em staging com
+  dados reais") e a condição é uma medição que só staging responde. Medir
+  contra o dataset de teste responderia outra pergunta.
+
+**A Fase 4 entregou:** as quatro tabelas de processo e os dois campos de estado
+na política (migração `0141`), o bloco `process` na criação e o `complete/` com
+os três modos de conclusão, a leitura da instância com `status` derivado dos
+itens, o agrupamento por execução na fila com progresso `n/m`, a chave `orca`
+no webhook nativo de `issue`, e três documentos —
+[`orca-orchestrator-contract.md`](../../orca-orchestrator-contract.md) (o que o
+orquestrador pode e não pode assumir, e dez testes de contrato contra staging),
+[`orca-processes-runbook.md`](../../orca-processes-runbook.md) (parar, religar,
+reprocessar, corrigir à mão, desligar a flag) e as seções de processo em
+`organizational-units.md` e `orca-public-api.md`. Tudo atrás de
+`ORCA_PROCESS_PROJECTION_ENABLED`, que nasce **desligada**.
+
+**A Fase 5 entregou:** `services/orca/executive_metrics.py` com os dez
+indicadores por área e o bloco de processos, percentis por `percentile_cont`
+(não média, não elemento do meio), cache de cinco minutos com `generated_at` na
+resposta, as duas rotas (`executive/` e `executive/drilldown/`, Workspace
+Admin), a página em **Configurações do workspace → Visão executiva** com
+detalhamento que respeita `ProjectMember` e diz quantas linhas escondeu, e
+[`orca-executive-metrics.md`](../../orca-executive-metrics.md), que é o critério
+do Gate 5 que código fecha: cada número com a sua consulta SQL.
+
+Verificado nesta sessão: suíte Orca **972 testes verdes**
+(`pytest plane/tests/unit/orca -q -m unit`), `makemigrations --check` limpo,
+`0141` aplicada → revertida → reaplicada, `ruff check` limpo,
+`pnpm turbo run check:types --filter=web` exit 0, `check:lint` e `check:format`
+limpos, `check:sync` do i18n 100% em 19 locales, e os 11 testes de store do web
+verdes.
+
+**O que sobra em todo o plano, agora, é gate e não item**: uma área piloto com
+coordenador nomeado usando a fila em staging (Gates 2 e 3), um processo real
+rodando pelo orquestrador (Gate 4), a revisão dos indicadores com quem vai
+lê-los (Gate 5), a documentação do Compose (4.1), a medição de performance
+(5.2), e as três pontas de P0 e D0 que dependem de ambiente, dump ou decisão de
+negócio. Nenhuma delas é código que esta sessão pudesse escrever.
 
 **Estado em 06/09 (segunda sessão) — leia isto primeiro.** A **Fase 3 está
 com os seis itens entregues** e a **Fase 2 com cinco dos seis fechados** na branch

@@ -8,6 +8,10 @@ import { API_BASE_URL } from "@plane/constants";
 import type {
   IAssignmentCandidates,
   IAvailabilityState,
+  IExecutiveDrilldown,
+  IExecutiveMetrics,
+  TExecutiveMetric,
+  TExecutivePeriod,
   IAvailabilityWindow,
   IMembershipAllocation,
   IAssignmentDecisionEntry,
@@ -599,6 +603,44 @@ export class OrganizationalUnitService extends APIService {
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response;
+      });
+  }
+
+  /**
+   * @description Every area of the workspace, counted (item 5.1). Workspace
+   * admins only. Cached server-side for five minutes; `refresh` reads through,
+   * which is what somebody disputing a number needs.
+   */
+  async getExecutiveMetrics(
+    workspaceSlug: string,
+    params: { period?: TExecutivePeriod; unit?: string; refresh?: boolean } = {}
+  ): Promise<IExecutiveMetrics> {
+    return this.get(`/api/orca/workspaces/${workspaceSlug}/executive/`, {
+      params: {
+        period: params.period,
+        unit: params.unit,
+        refresh: params.refresh ? 1 : undefined,
+      },
+    })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description The rows behind one number. The count is the area's; the rows
+   * are only the projects this reader belongs to, and `hidden` is how many
+   * were withheld.
+   */
+  async getExecutiveDrilldown(
+    workspaceSlug: string,
+    params: { unit: string; metric: TExecutiveMetric; period?: TExecutivePeriod }
+  ): Promise<IExecutiveDrilldown> {
+    return this.get(`/api/orca/workspaces/${workspaceSlug}/executive/drilldown/`, { params })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
       });
   }
 }

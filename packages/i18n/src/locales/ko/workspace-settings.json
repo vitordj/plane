@@ -867,6 +867,59 @@
             "not_removed": "삭제하지 못했습니다.",
             "not_saved": "저장하지 못했습니다."
           }
+        },
+        "executive": {
+          "title": "경영진 보기",
+          "description": "모든 영역을 나란히: 무엇이 대기 중이고, 무엇이 지연되었으며, 얼마나 빠르게 완료되는지.",
+          "empty": "이 워크스페이스에는 아직 활성 영역이 없습니다.",
+          "refresh": "새로 고침",
+          "generated_at": "{time} 기준",
+          "no_value": "—",
+          "definitions_note": "여기 모든 숫자에는 문서화된 정의와 이를 재현하는 쿼리가 있습니다 — docs/orca-executive-metrics.md 참고.",
+          "period": {
+            "7d": "7일",
+            "30d": "30일",
+            "90d": "90일"
+          },
+          "duration": {
+            "minutes": "{value}분",
+            "hours": "{value}시간",
+            "days": "{value}일"
+          },
+          "columns": {
+            "area": "영역",
+            "backlog": "미완료",
+            "queued": "대기",
+            "assignment_overdue": "미배정 기한 초과",
+            "target_overdue": "지연",
+            "assigned_open": "진행 중",
+            "queue_age": "대기 p50/p90",
+            "throughput": "완료",
+            "cycle_time": "사이클 p50/p90",
+            "concentration": "상위 3인 비중",
+            "kept_ratio": "랭킹 유지"
+          },
+          "tooltips": {
+            "queue_age": "현재 대기 중인 항목의 대기 시간(중앙값과 90 백분위수).",
+            "cycle_time": "기간 내 완료된 항목의 생성부터 완료까지의 시간.",
+            "concentration": "진행 중인 배정 업무 중 가장 바쁜 세 사람이 맡은 비중. 높을수록 영역이 소수에 의존합니다.",
+            "kept_ratio": "기간 내 랭킹 배정 중 사람이 뒤집지 않은 비율. 가용성 스윕이 되돌린 업무는 불리하게 계산하지 않습니다."
+          },
+          "processes": {
+            "title": "프로세스",
+            "running": "진행 중",
+            "completed": "완료",
+            "lead_time": "리드 타임 p50/p90",
+            "late_steps": "지연 단계",
+            "no_late_steps": "없음"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "{total}개 중 {shown}개 표시",
+            "hidden": "{count}개 항목은 소속되지 않은 프로젝트에 있습니다. 집계에는 포함되지만 표시되지 않습니다.",
+            "empty": "표시할 항목이 없습니다.",
+            "close": "닫기"
+          }
         }
       }
     },

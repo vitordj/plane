@@ -95,6 +95,17 @@ from .directory_projector import (
     resolve_identity,
     unresolved_identities,
 )
+from .executive_metrics import (
+    CACHE_TTL_SECONDS,
+    DEFAULT_PERIOD,
+    PERIODS,
+    drilldown_queryset,
+    executive_metrics,
+    period_start,
+    process_metrics,
+    readable_projects,
+    unit_metrics,
+)
 from .feature_flags import (
     orca_availability_enabled,
     orca_process_projection_enabled,
@@ -212,6 +223,15 @@ __all__ = [
     "match_workspace_member",
     "may_alert_again",
     "normalize_language",
+    "CACHE_TTL_SECONDS",
+    "DEFAULT_PERIOD",
+    "PERIODS",
+    "drilldown_queryset",
+    "executive_metrics",
+    "period_start",
+    "process_metrics",
+    "readable_projects",
+    "unit_metrics",
     "orca_availability_enabled",
     "orca_process_projection_enabled",
     "orca_public_api_enabled",

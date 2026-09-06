@@ -867,6 +867,59 @@
             "not_removed": "Tidak bisa dihapus.",
             "not_saved": "Tidak bisa disimpan."
           }
+        },
+        "executive": {
+          "title": "Tampilan eksekutif",
+          "description": "Semua area berdampingan: apa yang menunggu, apa yang terlambat, dan secepat apa pekerjaan selesai.",
+          "empty": "Belum ada area aktif di ruang kerja ini.",
+          "refresh": "Muat ulang",
+          "generated_at": "Dihitung pukul {time}",
+          "no_value": "—",
+          "definitions_note": "Setiap angka di sini punya definisi tertulis dan kueri yang mereproduksinya — lihat docs/orca-executive-metrics.md.",
+          "period": {
+            "7d": "7 hari",
+            "30d": "30 hari",
+            "90d": "90 hari"
+          },
+          "duration": {
+            "minutes": "{value} mnt",
+            "hours": "{value} jam",
+            "days": "{value} hr"
+          },
+          "columns": {
+            "area": "Area",
+            "backlog": "Terbuka",
+            "queued": "Menunggu",
+            "assignment_overdue": "Belum ditugaskan dan lewat tenggat",
+            "target_overdue": "Terlambat",
+            "assigned_open": "Sedang berjalan",
+            "queue_age": "Tunggu p50/p90",
+            "throughput": "Selesai",
+            "cycle_time": "Siklus p50/p90",
+            "concentration": "Porsi 3 teratas",
+            "kept_ratio": "Peringkat dipertahankan"
+          },
+          "tooltips": {
+            "queue_age": "Berapa lama item yang kini menunggu telah menunggu, pada median dan persentil ke-90.",
+            "cycle_time": "Dari dibuat hingga selesai, untuk item yang rampung dalam periode ini.",
+            "concentration": "Porsi pekerjaan terbuka yang dipegang tiga orang tersibuk. Tinggi berarti area ini bertumpu pada sedikit orang.",
+            "kept_ratio": "Alokasi berbasis peringkat dalam periode yang tidak dibatalkan orang. Pekerjaan yang dikembalikan oleh sapuan ketersediaan tidak dihitung."
+          },
+          "processes": {
+            "title": "Proses",
+            "running": "Berjalan",
+            "completed": "Selesai",
+            "lead_time": "Lead time p50/p90",
+            "late_steps": "Langkah terlambat",
+            "no_late_steps": "Tidak ada"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "Menampilkan {shown} dari {total}",
+            "hidden": "{count} item berada di proyek yang bukan milik Anda. Dihitung, tidak ditampilkan.",
+            "empty": "Tidak ada yang ditampilkan.",
+            "close": "Tutup"
+          }
         }
       }
     },

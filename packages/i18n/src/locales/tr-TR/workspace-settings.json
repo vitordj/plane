@@ -867,6 +867,59 @@
             "not_removed": "Silinemedi.",
             "not_saved": "Kaydedilemedi."
           }
+        },
+        "executive": {
+          "title": "Yönetici görünümü",
+          "description": "Tüm alanlar yan yana: ne bekliyor, ne gecikti ve iş ne hızla tamamlanıyor.",
+          "empty": "Bu çalışma alanında henüz etkin alan yok.",
+          "refresh": "Yenile",
+          "generated_at": "{time} itibarıyla hesaplandı",
+          "no_value": "—",
+          "definitions_note": "Buradaki her sayının yazılı bir tanımı ve onu yeniden üreten bir sorgusu var — bkz. docs/orca-executive-metrics.md.",
+          "period": {
+            "7d": "7 gün",
+            "30d": "30 gün",
+            "90d": "90 gün"
+          },
+          "duration": {
+            "minutes": "{value} dk",
+            "hours": "{value} sa",
+            "days": "{value} g"
+          },
+          "columns": {
+            "area": "Alan",
+            "backlog": "Açık",
+            "queued": "Bekliyor",
+            "assignment_overdue": "Atanmamış ve gecikmiş",
+            "target_overdue": "Gecikmiş",
+            "assigned_open": "Devam eden",
+            "queue_age": "Bekleme p50/p90",
+            "throughput": "Tamamlanan",
+            "cycle_time": "Döngü p50/p90",
+            "concentration": "İlk 3 payı",
+            "kept_ratio": "Sıralama korundu"
+          },
+          "tooltips": {
+            "queue_age": "Şu anda bekleyen kayıtların bekleme süresi: medyan ve 90. yüzdelik.",
+            "cycle_time": "Dönem içinde tamamlanan kayıtlar için oluşturmadan tamamlanmaya kadar.",
+            "concentration": "Açık atanmış işin en yoğun üç kişideki payı. Yüksekse alan birkaç kişiden ibarettir.",
+            "kept_ratio": "Dönemdeki sıralamaya dayalı atamalardan kimsenin bozmadığı olanlar. Uygunluk taramasının iade ettiği işler aleyhe sayılmaz."
+          },
+          "processes": {
+            "title": "Süreçler",
+            "running": "Devam eden",
+            "completed": "Tamamlanan",
+            "lead_time": "Teslim süresi p50/p90",
+            "late_steps": "Geciken adımlar",
+            "no_late_steps": "Yok"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "{total} kaydın {shown} tanesi gösteriliyor",
+            "hidden": "{count} kayıt, üyesi olmadığınız projelerde. Sayılıyor ama gösterilmiyor.",
+            "empty": "Burada gösterilecek bir şey yok.",
+            "close": "Kapat"
+          }
         }
       }
     },

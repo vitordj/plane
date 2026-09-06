@@ -393,3 +393,82 @@ export interface IDirectoryIdentity {
   last_seen_at: string | null;
   created_at: string;
 }
+
+/** The three windows the executive view offers (item 5.1). */
+export type TExecutivePeriod = "7d" | "30d" | "90d";
+
+/**
+ * One area's row on the executive page.
+ *
+ * Percentiles, shares and ratios are `null` rather than `0` when the
+ * population is empty: an area holding nothing has no median wait, and a page
+ * that printed `0s` for it would be reporting excellence.
+ */
+export interface IExecutiveUnitRow {
+  unit: { id: string; name: string; slug: string };
+  /** Items the area owns whose native state is neither completed nor cancelled. */
+  backlog: number;
+  queued: number;
+  allocation_failed: number;
+  assignment_overdue: number;
+  target_overdue: number;
+  assigned_open: number;
+  /** Seconds waited, at the 50th and 90th percentile of the current queue. */
+  queue_age_p50: number | null;
+  queue_age_p90: number | null;
+  /** Items finished inside the period. */
+  throughput: number;
+  cycle_time_p50: number | null;
+  cycle_time_p90: number | null;
+  /** Share of open assigned work carried by the three busiest people. */
+  concentration_top3: number | null;
+  /** Ranked allocations in the period that a person did not overturn. */
+  auto_assign_kept_ratio: number | null;
+}
+
+export interface IExecutiveLateStep {
+  step_key: string;
+  template_name: string;
+  late_count: number;
+}
+
+export interface IExecutiveProcesses {
+  running: number;
+  completed: number;
+  lead_time_p50: number | null;
+  lead_time_p90: number | null;
+  late_steps: IExecutiveLateStep[];
+}
+
+export interface IExecutiveMetrics {
+  period: TExecutivePeriod;
+  period_start: string;
+  /** When the numbers were computed. They are cached for five minutes. */
+  generated_at: string;
+  units: IExecutiveUnitRow[];
+  processes: IExecutiveProcesses;
+}
+
+/** Which number the reader clicked, and therefore which rows they get back. */
+export type TExecutiveMetric =
+  | "backlog"
+  | "queued"
+  | "allocation_failed"
+  | "assignment_overdue"
+  | "target_overdue"
+  | "assigned_open"
+  | "throughput";
+
+/**
+ * The rows behind one number.
+ *
+ * `total` is the area's count; `items` is what this reader may see. `hidden`
+ * is the difference, and it is shown rather than swallowed — Plane's project
+ * membership decides who reads titles of real work, and a page that quietly
+ * returned thirteen of twenty would be lying by omission.
+ */
+export interface IExecutiveDrilldown {
+  total: number;
+  hidden: number;
+  items: IQueueItem[];
+}

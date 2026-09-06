@@ -668,6 +668,40 @@ when it is off (everything except creating steps and completing them), and
 [the contract](./orca-orchestrator-contract.md) for what an orchestrator may
 assume of the API.
 
+## The executive view
+
+Six areas side by side, for whoever runs the workspace: what is waiting, what
+is late, how fast work is being done, and whether an area is really three
+people. **Workspace settings → Executive view**, workspace Admin only — not
+because the numbers are secret, but because a cross-area comparison is a
+management artifact (F23).
+
+Ten indicators, and the rule that governs them all: each has **one** written
+definition and a query that reproduces it, both in
+[orca-executive-metrics.md](./orca-executive-metrics.md). A dashboard number
+nobody can check ends an argument by authority rather than by evidence, and the
+first time it disagrees with an area's queue, the queue is right.
+
+Three things worth knowing before reading the page:
+
+**Nothing is recorded for the dashboard.** Every number is an aggregate over
+rows the earlier phases already write — the routing link, the decision log,
+Plane's own `completed_at`. There is no snapshot table and no nightly job, so
+there is nothing that can quietly disagree with the queue.
+
+**An empty population answers `null`, not `0`.** An area holding nothing has no
+median wait and no concentration; printing zeros for it would read as
+instantaneous service and perfect distribution.
+
+**The counts are the workspace's; the rows are yours.** Clicking a number opens
+the items behind it, filtered to projects the reader belongs to — Plane's own
+membership decides who reads titles of real work (F18) — and the page says how
+many were withheld: _"7 items are in projects you do not belong to. They are
+counted, not shown."_
+
+The answer is cached five minutes per (workspace, period, area) and carries the
+instant it was computed, which the page shows. Refresh reads through.
+
 ## Directory sync
 
 Microsoft Entra ID can supply unit membership over SCIM 2.0, so onboarding
@@ -727,7 +761,12 @@ a decision). Processes have two:
 modes, the derived status, the deadlines' provenance and the webhook's `orca`
 key) and `test_process_replay.py` (twenty events delivered twice produce one of
 everything, a run that died halfway completes on replay, and a changed body
-under a spent key is refused rather than applied).
+under a spent key is refused rather than applied). The executive view has
+`test_executive_metrics.py`, which builds three areas, two runs and about forty
+items with controlled dates and asserts every indicator as a hand-computed
+literal — including that the percentiles interpolate the way `percentile_cont`
+does, that an empty area answers `null`, and that the drill-down matches the
+aggregate it came from.
 
 They cover joining and leaving units, the strongest-role resolution across two
 units, manual access surviving removal, manual promotions never being

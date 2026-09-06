@@ -867,6 +867,59 @@
             "not_removed": "Nepodarilo sa odobrať.",
             "not_saved": "Nepodarilo sa uložiť."
           }
+        },
+        "executive": {
+          "title": "Manažérsky prehľad",
+          "description": "Všetky oblasti vedľa seba: čo čaká, čo je po termíne a ako rýchlo sa práca dokončuje.",
+          "empty": "V tomto pracovnom priestore zatiaľ nie sú aktívne oblasti.",
+          "refresh": "Obnoviť",
+          "generated_at": "Vypočítané o {time}",
+          "no_value": "—",
+          "definitions_note": "Každé číslo tu má zapísanú definíciu a dotaz, ktorý ho zopakuje — pozri docs/orca-executive-metrics.md.",
+          "period": {
+            "7d": "7 dní",
+            "30d": "30 dní",
+            "90d": "90 dní"
+          },
+          "duration": {
+            "minutes": "{value} min",
+            "hours": "{value} h",
+            "days": "{value} d"
+          },
+          "columns": {
+            "area": "Oblasť",
+            "backlog": "Otvorené",
+            "queued": "Čaká",
+            "assignment_overdue": "Bez riešiteľa po termíne",
+            "target_overdue": "Po termíne",
+            "assigned_open": "Prebieha",
+            "queue_age": "Čakanie p50/p90",
+            "throughput": "Dokončené",
+            "cycle_time": "Cyklus p50/p90",
+            "concentration": "Podiel top 3",
+            "kept_ratio": "Poradie ponechané"
+          },
+          "tooltips": {
+            "queue_age": "Ako dlho čakajú položky, ktoré teraz čakajú, v mediáne a 90. percentile.",
+            "cycle_time": "Od vytvorenia po dokončenie, pri položkách dokončených v období.",
+            "concentration": "Podiel otvorenej pridelenej práce u troch najvyťaženejších ľudí. Vysoká hodnota znamená, že oblasť stojí na pár ľuďoch.",
+            "kept_ratio": "Pridelenia podľa poradia v období, ktoré nikto nezvrátil. Práca vrátená kontrolou dostupnosti sa do toho nepočíta."
+          },
+          "processes": {
+            "title": "Procesy",
+            "running": "Prebieha",
+            "completed": "Dokončené",
+            "lead_time": "Priebežná doba p50/p90",
+            "late_steps": "Oneskorené kroky",
+            "no_late_steps": "Žiadne"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "Zobrazené {shown} z {total}",
+            "hidden": "{count} položiek je v projektoch, do ktorých nepatríte. Počítajú sa, nezobrazujú sa.",
+            "empty": "Niet čo zobraziť.",
+            "close": "Zavrieť"
+          }
         }
       }
     },

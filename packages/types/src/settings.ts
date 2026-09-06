@@ -18,7 +18,8 @@ export type TWorkspaceSettingsTabs =
   | "webhooks"
   | "project-states"
   | "project-labels"
-  | "organizational-units";
+  | "organizational-units"
+  | "organizational-units-executive";
 export type TWorkspaceSettingsItem = {
   key: TWorkspaceSettingsTabs;
   i18n_label: string;

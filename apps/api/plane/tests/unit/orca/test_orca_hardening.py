@@ -564,9 +564,7 @@ class TestFeatureFlagClosesTheLayer:
         assert response.status_code == 200
         assert response.data["organizational_units_enabled"] is True
 
-    def test_the_config_endpoint_answers_for_all_four_switches(
-        self, settings, admin_client, workspace_with_members
-    ):
+    def test_the_config_endpoint_answers_for_all_four_switches(self, settings, admin_client, workspace_with_members):
         # One read, the whole picture: an app that has to guess at one of the
         # four switches will guess wrong on some instance.
         settings.ORCA_ORG_UNITS_ENABLED = True

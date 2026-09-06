@@ -867,6 +867,59 @@
             "not_removed": "Impossible de la supprimer.",
             "not_saved": "Impossible d’enregistrer."
           }
+        },
+        "executive": {
+          "title": "Vue exécutive",
+          "description": "Tous les domaines côte à côte : ce qui attend, ce qui est en retard et à quelle vitesse le travail avance.",
+          "empty": "Aucun domaine actif dans cet espace de travail.",
+          "refresh": "Actualiser",
+          "generated_at": "Calculé à {time}",
+          "no_value": "—",
+          "definitions_note": "Chaque nombre ici a une définition écrite et une requête qui le reproduit — voir docs/orca-executive-metrics.md.",
+          "period": {
+            "7d": "7 jours",
+            "30d": "30 jours",
+            "90d": "90 jours"
+          },
+          "duration": {
+            "minutes": "{value} min",
+            "hours": "{value} h",
+            "days": "{value} j"
+          },
+          "columns": {
+            "area": "Domaine",
+            "backlog": "Ouvert",
+            "queued": "En attente",
+            "assignment_overdue": "Non attribué en retard",
+            "target_overdue": "En retard",
+            "assigned_open": "En cours",
+            "queue_age": "Attente p50/p90",
+            "throughput": "Terminé",
+            "cycle_time": "Cycle p50/p90",
+            "concentration": "Part du top 3",
+            "kept_ratio": "Classement conservé"
+          },
+          "tooltips": {
+            "queue_age": "Depuis combien de temps attendent les éléments en attente, à la médiane et au 90e centile.",
+            "cycle_time": "De la création à la clôture, pour les éléments terminés sur la période.",
+            "concentration": "Part du travail attribué en cours portée par les trois personnes les plus chargées. Élevé signifie que le domaine repose sur quelques personnes.",
+            "kept_ratio": "Attributions classées de la période qu'une personne n'a pas annulées. Le travail rendu par le balayage de disponibilité ne compte pas contre."
+          },
+          "processes": {
+            "title": "Processus",
+            "running": "En cours",
+            "completed": "Terminés",
+            "lead_time": "Délai p50/p90",
+            "late_steps": "Étapes en retard",
+            "no_late_steps": "Aucune"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "{shown} sur {total} affichés",
+            "hidden": "{count} éléments sont dans des projets dont vous ne faites pas partie. Ils sont comptés, pas affichés.",
+            "empty": "Rien à afficher ici.",
+            "close": "Fermer"
+          }
         }
       }
     },

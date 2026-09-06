@@ -867,6 +867,59 @@
             "not_removed": "Konnte nicht entfernt werden.",
             "not_saved": "Konnte nicht gespeichert werden."
           }
+        },
+        "executive": {
+          "title": "Führungsübersicht",
+          "description": "Alle Bereiche nebeneinander: was wartet, was überfällig ist und wie schnell Arbeit fertig wird.",
+          "empty": "Noch keine aktiven Bereiche in diesem Workspace.",
+          "refresh": "Aktualisieren",
+          "generated_at": "Berechnet um {time}",
+          "no_value": "—",
+          "definitions_note": "Jede Zahl hier hat eine schriftliche Definition und eine Abfrage, die sie reproduziert — siehe docs/orca-executive-metrics.md.",
+          "period": {
+            "7d": "7 Tage",
+            "30d": "30 Tage",
+            "90d": "90 Tage"
+          },
+          "duration": {
+            "minutes": "{value} Min.",
+            "hours": "{value} Std.",
+            "days": "{value} T."
+          },
+          "columns": {
+            "area": "Bereich",
+            "backlog": "Offen",
+            "queued": "Wartend",
+            "assignment_overdue": "Ohne Zuweisung, überfällig",
+            "target_overdue": "Überfällig",
+            "assigned_open": "In Arbeit",
+            "queue_age": "Wartezeit p50/p90",
+            "throughput": "Abgeschlossen",
+            "cycle_time": "Durchlauf p50/p90",
+            "concentration": "Anteil Top 3",
+            "kept_ratio": "Ranking beibehalten"
+          },
+          "tooltips": {
+            "queue_age": "Wie lange derzeit wartende Vorgänge warten, im Median und im 90. Perzentil.",
+            "cycle_time": "Von der Erstellung bis zum Abschluss, für im Zeitraum fertiggestellte Vorgänge.",
+            "concentration": "Anteil der offenen zugewiesenen Arbeit bei den drei am stärksten belasteten Personen. Hoch heißt: der Bereich sind wenige Personen.",
+            "kept_ratio": "Gerankte Zuweisungen im Zeitraum, die niemand überstimmt hat. Vom Verfügbarkeitslauf zurückgegebene Arbeit zählt nicht dagegen."
+          },
+          "processes": {
+            "title": "Prozesse",
+            "running": "Laufend",
+            "completed": "Abgeschlossen",
+            "lead_time": "Durchlaufzeit p50/p90",
+            "late_steps": "Verspätete Schritte",
+            "no_late_steps": "Keine"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "{shown} von {total} angezeigt",
+            "hidden": "{count} Vorgänge liegen in Projekten, denen Sie nicht angehören. Sie werden gezählt, nicht angezeigt.",
+            "empty": "Hier gibt es nichts zu zeigen.",
+            "close": "Schließen"
+          }
         }
       }
     },

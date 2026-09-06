@@ -867,6 +867,59 @@
             "not_removed": "Không thể xoá.",
             "not_saved": "Không thể lưu."
           }
+        },
+        "executive": {
+          "title": "Tổng quan điều hành",
+          "description": "Tất cả các mảng cạnh nhau: việc gì đang chờ, việc gì trễ hạn và công việc hoàn thành nhanh đến đâu.",
+          "empty": "Chưa có mảng nào đang hoạt động trong không gian làm việc này.",
+          "refresh": "Làm mới",
+          "generated_at": "Tính lúc {time}",
+          "no_value": "—",
+          "definitions_note": "Mỗi con số ở đây đều có định nghĩa được viết ra và một truy vấn tái tạo nó — xem docs/orca-executive-metrics.md.",
+          "period": {
+            "7d": "7 ngày",
+            "30d": "30 ngày",
+            "90d": "90 ngày"
+          },
+          "duration": {
+            "minutes": "{value} phút",
+            "hours": "{value} giờ",
+            "days": "{value} ngày"
+          },
+          "columns": {
+            "area": "Mảng",
+            "backlog": "Đang mở",
+            "queued": "Đang chờ",
+            "assignment_overdue": "Chưa giao và quá hạn",
+            "target_overdue": "Trễ hạn",
+            "assigned_open": "Đang thực hiện",
+            "queue_age": "Chờ p50/p90",
+            "throughput": "Hoàn thành",
+            "cycle_time": "Chu kỳ p50/p90",
+            "concentration": "Tỷ lệ top 3",
+            "kept_ratio": "Giữ nguyên xếp hạng"
+          },
+          "tooltips": {
+            "queue_age": "Các mục đang chờ đã chờ bao lâu, ở trung vị và phân vị 90.",
+            "cycle_time": "Từ lúc tạo đến lúc hoàn thành, với các mục kết thúc trong kỳ.",
+            "concentration": "Tỷ lệ công việc đang mở do ba người bận nhất đảm nhận. Cao nghĩa là mảng này chỉ dựa vào vài người.",
+            "kept_ratio": "Các phân công theo xếp hạng trong kỳ mà không ai đảo ngược. Công việc bị trả lại do quét khả dụng không bị tính."
+          },
+          "processes": {
+            "title": "Quy trình",
+            "running": "Đang chạy",
+            "completed": "Đã hoàn thành",
+            "lead_time": "Thời gian hoàn tất p50/p90",
+            "late_steps": "Bước trễ hạn",
+            "no_late_steps": "Không có"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "Hiển thị {shown} trên {total}",
+            "hidden": "{count} mục nằm trong các dự án bạn không tham gia. Chúng được đếm nhưng không hiển thị.",
+            "empty": "Không có gì để hiển thị.",
+            "close": "Đóng"
+          }
         }
       }
     },

@@ -867,6 +867,59 @@
             "not_removed": "Nepodařilo se odebrat.",
             "not_saved": "Nepodařilo se uložit."
           }
+        },
+        "executive": {
+          "title": "Manažerský přehled",
+          "description": "Všechny oblasti vedle sebe: co čeká, co je po termínu a jak rychle se práce dokončuje.",
+          "empty": "V tomto pracovním prostoru zatím nejsou aktivní oblasti.",
+          "refresh": "Obnovit",
+          "generated_at": "Spočteno v {time}",
+          "no_value": "—",
+          "definitions_note": "Každé číslo zde má zapsanou definici a dotaz, který ho zopakuje — viz docs/orca-executive-metrics.md.",
+          "period": {
+            "7d": "7 dní",
+            "30d": "30 dní",
+            "90d": "90 dní"
+          },
+          "duration": {
+            "minutes": "{value} min",
+            "hours": "{value} h",
+            "days": "{value} d"
+          },
+          "columns": {
+            "area": "Oblast",
+            "backlog": "Otevřené",
+            "queued": "Čeká",
+            "assignment_overdue": "Bez řešitele po termínu",
+            "target_overdue": "Po termínu",
+            "assigned_open": "Probíhá",
+            "queue_age": "Čekání p50/p90",
+            "throughput": "Dokončeno",
+            "cycle_time": "Cyklus p50/p90",
+            "concentration": "Podíl top 3",
+            "kept_ratio": "Pořadí ponecháno"
+          },
+          "tooltips": {
+            "queue_age": "Jak dlouho čekají položky, které nyní čekají, v mediánu a 90. percentilu.",
+            "cycle_time": "Od vytvoření po dokončení, u položek dokončených v období.",
+            "concentration": "Podíl otevřené přidělené práce u tří nejvytíženějších lidí. Vysoká hodnota znamená, že oblast stojí na několika lidech.",
+            "kept_ratio": "Přidělení podle pořadí v období, která nikdo nezvrátil. Práce vrácená kontrolou dostupnosti se do toho nepočítá."
+          },
+          "processes": {
+            "title": "Procesy",
+            "running": "Probíhá",
+            "completed": "Dokončené",
+            "lead_time": "Průběžná doba p50/p90",
+            "late_steps": "Opožděné kroky",
+            "no_late_steps": "Žádné"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "Zobrazeno {shown} z {total}",
+            "hidden": "{count} položek je v projektech, do kterých nepatříte. Počítají se, nezobrazují se.",
+            "empty": "Není co zobrazit.",
+            "close": "Zavřít"
+          }
         }
       }
     },

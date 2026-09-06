@@ -867,6 +867,59 @@
             "not_removed": "無法刪除。",
             "not_saved": "無法儲存。"
           }
+        },
+        "executive": {
+          "title": "管理層檢視",
+          "description": "所有領域並排對比：什麼在等待、什麼已延期，以及工作完成的速度。",
+          "empty": "此工作區還沒有啟用的領域。",
+          "refresh": "重新整理",
+          "generated_at": "計算於 {time}",
+          "no_value": "—",
+          "definitions_note": "這裡的每個數字都有書面定義和可重現的查詢——見 docs/orca-executive-metrics.md。",
+          "period": {
+            "7d": "7 天",
+            "30d": "30 天",
+            "90d": "90 天"
+          },
+          "duration": {
+            "minutes": "{value} 分鐘",
+            "hours": "{value} 小時",
+            "days": "{value} 天"
+          },
+          "columns": {
+            "area": "領域",
+            "backlog": "未完成",
+            "queued": "等待中",
+            "assignment_overdue": "未指派且逾期",
+            "target_overdue": "逾期",
+            "assigned_open": "進行中",
+            "queue_age": "等待 p50/p90",
+            "throughput": "已完成",
+            "cycle_time": "週期 p50/p90",
+            "concentration": "前三人占比",
+            "kept_ratio": "排名被採納"
+          },
+          "tooltips": {
+            "queue_age": "目前等待中的項目已等待的時長（中位數與 90 百分位）。",
+            "cycle_time": "期間內完成的項目，從建立到完成的時長。",
+            "concentration": "進行中已指派工作裡最忙的三人所占比例。比例高代表該領域依賴少數幾個人。",
+            "kept_ratio": "期間內由排名做出的指派中，未被人工推翻的比例。可用性巡檢退回的工作不計入。"
+          },
+          "processes": {
+            "title": "流程",
+            "running": "進行中",
+            "completed": "已完成",
+            "lead_time": "前置時間 p50/p90",
+            "late_steps": "延誤步驟",
+            "no_late_steps": "無"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "顯示 {total} 筆中的 {shown} 筆",
+            "hidden": "有 {count} 筆位於你未加入的專案中。它們計入統計，但不顯示。",
+            "empty": "這裡沒有可顯示的內容。",
+            "close": "關閉"
+          }
         }
       }
     },

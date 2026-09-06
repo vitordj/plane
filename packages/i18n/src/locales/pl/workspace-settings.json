@@ -867,6 +867,59 @@
             "not_removed": "Nie udało się usunąć.",
             "not_saved": "Nie udało się zapisać."
           }
+        },
+        "executive": {
+          "title": "Widok kierowniczy",
+          "description": "Wszystkie obszary obok siebie: co czeka, co jest opóźnione i jak szybko praca jest kończona.",
+          "empty": "W tej przestrzeni roboczej nie ma jeszcze aktywnych obszarów.",
+          "refresh": "Odśwież",
+          "generated_at": "Obliczono o {time}",
+          "no_value": "—",
+          "definitions_note": "Każda liczba ma tu zapisaną definicję i zapytanie, które ją odtwarza — zobacz docs/orca-executive-metrics.md.",
+          "period": {
+            "7d": "7 dni",
+            "30d": "30 dni",
+            "90d": "90 dni"
+          },
+          "duration": {
+            "minutes": "{value} min",
+            "hours": "{value} godz.",
+            "days": "{value} dni"
+          },
+          "columns": {
+            "area": "Obszar",
+            "backlog": "Otwarte",
+            "queued": "Czeka",
+            "assignment_overdue": "Bez wykonawcy po terminie",
+            "target_overdue": "Opóźnione",
+            "assigned_open": "W toku",
+            "queue_age": "Oczekiwanie p50/p90",
+            "throughput": "Zakończone",
+            "cycle_time": "Cykl p50/p90",
+            "concentration": "Udział top 3",
+            "kept_ratio": "Ranking utrzymany"
+          },
+          "tooltips": {
+            "queue_age": "Jak długo czekają elementy obecnie w kolejce, mediana i 90. percentyl.",
+            "cycle_time": "Od utworzenia do zakończenia, dla elementów zakończonych w okresie.",
+            "concentration": "Udział otwartej przypisanej pracy u trzech najbardziej obciążonych osób. Wysoki oznacza, że obszar to kilka osób.",
+            "kept_ratio": "Przydziały z rankingu w okresie, których nikt nie cofnął. Praca zwrócona przez przegląd dostępności nie liczy się na minus."
+          },
+          "processes": {
+            "title": "Procesy",
+            "running": "W toku",
+            "completed": "Zakończone",
+            "lead_time": "Czas realizacji p50/p90",
+            "late_steps": "Opóźnione kroki",
+            "no_late_steps": "Brak"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "Pokazano {shown} z {total}",
+            "hidden": "{count} elementów jest w projektach, do których nie należysz. Są liczone, ale nie pokazywane.",
+            "empty": "Nie ma co pokazać.",
+            "close": "Zamknij"
+          }
         }
       }
     },

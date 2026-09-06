@@ -5,7 +5,7 @@
  */
 
 import type { LucideIcon } from "lucide-react";
-import { ArrowUpToLine, Building, CreditCard, Users, Webhook, Layers, Tags, Network } from "lucide-react";
+import { ArrowUpToLine, BarChart3, Building, CreditCard, Users, Webhook, Layers, Tags, Network } from "lucide-react";
 // plane imports
 import type { ISvgIcons } from "@plane/propel/icons";
 import type { TWorkspaceSettingsTabs } from "@plane/types";
@@ -19,4 +19,5 @@ export const WORKSPACE_SETTINGS_ICONS: Record<TWorkspaceSettingsTabs, LucideIcon
   "project-states": Layers,
   "project-labels": Tags,
   "organizational-units": Network,
+  "organizational-units-executive": BarChart3,
 };

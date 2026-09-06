@@ -643,6 +643,59 @@
             "not_removed": "Couldn't remove it.",
             "not_saved": "Couldn't save it."
           }
+        },
+        "executive": {
+          "title": "Executive view",
+          "description": "Every area side by side: what is waiting, what is late, and how fast work is getting done.",
+          "empty": "No active areas in this workspace yet.",
+          "refresh": "Refresh",
+          "generated_at": "Computed at {time}",
+          "no_value": "—",
+          "definitions_note": "Every number here has one written definition and a query that reproduces it — see docs/orca-executive-metrics.md.",
+          "period": {
+            "7d": "7 days",
+            "30d": "30 days",
+            "90d": "90 days"
+          },
+          "duration": {
+            "minutes": "{value} min",
+            "hours": "{value} h",
+            "days": "{value} d"
+          },
+          "columns": {
+            "area": "Area",
+            "backlog": "Open",
+            "queued": "Waiting",
+            "assignment_overdue": "Unassigned past due",
+            "target_overdue": "Late",
+            "assigned_open": "In progress",
+            "queue_age": "Wait p50/p90",
+            "throughput": "Finished",
+            "cycle_time": "Cycle p50/p90",
+            "concentration": "Top 3 share",
+            "kept_ratio": "Ranking kept"
+          },
+          "tooltips": {
+            "queue_age": "How long items now waiting have waited, at the median and the 90th percentile.",
+            "cycle_time": "From creation to completion, for items finished inside the period.",
+            "concentration": "Share of open assigned work carried by the three busiest people. High means the area is a few people.",
+            "kept_ratio": "Ranked allocations in the period that a person did not overturn. Work the availability sweep returned does not count against it."
+          },
+          "processes": {
+            "title": "Processes",
+            "running": "Running",
+            "completed": "Completed",
+            "lead_time": "Lead time p50/p90",
+            "late_steps": "Late steps",
+            "no_late_steps": "None"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "Showing {shown} of {total}",
+            "hidden": "{count} items are in projects you do not belong to. They are counted, not shown.",
+            "empty": "Nothing to show here.",
+            "close": "Close"
+          }
         }
       },
       "projects": {

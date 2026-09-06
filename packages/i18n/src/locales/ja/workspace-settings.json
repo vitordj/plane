@@ -867,6 +867,59 @@
             "not_removed": "削除できませんでした。",
             "not_saved": "保存できませんでした。"
           }
+        },
+        "executive": {
+          "title": "エグゼクティブビュー",
+          "description": "各エリアを並べて比較します。何が待機中で、何が遅延しており、どれだけ速く完了しているか。",
+          "empty": "このワークスペースにはまだ有効なエリアがありません。",
+          "refresh": "更新",
+          "generated_at": "{time} 時点",
+          "no_value": "—",
+          "definitions_note": "ここにあるすべての数値には、記述された定義とそれを再現するクエリがあります（docs/orca-executive-metrics.md）。",
+          "period": {
+            "7d": "7日",
+            "30d": "30日",
+            "90d": "90日"
+          },
+          "duration": {
+            "minutes": "{value}分",
+            "hours": "{value}時間",
+            "days": "{value}日"
+          },
+          "columns": {
+            "area": "エリア",
+            "backlog": "未完了",
+            "queued": "待機中",
+            "assignment_overdue": "未割当かつ期限超過",
+            "target_overdue": "遅延",
+            "assigned_open": "進行中",
+            "queue_age": "待機 p50/p90",
+            "throughput": "完了",
+            "cycle_time": "サイクル p50/p90",
+            "concentration": "上位3名の割合",
+            "kept_ratio": "ランキング維持"
+          },
+          "tooltips": {
+            "queue_age": "現在待機中の項目の待ち時間（中央値と90パーセンタイル）。",
+            "cycle_time": "期間内に完了した項目の、作成から完了までの時間。",
+            "concentration": "進行中の割当作業のうち、上位3名が担う割合。高いほど、そのエリアは少数の人に依存しています。",
+            "kept_ratio": "期間内のランキング割当のうち、人が覆さなかった割合。稼働可否スイープが戻した作業は不利に数えません。"
+          },
+          "processes": {
+            "title": "プロセス",
+            "running": "実行中",
+            "completed": "完了",
+            "lead_time": "リードタイム p50/p90",
+            "late_steps": "遅延ステップ",
+            "no_late_steps": "なし"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "{total} 件中 {shown} 件を表示",
+            "hidden": "{count} 件はあなたが所属していないプロジェクトにあります。件数には含まれますが、表示はされません。",
+            "empty": "表示するものはありません。",
+            "close": "閉じる"
+          }
         }
       }
     },

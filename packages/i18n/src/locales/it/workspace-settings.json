@@ -867,6 +867,59 @@
             "not_removed": "Non è stato possibile rimuoverla.",
             "not_saved": "Non è stato possibile salvare."
           }
+        },
+        "executive": {
+          "title": "Vista esecutiva",
+          "description": "Tutte le aree affiancate: cosa è in attesa, cosa è in ritardo e con che ritmo il lavoro viene chiuso.",
+          "empty": "Nessuna area attiva in questo workspace.",
+          "refresh": "Aggiorna",
+          "generated_at": "Calcolato alle {time}",
+          "no_value": "—",
+          "definitions_note": "Ogni numero qui ha una definizione scritta e una query che lo riproduce — vedi docs/orca-executive-metrics.md.",
+          "period": {
+            "7d": "7 giorni",
+            "30d": "30 giorni",
+            "90d": "90 giorni"
+          },
+          "duration": {
+            "minutes": "{value} min",
+            "hours": "{value} h",
+            "days": "{value} g"
+          },
+          "columns": {
+            "area": "Area",
+            "backlog": "Aperti",
+            "queued": "In attesa",
+            "assignment_overdue": "Senza esecutore e scaduti",
+            "target_overdue": "In ritardo",
+            "assigned_open": "In corso",
+            "queue_age": "Attesa p50/p90",
+            "throughput": "Completati",
+            "cycle_time": "Ciclo p50/p90",
+            "concentration": "Quota top 3",
+            "kept_ratio": "Ranking mantenuto"
+          },
+          "tooltips": {
+            "queue_age": "Da quanto attendono gli elementi ora in coda, alla mediana e al 90° percentile.",
+            "cycle_time": "Dalla creazione alla chiusura, per gli elementi completati nel periodo.",
+            "concentration": "Quota del lavoro assegnato aperto in capo alle tre persone più cariche. Alto significa che l'area sono poche persone.",
+            "kept_ratio": "Assegnazioni per ranking nel periodo che nessuno ha ribaltato. Il lavoro restituito dalla scansione di disponibilità non conta contro."
+          },
+          "processes": {
+            "title": "Processi",
+            "running": "In corso",
+            "completed": "Completati",
+            "lead_time": "Lead time p50/p90",
+            "late_steps": "Fasi in ritardo",
+            "no_late_steps": "Nessuna"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "Mostrati {shown} di {total}",
+            "hidden": "{count} elementi sono in progetti a cui non appartieni. Vengono contati, non mostrati.",
+            "empty": "Niente da mostrare qui.",
+            "close": "Chiudi"
+          }
         }
       }
     },

@@ -83,6 +83,18 @@ export const WORKSPACE_SETTINGS: Record<TWorkspaceSettingsTabs, TWorkspaceSettin
     access: [EUserWorkspaceRoles.ADMIN],
     highlight: (pathname: string, baseUrl: string) => pathname === `${baseUrl}/settings/organizational-units/`,
   },
+  // The cross-area view. Its own entry rather than a tab inside the areas
+  // screen: the person who reads it is not the person who administers areas,
+  // and burying a director's page three clicks inside an admin screen is how
+  // it ends up unused.
+  "organizational-units-executive": {
+    key: "organizational-units-executive",
+    i18n_label: "workspace_settings.settings.organizational_units.executive.title",
+    href: `/settings/organizational-units/executive`,
+    access: [EUserWorkspaceRoles.ADMIN],
+    highlight: (pathname: string, baseUrl: string) =>
+      pathname === `${baseUrl}/settings/organizational-units/executive/`,
+  },
 };
 
 export const WORKSPACE_SETTINGS_ACCESS = Object.fromEntries(
@@ -99,6 +111,7 @@ export const GROUPED_WORKSPACE_SETTINGS: Record<WORKSPACE_SETTINGS_CATEGORY, TWo
     WORKSPACE_SETTINGS["project-states"],
     WORKSPACE_SETTINGS["project-labels"],
     WORKSPACE_SETTINGS["organizational-units"],
+    WORKSPACE_SETTINGS["organizational-units-executive"],
   ],
   [WORKSPACE_SETTINGS_CATEGORY.DEVELOPER]: [WORKSPACE_SETTINGS["webhooks"]],
 };

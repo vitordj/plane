@@ -24,6 +24,8 @@ from plane.app.views import (
     OrganizationalUnitPolicyEndpoint,
     OrganizationalUnitPolicyWriteEndpoint,
     OrganizationalUnitQueueEndpoint,
+    OrcaExecutiveDrilldownEndpoint,
+    OrcaExecutiveEndpoint,
     OrganizationalUnitDecisionsEndpoint,
     OrganizationalUnitCoordinatorViewSet,
     IssueOrganizationalUnitCandidatesEndpoint,
@@ -115,6 +117,20 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/coordinators/<uuid:pk>/",
         OrganizationalUnitCoordinatorViewSet.as_view({"delete": "destroy"}),
         name="organizational-unit-coordinator",
+    ),
+    # The executive view (Fase 5). Workspace Admin only: an area's own people
+    # already see their queue in more detail than this, and a cross-area
+    # comparison is a management artifact (F23).
+    path(
+        "orca/workspaces/<str:slug>/executive/",
+        OrcaExecutiveEndpoint.as_view(),
+        name="orca-executive",
+    ),
+    # The rows behind one number, filtered to projects the reader belongs to.
+    path(
+        "orca/workspaces/<str:slug>/executive/drilldown/",
+        OrcaExecutiveDrilldownEndpoint.as_view(),
+        name="orca-executive-drilldown",
     ),
     # Workspace Project State Settings
     path(

@@ -867,6 +867,59 @@
             "not_removed": "Nu s-a putut elimina.",
             "not_saved": "Nu s-a putut salva."
           }
+        },
+        "executive": {
+          "title": "Vedere executivă",
+          "description": "Toate ariile una lângă alta: ce așteaptă, ce este întârziat și cât de repede se finalizează munca.",
+          "empty": "Încă nu există arii active în acest spațiu de lucru.",
+          "refresh": "Reîmprospătează",
+          "generated_at": "Calculat la {time}",
+          "no_value": "—",
+          "definitions_note": "Fiecare număr are aici o definiție scrisă și o interogare care îl reproduce — vezi docs/orca-executive-metrics.md.",
+          "period": {
+            "7d": "7 zile",
+            "30d": "30 zile",
+            "90d": "90 zile"
+          },
+          "duration": {
+            "minutes": "{value} min",
+            "hours": "{value} h",
+            "days": "{value} z"
+          },
+          "columns": {
+            "area": "Arie",
+            "backlog": "Deschise",
+            "queued": "În așteptare",
+            "assignment_overdue": "Fără executant, întârziate",
+            "target_overdue": "Întârziate",
+            "assigned_open": "În lucru",
+            "queue_age": "Așteptare p50/p90",
+            "throughput": "Finalizate",
+            "cycle_time": "Ciclu p50/p90",
+            "concentration": "Cota top 3",
+            "kept_ratio": "Clasament păstrat"
+          },
+          "tooltips": {
+            "queue_age": "De cât timp așteaptă elementele aflate acum în coadă, la mediană și la percentila 90.",
+            "cycle_time": "De la creare la finalizare, pentru elementele încheiate în perioadă.",
+            "concentration": "Cota muncii atribuite deschise dusă de cele mai încărcate trei persoane. Valoare mare înseamnă că aria înseamnă câțiva oameni.",
+            "kept_ratio": "Alocările din clasament din perioadă pe care nimeni nu le-a răsturnat. Munca returnată de scanarea de disponibilitate nu contează împotrivă."
+          },
+          "processes": {
+            "title": "Procese",
+            "running": "În desfășurare",
+            "completed": "Finalizate",
+            "lead_time": "Timp de livrare p50/p90",
+            "late_steps": "Etape întârziate",
+            "no_late_steps": "Niciuna"
+          },
+          "drilldown": {
+            "title": "{metric} · {unit}",
+            "showing": "Se afișează {shown} din {total}",
+            "hidden": "{count} elemente sunt în proiecte din care nu faceți parte. Sunt numărate, nu afișate.",
+            "empty": "Nimic de afișat aici.",
+            "close": "Închide"
+          }
         }
       }
     },
