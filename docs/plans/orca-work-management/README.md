@@ -46,22 +46,28 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 18                | `[~]` 15/18 (P0.0–P0.11, P0.14, P0.15, P0.16) · P0.12, P0.13 e P0.17 parciais                         | —               |
 | D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · suíte verde no CI — faltam migrações, `check:types` e a auditoria num dump              | —               |
 | 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois | —               |
-| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6                                                                                             | —               |
-| 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6                                                                                             | —               |
-| 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                             | —               |
-| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                             | —               |
+| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6 · referência em `feat/orca-work-management`                                                 | —               |
+| 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6 · referência em `feat/orca-work-management`                                                 | —               |
+| 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7 · referência em `feat/orca-work-management`                                                 | —               |
+| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4 · referência em `feat/orca-work-management`                                                 | —               |
 
 ## Próximo item recomendado
 
-**Estado em 06/09 — leia isto primeiro.** `stage` está em `89becdc7`. O
-**PR #12** (1.1, 1.2, 1.3, 1.6 parcial) está aberto, verde nos 16 checks e sem
-conflito; falta só o merge. **A Fase 1 está com os 8 itens entregues**: o bloco
-1.4 → 1.8 foi executado na branch `claude/plano-blocos-1-4-1-8-reo0t9`, cortada
-da **ponta do PR #12** — não de `stage` — porque o 1.4 importa o que o #12
-entrega. O repositório mescla com merge commit, então a PR do bloco mostra só o
-delta depois do merge do #12. O plano do bloco, com as quinze decisões fechadas
-(B1–B15), continua em [`01-public-contract.md`](./01-public-contract.md) como
-registro do que foi decidido e por quê.
+**Estado em 06/09 — leia isto primeiro.** `stage` está em `f07c5070`, o merge
+do **PR #13**. **Não há PR aberto no repositório.** Todo o código de P0, D0 e
+Fase 1 está em `stage`: o que segura os três gates é ambiente e decisão de
+negócio, não implementação. As **Fases 2 a 5 estão em zero em `stage`** —
+existe um protótipo delas em `feat/orca-work-management`, tratado em
+[§O que existe fora de `stage`](#o-que-existe-fora-de-stage) como
+implementação de referência, não como entrega.
+
+**A Fase 1 fechou os 8 itens.** O bloco 1.4 → 1.8 foi executado na branch
+`claude/plano-blocos-1-4-1-8-reo0t9`, cortada da ponta do PR #12 — não de
+`stage` — porque o 1.4 importa o que o #12 entrega; entrou com o PR #13
+depois que o #12 foi mesclado. O plano do bloco, com as quinze decisões
+fechadas (B1–B15), continua em
+[`01-public-contract.md`](./01-public-contract.md) como registro do que foi
+decidido e por quê.
 
 **O que a Fase 1 entregou:** seis rotas em `/api/v1/orca/` (criação composta
 idempotente, leitura por chave externa, áreas, fila, reatribuição com
@@ -75,8 +81,9 @@ continua `0`.
 responde (revisão do doc por quem não escreveu, os `curl` contra staging, a
 medição p50/p95) e os **Gates P0 e D0**, que este bloco não fecha e que
 continuam sendo a condição do Gate 1. Fechados os três, a **Fase 2** (fila e
-coordenador) é o próximo bloco — e o item 2.2 já tem a consulta da fila pronta
-em `app/services/orca/queue.py`.
+coordenador) é o próximo bloco — e ela chega com duas vantagens: o item 2.2 já
+tem a consulta da fila pronta em `app/services/orca/queue.py`, e a
+implementação de referência abaixo cobre 2.1 a 2.6.
 
 **O que a sessão de agente pode e não pode fazer mudou.** A receita para
 rodar pytest e migrações dentro da sessão está no
@@ -117,8 +124,9 @@ jobs testavam sem que o gatilho fosse declarado.
 **P0.11 fechou, e saiu muito menor que o previsto**: o upstream 1.4.2 são 3
 commits e uma mudança real. PR #11 mesclado em `stage` (`af571341`), com o
 bump para `1.5.0-plane.1.4.2` que fecha a metade de versão do P0.13. Sobra
-uma ponta de procedimento: o mirror `origin/upstream` continua em 1.4.1,
-porque a sessão de agente não empurra naquela branch (comando no item).
+uma ponta de procedimento: o mirror `origin/upstream` continua em 1.4.1
+(reverificado em 06/09 — a ponta é `5662b761`, de 07/08), porque a sessão de
+agente não empurra naquela branch (comando no item).
 
 **Nenhum dos três itens que restam em P0 é código.** Todos dependem de algo
 fora do repositório:
@@ -143,9 +151,10 @@ auditoria num dump de `stage`; o banco montado aqui nasce vazio.
 **A Fase 1 começou antes dos gates**, a pedido. Entregues 1.1 (migração
 `0138`, os dois modelos e a FK que o D0.4 adiou), 1.2 (segunda flag, mixin,
 throttle por token, base das views) e 1.3 (serviço de idempotência do §6.7);
-o 1.6 ficou parcial — os dez códigos estão nos três lugares e nas 19 locales,
-falta só o header `Idempotent-Replay`, que depende de existir resposta HTTP.
-Restam 1.4 e 1.5 (os endpoints), 1.7 (docs e cliente) e 1.8 (contrato). Isso
+o 1.6 ficou parcial no PR #12 — os dez códigos estão nos três lugares e nas 19
+locales, e faltava só o header `Idempotent-Replay`, que depende de existir
+resposta HTTP. **O PR #13 fechou o resto**: 1.4 e 1.5 (os endpoints), o 1.6, o
+1.7 (docs e cliente) e o 1.8 (contrato sobre HTTP real, no merge gate). Isso
 **não** antecipa o Gate 1, que continua exigindo os Gates P0 e D0 fechados.
 
 No domínio, a **D0 está com os 12 itens entregues** e a suíte Orca verde no CI
@@ -163,6 +172,97 @@ variável o Compose Orca recusa subir, de propósito. Também aberto: invalidar
 as contas criadas pela versão antiga do `create_users.py` (procedimento em
 `tools/migration/README.md`).
 
+## O que existe fora de `stage`
+
+Levantado em 06/09 contra `f07c5070`. **Duas branches carregam trabalho que
+`stage` não tem em forma nenhuma** e por isso não podem ser apagadas; o resto é
+passado, e a limpeza do P0.12 leva tudo.
+
+### `feat/orca-work-management` — implementação de referência das Fases 2 a 5
+
+A branch está **34 commits à frente e 65 atrás** de `stage`, e o diff contra a
+merge-base mostra 250 arquivos. **O número engana**: 26 dos 34 commits são P0,
+D0 e Fase 1, refeitos depois em PRs revisados e já presentes em `stage` numa
+versão mais endurecida. Mesclar a branch reintroduziria as versões antigas
+desse trabalho — não faça isso.
+
+O que ela tem de **único** são os dez últimos commits, `94be32c1..a33d1b55`,
+que somam **124 arquivos e 15.034 inserções**:
+
+| Commits                        | Entrega                                                                                                                                                                                                                                |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `94be32c1` → `7b3a2a04` (seis) | **Fase 2**: coordenadores e proveniência do acesso (migração `0139`), permissão de área, endpoints da fila, a aba de trabalho da área, varredura de atrasos (`0140`), "Minhas áreas", transferência, e a matriz negativa de permissões |
+| `b452721b`, `5d8fcc20`         | **Fase 3**: ausências e limites por pessoa e por área (`0141`), devolução à fila de quem ficou indisponível, atrás de `ORCA_AVAILABILITY_ENABLED`                                                                                      |
+| `b77e5f9f`                     | **Fase 4**: instâncias de processo, etapas e SLA (`0142`)                                                                                                                                                                              |
+| `a33d1b55`                     | **Fase 5**: métricas executivas por área — 5.1, 5.3 e 5.4; o **5.2 foi descartado no próprio commit** por falta de dados reais para medir, e o drill-down do 5.3 saiu simplificado                                                     |
+
+**Portar é mais barato do que os 250 arquivos sugerem**, e isto foi medido, não
+estimado:
+
+- **A numeração de migração encaixa.** `stage` para na `0138`; a branch usa
+  `0139` → `0142`, nessa ordem. Não há colisão.
+- **78 dos 124 arquivos são novos** — não existem em `stage` — e portam sem
+  conflito.
+- **46 se sobrepõem** ao que `stage` mudou desde a merge-base, e a maior parte
+  é JSON de locale. O núcleo a reconciliar à mão é pequeno:
+  `assignment_service.py`, `org_unit_reconciler.py`, `organizational_unit.py`,
+  `organizational_assignment.py`, as URLs e views internas, `celery.py`,
+  `settings/common.py`, `orca_error_codes.py`, e o store e o service do web.
+
+**O que a branch não prova.** Os commits das Fases 2 (parte), 3, 4 e 5 dizem no
+corpo _"Needs a database, so it has not run here"_: os testes foram escritos e
+**não executados**. A sessão de agente hoje consegue rodá-los (receita no
+[`HANDOFF-PROMPT.md`](./HANDOFF-PROMPT.md) §Ambiente local), o que não era
+verdade quando a branch foi escrita. Nenhum item 2.x–5.x pode ser marcado `[x]`
+sem a suíte verde. O commit do 2.3 também registra que **`apps/web` não tem
+runner de teste nenhum** — os testes de store e de componente que o item pede
+dependem de introduzir um, o que é decisão própria, não detalhe do item.
+
+**Como usá-la**: item a item, classificando cada pedaço em reaproveitar /
+redesenhar / reescrever / descartar, com um PR pequeno por item contra `stage`,
+como manda o §Como usar. A branch é insumo; não é entrega.
+
+### `oidc-free` — provider OIDC genérico, **fora de escopo por decisão**
+
+As branches `claude/sync-remote-azure-auth-m6618f` (14 commits) e
+`claude/azure-aad-integration-review-5if6pz` (32 commits) carregam um provider
+OIDC genérico completo: fluxo com PKCE e `id_token` verificado, descoberta de
+endpoints, views de app e de space, tela no admin, entradas em
+`instance_config_variables` e testes unitários próprios em
+`plane/tests/unit/authentication/`. **Nada disso existe em `stage`**, que tem
+apenas o provider específico do Entra. As duas branches são a mesma sequência
+de commits sobre bases diferentes; a `m6618f` é a mais nova e a única portada
+sobre a base Orca (`fix(auth): port the oidc-free UI and migration onto the
+orca base`).
+
+**Decisão de 06/09: fora de escopo.** A 4UM autentica por Azure/Entra e não vai
+manter um provider genérico para outros emissores. O código **não é
+descartado** — fica onde está, preservado, para quem quiser levá-lo num fork
+futuro. Não há item de plano para ele e não haverá; esta seção é o registro.
+
+Duas consequências que valem estar escritas:
+
+- **`claude/sync-remote-azure-auth-m6618f` não entra na limpeza do P0.12.** É a
+  única cópia portada desse trabalho; apagá-la perde a feature.
+- Se um dia for portado, a `0130_alter_account_provider.py` da branch **colide**
+  com a `0130_organizational_units.py` de `stage` e precisa ser renumerada a
+  partir da última migração em uso.
+
+### Branches que a limpeza do P0.12 pode apagar
+
+| Branch                                       | Situação                                                                                                                                                                    |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `claude/aad-end-to-end-egj4dm`               | 1 commit, 117 atrás. Primeira versão do login Entra, **superada**: não validava o `id_token` contra o JWKS, que é justamente o que o P0.10 corrigiu em `stage`. **Apagar.** |
+| `claude/continue-implementations-bquse8`     | 7 commits, 57 atrás. P0.1–P0.7, entregues por outro caminho e já em `stage`. **Apagar.**                                                                                    |
+| `claude/codex-prompts-bocxeh`                | 3 commits, 65 atrás. Prompts de Codex para as fases, superados por este board e pelo `HANDOFF-PROMPT.md`. **Apagar.**                                                       |
+| `claude/azure-aad-integration-review-5if6pz` | 32 commits, 858 atrás. Mesmo `oidc-free` da `m6618f`, mais 19 commits de upstream que já entraram por outro caminho. **Apagar esta e manter a `m6618f`.**                   |
+| `claude/sync-remote-azure-auth-m6618f`       | **Manter** — única cópia do `oidc-free` (ver acima).                                                                                                                        |
+| `feat/orca-work-management`                  | **Manter** — implementação de referência das Fases 2 a 5 (ver acima).                                                                                                       |
+
+As demais `claude/*` já estão mescladas em `stage` e saem na mesma limpeza. O
+critério do P0.12 continua sendo o comando do item; o que falta é o
+`git push --delete`, barrado para a sessão de agente.
+
 ## Pendências externas (não bloqueiam P0/D0)
 
 | Ref. | Pendência                                                                                          | Quem                            | Necessária em                                                 |
@@ -178,6 +278,7 @@ as contas criadas pela versão antiga do `create_users.py` (procedimento em
 
 | Data       | Evento                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-09-06 | **PR #13 mesclado (`f07c5070`); auditoria do que existe fora de `stage`.** Com a Fase 1 fechada e nenhum PR aberto, o repositório foi varrido branch a branch. Três achados. (1) `feat/orca-work-management` não são "34 commits e 250 arquivos" de trabalho novo: 26 dos 34 são P0, D0 e Fase 1 já refeitos e endurecidos em `stage`, e o que ela tem de único são dez commits — 124 arquivos, 15.034 inserções — com as Fases 2 a 5. Portar é barato: as migrações `0139`–`0142` encaixam depois da `0138`, 78 dos 124 arquivos são novos e os 46 que se sobrepõem são em maioria locale. O que a branch não tem é prova: os commits dizem *"Needs a database, so it has not run here"*. Fica como implementação de referência, item a item, um PR por item — não como merge. (2) Um provider OIDC genérico (`oidc-free`) completo, com PKCE, admin e testes, existe só em `claude/sync-remote-azure-auth-m6618f` e nunca entrou em `stage`; **decidido fora de escopo** — a 4UM autentica por Entra —, mas preservado para um fork futuro, o que tira essa branch da limpeza do P0.12. (3) Inventário das branches que o P0.12 pode apagar, e das três que não pode. Nada disso muda o quadro: P0 15/18, D0 12/12 sem gate, Fase 1 8/8 sem gate, Fases 2–5 em zero. |
 | 2026-09-06 | **Bloco 1.4 → 1.8 executado inteiro.** Seis rotas em `/api/v1/orca/`, o serviço D0.5 estendido em vez de copiado (`trigger`, `collaborators`, `automation_operation`, `expected_decision_id`, todos com o default que a função já escrevia), a fila como serviço que o 2.2 reaproveita, `docs/orca-public-api.md`, `tools/orca-client/` e testes de contrato sobre HTTP real no merge gate. Local: **99 testes novos** (41 criação, 16 áreas/fila, 22 reatribuição/transferência, 11 no serviço, 9 de contrato em 2m01s) e a suíte inteira verde — `pytest plane/tests/unit/orca plane/tests/contract/test_orca_public_contract.py` → **1017 passed, 0 failed** em 34m31s. **Três defeitos que só a execução pegou**, dois deles de código: (1) `WorkItemNotFound` e `IfMatchRequired` são levantados antes de o recibo existir e escapavam do `try` do bloco idempotente — dois caminhos documentados como 404 e 428 respondiam **500**; corrigido com `handle_exception` na base pública, que uma rota futura herda. (2) **O pior achado**: `transaction.on_commit` dispara a atividade nativa *depois* do commit, e um broker fora do ar propagava a exceção — o item ficava criado, o recibo virava `failed` e **todo retry daquela chave replicava o 500 para sempre**, deixando trabalho real que o sistema chamador acredita não existir. A publicação passou a registrar em log em vez de estourar; é também o que permite o arquivo de contrato rodar no job sem RabbitMQ. (3) A constraint I3 recusou uma fixture que criava `assigned` sem executor — o teste estava errado, a constraint certa. Registrados no RFC §4.2 mais dois esclarecimentos: 412 público × 409 interno para `ORG_DECISION_STALE`, e que a autorização de projeto roda antes do recibo (uma chamada não autorizada não gasta a chave de quem a enviou). |
 | 2026-09-05 | **Bloco 1.4 → 1.8 planejado** em `01-public-contract.md`: ordem em oito passos com commit e prova por passo, quinze decisões fechadas (B1–B15: 412 público × 409 interno para `ORG_DECISION_STALE`; serviço D0.5 ganha `trigger`/`collaborators`/`automation_operation`/`expected_decision_id` com defaults que preservam o comportamento; recibo antes da validação; `default_assignee_id=None` para desligar o D2 no caminho público; `completion_due_at` recusado até a Fase 4; fila como serviço reutilizável pelo 2.2; contrato entra no job `api_tests`). Branch do bloco cortada da ponta do PR #12. Ambiente local refeito e confirmado (receita no `HANDOFF-PROMPT.md`): baseline `pytest plane/tests/unit/orca -q -m unit` sobre a ponta do PR #12 → **663 passed, 0 failed** em 8m08s (255 deselecionados são os testes do diretório sem o marker `unit`); o `HANDOFF-PROMPT.md` deixou de afirmar que a sessão não roda pytest.                                                                                                                                                                                                                                                                                                                  |
 | 2026-09-03 | Plano criado a partir do RFC rev. 2. Nenhum item iniciado.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |

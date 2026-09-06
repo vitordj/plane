@@ -500,11 +500,11 @@ git push origin refs/tags/v1.4.2^{commit}:refs/heads/upstream
 **Verificação feita** (`claude/loving-carson-n9x6eq`, 05/09). O levantamento de
 03/09 confirmado contra o código, e não só contra os títulos dos commits:
 
-| Branch                                       | Commits à frente de `stage` | Veredito                                                                                      |
-| -------------------------------------------- | --------------------------- | --------------------------------------------------------------------------------------------- |
-| `claude/azure-aad-integration-review-5if6pz` | 34                          | Superado. Abordagem "oidc-free", substituída pelo provider Entra que está em `stage` (PR #2). |
-| `claude/sync-remote-azure-auth-m6618f`       | 14                          | Superado. Mesma abordagem, port para a base Orca.                                             |
-| `claude/aad-end-to-end-egj4dm`               | 1                           | Superado. Versão anterior de "sign in with Microsoft Entra ID".                               |
+| Branch                                       | Commits à frente de `stage` | Veredito                                                                                                                                                                                                                    |
+| -------------------------------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `claude/azure-aad-integration-review-5if6pz` | 34                          | Superado. Abordagem "oidc-free", substituída pelo provider Entra que está em `stage` (PR #2).                                                                                                                               |
+| `claude/sync-remote-azure-auth-m6618f`       | 14                          | **Manter** (revisto em 06/09). Não é o provider Entra em outra forma: é um provider OIDC *genérico* completo, feature distinta, decidida fora de escopo e preservada. Ver o README do plano, §O que existe fora de `stage`. |
+| `claude/aad-end-to-end-egj4dm`               | 1                           | Superado. Versão anterior de "sign in with Microsoft Entra ID".                                                                                                                                                             |
 
 O único commit desses três que parecia valer um port —
 `16494934 fix(api): normalise SECURE_PROXY_SSL_HEADER and document the proxy
@@ -523,6 +523,22 @@ novos entraram na lista de apagar**, porque seus PRs foram mesclados desde
 então (`claude/loving-carson-n9x6eq`, PR #8; `feat/orca-unit-project-coverage`,
 PR #9).
 
+**Revisão de 06/09**, contra `origin/stage` = `f07c5070`. Duas mudanças no
+levantamento acima:
+
+- **`claude/sync-remote-azure-auth-m6618f` sai da lista de apagar.** O veredito
+  de 05/09 tratava o `oidc-free` como "mesma abordagem" do provider Entra que
+  está em `stage`. Não é: é um provider **genérico** — descoberta de endpoints,
+  PKCE, tela no admin, testes próprios — que `stage` não tem em forma nenhuma.
+  Em 06/09 ficou decidido que ele está **fora de escopo** (a 4UM autentica por
+  Entra) e que o código é **preservado** para um fork futuro. Esta branch é a
+  única cópia portada sobre a base Orca; apagá-la perde a feature. A
+  `5if6pz` continua na lista: é a mesma sequência sobre uma base upstream,
+  redundante com a `m6618f`. Motivo e detalhes no README do plano,
+  §O que existe fora de `stage`.
+- **Dois branches novos ficaram totalmente contidos em `stage`** com os merges
+  dos PRs #12 e #13, e entram na lista abaixo.
+
 **Totalmente contidos em `stage`** (todo commit já está lá; apagar não perde
 nada), com o SHA do tip para poder recriar:
 
@@ -538,6 +554,8 @@ dc4a596d  claude/pending-tests-xnxc3s
 a349fd4c  claude/wayfinder-areas-review-yt98v5
 a495565e  claude/loving-carson-n9x6eq            (PR #8, mesclado)
 d1ec40ba  feat/orca-unit-project-coverage        (PR #9, mesclado)
+bb2265df  claude/project-next-steps-kyd7u5       (PR #12, mesclado)
+15a8da05  claude/plano-blocos-1-4-1-8-reo0t9     (PR #13, mesclado)
 ```
 
 **Superados, com commits que se perdem ao apagar** — daí os SHAs, que são a
@@ -545,15 +563,25 @@ d1ec40ba  feat/orca-unit-project-coverage        (PR #9, mesclado)
 
 ```text
 2ac95330  claude/aad-end-to-end-egj4dm            ( 1 commit à frente)
-16494934  claude/azure-aad-integration-review-5if6pz (34)
-7abf01b8  claude/sync-remote-azure-auth-m6618f    (14)
+16494934  claude/azure-aad-integration-review-5if6pz (32, recontado em 06/09;
+                                                     a contagem cai quando stage avança)
 ```
 
-**Não apagar:** `claude/codex-prompts-bocxeh` (3 à frente) e
-`claude/continue-implementations-bquse8` (7) não estão mesclados e não constam
-do enunciado; `feat/orca-work-management` (34) idem;
-`release-please--branches--prod--components--plane-orca` é branch de trabalho
-da action, não lixo.
+**Não apagar:**
+
+- `claude/sync-remote-azure-auth-m6618f` (14 à frente) — única cópia do
+  `oidc-free`, preservado por decisão (acima).
+- `feat/orca-work-management` (34 à frente) — implementação de referência das
+  Fases 2 a 5; os dez últimos commits não existem em nenhum outro lugar.
+- `release-please--branches--prod--components--plane-orca` — branch de trabalho
+  da action, não lixo.
+
+`claude/codex-prompts-bocxeh` (3 à frente) e
+`claude/continue-implementations-bquse8` (7) não constam do enunciado, mas o
+critério de aceite é a lista ficar só com trabalho em andamento, e nenhum dos
+dois é: os prompts de Codex foram superados pelo board e pelo
+`HANDOFF-PROMPT.md`, e o P0.1–P0.7 entrou em `stage` por outro caminho. Ficam
+na lista de apagar, com o tip anotado.
 
 **Por que continua `[~]`.** A sessão de agente continua sem permissão para
 apagar branch remoto: `git push origin --delete` foi barrado de novo nesta
@@ -572,11 +600,19 @@ git push origin --delete claude/area-membership-extension-ndwdoq \
   claude/repository-evaluation-s419b6 \
   claude/wayfinder-areas-review-yt98v5 \
   claude/loving-carson-n9x6eq \
-  feat/orca-unit-project-coverage
+  feat/orca-unit-project-coverage \
+  claude/project-next-steps-kyd7u5 \
+  claude/plano-blocos-1-4-1-8-reo0t9
 
 # Superados (verificados acima; os commits se perdem)
+#   NÃO incluir claude/sync-remote-azure-auth-m6618f: é a única cópia do
+#   oidc-free, preservado por decisão. Ver o README do plano.
 git push origin --delete claude/azure-aad-integration-review-5if6pz \
-  claude/sync-remote-azure-auth-m6618f claude/aad-end-to-end-egj4dm
+  claude/aad-end-to-end-egj4dm
+
+# Superados, fora do enunciado (7a70421d e 003b97bc, se for preciso recriar)
+git push origin --delete claude/codex-prompts-bocxeh \
+  claude/continue-implementations-bquse8
 
 # Recriar um deles, se for preciso: git push origin <sha>:refs/heads/<nome>
 ```
