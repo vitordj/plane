@@ -142,9 +142,14 @@ export interface IOrganizationalUnitProject {
 export interface IOrganizationalUnitAccessSource {
   organizational_unit_id: string;
   organizational_unit_name: string;
+  /** Id of the membership or of the coordination; `grant_source` says which. */
   membership_id: string;
+  grant_source: TGrantSource;
   role: number;
 }
+
+/** Which fact about a person makes the layer grant them a project. */
+export type TGrantSource = "membership" | "coordinator";
 
 export interface IOrganizationalUnitAccessChange {
   workspace_member_id: string;
@@ -154,6 +159,111 @@ export interface IOrganizationalUnitAccessChange {
   action: TOrganizationalUnitAccessAction;
   sources: IOrganizationalUnitAccessSource[];
 }
+
+/** Who runs an area's queue. */
+export interface IOrganizationalUnitCoordinator {
+  id: string;
+  organizational_unit: string;
+  workspace_member: string;
+  is_active: boolean;
+  member_id: string;
+  display_name: string;
+  email: string;
+  avatar_url: string;
+  workspace_role: number;
+  created_at: string;
+}
+
+/** One row of a coordinator's inbox. */
+export interface IQueueItem {
+  id: string;
+  issue_id: string;
+  sequence_id: number;
+  name: string;
+  project: string;
+  project_identifier: string;
+  target_date: string | null;
+  state_group: string | null;
+  state_name: string | null;
+  routing_state: TRoutingState;
+  queue_reason: TQueueReason;
+  queued_at: string | null;
+  assignment_due_at: string | null;
+  /** Past its assignment deadline, judged against the instant the page was read. */
+  assignment_overdue: boolean;
+  /** How long it has been waiting; `null` for an item that is not waiting. */
+  age_seconds: number | null;
+  last_alerted_at: string | null;
+  primary_executor: string | null;
+  primary_executor_detail: { id: string; display_name: string; avatar_url: string } | null;
+  current_assignment_decision: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * What the reader may do with this area's queue.
+ *
+ * Answered by the server rather than derived here: the rules live in one
+ * place, and somebody who loses the coordinator role sees the buttons go away
+ * on the next read instead of clicking one the API then refuses.
+ */
+export interface IQueueCapabilities {
+  can_claim: boolean;
+  can_assign: boolean;
+  can_return: boolean;
+}
+
+export interface IUnitQueue {
+  capabilities: IQueueCapabilities;
+  items: IQueueItem[];
+}
+
+/** One person the allocator could pick, and the load that ranks them. */
+export interface IAssignmentCandidate {
+  user_id: string;
+  display_name: string;
+  avatar_url: string;
+  total_open: number;
+  unit_open: number;
+  last_auto_at: string | null;
+  eligible: boolean;
+  /** Why this person is not in the running: `not_a_project_member`, `bot`, … */
+  excluded_reason: string;
+}
+
+export interface IAssignmentCandidates {
+  effective_mode: TAssignmentMode;
+  candidates: IAssignmentCandidate[];
+}
+
+/** One decision as the log shows it, with the one it replaced expanded. */
+export interface IAssignmentDecisionEntry extends IAssignmentDecision {
+  issue: string;
+  supersedes_detail: IAssignmentDecision | null;
+}
+
+/** The stored policy row, as the settings form writes it. */
+export interface IAssignmentPolicy {
+  id: string;
+  organizational_unit: string;
+  unit_project: string | null;
+  default_mode: TAssignmentMode;
+  allowed_modes: TAssignmentMode[];
+  assignment_sla_seconds: number | null;
+  max_open_items_per_member: number | null;
+  is_active: boolean;
+  version: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type TAssignmentPolicyPayload = Partial<
+  Pick<
+    IAssignmentPolicy,
+    "default_mode" | "allowed_modes" | "assignment_sla_seconds" | "max_open_items_per_member" | "is_active"
+  >
+>;
 
 export interface IOrganizationalUnitWorkload {
   workspace_member_id: string;

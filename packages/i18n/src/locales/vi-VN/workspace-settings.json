@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "Mọi người",
-          "back_aria": "Quay lại tất cả khu vực"
+          "back_aria": "Quay lại tất cả khu vực",
+          "tab_work": "Công việc",
+          "tab_coordinators": "Người điều phối",
+          "tab_policy": "Chính sách"
         },
         "members": {
           "select_person": "Chọn một người",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "Đó không phải là một chế độ phân công.",
           "policy_default_mode_not_allowed": "Chế độ mặc định phải là một trong các chế độ được phép.",
           "policy_invalid_value": "Các giới hạn này phải là số nguyên dương."
+        },
+        "work": {
+          "refresh": "Làm mới",
+          "inbox_title": "Hộp đến",
+          "inbox_empty": "Không có gì đang chờ trong khu vực này.",
+          "in_progress_title": "Đang thực hiện",
+          "in_progress_empty": "Không ai đang làm việc gì ở đây.",
+          "attention_title": "Cần chú ý",
+          "attention_empty": "Không có gì cần chú ý.",
+          "decisions_title": "Quyết định",
+          "decisions_empty": "Chưa có quyết định nào được ghi lại.",
+          "nobody_on_it": "Chưa có ai",
+          "waiting_for": "đã chờ {duration}",
+          "overdue": "Quá hạn",
+          "overdue_tooltip": "Đã quá hạn giao việc này cho ai đó.",
+          "claim": "Nhận việc",
+          "assign": "Giao cho…",
+          "return": "Trả lại hàng đợi",
+          "suspend": "Tạm hoãn",
+          "transfer": "Chuyển sang khu vực khác",
+          "reason_label": "Lý do",
+          "reason_placeholder": "Không bắt buộc, để lưu lại",
+          "state": {
+            "queued": "Đang chờ",
+            "assigned": "Đã giao",
+            "allocation_failed": "Không có ai phù hợp",
+            "suspended": "Tạm hoãn"
+          },
+          "reason": {
+            "new_item": "Mục mới",
+            "awaiting_coordinator": "Chờ người điều phối",
+            "awaiting_claim": "Chờ ai đó nhận việc",
+            "no_eligible_member": "Không ai đủ điều kiện",
+            "executor_unavailable": "Người đó đã không còn khả dụng",
+            "manually_returned": "Được trả lại thủ công"
+          },
+          "toast": {
+            "claimed": "Bây giờ là của bạn.",
+            "not_claimed": "Không thể nhận việc.",
+            "assigned": "Đã giao.",
+            "not_assigned": "Không thể giao việc.",
+            "returned": "Đã trở lại hàng đợi.",
+            "not_returned": "Không thể trả lại.",
+            "suspended": "Đã tạm hoãn.",
+            "not_suspended": "Không thể tạm hoãn.",
+            "transferred": "Đã chuyển sang khu vực khác.",
+            "not_transferred": "Không thể chuyển."
+          },
+          "assign_modal": {
+            "title": "Ai sẽ nhận việc này?",
+            "empty": "Không ai trong khu vực này có thể nhận việc trong dự án này.",
+            "load": "{total} đang mở · {unit} trong khu vực này",
+            "confirm": "Giao"
+          },
+          "excluded": {
+            "already_assigned": "Đã tham gia mục này",
+            "not_a_project_member": "Không thuộc dự án này",
+            "project_role_too_low": "Là khách trong dự án này",
+            "bot": "Tài khoản tự động",
+            "at_max_open_items": "Đã đạt giới hạn việc đang mở",
+            "other": "Hiện chưa đủ điều kiện"
+          },
+          "transfer_modal": {
+            "title": "Chuyển sang khu vực khác",
+            "select_area": "Chọn một khu vực",
+            "no_target": "Không có khu vực nào khác phụ trách dự án này."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "Đã giao cho một người",
+              "queued": "Đưa vào hàng đợi",
+              "allocation_failed": "Không ai có thể nhận",
+              "suspended": "Đã tạm hoãn",
+              "rejected": "Bị từ chối"
+            },
+            "mode": {
+              "manual": "Do người điều phối",
+              "self_claim": "Mọi người tự nhận việc",
+              "least_loaded": "Cho người có ít việc mở nhất",
+              "explicit": "Chỉ định trực tiếp"
+            },
+            "trigger": {
+              "public_api": "Một tích hợp",
+              "internal_api": "Ứng dụng",
+              "ui_claim": "Người đó tự nhận",
+              "ui_coordinator": "Người điều phối",
+              "reassign": "Giao lại",
+              "availability": "Tình trạng sẵn sàng",
+              "return_to_queue": "Trả lại hàng đợi",
+              "command": "Một lệnh bảo trì"
+            },
+            "replaced": "thay thế: {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "Chọn một người",
+          "no_addable": "Mọi người ở đây đều đã điều phối khu vực này.",
+          "add": "Thêm",
+          "empty": "Chưa có ai điều phối khu vực này.",
+          "remove_aria": "Bỏ {name} khỏi vai trò điều phối",
+          "note": "Điều phối một khu vực cũng cấp quyền truy cập vào mọi dự án khu vực đó phụ trách, và bỏ vai trò điều phối sẽ thu lại quyền đó.",
+          "toast": {
+            "added": "Đã thêm người điều phối.",
+            "not_added": "Không thể thêm người điều phối.",
+            "removed": "Đã bỏ vai trò điều phối.",
+            "not_removed": "Không thể bỏ vai trò điều phối."
+          }
+        },
+        "policy": {
+          "title": "Cách khu vực này phân công việc",
+          "project_title": "Chỉ trong {project}",
+          "description": "Chế độ mặc định quyết định điều gì xảy ra khi công việc đến; danh sách được phép quyết định điều gì có thể yêu cầu.",
+          "default_mode": "Mặc định",
+          "allowed_modes": "Được phép",
+          "default_must_be_allowed": "Mặc định phải là một trong các chế độ được phép.",
+          "sla_hours": "Số giờ trước khi bị tính là trễ",
+          "max_open": "Số việc mở tối đa mỗi người",
+          "no_limit": "Không giới hạn"
+        },
+        "my_areas": {
+          "title": "Khu vực của tôi",
+          "description": "Những gì đang chờ ở các khu vực bạn thuộc về, và những gì bạn đang đảm nhận.",
+          "empty": "Bạn chưa thuộc khu vực nào."
         }
       }
     },

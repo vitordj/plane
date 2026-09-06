@@ -281,8 +281,17 @@
         "queued": "Ten obszar rozdziela pracę ręcznie, więc element pracy czeka.",
         "nobody_title": "Nikt nie jest dostępny",
         "nobody": "Żaden członek tego obszaru nie ma dostępu do tego projektu.",
-        "not_assigned": "Nie przypisano"
-      }
+        "not_assigned": "Nie przypisano",
+        "not_claimed": "Nie udało się tego wziąć.",
+        "not_returned": "Nie udało się zwrócić.",
+        "not_suspended": "Nie udało się wstrzymać."
+      },
+      "actions": "Działania",
+      "claim": "Weź to",
+      "return": "Zwróć do kolejki obszaru",
+      "return_mine": "Oddaj z powrotem",
+      "suspend": "Wstrzymaj",
+      "yours": "u Ciebie"
     },
     "bulk_operations": {
       "mixed": "{property} (mieszane)",

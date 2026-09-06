@@ -345,7 +345,10 @@
         },
         "detail": {
           "tab_people": "People",
-          "back_aria": "Back to all areas"
+          "back_aria": "Back to all areas",
+          "tab_work": "Work",
+          "tab_coordinators": "Coordinators",
+          "tab_policy": "Policy"
         },
         "members": {
           "select_person": "Select a person",
@@ -479,6 +482,129 @@
           "policy_invalid_mode": "That is not an assignment mode.",
           "policy_default_mode_not_allowed": "The default mode has to be one of the allowed modes.",
           "policy_invalid_value": "Those limits have to be positive whole numbers."
+        },
+        "work": {
+          "refresh": "Refresh",
+          "inbox_title": "Inbox",
+          "inbox_empty": "Nothing is waiting in this area.",
+          "in_progress_title": "In progress",
+          "in_progress_empty": "Nobody is working on anything here.",
+          "attention_title": "Needs attention",
+          "attention_empty": "Nothing needs attention.",
+          "decisions_title": "Decisions",
+          "decisions_empty": "No decisions recorded yet.",
+          "nobody_on_it": "Nobody yet",
+          "waiting_for": "waiting {duration}",
+          "overdue": "Overdue",
+          "overdue_tooltip": "Past the deadline for handing this to somebody.",
+          "claim": "Take it",
+          "assign": "Assign to…",
+          "return": "Return to the queue",
+          "suspend": "Put on hold",
+          "transfer": "Move to another area",
+          "reason_label": "Reason",
+          "reason_placeholder": "Optional, for the record",
+          "state": {
+            "queued": "Waiting",
+            "assigned": "Assigned",
+            "allocation_failed": "Nobody available",
+            "suspended": "On hold"
+          },
+          "reason": {
+            "new_item": "New item",
+            "awaiting_coordinator": "Waiting for the coordinator",
+            "awaiting_claim": "Waiting for someone to take it",
+            "no_eligible_member": "Nobody eligible",
+            "executor_unavailable": "The person became unavailable",
+            "manually_returned": "Returned by hand"
+          },
+          "toast": {
+            "claimed": "It's yours now.",
+            "not_claimed": "Couldn't take it.",
+            "assigned": "Assigned.",
+            "not_assigned": "Couldn't assign it.",
+            "returned": "Back in the queue.",
+            "not_returned": "Couldn't return it.",
+            "suspended": "On hold.",
+            "not_suspended": "Couldn't put it on hold.",
+            "transferred": "Moved to the other area.",
+            "not_transferred": "Couldn't move it."
+          },
+          "assign_modal": {
+            "title": "Who takes this?",
+            "empty": "Nobody in this area can take work in this project.",
+            "load": "{total} open · {unit} in this area",
+            "confirm": "Assign"
+          },
+          "excluded": {
+            "already_assigned": "Already on this item",
+            "not_a_project_member": "Not in this project",
+            "project_role_too_low": "Guest in this project",
+            "bot": "Automation account",
+            "at_max_open_items": "At the limit of open items",
+            "other": "Not eligible right now"
+          },
+          "transfer_modal": {
+            "title": "Move to another area",
+            "select_area": "Choose an area",
+            "no_target": "No other area covers this project."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "Handed to a person",
+              "queued": "Put in the queue",
+              "allocation_failed": "Nobody could take it",
+              "suspended": "Put on hold",
+              "rejected": "Refused"
+            },
+            "mode": {
+              "manual": "By the coordinator",
+              "self_claim": "People take what they can",
+              "least_loaded": "To whoever has least open",
+              "explicit": "Named directly"
+            },
+            "trigger": {
+              "public_api": "An integration",
+              "internal_api": "The app",
+              "ui_claim": "Taken by the person",
+              "ui_coordinator": "The coordinator",
+              "reassign": "Reassignment",
+              "availability": "Availability",
+              "return_to_queue": "Returned to the queue",
+              "command": "A maintenance command"
+            },
+            "replaced": "replaces: {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "Choose a person",
+          "no_addable": "Everyone here already coordinates this area.",
+          "add": "Add",
+          "empty": "Nobody coordinates this area yet.",
+          "remove_aria": "Remove {name} from the coordination",
+          "note": "Coordinating an area also grants access to every project it covers, and removing the coordination takes that access back.",
+          "toast": {
+            "added": "Coordinator added.",
+            "not_added": "Couldn't add the coordinator.",
+            "removed": "Coordination removed.",
+            "not_removed": "Couldn't remove the coordination."
+          }
+        },
+        "policy": {
+          "title": "How this area hands work out",
+          "project_title": "Only in {project}",
+          "description": "The default decides what happens when work arrives; the allowed list decides what anyone may ask for.",
+          "default_mode": "Default",
+          "allowed_modes": "Allowed",
+          "default_must_be_allowed": "The default has to be one of the allowed ones.",
+          "sla_hours": "Hours before it counts as late",
+          "max_open": "Most open items per person",
+          "no_limit": "No limit"
+        },
+        "my_areas": {
+          "title": "My areas",
+          "description": "What the areas you belong to have waiting, and what you are carrying.",
+          "empty": "You don't belong to any area yet."
         }
       },
       "projects": {

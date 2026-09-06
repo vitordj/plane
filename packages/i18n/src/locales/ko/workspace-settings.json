@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "멤버",
-          "back_aria": "모든 영역으로 돌아가기"
+          "back_aria": "모든 영역으로 돌아가기",
+          "tab_work": "업무",
+          "tab_coordinators": "조율 담당",
+          "tab_policy": "정책"
         },
         "members": {
           "select_person": "멤버 선택",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "그것은 배정 방식이 아닙니다.",
           "policy_default_mode_not_allowed": "기본 방식은 허용된 방식 중 하나여야 합니다.",
           "policy_invalid_value": "이 한도는 양의 정수여야 합니다."
+        },
+        "work": {
+          "refresh": "새로 고침",
+          "inbox_title": "수신함",
+          "inbox_empty": "이 영역에서 대기 중인 업무가 없습니다.",
+          "in_progress_title": "진행 중",
+          "in_progress_empty": "여기서 진행 중인 업무를 맡은 사람이 없습니다.",
+          "attention_title": "확인 필요",
+          "attention_empty": "확인이 필요한 항목이 없습니다.",
+          "decisions_title": "결정 기록",
+          "decisions_empty": "아직 기록된 결정이 없습니다.",
+          "nobody_on_it": "담당자 없음",
+          "waiting_for": "{duration} 대기 중",
+          "overdue": "기한 초과",
+          "overdue_tooltip": "누군가에게 배정할 기한이 지났습니다.",
+          "claim": "맡기",
+          "assign": "배정…",
+          "return": "대기열로 되돌리기",
+          "suspend": "보류로 두기",
+          "transfer": "다른 영역으로 넘기기",
+          "reason_label": "사유",
+          "reason_placeholder": "선택 사항이며 기록으로 남습니다",
+          "state": {
+            "queued": "대기 중",
+            "assigned": "배정됨",
+            "allocation_failed": "가능한 사람 없음",
+            "suspended": "보류 중"
+          },
+          "reason": {
+            "new_item": "새 항목",
+            "awaiting_coordinator": "조율 담당자 대기",
+            "awaiting_claim": "누군가 맡기를 기다리는 중",
+            "no_eligible_member": "자격을 갖춘 사람 없음",
+            "executor_unavailable": "담당자가 업무를 볼 수 없게 되었습니다",
+            "manually_returned": "직접 되돌림"
+          },
+          "toast": {
+            "claimed": "이제 담당자가 되었습니다.",
+            "not_claimed": "맡을 수 없었습니다.",
+            "assigned": "배정했습니다.",
+            "not_assigned": "배정하지 못했습니다.",
+            "returned": "대기열로 되돌렸습니다.",
+            "not_returned": "되돌리지 못했습니다.",
+            "suspended": "보류로 두었습니다.",
+            "not_suspended": "보류로 두지 못했습니다.",
+            "transferred": "다른 영역으로 넘겼습니다.",
+            "not_transferred": "넘기지 못했습니다."
+          },
+          "assign_modal": {
+            "title": "누가 맡을까요?",
+            "empty": "이 영역에는 이 프로젝트의 업무를 맡을 수 있는 사람이 없습니다.",
+            "load": "미완료 {total}건 · 이 영역에서 {unit}건",
+            "confirm": "배정"
+          },
+          "excluded": {
+            "already_assigned": "이미 이 항목에 참여 중",
+            "not_a_project_member": "이 프로젝트의 구성원이 아님",
+            "project_role_too_low": "이 프로젝트에서 게스트",
+            "bot": "자동화 계정",
+            "at_max_open_items": "미완료 항목 한도에 도달",
+            "other": "지금은 대상이 아님"
+          },
+          "transfer_modal": {
+            "title": "다른 영역으로 넘기기",
+            "select_area": "영역 선택",
+            "no_target": "이 프로젝트를 담당하는 다른 영역이 없습니다."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "담당자에게 배정",
+              "queued": "대기열에 넣음",
+              "allocation_failed": "맡을 수 있는 사람이 없었습니다",
+              "suspended": "보류로 둠",
+              "rejected": "거부됨"
+            },
+            "mode": {
+              "manual": "조율 담당자가 배정",
+              "self_claim": "각자 맡아 가기",
+              "least_loaded": "미완료가 가장 적은 사람에게",
+              "explicit": "직접 지정"
+            },
+            "trigger": {
+              "public_api": "외부 연동",
+              "internal_api": "앱",
+              "ui_claim": "본인이 맡음",
+              "ui_coordinator": "조율 담당자",
+              "reassign": "재배정",
+              "availability": "가용 상태",
+              "return_to_queue": "대기열로 되돌림",
+              "command": "유지 관리 명령"
+            },
+            "replaced": "대체함: {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "사람 선택",
+          "no_addable": "여기 있는 모두가 이미 이 영역을 조율합니다.",
+          "add": "추가",
+          "empty": "아직 이 영역을 조율하는 사람이 없습니다.",
+          "remove_aria": "{name} 님을 조율 담당에서 제외",
+          "note": "영역을 조율하면 그 영역이 담당하는 모든 프로젝트에 대한 접근 권한도 함께 주어지고, 조율에서 빠지면 그 권한도 회수됩니다.",
+          "toast": {
+            "added": "조율 담당자를 추가했습니다.",
+            "not_added": "조율 담당자를 추가하지 못했습니다.",
+            "removed": "조율 담당을 해제했습니다.",
+            "not_removed": "조율 담당을 해제하지 못했습니다."
+          }
+        },
+        "policy": {
+          "title": "이 영역이 업무를 나누는 방식",
+          "project_title": "{project}에서만",
+          "description": "기본값은 업무가 도착했을 때 어떻게 되는지를 정하고, 허용 목록은 무엇을 요청할 수 있는지를 정합니다.",
+          "default_mode": "기본값",
+          "allowed_modes": "허용",
+          "default_must_be_allowed": "기본값은 허용된 방식 중 하나여야 합니다.",
+          "sla_hours": "지연으로 보기까지의 시간",
+          "max_open": "1인당 미완료 항목 상한",
+          "no_limit": "제한 없음"
+        },
+        "my_areas": {
+          "title": "내 영역",
+          "description": "내가 속한 영역에서 대기 중인 업무와, 내가 맡고 있는 업무입니다.",
+          "empty": "아직 어떤 영역에도 속해 있지 않습니다."
         }
       }
     },

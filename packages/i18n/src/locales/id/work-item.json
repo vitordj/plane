@@ -281,8 +281,17 @@
         "queued": "Area ini membagikan pekerjaan secara manual, jadi item kerja ini menunggu.",
         "nobody_title": "Tidak ada yang tersedia",
         "nobody": "Tidak ada anggota area ini yang memiliki akses ke proyek ini.",
-        "not_assigned": "Tidak ditugaskan"
-      }
+        "not_assigned": "Tidak ditugaskan",
+        "not_claimed": "Tidak bisa diambil.",
+        "not_returned": "Tidak bisa dikembalikan.",
+        "not_suspended": "Tidak bisa ditunda."
+      },
+      "actions": "Tindakan",
+      "claim": "Ambil",
+      "return": "Kembalikan ke antrean area",
+      "return_mine": "Serahkan kembali",
+      "suspend": "Tunda",
+      "yours": "milik Anda"
     },
     "bulk_operations": {
       "mixed": "{property} (campuran)",

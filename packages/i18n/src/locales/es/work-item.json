@@ -281,8 +281,17 @@
         "queued": "Esta área reparte el trabajo a mano, así que el elemento de trabajo queda esperando.",
         "nobody_title": "Nadie disponible",
         "nobody": "Ningún miembro de esta área tiene acceso a este proyecto.",
-        "not_assigned": "No asignado"
-      }
+        "not_assigned": "No asignado",
+        "not_claimed": "No se pudo asumir.",
+        "not_returned": "No se pudo devolver.",
+        "not_suspended": "No se pudo poner en espera."
+      },
+      "actions": "Acciones",
+      "claim": "Asumir",
+      "return": "Devolver a la cola del área",
+      "return_mine": "Devolverlo",
+      "suspend": "Poner en espera",
+      "yours": "tuyo"
     },
     "bulk_operations": {
       "mixed": "{property} (mixto)",

@@ -281,8 +281,17 @@
         "queued": "此區域以人工指派工作，因此此工作事項正在等待。",
         "nobody_title": "無人可用",
         "nobody": "此區域中沒有成員擁有此專案的存取權限。",
-        "not_assigned": "未指派"
-      }
+        "not_assigned": "未指派",
+        "not_claimed": "無法認領。",
+        "not_returned": "無法退回。",
+        "not_suspended": "無法暫緩。"
+      },
+      "actions": "操作",
+      "claim": "認領",
+      "return": "退回區域佇列",
+      "return_mine": "交回去",
+      "suspend": "暫緩",
+      "yours": "由您負責"
     },
     "bulk_operations": {
       "mixed": "{property}（多種）",

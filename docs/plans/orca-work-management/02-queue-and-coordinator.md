@@ -12,7 +12,37 @@ decisões. O **Gate 2-mínimo** é o que libera a API pública em produção.
 
 ---
 
-## 2.1 — Migração 0140: coordenadores e acesso reconciliado `[ ]`
+### Executado em 06/09 — o que saiu diferente do enunciado
+
+Três desvios, todos registrados aqui em vez de no RFC porque nenhum reabre
+decisão fechada:
+
+1. **A migração é a `0139`, não a `0140`.** A Fase 3 previa `0139`; a Fase 2
+   entra antes, e o número é posição na sequência, não nome. A Fase 3, quando
+   vier, usa o número seguinte.
+2. **`suspend` ganhou função de serviço, endpoint e um `outcome` novo.** A
+   tabela de endpoints do 2.2 lista as seis rotas que a API pública já tinha;
+   a máquina de estados do RFC §6.2, porém, dá ao coordenador duas transições
+   (`qualquer → suspended` e `suspended → queued`) que **não tinham como
+   acontecer**: não existia função de serviço, e a coluna só se mexia à mão em
+   teste. Entregues: `suspend()` no serviço, `POST .../suspend/`,
+   `DecisionOutcome.SUSPENDED` (na mesma migração) e a parada do relógio da
+   fila (`queued_at`/`assignment_due_at` zerados) — um item parado não pode
+   acumular idade contra um prazo que ninguém consegue cumprir. Retomar é o
+   `return/`, que é a transição que o RFC desenha.
+3. **`GET .../candidates/`** entrou junto: o 2.3 pede um modal que lista
+   "candidatos do endpoint de ranking com carga", e esse endpoint é da Fase 3
+   no RFC (§3.5). Sem ele o modal teria de reimplementar o ranking no cliente.
+   É leitura pura — o ranking é recalculado dentro do lock na hora da decisão,
+   então uma lista velha na tela nunca atribui a pessoa errada.
+
+Também novo: cinco códigos de erro (4932–4936) nos três lugares e nas 19
+locales, e o `grant_source` no `OrganizationalUnitGrant`, que é o que permite
+o coordenador ter acesso sem ter membership.
+
+---
+
+## 2.1 — Migração 0139: coordenadores e acesso reconciliado `[x]`
 
 - Modelo `OrganizationalUnitCoordinator` (RFC §5.2) em `organizational_unit.py`.
 - `org_unit_reconciler.py`: coordenadores ativos de uma área recebem `ProjectMember` (role Member, 15) em todos os projetos cobertos, com `OrganizationalUnitGrant` de origem própria. Adicionar campo `grant_source` (`membership` | `coordinator`) em `OrganizationalUnitGrant` na mesma migração, default `membership`, para que a remoção do coordenador retire só o que ele ganhou por isso e respeite o piso/proveniência já existentes. Reaproveitar toda a lógica de `baseline_role`/`last_applied_role`.
@@ -20,7 +50,7 @@ decisões. O **Gate 2-mínimo** é o que libera a API pública em produção.
 
 ---
 
-## 2.2 — Permissão de coordenador e endpoints internos `[ ]`
+## 2.2 — Permissão de coordenador e endpoints internos `[x]`
 
 - `apps/api/plane/app/permissions/organizational_unit.py` (novo): `is_unit_coordinator(user, unit)`, `is_unit_member(user, unit)`; decorator `allow_unit_role(["coordinator", "member"], unit_kwarg="unit_id")` no espírito de `allow_permission`, que também aceita Workspace Admin sempre.
 - Endpoints (RFC §8.1): `claim/`, `reassign/`, `return/`, `transfer/`, `queue/`, `decisions/`, `policy PUT` (área e projeto), `coordinators/` CRUD. Todos usam o serviço D0.5 com `trigger` correto (`ui_claim`, `ui_coordinator`, `reassign`, `return_to_queue`).
@@ -34,7 +64,7 @@ coordenador de outra área, lead sem coordenação, membro da área em
 
 ---
 
-## 2.3 — Interface `[ ]`
+## 2.3 — Interface `[~]`
 
 Padrão: reutilizar componentes de `@plane/ui` e `@plane/propel`; nenhum CSS
 novo fora do tema. Todas as strings no catálogo i18n
@@ -42,6 +72,7 @@ novo fora do tema. Todas as strings no catálogo i18n
 `organizational_units`), em todas as locales, via skill `translate`.
 
 **Parte mínima (antes do Gate 2-mínimo):**
+
 - `unit-detail.tsx`: terceira aba `work` → `unit-work-tab.tsx` com seções "Caixa de entrada" (`queued`, `allocation_failed`) e "Em execução" (agrupado por executor).
 - `queue-list.tsx` + `queue-item-row.tsx`: linha com identificador, título (link para o item), estado nativo, `queue_reason`, idade, atraso na atribuição, executor.
 - Ações por linha, condicionais ao papel devolvido pela API (`can_claim`, `can_assign`, `can_return`): **Assumir**, **Atribuir a…** (`assign-member-modal.tsx` listando candidatos do endpoint de ranking com carga), **Devolver à fila**.
@@ -49,6 +80,7 @@ novo fora do tema. Todas as strings no catálogo i18n
 - `issue-unit-property.tsx`: mostra `routing_state` e executor principal; botão "atribuir" vira menu com as três ações.
 
 **Parte completa:**
+
 - Seção "Atenção": `target_date` vencido, `suspended`, executor indisponível (Fase 3 preenche), sem data.
 - Seção "Decisões": `decision-timeline.tsx`.
 - `policy-form.tsx` (Admin): `default_mode`, `allowed_modes`, `assignment_sla_seconds`, `max_open_items_per_member`, por área e por projeto.
@@ -57,13 +89,15 @@ novo fora do tema. Todas as strings no catálogo i18n
 - Transferir para outra área a partir do item (modal com áreas que cobrem o projeto).
 
 **Aceite.**
-- [ ] `pnpm --filter web check:lint` e `check:types` limpos (local).
-- [ ] `check:sync` do i18n verde.
-- [ ] Teste de store para fila e ações (vitest) e um teste de componente para `queue-list.tsx`.
+
+- [x] `pnpm --filter web check:lint` e `check:types` limpos (rodados nesta sessão: lint 739 avisos e 0 erros — a linha de base do repositório, teto `--max-warnings=11957`; `check:types` exit 0 via `pnpm turbo run check:types --filter=web`, que constrói os pacotes antes).
+- [x] `check:sync` do i18n verde: 4.274 chaves em 19 locales, 100%.
+- [x] Teste de store para fila e ações: `apps/web/core/store/orca/organizational-unit.store.test.ts`, 11 casos, vitest adicionado ao `apps/web` (config em `vitest.config.ts`, ambiente `node`) e rodando no CI (`Run Web Unit Tests` no `stage.yml`).
+- [ ] Teste de componente para `queue-list.tsx`. **Não feito, e a razão não é falta de tempo:** o repositório não tem nenhuma infraestrutura de teste de componente React — sem ambiente DOM (`jsdom`/`happy-dom`) e sem biblioteca de render (`@testing-library/react`) no catálogo do workspace. Adicionar isso é escolher a stack de teste de UI do repositório inteiro, não um detalhe deste item. O que falta, exatamente: três entradas no `pnpm-workspace.yaml` (`@testing-library/react`, `@testing-library/jest-dom`, `jsdom`), um segundo projeto no `vitest.config.ts` com `environment: "jsdom"`, e um `setupFiles` que registre os matchers. Feito isso, o teste em si é curto: `queue-list.tsx` recebe `items` e `capabilities` e decide entre a lista e o estado vazio.
 
 ---
 
-## 2.4 — Alertas e varredura de SLA de atribuição `[ ]`
+## 2.4 — Alertas e varredura de SLA de atribuição `[x]`
 
 - Tarefa Celery `plane.bgtasks.organizational_queue_task.sweep_assignment_sla` a cada 15 min (registrar em `plane/celery.py` e no `include` de `settings/common.py`, com o mesmo comentário explicativo das tarefas Orca existentes).
 - Para cada item `queued`/`allocation_failed` com `assignment_due_at < now()` sem alerta nas últimas 4 h (guardar `last_alerted_at` em `IssueOrganizationalUnit`, campo novo na mesma fase, migração `0140`), criar notificação nativa (`Notification`) para os coordenadores da área e, se não houver coordenador, para o `lead`.
@@ -75,7 +109,7 @@ tarefa sair sem efeito (padrão da `organizational_directory_task`).
 
 ---
 
-## 2.5 — i18n completo e documentação `[ ]`
+## 2.5 — i18n completo e documentação `[x]`
 
 - Todas as strings novas em todas as locales; revisar plurais com CLDR (skill `translate`).
 - `docs/organizational-units.md`: seções "Fila da área", "Coordenador", "Minha Área".
@@ -83,7 +117,7 @@ tarefa sair sem efeito (padrão da `organizational_directory_task`).
 
 ---
 
-## 2.6 — Testes de fechamento `[ ]`
+## 2.6 — Testes de fechamento `[x]`
 
 - Teste de integração: coordenador esvazia uma fila de 30 itens só pelos endpoints da aba; ao final, `ProjectMember` idêntico ao início (comparar `values_list` antes/depois).
 - Matriz de permissões negativa completa (2.2).
@@ -93,17 +127,17 @@ tarefa sair sem efeito (padrão da `organizational_directory_task`).
 
 ## Gate 2-mínimo (libera `ORCA_PUBLIC_API_ENABLED=1` em produção)
 
-- [ ] 2.1, 2.2 e a parte mínima de 2.3 mescladas em `stage` e implantadas em staging.
+- [~] 2.1, 2.2 e a parte mínima de 2.3 mescladas em `stage` e implantadas em staging. **Código pronto e verde na branch** (`claude/implementacao-ponta-a-ponta-vfbofq`); falta o merge e o deploy, que a sessão de agente não faz.
 - [ ] Área piloto com coordenador definido (pendência de negócio no README do plano).
 - [ ] Coordenador piloto consegue, em staging: ver a fila, receber alerta de `allocation_failed` (2.4 pode ser entregue junto ou logo após; sem ele, o alerta imediato do serviço basta para o gate), atribuir manualmente, devolver à fila.
-- [ ] Runbook: como desligar a API (`ORCA_PUBLIC_API_ENABLED=0`) e o que acontece com operações em voo.
+- [x] Runbook: como desligar a API (`ORCA_PUBLIC_API_ENABLED=0`) e o que acontece com operações em voo — `docs/release-runbook.md` §6b.
 
-Data: ____ · Quem verificou: ____
+Data: \_**\_ · Quem verificou: \_\_**
 
 ## Gate 2 completo
 
-- [ ] 6 itens `[x]`.
-- [ ] Teste de 2.6 verde.
+- [~] 6 itens `[x]` — cinco fechados; o 2.3 fica `[~]` só pelo teste de componente (ver o item).
+- [x] Teste de 2.6 verde: `test_queue_closing.py`, 22 casos, executados nesta sessão.
 - [ ] Uma semana de uso real da fila pela área piloto sem violação apontada por `audit_organizational_routing` (rodar diariamente em dry-run).
 
-Data do gate: ____
+Data do gate: \_\_\_\_

@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "成员",
-          "back_aria": "返回所有区域"
+          "back_aria": "返回所有区域",
+          "tab_work": "工作",
+          "tab_coordinators": "协调人",
+          "tab_policy": "策略"
         },
         "members": {
           "select_person": "选择成员",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "这不是一种分配方式。",
           "policy_default_mode_not_allowed": "默认方式必须是允许的方式之一。",
           "policy_invalid_value": "这些上限必须是正整数。"
+        },
+        "work": {
+          "refresh": "刷新",
+          "inbox_title": "收件箱",
+          "inbox_empty": "该区域没有待处理的工作。",
+          "in_progress_title": "进行中",
+          "in_progress_empty": "这里没有人正在处理任何工作。",
+          "attention_title": "需要关注",
+          "attention_empty": "没有需要关注的事项。",
+          "decisions_title": "决策记录",
+          "decisions_empty": "尚未记录任何决策。",
+          "nobody_on_it": "暂无负责人",
+          "waiting_for": "已等待 {duration}",
+          "overdue": "已逾期",
+          "overdue_tooltip": "已超过把它交给某个人的期限。",
+          "claim": "认领",
+          "assign": "指派给…",
+          "return": "退回队列",
+          "suspend": "暂缓",
+          "transfer": "转给其他区域",
+          "reason_label": "原因",
+          "reason_placeholder": "可选，作为记录留存",
+          "state": {
+            "queued": "等待中",
+            "assigned": "已指派",
+            "allocation_failed": "无人可派",
+            "suspended": "已暂缓"
+          },
+          "reason": {
+            "new_item": "新事项",
+            "awaiting_coordinator": "等待协调人处理",
+            "awaiting_claim": "等待有人认领",
+            "no_eligible_member": "没有符合条件的人",
+            "executor_unavailable": "该成员已无法处理",
+            "manually_returned": "被手动退回"
+          },
+          "toast": {
+            "claimed": "现在由您负责。",
+            "not_claimed": "无法认领。",
+            "assigned": "已指派。",
+            "not_assigned": "无法指派。",
+            "returned": "已退回队列。",
+            "not_returned": "无法退回。",
+            "suspended": "已暂缓。",
+            "not_suspended": "无法暂缓。",
+            "transferred": "已转给其他区域。",
+            "not_transferred": "无法转移。"
+          },
+          "assign_modal": {
+            "title": "由谁负责？",
+            "empty": "该区域没有人能承接这个项目的工作。",
+            "load": "{total} 项未完成 · 本区域 {unit} 项",
+            "confirm": "指派"
+          },
+          "excluded": {
+            "already_assigned": "已参与该事项",
+            "not_a_project_member": "不在该项目中",
+            "project_role_too_low": "在该项目中是访客",
+            "bot": "自动化账号",
+            "at_max_open_items": "已达未完成事项上限",
+            "other": "目前不符合条件"
+          },
+          "transfer_modal": {
+            "title": "转给其他区域",
+            "select_area": "选择区域",
+            "no_target": "没有其他区域负责这个项目。"
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "交给了某个人",
+              "queued": "放入队列",
+              "allocation_failed": "没有人能承接",
+              "suspended": "已暂缓",
+              "rejected": "被拒绝"
+            },
+            "mode": {
+              "manual": "由协调人分配",
+              "self_claim": "由成员自行认领",
+              "least_loaded": "分配给未完成最少的人",
+              "explicit": "直接指定"
+            },
+            "trigger": {
+              "public_api": "外部集成",
+              "internal_api": "应用内操作",
+              "ui_claim": "由本人认领",
+              "ui_coordinator": "协调人",
+              "reassign": "重新指派",
+              "availability": "可用状态",
+              "return_to_queue": "退回队列",
+              "command": "运维命令"
+            },
+            "replaced": "取代：{outcome}，{when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "选择成员",
+          "no_addable": "这里的每个人都已经在协调该区域。",
+          "add": "添加",
+          "empty": "还没有人协调这个区域。",
+          "remove_aria": "将 {name} 从协调人中移除",
+          "note": "协调一个区域同时会授予该区域覆盖的所有项目的访问权限；取消协调则会收回这些权限。",
+          "toast": {
+            "added": "已添加协调人。",
+            "not_added": "无法添加协调人。",
+            "removed": "已移除协调人。",
+            "not_removed": "无法移除协调人。"
+          }
+        },
+        "policy": {
+          "title": "该区域如何分配工作",
+          "project_title": "仅在 {project}",
+          "description": "默认方式决定工作到达时会发生什么；允许列表决定可以请求哪些方式。",
+          "default_mode": "默认",
+          "allowed_modes": "允许的方式",
+          "default_must_be_allowed": "默认方式必须在允许的方式之中。",
+          "sla_hours": "多少小时后算逾期",
+          "max_open": "每人未完成事项上限",
+          "no_limit": "不限"
+        },
+        "my_areas": {
+          "title": "我的区域",
+          "description": "你所属区域中待处理的工作，以及你正在承担的工作。",
+          "empty": "你还不属于任何区域。"
         }
       }
     },

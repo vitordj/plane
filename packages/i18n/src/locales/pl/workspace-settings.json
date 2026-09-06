@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "Osoby",
-          "back_aria": "Powrót do wszystkich obszarów"
+          "back_aria": "Powrót do wszystkich obszarów",
+          "tab_work": "Praca",
+          "tab_coordinators": "Koordynatorzy",
+          "tab_policy": "Zasady"
         },
         "members": {
           "select_person": "Wybierz osobę",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "To nie jest tryb przydzielania.",
           "policy_default_mode_not_allowed": "Tryb domyślny musi być jednym z dozwolonych trybów.",
           "policy_invalid_value": "Te limity muszą być dodatnimi liczbami całkowitymi."
+        },
+        "work": {
+          "refresh": "Odśwież",
+          "inbox_title": "Skrzynka",
+          "inbox_empty": "W tym obszarze nic nie czeka.",
+          "in_progress_title": "W toku",
+          "in_progress_empty": "Nikt tu nad niczym nie pracuje.",
+          "attention_title": "Wymaga uwagi",
+          "attention_empty": "Nic nie wymaga uwagi.",
+          "decisions_title": "Decyzje",
+          "decisions_empty": "Nie zapisano jeszcze żadnych decyzji.",
+          "nobody_on_it": "Jeszcze nikt",
+          "waiting_for": "czeka {duration}",
+          "overdue": "Po terminie",
+          "overdue_tooltip": "Minął termin przekazania tego komuś.",
+          "claim": "Weź to",
+          "assign": "Przydziel…",
+          "return": "Zwróć do kolejki",
+          "suspend": "Wstrzymaj",
+          "transfer": "Przenieś do innego obszaru",
+          "reason_label": "Powód",
+          "reason_placeholder": "Opcjonalnie, do historii",
+          "state": {
+            "queued": "Oczekuje",
+            "assigned": "Przydzielone",
+            "allocation_failed": "Brak dostępnych osób",
+            "suspended": "Wstrzymane"
+          },
+          "reason": {
+            "new_item": "Nowa pozycja",
+            "awaiting_coordinator": "Czeka na koordynatora",
+            "awaiting_claim": "Czeka, aż ktoś to weźmie",
+            "no_eligible_member": "Brak uprawnionych osób",
+            "executor_unavailable": "Ta osoba stała się niedostępna",
+            "manually_returned": "Zwrócone ręcznie"
+          },
+          "toast": {
+            "claimed": "Teraz to Twoje.",
+            "not_claimed": "Nie udało się tego wziąć.",
+            "assigned": "Przydzielono.",
+            "not_assigned": "Nie udało się przydzielić.",
+            "returned": "Z powrotem w kolejce.",
+            "not_returned": "Nie udało się zwrócić.",
+            "suspended": "Wstrzymane.",
+            "not_suspended": "Nie udało się wstrzymać.",
+            "transferred": "Przeniesione do innego obszaru.",
+            "not_transferred": "Nie udało się przenieść."
+          },
+          "assign_modal": {
+            "title": "Kto to weźmie?",
+            "empty": "Nikt w tym obszarze nie może wziąć pracy w tym projekcie.",
+            "load": "{total} otwartych · {unit} w tym obszarze",
+            "confirm": "Przydziel"
+          },
+          "excluded": {
+            "already_assigned": "Już przy tej pozycji",
+            "not_a_project_member": "Nie należy do tego projektu",
+            "project_role_too_low": "Gość w tym projekcie",
+            "bot": "Konto automatyzacji",
+            "at_max_open_items": "Osiągnął limit otwartych pozycji",
+            "other": "Obecnie nieuprawniony"
+          },
+          "transfer_modal": {
+            "title": "Przenieś do innego obszaru",
+            "select_area": "Wybierz obszar",
+            "no_target": "Żaden inny obszar nie obejmuje tego projektu."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "Przekazane osobie",
+              "queued": "Trafiło do kolejki",
+              "allocation_failed": "Nikt nie mógł tego wziąć",
+              "suspended": "Wstrzymane",
+              "rejected": "Odrzucone"
+            },
+            "mode": {
+              "manual": "Przez koordynatora",
+              "self_claim": "Każdy bierze sam",
+              "least_loaded": "Osobie z najmniejszą liczbą otwartych",
+              "explicit": "Wskazany wprost"
+            },
+            "trigger": {
+              "public_api": "Integracja",
+              "internal_api": "Aplikacja",
+              "ui_claim": "Wzięte przez osobę",
+              "ui_coordinator": "Koordynator",
+              "reassign": "Ponowne przydzielenie",
+              "availability": "Dostępność",
+              "return_to_queue": "Zwrot do kolejki",
+              "command": "Polecenie serwisowe"
+            },
+            "replaced": "zastępuje: {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "Wybierz osobę",
+          "no_addable": "Wszyscy tutaj już koordynują ten obszar.",
+          "add": "Dodaj",
+          "empty": "Nikt jeszcze nie koordynuje tego obszaru.",
+          "remove_aria": "Usuń osobę {name} z koordynacji",
+          "note": "Koordynowanie obszaru daje też dostęp do wszystkich objętych nim projektów, a odebranie koordynacji ten dostęp cofa.",
+          "toast": {
+            "added": "Dodano koordynatora.",
+            "not_added": "Nie udało się dodać koordynatora.",
+            "removed": "Usunięto koordynację.",
+            "not_removed": "Nie udało się usunąć koordynacji."
+          }
+        },
+        "policy": {
+          "title": "Jak ten obszar rozdziela pracę",
+          "project_title": "Tylko w {project}",
+          "description": "Tryb domyślny decyduje, co dzieje się z napływającą pracą; lista dozwolonych decyduje, o co w ogóle można poprosić.",
+          "default_mode": "Domyślnie",
+          "allowed_modes": "Dozwolone",
+          "default_must_be_allowed": "Domyślny musi być jednym z dozwolonych.",
+          "sla_hours": "Godziny do uznania za spóźnione",
+          "max_open": "Maksimum otwartych pozycji na osobę",
+          "no_limit": "Bez limitu"
+        },
+        "my_areas": {
+          "title": "Moje obszary",
+          "description": "Co czeka w obszarach, do których należysz, i co niesiesz Ty.",
+          "empty": "Nie należysz jeszcze do żadnego obszaru."
         }
       }
     },

@@ -574,6 +574,41 @@ def _apply_queued(link, decision, *, state, queue_reason, sla_seconds=None, assi
     )
 
 
+def _alert_allocation_failed_after_commit(link, actor) -> None:
+    """
+    @description Queue the "nobody could take it" alert for after the
+    transaction commits.
+    @param link: The link that ended in ``allocation_failed``.
+    @param actor: Whoever asked for the allocation, when a person did.
+    """
+    # Imported here rather than at module scope: the alert module reads the
+    # coordinator table, which imports this one's models, and the notification
+    # is a side effect of allocation rather than part of it.
+    from .alerts import alert_allocation_failed
+
+    link_id = link.id
+
+    def _send():
+        from plane.db.models import IssueOrganizationalUnit
+
+        fresh = (
+            IssueOrganizationalUnit.objects.filter(pk=link_id)
+            .select_related("issue__project", "issue__state", "organizational_unit")
+            .first()
+        )
+        # A human may have claimed the item between the failed allocation and
+        # this callback; alerting then would be telling a coordinator to look
+        # at something that is already handled.
+        if fresh is None or fresh.routing_state != RoutingState.ALLOCATION_FAILED:
+            return
+        try:
+            alert_allocation_failed(fresh, actor=actor)
+        except Exception:  # noqa: BLE001 - an alert must never fail an allocation
+            logger.exception("orca could not send the allocation-failed alert")
+
+    transaction.on_commit(_send)
+
+
 def _locked_link(issue):
     """@description The link for this item, locked for the rest of the transaction."""
     link = IssueOrganizationalUnit.objects.select_for_update().filter(issue=issue).first()
@@ -702,6 +737,12 @@ def allocate(
                 sla_seconds=resolution.sla_seconds,
                 assignment_due_at=assignment_due_at,
             )
+            # Tell the area now, not at the next sweep (item 2.4): "I looked
+            # and found nobody" is the one outcome where the coordinator's next
+            # move — widen the area, add somebody to the project, take it
+            # themselves — is worth interrupting them for. After commit, so an
+            # alert is never sent about a transaction that rolled back.
+            _alert_allocation_failed_after_commit(link, actor)
             return AllocationResult(
                 link, decision, DecisionOutcome.ALLOCATION_FAILED, None, QueueReason.NO_ELIGIBLE_MEMBER
             )

@@ -138,6 +138,8 @@ one usually fails later, under load, in a way that does not point at the cause.
 - [ ] `TRUSTED_PROXIES` is set to the real CIDR of the ingress in front of
       Caddy. The stack refuses to start without it, by design (P0.7).
 - [ ] `ORCA_ORG_UNITS_ENABLED` has the same value everywhere (see §4).
+- [ ] `ORCA_PUBLIC_API_ENABLED` is set deliberately, and the same on the API,
+      the worker and the beat. It ships `0`; see §6b before changing it.
 - [ ] Anything secret was set through the platform's secret store, not through
       a committed file.
 
@@ -174,6 +176,44 @@ table) are usually safe to leave in place; a migration that dropped or renamed
 something is not, and the rollback becomes a restore-from-backup decision
 rather than a retag.
 
+## 6b. Switching the automation API off
+
+`ORCA_PUBLIC_API_ENABLED` is the second switch (RFC §9, Gate 2-minimum): the
+organizational layer can be running for people while `/api/v1/orca/` stays
+shut. Turning it off is one variable and a restart of the API containers.
+
+```bash
+# In the production environment, then restart api / worker / beat.
+ORCA_PUBLIC_API_ENABLED=0
+```
+
+- [ ] The variable has the same value on the API, the worker and the beat.
+      They read it independently, and a worker that still thinks the API is on
+      changes nothing on its own — but an operator reading two answers will not
+      trust either.
+
+**What happens to work already in flight.** The switch is read per request, in
+front of the whole namespace, so:
+
+- a call that has already returned is done: the work item exists, the routing
+  state is written, the decision is recorded. Switching off does not undo it;
+- a call in progress finishes. The check runs before the view, not inside the
+  transaction, so nothing is left half-written by the switch itself;
+- every subsequent call answers `404` with
+  `"error_message": "ORG_PUBLIC_API_DISABLED"`, including a retry of a request
+  that had succeeded. A well-behaved client retries with the same
+  `Idempotency-Key` and will get the 404 rather than its original receipt —
+  the receipts are kept (`AutomationOperation`), so switching back on makes
+  replay work again with the original answer;
+- **the app is unaffected.** `/api/orca/` — the queue, claiming, reassigning,
+  the coordinator's screens — is behind `ORCA_ORG_UNITS_ENABLED` only. Work
+  that an integration filed into an area stays in that area's queue and a
+  coordinator can still hand it out.
+
+To turn it back on, set the variable to `1` and restart the same three
+services. Nothing needs replaying: the queue is the state, and it was never
+lost.
+
 ## 7. Maintenance the release depends on
 
 - **Pinned base images.** `docker-compose-orca.yml` pins PostgreSQL, Valkey,
@@ -194,5 +234,5 @@ Fill one row per full rehearsal or real release. The first row closes the
 P0.13 acceptance criterion.
 
 | Date | Version | Stage commit | Duration (RC → verified) | What went wrong | Runbook change |
-| --- | --- | --- | --- | --- | --- |
-| — | — | — | — | — | — |
+| ---- | ------- | ------------ | ------------------------ | --------------- | -------------- |
+| —    | —       | —            | —                        | —               | —              |

@@ -6,13 +6,20 @@
 
 import { API_BASE_URL } from "@plane/constants";
 import type {
+  IAssignmentCandidates,
+  IAssignmentDecisionEntry,
+  IAssignmentPolicy,
+  IAssignmentPolicyResolution,
   IIssueRouting,
   IOrganizationalUnit,
   IOrganizationalUnitAccessChange,
+  IOrganizationalUnitCoordinator,
   IOrganizationalUnitMembership,
   IOrganizationalUnitProject,
   IOrganizationalUnitWorkload,
+  IUnitQueue,
   IUserOrganizationalUnit,
+  TAssignmentPolicyPayload,
   TOrganizationalUnitMemberRole,
   TOrganizationalUnitAssignMode,
 } from "@plane/types";
@@ -278,6 +285,216 @@ export class OrganizationalUnitService extends APIService {
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response;
+      });
+  }
+
+  // --- the area's queue and the coordinator's actions (item 2.2) ------------
+
+  private itemPath(workspaceSlug: string, projectId: string, issueId: string): string {
+    return `/api/orca/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/organizational-unit`;
+  }
+
+  /**
+   * @description What the area has waiting, overdue first and oldest first,
+   * with what the reader is allowed to do about it.
+   * @param filters `routing_state` takes a state or `all`; the rest narrow.
+   */
+  async getQueue(
+    workspaceSlug: string,
+    unitId: string,
+    filters?: { routingState?: string; overdue?: boolean; projectId?: string; executorId?: string; limit?: number }
+  ): Promise<IUnitQueue> {
+    const params = new URLSearchParams();
+    if (filters?.routingState) params.set("routing_state", filters.routingState);
+    if (filters?.overdue !== undefined) params.set("overdue", String(filters.overdue));
+    if (filters?.projectId) params.set("project", filters.projectId);
+    if (filters?.executorId) params.set("executor", filters.executorId);
+    if (filters?.limit) params.set("limit", String(filters.limit));
+    const query = params.toString();
+    return this.get(`${this.basePath(workspaceSlug)}/${unitId}/queue/${query ? `?${query}` : ""}`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description The area's decision log, most recent first, each entry
+   * carrying the decision it replaced. Coordinators and admins only.
+   */
+  async getDecisions(
+    workspaceSlug: string,
+    unitId: string,
+    options?: { issueId?: string }
+  ): Promise<{ results: IAssignmentDecisionEntry[] }> {
+    const query = options?.issueId ? `?issue=${options.issueId}` : "";
+    return this.get(`${this.basePath(workspaceSlug)}/${unitId}/decisions/${query}`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async getCoordinators(workspaceSlug: string, unitId: string): Promise<IOrganizationalUnitCoordinator[]> {
+    return this.get(`${this.basePath(workspaceSlug)}/${unitId}/coordinators/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async addCoordinator(
+    workspaceSlug: string,
+    unitId: string,
+    memberId: string
+  ): Promise<IOrganizationalUnitCoordinator> {
+    return this.post(`${this.basePath(workspaceSlug)}/${unitId}/coordinators/`, { member_id: memberId })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  async removeCoordinator(workspaceSlug: string, unitId: string, coordinatorId: string): Promise<void> {
+    return this.delete(`${this.basePath(workspaceSlug)}/${unitId}/coordinators/${coordinatorId}/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /**
+   * @description The policy in force for the area, or for one of its projects:
+   * resolved, not stored — the project's policy over the area's over the
+   * fallback (RFC §6.3). A client reading the raw rows would have to
+   * reimplement that precedence and would get it wrong the first time a
+   * project policy appeared.
+   */
+  async getPolicy(workspaceSlug: string, unitId: string, projectId?: string): Promise<IAssignmentPolicyResolution> {
+    const path = projectId
+      ? `${this.basePath(workspaceSlug)}/${unitId}/projects/${projectId}/policy/`
+      : `${this.basePath(workspaceSlug)}/${unitId}/policy/`;
+    return this.get(path)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description Write the area's policy, or the one that overrides it for a
+   * single project. The read is `getPolicy`, which answers with the *resolved*
+   * policy instead — project over area over fallback.
+   */
+  async writePolicy(
+    workspaceSlug: string,
+    unitId: string,
+    data: TAssignmentPolicyPayload,
+    projectId?: string
+  ): Promise<IAssignmentPolicy> {
+    const path = projectId
+      ? `${this.basePath(workspaceSlug)}/${unitId}/projects/${projectId}/policy/write/`
+      : `${this.basePath(workspaceSlug)}/${unitId}/policy/write/`;
+    return this.put(path, data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /** @description Take a queued item for yourself. */
+  async claimIssue(workspaceSlug: string, projectId: string, issueId: string): Promise<{ routing: IIssueRouting }> {
+    return this.post(`${this.itemPath(workspaceSlug, projectId, issueId)}/claim/`, {})
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /**
+   * @description Hand the item to somebody else.
+   * @param expectedDecisionId What the caller last read, so two coordinators
+   * acting at once do not silently overwrite each other.
+   */
+  async reassignIssue(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    executorId: string,
+    options?: { reason?: string; expectedDecisionId?: string | null }
+  ): Promise<{ routing: IIssueRouting }> {
+    return this.post(`${this.itemPath(workspaceSlug, projectId, issueId)}/reassign/`, {
+      executor_id: executorId,
+      ...(options?.reason ? { reason: options.reason } : {}),
+      ...(options?.expectedDecisionId ? { expected_decision_id: options.expectedDecisionId } : {}),
+    })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /** @description Put the item back in the area's queue. */
+  async returnIssueToQueue(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    options?: { reason?: string }
+  ): Promise<{ routing: IIssueRouting }> {
+    return this.post(
+      `${this.itemPath(workspaceSlug, projectId, issueId)}/return/`,
+      options?.reason ? { reason: options.reason } : {}
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /** @description Park an item blocked on something outside the area. */
+  async suspendIssue(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    options?: { reason?: string }
+  ): Promise<{ routing: IIssueRouting }> {
+    return this.post(
+      `${this.itemPath(workspaceSlug, projectId, issueId)}/suspend/`,
+      options?.reason ? { reason: options.reason } : {}
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /** @description Move responsibility for the item to another area. */
+  async transferIssueUnit(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    toUnitId: string,
+    options?: { reason?: string }
+  ): Promise<{ routing: IIssueRouting }> {
+    return this.post(`${this.itemPath(workspaceSlug, projectId, issueId)}/transfer/`, {
+      organizational_unit_id: toUnitId,
+      ...(options?.reason ? { reason: options.reason } : {}),
+    })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /**
+   * @description Who could take this item, in the order the allocator would
+   * pick them. Read-only: the ranking is recomputed when the decision is made.
+   */
+  async getCandidates(workspaceSlug: string, projectId: string, issueId: string): Promise<IAssignmentCandidates> {
+    return this.get(`${this.itemPath(workspaceSlug, projectId, issueId)}/candidates/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
       });
   }
 }

@@ -281,8 +281,17 @@
         "queued": "Tato oblast přiděluje práci ručně, takže pracovní položka čeká.",
         "nobody_title": "Nikdo není k dispozici",
         "nobody": "Žádný člen této oblasti nemá přístup k tomuto projektu.",
-        "not_assigned": "Nepřiřazeno"
-      }
+        "not_assigned": "Nepřiřazeno",
+        "not_claimed": "Nepodařilo se to vzít.",
+        "not_returned": "Nepodařilo se vrátit.",
+        "not_suspended": "Nepodařilo se pozastavit."
+      },
+      "actions": "Akce",
+      "claim": "Vzít si",
+      "return": "Vrátit do fronty oblasti",
+      "return_mine": "Vrátit zpět",
+      "suspend": "Pozastavit",
+      "yours": "u vás"
     },
     "bulk_operations": {
       "mixed": "{property} (smíšené)",

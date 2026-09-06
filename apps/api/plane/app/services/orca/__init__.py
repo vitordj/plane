@@ -2,6 +2,15 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
+from .alerts import (
+    ALERT_QUIET_PERIOD,
+    SENDER_ALLOCATION_FAILED,
+    SENDER_ASSIGNMENT_OVERDUE,
+    alert_allocation_failed,
+    alert_assignment_overdue,
+    alert_recipients,
+    may_alert_again,
+)
 from .assignment_engine import (
     MODE_APPEND,
     MODE_FILL_EMPTY,
@@ -98,6 +107,7 @@ from .org_unit_reconciler import (
 
 __all__ = [
     "ABANDONED_AFTER",
+    "ALERT_QUIET_PERIOD",
     "ALL_STATES",
     "AccessChange",
     "AccessSource",
@@ -126,6 +136,8 @@ __all__ = [
     "ProcessProjectionDisabled",
     "ProjectionResult",
     "RankedCandidates",
+    "SENDER_ALLOCATION_FAILED",
+    "SENDER_ASSIGNMENT_OVERDUE",
     "SUPPORTED_LANGUAGES",
     "TransferResult",
     "UnitNotCoveringProject",
@@ -133,6 +145,9 @@ __all__ = [
     "WAITING_STATES",
     "WorkItemHasNoUnit",
     "WorkItemNotFound",
+    "alert_allocation_failed",
+    "alert_assignment_overdue",
+    "alert_recipients",
     "allocate",
     "assign_from_unit",
     "audit_routing",
@@ -146,6 +161,7 @@ __all__ = [
     "fail_operation",
     "get_default_language",
     "match_workspace_member",
+    "may_alert_again",
     "normalize_language",
     "orca_public_api_enabled",
     "organizational_units_enabled",

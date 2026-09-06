@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "Personnes",
-          "back_aria": "Retour à tous les domaines"
+          "back_aria": "Retour à tous les domaines",
+          "tab_work": "Travail",
+          "tab_coordinators": "Coordination",
+          "tab_policy": "Politique"
         },
         "members": {
           "select_person": "Sélectionner une personne",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "Ce n’est pas un mode d’attribution.",
           "policy_default_mode_not_allowed": "Le mode par défaut doit faire partie des modes autorisés.",
           "policy_invalid_value": "Ces limites doivent être des nombres entiers positifs."
+        },
+        "work": {
+          "refresh": "Actualiser",
+          "inbox_title": "Boîte de réception",
+          "inbox_empty": "Rien n’attend dans cette zone.",
+          "in_progress_title": "En cours",
+          "in_progress_empty": "Personne ne travaille sur quoi que ce soit ici.",
+          "attention_title": "À surveiller",
+          "attention_empty": "Rien à surveiller.",
+          "decisions_title": "Décisions",
+          "decisions_empty": "Aucune décision enregistrée pour l’instant.",
+          "nobody_on_it": "Personne pour l’instant",
+          "waiting_for": "en attente depuis {duration}",
+          "overdue": "En retard",
+          "overdue_tooltip": "Le délai pour confier cet élément à quelqu’un est dépassé.",
+          "claim": "Prendre en charge",
+          "assign": "Attribuer à…",
+          "return": "Remettre dans la file",
+          "suspend": "Mettre en attente",
+          "transfer": "Transférer vers une autre zone",
+          "reason_label": "Motif",
+          "reason_placeholder": "Facultatif, pour l’historique",
+          "state": {
+            "queued": "En attente",
+            "assigned": "Attribué",
+            "allocation_failed": "Personne de disponible",
+            "suspended": "En attente"
+          },
+          "reason": {
+            "new_item": "Nouvel élément",
+            "awaiting_coordinator": "En attente de la coordination",
+            "awaiting_claim": "En attente que quelqu’un le prenne",
+            "no_eligible_member": "Personne d’éligible",
+            "executor_unavailable": "La personne n’est plus disponible",
+            "manually_returned": "Remis manuellement"
+          },
+          "toast": {
+            "claimed": "C’est à vous.",
+            "not_claimed": "Impossible de le prendre.",
+            "assigned": "Attribué.",
+            "not_assigned": "Impossible de l’attribuer.",
+            "returned": "De retour dans la file.",
+            "not_returned": "Impossible de le remettre en file.",
+            "suspended": "Mis en attente.",
+            "not_suspended": "Impossible de le mettre en attente.",
+            "transferred": "Transféré vers l’autre zone.",
+            "not_transferred": "Impossible de le transférer."
+          },
+          "assign_modal": {
+            "title": "Qui s’en charge ?",
+            "empty": "Personne de cette zone ne peut prendre de travail dans ce projet.",
+            "load": "{total} en cours · {unit} dans cette zone",
+            "confirm": "Attribuer"
+          },
+          "excluded": {
+            "already_assigned": "Déjà sur cet élément",
+            "not_a_project_member": "Pas dans ce projet",
+            "project_role_too_low": "Invité sur ce projet",
+            "bot": "Compte d’automatisation",
+            "at_max_open_items": "A atteint la limite d’éléments en cours",
+            "other": "Non éligible pour le moment"
+          },
+          "transfer_modal": {
+            "title": "Transférer vers une autre zone",
+            "select_area": "Choisissez une zone",
+            "no_target": "Aucune autre zone ne couvre ce projet."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "Confié à une personne",
+              "queued": "Placé dans la file",
+              "allocation_failed": "Personne n’a pu le prendre",
+              "suspended": "Mis en attente",
+              "rejected": "Refusé"
+            },
+            "mode": {
+              "manual": "Par la coordination",
+              "self_claim": "Chacun prend ce qu’il peut",
+              "least_loaded": "À la personne la moins chargée",
+              "explicit": "Désigné directement"
+            },
+            "trigger": {
+              "public_api": "Une intégration",
+              "internal_api": "L’application",
+              "ui_claim": "Pris par la personne",
+              "ui_coordinator": "La coordination",
+              "reassign": "Réattribution",
+              "availability": "Disponibilité",
+              "return_to_queue": "Remise dans la file",
+              "command": "Une commande de maintenance"
+            },
+            "replaced": "remplace : {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "Choisissez une personne",
+          "no_addable": "Tout le monde ici coordonne déjà cette zone.",
+          "add": "Ajouter",
+          "empty": "Personne ne coordonne encore cette zone.",
+          "remove_aria": "Retirer {name} de la coordination",
+          "note": "Coordonner une zone donne aussi accès à tous les projets qu’elle couvre, et retirer la coordination retire cet accès.",
+          "toast": {
+            "added": "Coordination attribuée.",
+            "not_added": "Impossible d’attribuer la coordination.",
+            "removed": "Coordination retirée.",
+            "not_removed": "Impossible de retirer la coordination."
+          }
+        },
+        "policy": {
+          "title": "Comment cette zone répartit le travail",
+          "project_title": "Uniquement dans {project}",
+          "description": "Le mode par défaut décide de ce qui se passe à l’arrivée du travail ; la liste des modes autorisés décide de ce que l’on peut demander.",
+          "default_mode": "Par défaut",
+          "allowed_modes": "Autorisés",
+          "default_must_be_allowed": "Le mode par défaut doit faire partie des modes autorisés.",
+          "sla_hours": "Heures avant d’être considéré en retard",
+          "max_open": "Maximum d’éléments en cours par personne",
+          "no_limit": "Sans limite"
+        },
+        "my_areas": {
+          "title": "Mes zones",
+          "description": "Ce qui attend dans les zones dont vous faites partie, et ce que vous portez.",
+          "empty": "Vous ne faites encore partie d’aucune zone."
         }
       }
     },

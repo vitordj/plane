@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "Ľudia",
-          "back_aria": "Späť na všetky oblasti"
+          "back_aria": "Späť na všetky oblasti",
+          "tab_work": "Práca",
+          "tab_coordinators": "Koordinátori",
+          "tab_policy": "Pravidlá"
         },
         "members": {
           "select_person": "Vyberte osobu",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "To nie je režim prideľovania.",
           "policy_default_mode_not_allowed": "Predvolený režim musí byť jedným z povolených režimov.",
           "policy_invalid_value": "Tieto limity musia byť kladné celé čísla."
+        },
+        "work": {
+          "refresh": "Obnoviť",
+          "inbox_title": "Doručené",
+          "inbox_empty": "V tejto oblasti nič nečaká.",
+          "in_progress_title": "Prebieha",
+          "in_progress_empty": "Nikto tu na ničom nepracuje.",
+          "attention_title": "Vyžaduje pozornosť",
+          "attention_empty": "Nič nevyžaduje pozornosť.",
+          "decisions_title": "Rozhodnutia",
+          "decisions_empty": "Zatiaľ nie sú zaznamenané žiadne rozhodnutia.",
+          "nobody_on_it": "Zatiaľ nikto",
+          "waiting_for": "čaká {duration}",
+          "overdue": "Po termíne",
+          "overdue_tooltip": "Uplynula lehota na odovzdanie niekomu.",
+          "claim": "Vziať si",
+          "assign": "Prideliť…",
+          "return": "Vrátiť do frontu",
+          "suspend": "Pozastaviť",
+          "transfer": "Odovzdať inej oblasti",
+          "reason_label": "Dôvod",
+          "reason_placeholder": "Nepovinné, zostane v histórii",
+          "state": {
+            "queued": "Čaká",
+            "assigned": "Pridelené",
+            "allocation_failed": "Nikto k dispozícii",
+            "suspended": "Pozastavené"
+          },
+          "reason": {
+            "new_item": "Nová položka",
+            "awaiting_coordinator": "Čaká na koordinátora",
+            "awaiting_claim": "Čaká, kým si to niekto vezme",
+            "no_eligible_member": "Nikto nespĺňa podmienky",
+            "executor_unavailable": "Táto osoba prestala byť dostupná",
+            "manually_returned": "Ručne vrátené"
+          },
+          "toast": {
+            "claimed": "Teraz je to vaše.",
+            "not_claimed": "Nepodarilo sa to vziať.",
+            "assigned": "Pridelené.",
+            "not_assigned": "Nepodarilo sa prideliť.",
+            "returned": "Späť vo fronte.",
+            "not_returned": "Nepodarilo sa vrátiť.",
+            "suspended": "Pozastavené.",
+            "not_suspended": "Nepodarilo sa pozastaviť.",
+            "transferred": "Odovzdané inej oblasti.",
+            "not_transferred": "Nepodarilo sa odovzdať."
+          },
+          "assign_modal": {
+            "title": "Kto si to vezme?",
+            "empty": "Nikto v tejto oblasti si nemôže vziať prácu v tomto projekte.",
+            "load": "{total} otvorených · {unit} v tejto oblasti",
+            "confirm": "Prideliť"
+          },
+          "excluded": {
+            "already_assigned": "Už pri tejto položke",
+            "not_a_project_member": "Nie je v tomto projekte",
+            "project_role_too_low": "V tomto projekte hosť",
+            "bot": "Účet automatizácie",
+            "at_max_open_items": "Na limite otvorených položiek",
+            "other": "Teraz nespĺňa podmienky"
+          },
+          "transfer_modal": {
+            "title": "Odovzdať inej oblasti",
+            "select_area": "Vyberte oblasť",
+            "no_target": "Žiadna iná oblasť tento projekt nepokrýva."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "Odovzdané osobe",
+              "queued": "Zaradené do frontu",
+              "allocation_failed": "Nikto si to nemohol vziať",
+              "suspended": "Pozastavené",
+              "rejected": "Odmietnuté"
+            },
+            "mode": {
+              "manual": "Koordinátorom",
+              "self_claim": "Každý si vezme sám",
+              "least_loaded": "Tomu, kto má najmenej otvorených",
+              "explicit": "Priamo určené"
+            },
+            "trigger": {
+              "public_api": "Integrácia",
+              "internal_api": "Aplikácia",
+              "ui_claim": "Vzaté osobou",
+              "ui_coordinator": "Koordinátor",
+              "reassign": "Preradenie",
+              "availability": "Dostupnosť",
+              "return_to_queue": "Vrátenie do frontu",
+              "command": "Servisný príkaz"
+            },
+            "replaced": "nahrádza: {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "Vyberte osobu",
+          "no_addable": "Všetci tu už túto oblasť koordinujú.",
+          "add": "Pridať",
+          "empty": "Túto oblasť zatiaľ nikto nekoordinuje.",
+          "remove_aria": "Odobrať {name} z koordinácie",
+          "note": "Koordinácia oblasti tiež udeľuje prístup ku všetkým projektom, ktoré pokrýva; odobratie koordinácie tento prístup vezme späť.",
+          "toast": {
+            "added": "Koordinátor pridaný.",
+            "not_added": "Koordinátora sa nepodarilo pridať.",
+            "removed": "Koordinácia odobratá.",
+            "not_removed": "Koordináciu sa nepodarilo odobrať."
+          }
+        },
+        "policy": {
+          "title": "Ako táto oblasť rozdeľuje prácu",
+          "project_title": "Len v {project}",
+          "description": "Predvolený režim rozhoduje, čo sa stane s prichádzajúcou prácou; zoznam povolených rozhoduje, o čo možno vôbec požiadať.",
+          "default_mode": "Predvolené",
+          "allowed_modes": "Povolené",
+          "default_must_be_allowed": "Predvolený musí byť jedným z povolených.",
+          "sla_hours": "Hodiny, kým sa to počíta ako meškanie",
+          "max_open": "Najviac otvorených položiek na osobu",
+          "no_limit": "Bez limitu"
+        },
+        "my_areas": {
+          "title": "Moje oblasti",
+          "description": "Čo čaká v oblastiach, do ktorých patríte, a čo nesiete vy.",
+          "empty": "Zatiaľ nepatríte do žiadnej oblasti."
         }
       }
     },

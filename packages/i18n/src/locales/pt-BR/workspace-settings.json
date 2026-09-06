@@ -345,7 +345,10 @@
         },
         "detail": {
           "tab_people": "Pessoas",
-          "back_aria": "Voltar para todas as áreas"
+          "back_aria": "Voltar para todas as áreas",
+          "tab_work": "Trabalho",
+          "tab_coordinators": "Coordenação",
+          "tab_policy": "Política"
         },
         "members": {
           "select_person": "Selecione uma pessoa",
@@ -479,6 +482,129 @@
           "policy_invalid_mode": "Esse não é um modo de atribuição.",
           "policy_default_mode_not_allowed": "O modo padrão precisa ser um dos modos permitidos.",
           "policy_invalid_value": "Esses limites precisam ser números inteiros positivos."
+        },
+        "work": {
+          "refresh": "Atualizar",
+          "inbox_title": "Caixa de entrada",
+          "inbox_empty": "Não há nada esperando nesta área.",
+          "in_progress_title": "Em execução",
+          "in_progress_empty": "Ninguém está tocando nada aqui.",
+          "attention_title": "Atenção",
+          "attention_empty": "Nada pedindo atenção.",
+          "decisions_title": "Decisões",
+          "decisions_empty": "Nenhuma decisão registrada ainda.",
+          "nobody_on_it": "Ninguém ainda",
+          "waiting_for": "esperando há {duration}",
+          "overdue": "Atrasado",
+          "overdue_tooltip": "Passou do prazo para entregar isto a alguém.",
+          "claim": "Assumir",
+          "assign": "Atribuir a…",
+          "return": "Devolver à fila",
+          "suspend": "Suspender",
+          "transfer": "Encaminhar para outra área",
+          "reason_label": "Motivo",
+          "reason_placeholder": "Opcional, para o histórico",
+          "state": {
+            "queued": "Aguardando",
+            "assigned": "Atribuído",
+            "allocation_failed": "Sem ninguém elegível",
+            "suspended": "Suspenso"
+          },
+          "reason": {
+            "new_item": "Item novo",
+            "awaiting_coordinator": "Aguardando a coordenação",
+            "awaiting_claim": "Aguardando alguém assumir",
+            "no_eligible_member": "Ninguém elegível",
+            "executor_unavailable": "A pessoa ficou indisponível",
+            "manually_returned": "Devolvido manualmente"
+          },
+          "toast": {
+            "claimed": "Agora é seu.",
+            "not_claimed": "Não foi possível assumir.",
+            "assigned": "Atribuído.",
+            "not_assigned": "Não foi possível atribuir.",
+            "returned": "De volta à fila.",
+            "not_returned": "Não foi possível devolver.",
+            "suspended": "Suspenso.",
+            "not_suspended": "Não foi possível suspender.",
+            "transferred": "Encaminhado para a outra área.",
+            "not_transferred": "Não foi possível encaminhar."
+          },
+          "assign_modal": {
+            "title": "Quem assume?",
+            "empty": "Ninguém desta área pode assumir trabalho neste projeto.",
+            "load": "{total} em aberto · {unit} nesta área",
+            "confirm": "Atribuir"
+          },
+          "excluded": {
+            "already_assigned": "Já está neste item",
+            "not_a_project_member": "Não está neste projeto",
+            "project_role_too_low": "É convidado neste projeto",
+            "bot": "Conta de automação",
+            "at_max_open_items": "No limite de itens em aberto",
+            "other": "Não elegível agora"
+          },
+          "transfer_modal": {
+            "title": "Encaminhar para outra área",
+            "select_area": "Escolha uma área",
+            "no_target": "Nenhuma outra área cobre este projeto."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "Entregue a uma pessoa",
+              "queued": "Colocado na fila",
+              "allocation_failed": "Ninguém pôde assumir",
+              "suspended": "Suspenso",
+              "rejected": "Recusado"
+            },
+            "mode": {
+              "manual": "Pela coordenação",
+              "self_claim": "Cada um assume o que pode",
+              "least_loaded": "Para quem tem menos em aberto",
+              "explicit": "Indicado diretamente"
+            },
+            "trigger": {
+              "public_api": "Uma integração",
+              "internal_api": "O aplicativo",
+              "ui_claim": "Assumido pela pessoa",
+              "ui_coordinator": "A coordenação",
+              "reassign": "Reatribuição",
+              "availability": "Disponibilidade",
+              "return_to_queue": "Devolução à fila",
+              "command": "Um comando de manutenção"
+            },
+            "replaced": "substitui: {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "Escolha uma pessoa",
+          "no_addable": "Todo mundo aqui já coordena esta área.",
+          "add": "Adicionar",
+          "empty": "Ninguém coordena esta área ainda.",
+          "remove_aria": "Remover {name} da coordenação",
+          "note": "Coordenar uma área também dá acesso a todos os projetos que ela cobre, e tirar a coordenação retira esse acesso.",
+          "toast": {
+            "added": "Coordenação atribuída.",
+            "not_added": "Não foi possível atribuir a coordenação.",
+            "removed": "Coordenação removida.",
+            "not_removed": "Não foi possível remover a coordenação."
+          }
+        },
+        "policy": {
+          "title": "Como esta área distribui o trabalho",
+          "project_title": "Apenas em {project}",
+          "description": "O padrão decide o que acontece quando o trabalho chega; a lista de permitidos decide o que se pode pedir.",
+          "default_mode": "Padrão",
+          "allowed_modes": "Permitidos",
+          "default_must_be_allowed": "O padrão precisa ser um dos permitidos.",
+          "sla_hours": "Horas até contar como atraso",
+          "max_open": "Máximo de itens em aberto por pessoa",
+          "no_limit": "Sem limite"
+        },
+        "my_areas": {
+          "title": "Minhas áreas",
+          "description": "O que as áreas das quais você faz parte têm esperando, e o que você está carregando.",
+          "empty": "Você ainda não faz parte de nenhuma área."
         }
       },
       "projects": {

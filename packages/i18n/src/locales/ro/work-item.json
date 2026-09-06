@@ -281,8 +281,17 @@
         "queued": "Această zonă distribuie munca manual, așa că activitatea așteaptă.",
         "nobody_title": "Nimeni disponibil",
         "nobody": "Niciun membru al acestei zone nu are acces la acest proiect.",
-        "not_assigned": "Nu s-a atribuit"
-      }
+        "not_assigned": "Nu s-a atribuit",
+        "not_claimed": "Nu s-a putut prelua.",
+        "not_returned": "Nu s-a putut returna.",
+        "not_suspended": "Nu s-a putut pune în așteptare."
+      },
+      "actions": "Acțiuni",
+      "claim": "Preia",
+      "return": "Trimite în coada zonei",
+      "return_mine": "Dă-l înapoi",
+      "suspend": "Pune în așteptare",
+      "yours": "la tine"
     },
     "bulk_operations": {
       "mixed": "{property} (mixt)",

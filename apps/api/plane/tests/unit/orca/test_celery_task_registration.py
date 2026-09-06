@@ -34,10 +34,18 @@ TASK_MODULE = "plane.bgtasks.organizational_unit_task"
 DIRECTORY_TASK_NAME = "plane.bgtasks.organizational_directory_task.resolve_directory_identities"
 DIRECTORY_TASK_MODULE = "plane.bgtasks.organizational_directory_task"
 
+QUEUE_TASK_NAME = "plane.bgtasks.organizational_queue_task.sweep_assignment_sla"
+QUEUE_TASK_MODULE = "plane.bgtasks.organizational_queue_task"
+
 TASKS = [
     pytest.param(TASK_MODULE, TASK_NAME, id="reconcile_organizational_access"),
     pytest.param(DIRECTORY_TASK_MODULE, DIRECTORY_TASK_NAME, id="resolve_directory_identities"),
+    pytest.param(QUEUE_TASK_MODULE, QUEUE_TASK_NAME, id="sweep_assignment_sla"),
 ]
+
+# Every Orca task the beat publishes by name. Beat imports nothing, so a name
+# it publishes that no worker registers runs nowhere, silently, forever.
+SCHEDULED_TASK_NAMES = [DIRECTORY_TASK_NAME, QUEUE_TASK_NAME]
 
 
 @pytest.mark.unit
@@ -63,15 +71,16 @@ class TestOrganizationalTaskRegistration:
 
         assert task_name in celery_app.tasks
 
-    def test_the_beat_schedule_names_a_task_the_worker_registers(self):
+    @pytest.mark.parametrize("task_name", SCHEDULED_TASK_NAMES)
+    def test_the_beat_schedule_names_a_task_the_worker_registers(self, task_name):
         # Beat does not import anything; it publishes the configured name. If
         # the name in the schedule and the registered name ever drift apart,
-        # the hourly resolve runs nowhere and nothing reports it.
+        # the scheduled run happens nowhere and nothing reports it.
         scheduled = {entry["task"] for entry in celery_app.conf.beat_schedule.values()}
         celery_app.loader.import_default_modules()
 
-        assert DIRECTORY_TASK_NAME in scheduled
-        assert DIRECTORY_TASK_NAME in celery_app.tasks
+        assert task_name in scheduled
+        assert task_name in celery_app.tasks
 
     def test_the_registered_task_is_the_one_the_dispatcher_queues(self):
         # A name can be registered by a callable other than the one the

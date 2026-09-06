@@ -6,13 +6,21 @@
 
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import type {
+  IAssignmentCandidates,
+  IAssignmentDecisionEntry,
+  IAssignmentPolicy,
+  IAssignmentPolicyResolution,
   IIssueRouting,
   IOrganizationalUnit,
   IOrganizationalUnitAccessChange,
+  IOrganizationalUnitCoordinator,
   IOrganizationalUnitMembership,
   IOrganizationalUnitProject,
   IOrganizationalUnitWorkload,
+  IQueueCapabilities,
+  IQueueItem,
   IUserOrganizationalUnit,
+  TAssignmentPolicyPayload,
   TOrganizationalUnitAssignMode,
   TOrganizationalUnitMemberRole,
 } from "@plane/types";
@@ -25,8 +33,13 @@ export interface IOrganizationalUnitStore {
   membershipMap: Record<string, IOrganizationalUnitMembership[]>;
   projectMap: Record<string, IOrganizationalUnitProject[]>;
   workloadMap: Record<string, IOrganizationalUnitWorkload[]>;
+  queueByUnit: Record<string, IQueueItem[]>;
+  capabilitiesByUnit: Record<string, IQueueCapabilities>;
+  decisionsByUnit: Record<string, IAssignmentDecisionEntry[]>;
+  coordinatorsByUnit: Record<string, IOrganizationalUnitCoordinator[]>;
   myUnits: IUserOrganizationalUnit[] | null;
   loader: boolean;
+  queueLoader: boolean;
   /** `null` until the config endpoint answers; see `isEnabled`. */
   featureEnabled: boolean | null;
   // computed
@@ -37,6 +50,10 @@ export interface IOrganizationalUnitStore {
   getMembersByUnitId: (unitId: string) => IOrganizationalUnitMembership[];
   getProjectsByUnitId: (unitId: string) => IOrganizationalUnitProject[];
   getWorkloadByUnitId: (unitId: string) => IOrganizationalUnitWorkload[];
+  getQueueByUnitId: (unitId: string) => IQueueItem[];
+  getCapabilitiesByUnitId: (unitId: string) => IQueueCapabilities;
+  getDecisionsByUnitId: (unitId: string) => IAssignmentDecisionEntry[];
+  getCoordinatorsByUnitId: (unitId: string) => IOrganizationalUnitCoordinator[];
   // actions
   fetchConfig: (workspaceSlug: string) => Promise<boolean>;
   fetchUnits: (workspaceSlug: string) => Promise<IOrganizationalUnit[]>;
@@ -100,6 +117,51 @@ export interface IOrganizationalUnitStore {
     unitId: string
   ) => Promise<{ unit: IOrganizationalUnit; routing: IIssueRouting | null }>;
   clearIssueUnit: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
+  // the area's queue and the coordinator's actions (item 2.3)
+  fetchQueue: (
+    workspaceSlug: string,
+    unitId: string,
+    filters?: { routingState?: string; overdue?: boolean; projectId?: string; executorId?: string }
+  ) => Promise<IQueueItem[]>;
+  fetchDecisions: (workspaceSlug: string, unitId: string) => Promise<IAssignmentDecisionEntry[]>;
+  fetchCoordinators: (workspaceSlug: string, unitId: string) => Promise<IOrganizationalUnitCoordinator[]>;
+  addCoordinator: (workspaceSlug: string, unitId: string, memberId: string) => Promise<void>;
+  removeCoordinator: (workspaceSlug: string, unitId: string, coordinatorId: string) => Promise<void>;
+  fetchPolicy: (workspaceSlug: string, unitId: string, projectId?: string) => Promise<IAssignmentPolicyResolution>;
+  writePolicy: (
+    workspaceSlug: string,
+    unitId: string,
+    data: TAssignmentPolicyPayload,
+    projectId?: string
+  ) => Promise<IAssignmentPolicy>;
+  claim: (workspaceSlug: string, projectId: string, issueId: string, unitId?: string) => Promise<IIssueRouting>;
+  assign: (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    executorId: string,
+    options?: { unitId?: string; expectedDecisionId?: string | null; reason?: string }
+  ) => Promise<IIssueRouting>;
+  returnToQueue: (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    options?: { unitId?: string; reason?: string }
+  ) => Promise<IIssueRouting>;
+  suspendIssue: (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    options?: { unitId?: string; reason?: string }
+  ) => Promise<IIssueRouting>;
+  transferIssue: (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    toUnitId: string,
+    options?: { unitId?: string; reason?: string }
+  ) => Promise<IIssueRouting>;
+  fetchCandidates: (workspaceSlug: string, projectId: string, issueId: string) => Promise<IAssignmentCandidates>;
 }
 
 /**
@@ -113,8 +175,13 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
   membershipMap: Record<string, IOrganizationalUnitMembership[]> = {};
   projectMap: Record<string, IOrganizationalUnitProject[]> = {};
   workloadMap: Record<string, IOrganizationalUnitWorkload[]> = {};
+  queueByUnit: Record<string, IQueueItem[]> = {};
+  capabilitiesByUnit: Record<string, IQueueCapabilities> = {};
+  decisionsByUnit: Record<string, IAssignmentDecisionEntry[]> = {};
+  coordinatorsByUnit: Record<string, IOrganizationalUnitCoordinator[]> = {};
   myUnits: IUserOrganizationalUnit[] | null = null;
   loader = false;
+  queueLoader = false;
   featureEnabled: boolean | null = null;
 
   rootStore: CoreRootStore;
@@ -126,8 +193,13 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       membershipMap: observable,
       projectMap: observable,
       workloadMap: observable,
+      queueByUnit: observable,
+      capabilitiesByUnit: observable,
+      decisionsByUnit: observable,
+      coordinatorsByUnit: observable,
       myUnits: observable,
       loader: observable.ref,
+      queueLoader: observable.ref,
       featureEnabled: observable.ref,
       units: computed,
       isEnabled: computed,
@@ -148,6 +220,17 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       fetchWorkload: action,
       fetchMyUnits: action,
       assignIssueFromUnit: action,
+      fetchQueue: action,
+      fetchDecisions: action,
+      fetchCoordinators: action,
+      addCoordinator: action,
+      removeCoordinator: action,
+      writePolicy: action,
+      claim: action,
+      assign: action,
+      returnToQueue: action,
+      suspendIssue: action,
+      transferIssue: action,
     });
 
     this.rootStore = _rootStore;
@@ -195,6 +278,20 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
   getProjectsByUnitId = (unitId: string) => this.projectMap[unitId] ?? [];
 
   getWorkloadByUnitId = (unitId: string) => this.workloadMap[unitId] ?? [];
+
+  getQueueByUnitId = (unitId: string) => this.queueByUnit[unitId] ?? [];
+
+  /**
+   * @description What the reader may do with this area's queue. Nothing until
+   * the queue has been read once: assuming a capability the server has not
+   * granted would draw a button whose only outcome is a 403.
+   */
+  getCapabilitiesByUnitId = (unitId: string) =>
+    this.capabilitiesByUnit[unitId] ?? { can_claim: false, can_assign: false, can_return: false };
+
+  getDecisionsByUnitId = (unitId: string) => this.decisionsByUnit[unitId] ?? [];
+
+  getCoordinatorsByUnitId = (unitId: string) => this.coordinatorsByUnit[unitId] ?? [];
 
   fetchUnits = async (workspaceSlug: string) => {
     this.loader = true;
@@ -351,4 +448,154 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
 
   clearIssueUnit = async (workspaceSlug: string, projectId: string, issueId: string) =>
     this.service.clearIssueOrganizationalUnit(workspaceSlug, projectId, issueId);
+
+  // --- the area's queue and the coordinator's actions (item 2.3) ------------
+
+  /**
+   * @description Read the area's queue and remember what the reader may do
+   * with it. The filters are the server's, not this store's: which rows come
+   * back and in what order is a decision the API owns, so two surfaces reading
+   * the same queue cannot disagree about what "waiting" means.
+   */
+  fetchQueue = async (
+    workspaceSlug: string,
+    unitId: string,
+    filters?: { routingState?: string; overdue?: boolean; projectId?: string; executorId?: string }
+  ) => {
+    this.queueLoader = true;
+    try {
+      const response = await this.service.getQueue(workspaceSlug, unitId, filters);
+      runInAction(() => {
+        this.queueByUnit[unitId] = response.items;
+        this.capabilitiesByUnit[unitId] = response.capabilities;
+        this.queueLoader = false;
+      });
+      return response.items;
+    } catch (error) {
+      runInAction(() => {
+        this.queueLoader = false;
+      });
+      throw error;
+    }
+  };
+
+  fetchDecisions = async (workspaceSlug: string, unitId: string) => {
+    const response = await this.service.getDecisions(workspaceSlug, unitId);
+    runInAction(() => {
+      this.decisionsByUnit[unitId] = response.results ?? [];
+    });
+    return this.decisionsByUnit[unitId];
+  };
+
+  fetchCoordinators = async (workspaceSlug: string, unitId: string) => {
+    const response = await this.service.getCoordinators(workspaceSlug, unitId);
+    runInAction(() => {
+      this.coordinatorsByUnit[unitId] = response;
+    });
+    return response;
+  };
+
+  addCoordinator = async (workspaceSlug: string, unitId: string, memberId: string) => {
+    await this.service.addCoordinator(workspaceSlug, unitId, memberId);
+    // Refetched rather than patched in: appointing a coordinator reconciles
+    // native project access on the server, and the server's answer is the
+    // truth about what that left behind.
+    await this.fetchCoordinators(workspaceSlug, unitId);
+  };
+
+  removeCoordinator = async (workspaceSlug: string, unitId: string, coordinatorId: string) => {
+    await this.service.removeCoordinator(workspaceSlug, unitId, coordinatorId);
+    await this.fetchCoordinators(workspaceSlug, unitId);
+  };
+
+  /**
+   * @description The resolved policy, not the stored row: what *would* happen
+   * in this area, or in this project of it. Not cached, because the settings
+   * form reads it to fill itself in and a stale answer there would silently
+   * rewrite a policy somebody else just changed.
+   */
+  fetchPolicy = async (workspaceSlug: string, unitId: string, projectId?: string) =>
+    this.service.getPolicy(workspaceSlug, unitId, projectId);
+
+  writePolicy = async (workspaceSlug: string, unitId: string, data: TAssignmentPolicyPayload, projectId?: string) =>
+    this.service.writePolicy(workspaceSlug, unitId, data, projectId);
+
+  /**
+   * @description Each action answers with the item's new routing state, and
+   * each one refreshes the queue of the area it belongs to when the caller
+   * says which — an action taken from the queue has to leave the queue right.
+   */
+  private refreshQueue = async (workspaceSlug: string, unitId?: string) => {
+    if (!unitId) return;
+    try {
+      await this.fetchQueue(workspaceSlug, unitId);
+    } catch {
+      // A stale list is a worse outcome than a failed refresh, but not one
+      // worth failing the action the person just took: they saw it succeed.
+    }
+  };
+
+  claim = async (workspaceSlug: string, projectId: string, issueId: string, unitId?: string) => {
+    const response = await this.service.claimIssue(workspaceSlug, projectId, issueId);
+    await this.refreshQueue(workspaceSlug, unitId);
+    return response.routing;
+  };
+
+  assign = async (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    executorId: string,
+    options?: { unitId?: string; expectedDecisionId?: string | null; reason?: string }
+  ) => {
+    const response = await this.service.reassignIssue(workspaceSlug, projectId, issueId, executorId, {
+      reason: options?.reason,
+      expectedDecisionId: options?.expectedDecisionId,
+    });
+    await this.refreshQueue(workspaceSlug, options?.unitId);
+    return response.routing;
+  };
+
+  returnToQueue = async (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    options?: { unitId?: string; reason?: string }
+  ) => {
+    const response = await this.service.returnIssueToQueue(workspaceSlug, projectId, issueId, {
+      reason: options?.reason,
+    });
+    await this.refreshQueue(workspaceSlug, options?.unitId);
+    return response.routing;
+  };
+
+  suspendIssue = async (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    options?: { unitId?: string; reason?: string }
+  ) => {
+    const response = await this.service.suspendIssue(workspaceSlug, projectId, issueId, {
+      reason: options?.reason,
+    });
+    await this.refreshQueue(workspaceSlug, options?.unitId);
+    return response.routing;
+  };
+
+  transferIssue = async (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    toUnitId: string,
+    options?: { unitId?: string; reason?: string }
+  ) => {
+    const response = await this.service.transferIssueUnit(workspaceSlug, projectId, issueId, toUnitId, {
+      reason: options?.reason,
+    });
+    await this.refreshQueue(workspaceSlug, options?.unitId);
+    return response.routing;
+  };
+
+  fetchCandidates = async (workspaceSlug: string, projectId: string, issueId: string) =>
+    this.service.getCandidates(workspaceSlug, projectId, issueId);
 }

@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "Kişiler",
-          "back_aria": "Tüm alanlara dön"
+          "back_aria": "Tüm alanlara dön",
+          "tab_work": "İş",
+          "tab_coordinators": "Koordinatörler",
+          "tab_policy": "Politika"
         },
         "members": {
           "select_person": "Bir kişi seçin",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "Bu bir atama modu değil.",
           "policy_default_mode_not_allowed": "Varsayılan mod, izin verilen modlardan biri olmalı.",
           "policy_invalid_value": "Bu sınırlar pozitif tam sayı olmalı."
+        },
+        "work": {
+          "refresh": "Yenile",
+          "inbox_title": "Gelen kutusu",
+          "inbox_empty": "Bu alanda bekleyen bir şey yok.",
+          "in_progress_title": "Devam eden",
+          "in_progress_empty": "Burada kimse bir şey üzerinde çalışmıyor.",
+          "attention_title": "İlgi gerektiriyor",
+          "attention_empty": "İlgi gerektiren bir şey yok.",
+          "decisions_title": "Kararlar",
+          "decisions_empty": "Henüz kaydedilmiş bir karar yok.",
+          "nobody_on_it": "Henüz kimse",
+          "waiting_for": "{duration} bekliyor",
+          "overdue": "Gecikmiş",
+          "overdue_tooltip": "Bunu birine verme süresi geçti.",
+          "claim": "Üstlen",
+          "assign": "Şuna ata…",
+          "return": "Kuyruğa geri gönder",
+          "suspend": "Beklemeye al",
+          "transfer": "Başka bir alana taşı",
+          "reason_label": "Gerekçe",
+          "reason_placeholder": "İsteğe bağlı, kayıt için",
+          "state": {
+            "queued": "Bekliyor",
+            "assigned": "Atandı",
+            "allocation_failed": "Uygun kimse yok",
+            "suspended": "Beklemede"
+          },
+          "reason": {
+            "new_item": "Yeni öğe",
+            "awaiting_coordinator": "Koordinatör bekleniyor",
+            "awaiting_claim": "Birinin üstlenmesi bekleniyor",
+            "no_eligible_member": "Uygun kişi yok",
+            "executor_unavailable": "Kişi müsait olmaktan çıktı",
+            "manually_returned": "Elle geri gönderildi"
+          },
+          "toast": {
+            "claimed": "Artık sizde.",
+            "not_claimed": "Üstlenilemedi.",
+            "assigned": "Atandı.",
+            "not_assigned": "Atanamadı.",
+            "returned": "Kuyruğa geri döndü.",
+            "not_returned": "Geri gönderilemedi.",
+            "suspended": "Beklemeye alındı.",
+            "not_suspended": "Beklemeye alınamadı.",
+            "transferred": "Diğer alana taşındı.",
+            "not_transferred": "Taşınamadı."
+          },
+          "assign_modal": {
+            "title": "Bunu kim üstlenecek?",
+            "empty": "Bu alanda bu projedeki işi üstlenebilecek kimse yok.",
+            "load": "{total} açık · bu alanda {unit}",
+            "confirm": "Ata"
+          },
+          "excluded": {
+            "already_assigned": "Zaten bu öğede",
+            "not_a_project_member": "Bu projede değil",
+            "project_role_too_low": "Bu projede misafir",
+            "bot": "Otomasyon hesabı",
+            "at_max_open_items": "Açık öğe sınırında",
+            "other": "Şu anda uygun değil"
+          },
+          "transfer_modal": {
+            "title": "Başka bir alana taşı",
+            "select_area": "Bir alan seçin",
+            "no_target": "Bu projeyi kapsayan başka bir alan yok."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "Bir kişiye verildi",
+              "queued": "Kuyruğa alındı",
+              "allocation_failed": "Kimse üstlenemedi",
+              "suspended": "Beklemeye alındı",
+              "rejected": "Reddedildi"
+            },
+            "mode": {
+              "manual": "Koordinatör tarafından",
+              "self_claim": "Herkes kendisi üstlenir",
+              "least_loaded": "En az açık işi olana",
+              "explicit": "Doğrudan belirtildi"
+            },
+            "trigger": {
+              "public_api": "Bir entegrasyon",
+              "internal_api": "Uygulama",
+              "ui_claim": "Kişi üstlendi",
+              "ui_coordinator": "Koordinatör",
+              "reassign": "Yeniden atama",
+              "availability": "Uygunluk",
+              "return_to_queue": "Kuyruğa geri gönderme",
+              "command": "Bir bakım komutu"
+            },
+            "replaced": "şunun yerine geçer: {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "Bir kişi seçin",
+          "no_addable": "Buradaki herkes bu alanı zaten koordine ediyor.",
+          "add": "Ekle",
+          "empty": "Bu alanı henüz kimse koordine etmiyor.",
+          "remove_aria": "{name} kişisini koordinasyondan çıkar",
+          "note": "Bir alanı koordine etmek, o alanın kapsadığı tüm projelere erişim de verir; koordinasyonun kaldırılması bu erişimi geri alır.",
+          "toast": {
+            "added": "Koordinatör eklendi.",
+            "not_added": "Koordinatör eklenemedi.",
+            "removed": "Koordinasyon kaldırıldı.",
+            "not_removed": "Koordinasyon kaldırılamadı."
+          }
+        },
+        "policy": {
+          "title": "Bu alan işi nasıl dağıtır",
+          "project_title": "Yalnızca {project} içinde",
+          "description": "Varsayılan, iş geldiğinde ne olacağını belirler; izin verilenler listesi ise nelerin istenebileceğini.",
+          "default_mode": "Varsayılan",
+          "allowed_modes": "İzin verilen",
+          "default_must_be_allowed": "Varsayılan, izin verilenlerden biri olmalı.",
+          "sla_hours": "Kaç saat sonra geciktiği sayılır",
+          "max_open": "Kişi başına en fazla açık öğe",
+          "no_limit": "Sınırsız"
+        },
+        "my_areas": {
+          "title": "Alanlarım",
+          "description": "Dahil olduğunuz alanlarda ne bekliyor ve siz neyi taşıyorsunuz.",
+          "empty": "Henüz hiçbir alana dahil değilsiniz."
         }
       }
     },

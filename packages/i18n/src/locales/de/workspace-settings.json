@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "Personen",
-          "back_aria": "Zurück zu allen Bereichen"
+          "back_aria": "Zurück zu allen Bereichen",
+          "tab_work": "Arbeit",
+          "tab_coordinators": "Koordination",
+          "tab_policy": "Richtlinie"
         },
         "members": {
           "select_person": "Person auswählen",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "Das ist kein Zuweisungsmodus.",
           "policy_default_mode_not_allowed": "Der Standardmodus muss einer der erlaubten Modi sein.",
           "policy_invalid_value": "Diese Grenzwerte müssen positive ganze Zahlen sein."
+        },
+        "work": {
+          "refresh": "Aktualisieren",
+          "inbox_title": "Eingang",
+          "inbox_empty": "In diesem Bereich wartet nichts.",
+          "in_progress_title": "In Arbeit",
+          "in_progress_empty": "Hier arbeitet niemand an etwas.",
+          "attention_title": "Braucht Aufmerksamkeit",
+          "attention_empty": "Nichts braucht Aufmerksamkeit.",
+          "decisions_title": "Entscheidungen",
+          "decisions_empty": "Noch keine Entscheidungen erfasst.",
+          "nobody_on_it": "Noch niemand",
+          "waiting_for": "wartet seit {duration}",
+          "overdue": "Überfällig",
+          "overdue_tooltip": "Die Frist, das an jemanden zu übergeben, ist abgelaufen.",
+          "claim": "Übernehmen",
+          "assign": "Zuweisen an …",
+          "return": "Zurück in die Warteschlange",
+          "suspend": "Zurückstellen",
+          "transfer": "In einen anderen Bereich verschieben",
+          "reason_label": "Grund",
+          "reason_placeholder": "Optional, für die Nachvollziehbarkeit",
+          "state": {
+            "queued": "Wartet",
+            "assigned": "Zugewiesen",
+            "allocation_failed": "Niemand verfügbar",
+            "suspended": "Zurückgestellt"
+          },
+          "reason": {
+            "new_item": "Neues Element",
+            "awaiting_coordinator": "Wartet auf die Koordination",
+            "awaiting_claim": "Wartet darauf, dass es jemand übernimmt",
+            "no_eligible_member": "Niemand infrage kommend",
+            "executor_unavailable": "Die Person ist nicht mehr verfügbar",
+            "manually_returned": "Von Hand zurückgegeben"
+          },
+          "toast": {
+            "claimed": "Jetzt gehört es Ihnen.",
+            "not_claimed": "Konnte nicht übernommen werden.",
+            "assigned": "Zugewiesen.",
+            "not_assigned": "Konnte nicht zugewiesen werden.",
+            "returned": "Zurück in der Warteschlange.",
+            "not_returned": "Konnte nicht zurückgegeben werden.",
+            "suspended": "Zurückgestellt.",
+            "not_suspended": "Konnte nicht zurückgestellt werden.",
+            "transferred": "In den anderen Bereich verschoben.",
+            "not_transferred": "Konnte nicht verschoben werden."
+          },
+          "assign_modal": {
+            "title": "Wer übernimmt das?",
+            "empty": "Niemand in diesem Bereich kann Arbeit in diesem Projekt übernehmen.",
+            "load": "{total} offen · {unit} in diesem Bereich",
+            "confirm": "Zuweisen"
+          },
+          "excluded": {
+            "already_assigned": "Schon an diesem Element",
+            "not_a_project_member": "Nicht in diesem Projekt",
+            "project_role_too_low": "Nur Gast in diesem Projekt",
+            "bot": "Automatisierungskonto",
+            "at_max_open_items": "Am Limit offener Elemente",
+            "other": "Derzeit nicht infrage kommend"
+          },
+          "transfer_modal": {
+            "title": "In einen anderen Bereich verschieben",
+            "select_area": "Bereich wählen",
+            "no_target": "Kein anderer Bereich deckt dieses Projekt ab."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "An eine Person übergeben",
+              "queued": "In die Warteschlange gestellt",
+              "allocation_failed": "Niemand konnte es übernehmen",
+              "suspended": "Zurückgestellt",
+              "rejected": "Abgelehnt"
+            },
+            "mode": {
+              "manual": "Durch die Koordination",
+              "self_claim": "Jede Person nimmt sich, was sie kann",
+              "least_loaded": "An die Person mit den wenigsten offenen Elementen",
+              "explicit": "Direkt benannt"
+            },
+            "trigger": {
+              "public_api": "Eine Integration",
+              "internal_api": "Die Anwendung",
+              "ui_claim": "Von der Person übernommen",
+              "ui_coordinator": "Die Koordination",
+              "reassign": "Neuzuweisung",
+              "availability": "Verfügbarkeit",
+              "return_to_queue": "Rückgabe in die Warteschlange",
+              "command": "Ein Wartungsbefehl"
+            },
+            "replaced": "ersetzt: {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "Person wählen",
+          "no_addable": "Alle hier koordinieren diesen Bereich bereits.",
+          "add": "Hinzufügen",
+          "empty": "Diesen Bereich koordiniert noch niemand.",
+          "remove_aria": "{name} aus der Koordination entfernen",
+          "note": "Die Koordination eines Bereichs gewährt auch Zugriff auf alle Projekte, die er abdeckt; wird sie entzogen, entfällt der Zugriff wieder.",
+          "toast": {
+            "added": "Koordination vergeben.",
+            "not_added": "Koordination konnte nicht vergeben werden.",
+            "removed": "Koordination entzogen.",
+            "not_removed": "Koordination konnte nicht entzogen werden."
+          }
+        },
+        "policy": {
+          "title": "Wie dieser Bereich Arbeit verteilt",
+          "project_title": "Nur in {project}",
+          "description": "Der Standard entscheidet, was bei eingehender Arbeit geschieht; die Liste der erlaubten Modi entscheidet, was überhaupt angefordert werden darf.",
+          "default_mode": "Standard",
+          "allowed_modes": "Erlaubt",
+          "default_must_be_allowed": "Der Standard muss einer der erlaubten sein.",
+          "sla_hours": "Stunden, bis es als verspätet gilt",
+          "max_open": "Höchstzahl offener Elemente pro Person",
+          "no_limit": "Kein Limit"
+        },
+        "my_areas": {
+          "title": "Meine Bereiche",
+          "description": "Was in Ihren Bereichen wartet und was Sie selbst tragen.",
+          "empty": "Sie gehören noch zu keinem Bereich."
         }
       }
     },

@@ -281,8 +281,17 @@
         "queued": "このエリアは作業を手動で割り当てるため、この作業項目は待機中です。",
         "nobody_title": "割り当て可能なメンバーがいません",
         "nobody": "このエリアのメンバーには、このプロジェクトへのアクセス権を持つ人がいません。",
-        "not_assigned": "割り当てできませんでした"
-      }
+        "not_assigned": "割り当てできませんでした",
+        "not_claimed": "引き受けられませんでした。",
+        "not_returned": "キューに戻せませんでした。",
+        "not_suspended": "保留にできませんでした。"
+      },
+      "actions": "操作",
+      "claim": "引き受ける",
+      "return": "エリアのキューに戻す",
+      "return_mine": "自分の担当から外す",
+      "suspend": "保留にする",
+      "yours": "あなたの担当"
     },
     "bulk_operations": {
       "mixed": "{property}（混在）",

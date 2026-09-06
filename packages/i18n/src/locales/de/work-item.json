@@ -281,8 +281,17 @@
         "queued": "Dieser Bereich verteilt Arbeit manuell, daher wartet das Arbeitselement.",
         "nobody_title": "Niemand verfügbar",
         "nobody": "Kein Mitglied dieses Bereichs hat Zugriff auf dieses Projekt.",
-        "not_assigned": "Nicht zugewiesen"
-      }
+        "not_assigned": "Nicht zugewiesen",
+        "not_claimed": "Konnte nicht übernommen werden.",
+        "not_returned": "Konnte nicht zurückgegeben werden.",
+        "not_suspended": "Konnte nicht zurückgestellt werden."
+      },
+      "actions": "Aktionen",
+      "claim": "Übernehmen",
+      "return": "Zurück in die Warteschlange des Bereichs",
+      "return_mine": "Zurückgeben",
+      "suspend": "Zurückstellen",
+      "yours": "bei Ihnen"
     },
     "bulk_operations": {
       "mixed": "{property} (gemischt)",

@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "Persone",
-          "back_aria": "Torna a tutte le aree"
+          "back_aria": "Torna a tutte le aree",
+          "tab_work": "Lavoro",
+          "tab_coordinators": "Coordinamento",
+          "tab_policy": "Criterio"
         },
         "members": {
           "select_person": "Selezioni una persona",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "Questa non è una modalità di assegnazione.",
           "policy_default_mode_not_allowed": "La modalità predefinita deve essere una di quelle consentite.",
           "policy_invalid_value": "Questi limiti devono essere numeri interi positivi."
+        },
+        "work": {
+          "refresh": "Aggiorna",
+          "inbox_title": "In arrivo",
+          "inbox_empty": "Non c’è nulla in attesa in quest’area.",
+          "in_progress_title": "In corso",
+          "in_progress_empty": "Qui nessuno sta lavorando a nulla.",
+          "attention_title": "Richiede attenzione",
+          "attention_empty": "Niente richiede attenzione.",
+          "decisions_title": "Decisioni",
+          "decisions_empty": "Nessuna decisione registrata finora.",
+          "nobody_on_it": "Ancora nessuno",
+          "waiting_for": "in attesa da {duration}",
+          "overdue": "In ritardo",
+          "overdue_tooltip": "È scaduto il termine per affidarlo a qualcuno.",
+          "claim": "Prendi in carico",
+          "assign": "Assegna a…",
+          "return": "Rimetti in coda",
+          "suspend": "Metti in sospeso",
+          "transfer": "Sposta in un’altra area",
+          "reason_label": "Motivo",
+          "reason_placeholder": "Facoltativo, per lo storico",
+          "state": {
+            "queued": "In attesa",
+            "assigned": "Assegnato",
+            "allocation_failed": "Nessuno disponibile",
+            "suspended": "Sospeso"
+          },
+          "reason": {
+            "new_item": "Nuovo elemento",
+            "awaiting_coordinator": "In attesa del coordinamento",
+            "awaiting_claim": "In attesa che qualcuno lo prenda",
+            "no_eligible_member": "Nessuno idoneo",
+            "executor_unavailable": "La persona non è più disponibile",
+            "manually_returned": "Rimesso in coda a mano"
+          },
+          "toast": {
+            "claimed": "Ora è tuo.",
+            "not_claimed": "Non è stato possibile prenderlo.",
+            "assigned": "Assegnato.",
+            "not_assigned": "Non è stato possibile assegnarlo.",
+            "returned": "Di nuovo in coda.",
+            "not_returned": "Non è stato possibile rimetterlo in coda.",
+            "suspended": "Sospeso.",
+            "not_suspended": "Non è stato possibile sospenderlo.",
+            "transferred": "Spostato nell’altra area.",
+            "not_transferred": "Non è stato possibile spostarlo."
+          },
+          "assign_modal": {
+            "title": "Chi se ne occupa?",
+            "empty": "Nessuno in quest’area può prendere lavoro in questo progetto.",
+            "load": "{total} aperti · {unit} in quest’area",
+            "confirm": "Assegna"
+          },
+          "excluded": {
+            "already_assigned": "Già su questo elemento",
+            "not_a_project_member": "Non è in questo progetto",
+            "project_role_too_low": "È ospite in questo progetto",
+            "bot": "Account di automazione",
+            "at_max_open_items": "Al limite di elementi aperti",
+            "other": "Al momento non idoneo"
+          },
+          "transfer_modal": {
+            "title": "Sposta in un’altra area",
+            "select_area": "Scegli un’area",
+            "no_target": "Nessun’altra area copre questo progetto."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "Affidato a una persona",
+              "queued": "Messo in coda",
+              "allocation_failed": "Nessuno ha potuto prenderlo",
+              "suspended": "Sospeso",
+              "rejected": "Rifiutato"
+            },
+            "mode": {
+              "manual": "Dal coordinamento",
+              "self_claim": "Ognuno prende ciò che può",
+              "least_loaded": "A chi ha meno elementi aperti",
+              "explicit": "Indicato direttamente"
+            },
+            "trigger": {
+              "public_api": "Un’integrazione",
+              "internal_api": "L’applicazione",
+              "ui_claim": "Preso dalla persona",
+              "ui_coordinator": "Il coordinamento",
+              "reassign": "Riassegnazione",
+              "availability": "Disponibilità",
+              "return_to_queue": "Rimessa in coda",
+              "command": "Un comando di manutenzione"
+            },
+            "replaced": "sostituisce: {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "Scegli una persona",
+          "no_addable": "Qui coordinano già tutti quest’area.",
+          "add": "Aggiungi",
+          "empty": "Nessuno coordina ancora quest’area.",
+          "remove_aria": "Rimuovi {name} dal coordinamento",
+          "note": "Coordinare un’area dà anche accesso a tutti i progetti che copre, e togliere il coordinamento revoca quell’accesso.",
+          "toast": {
+            "added": "Coordinamento assegnato.",
+            "not_added": "Non è stato possibile assegnare il coordinamento.",
+            "removed": "Coordinamento rimosso.",
+            "not_removed": "Non è stato possibile rimuovere il coordinamento."
+          }
+        },
+        "policy": {
+          "title": "Come quest’area distribuisce il lavoro",
+          "project_title": "Solo in {project}",
+          "description": "L’impostazione predefinita decide cosa succede quando arriva il lavoro; l’elenco dei modi consentiti decide cosa si può chiedere.",
+          "default_mode": "Predefinito",
+          "allowed_modes": "Consentiti",
+          "default_must_be_allowed": "Il predefinito deve essere uno di quelli consentiti.",
+          "sla_hours": "Ore prima che risulti in ritardo",
+          "max_open": "Massimo di elementi aperti a persona",
+          "no_limit": "Nessun limite"
+        },
+        "my_areas": {
+          "title": "Le mie aree",
+          "description": "Cosa è in attesa nelle aree di cui fai parte, e cosa stai portando tu.",
+          "empty": "Non fai ancora parte di nessun’area."
         }
       }
     },

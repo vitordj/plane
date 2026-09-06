@@ -281,8 +281,17 @@
         "queued": "Ce domaine répartit le travail à la main ; l’élément de travail est donc en attente.",
         "nobody_title": "Aucune personne disponible",
         "nobody": "Aucun membre de ce domaine n’a accès à ce projet.",
-        "not_assigned": "Non assigné"
-      }
+        "not_assigned": "Non assigné",
+        "not_claimed": "Impossible de le prendre.",
+        "not_returned": "Impossible de le remettre en file.",
+        "not_suspended": "Impossible de le mettre en attente."
+      },
+      "actions": "Actions",
+      "claim": "Prendre en charge",
+      "return": "Remettre dans la file de la zone",
+      "return_mine": "Le rendre",
+      "suspend": "Mettre en attente",
+      "yours": "à vous"
     },
     "bulk_operations": {
       "mixed": "{property} (mixte)",

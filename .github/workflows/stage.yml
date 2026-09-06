@@ -309,6 +309,14 @@ jobs:
       - name: Run Type Checks
         run: pnpm check:types
 
+      # The web app's own logic, which nothing else in this pipeline exercises:
+      # the queue store's decisions about what it remembers, what it refuses to
+      # assume before the server has answered, and what an action refreshes
+      # (item 2.3). Scoped to `web` because it is the only app with a `test`
+      # script that runs without a browser.
+      - name: Run Web Unit Tests
+        run: pnpm turbo run test --filter=web
+
   # ---------------------------------------------------------------------------
   # Backend tests. The Orca organizational layer materializes native
   # ProjectMember rows, so its tests assert against real rows in a real

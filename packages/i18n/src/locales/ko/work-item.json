@@ -281,8 +281,17 @@
         "queued": "이 영역은 작업을 수동으로 배정하므로 이 작업 항목은 대기 중입니다.",
         "nobody_title": "할당 가능한 멤버가 없습니다",
         "nobody": "이 영역의 멤버 중 이 프로젝트에 접근할 수 있는 사람이 없습니다.",
-        "not_assigned": "할당되지 않았습니다"
-      }
+        "not_assigned": "할당되지 않았습니다",
+        "not_claimed": "맡을 수 없었습니다.",
+        "not_returned": "되돌리지 못했습니다.",
+        "not_suspended": "보류로 두지 못했습니다."
+      },
+      "actions": "작업",
+      "claim": "맡기",
+      "return": "영역 대기열로 되돌리기",
+      "return_mine": "다시 넘기기",
+      "suspend": "보류로 두기",
+      "yours": "내 담당"
     },
     "bulk_operations": {
       "mixed": "{property}(혼합)",

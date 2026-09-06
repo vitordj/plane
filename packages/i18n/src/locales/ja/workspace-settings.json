@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "メンバー",
-          "back_aria": "すべてのエリアに戻る"
+          "back_aria": "すべてのエリアに戻る",
+          "tab_work": "作業",
+          "tab_coordinators": "コーディネーター",
+          "tab_policy": "ポリシー"
         },
         "members": {
           "select_person": "メンバーを選択",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "それは割り当てモードではありません。",
           "policy_default_mode_not_allowed": "既定のモードは、許可されたモードのいずれかである必要があります。",
           "policy_invalid_value": "これらの上限は正の整数である必要があります。"
+        },
+        "work": {
+          "refresh": "更新",
+          "inbox_title": "受信トレイ",
+          "inbox_empty": "このエリアで待っている作業はありません。",
+          "in_progress_title": "進行中",
+          "in_progress_empty": "ここで作業している人はいません。",
+          "attention_title": "要対応",
+          "attention_empty": "対応が必要なものはありません。",
+          "decisions_title": "決定履歴",
+          "decisions_empty": "まだ記録された決定はありません。",
+          "nobody_on_it": "担当者なし",
+          "waiting_for": "{duration} 待機中",
+          "overdue": "期限超過",
+          "overdue_tooltip": "誰かに割り当てる期限を過ぎています。",
+          "claim": "引き受ける",
+          "assign": "割り当て…",
+          "return": "キューに戻す",
+          "suspend": "保留にする",
+          "transfer": "別のエリアへ移す",
+          "reason_label": "理由",
+          "reason_placeholder": "任意。記録として残ります",
+          "state": {
+            "queued": "待機中",
+            "assigned": "割り当て済み",
+            "allocation_failed": "対象者なし",
+            "suspended": "保留中"
+          },
+          "reason": {
+            "new_item": "新規の作業",
+            "awaiting_coordinator": "コーディネーター待ち",
+            "awaiting_claim": "誰かが引き受けるのを待っています",
+            "no_eligible_member": "条件を満たす人がいません",
+            "executor_unavailable": "担当者が対応できなくなりました",
+            "manually_returned": "手動で戻されました"
+          },
+          "toast": {
+            "claimed": "あなたの担当になりました。",
+            "not_claimed": "引き受けられませんでした。",
+            "assigned": "割り当てました。",
+            "not_assigned": "割り当てできませんでした。",
+            "returned": "キューに戻しました。",
+            "not_returned": "キューに戻せませんでした。",
+            "suspended": "保留にしました。",
+            "not_suspended": "保留にできませんでした。",
+            "transferred": "別のエリアへ移しました。",
+            "not_transferred": "移せませんでした。"
+          },
+          "assign_modal": {
+            "title": "誰が担当しますか？",
+            "empty": "このエリアには、このプロジェクトの作業を引き受けられる人がいません。",
+            "load": "未完了 {total} 件・このエリアで {unit} 件",
+            "confirm": "割り当て"
+          },
+          "excluded": {
+            "already_assigned": "すでにこの作業に参加しています",
+            "not_a_project_member": "このプロジェクトのメンバーではありません",
+            "project_role_too_low": "このプロジェクトではゲストです",
+            "bot": "自動化アカウント",
+            "at_max_open_items": "未完了件数の上限に達しています",
+            "other": "現在は対象外です"
+          },
+          "transfer_modal": {
+            "title": "別のエリアへ移す",
+            "select_area": "エリアを選択",
+            "no_target": "このプロジェクトを担当できる他のエリアはありません。"
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "担当者に割り当て",
+              "queued": "キューに入れました",
+              "allocation_failed": "引き受けられる人がいませんでした",
+              "suspended": "保留にしました",
+              "rejected": "拒否されました"
+            },
+            "mode": {
+              "manual": "コーディネーターが割り当て",
+              "self_claim": "各自が引き受ける",
+              "least_loaded": "未完了が最も少ない人へ",
+              "explicit": "直接指名"
+            },
+            "trigger": {
+              "public_api": "外部連携",
+              "internal_api": "アプリ",
+              "ui_claim": "本人が引き受け",
+              "ui_coordinator": "コーディネーター",
+              "reassign": "再割り当て",
+              "availability": "稼働状況",
+              "return_to_queue": "キューへの差し戻し",
+              "command": "保守コマンド"
+            },
+            "replaced": "置き換え: {outcome}（{when}）"
+          }
+        },
+        "coordinators": {
+          "select_person": "担当者を選択",
+          "no_addable": "ここにいる全員がすでにこのエリアを担当しています。",
+          "add": "追加",
+          "empty": "このエリアの担当者はまだいません。",
+          "remove_aria": "{name} を担当から外す",
+          "note": "エリアを担当すると、そのエリアが受け持つすべてのプロジェクトへのアクセス権も付きます。担当から外すと、そのアクセス権も戻ります。",
+          "toast": {
+            "added": "担当者を追加しました。",
+            "not_added": "担当者を追加できませんでした。",
+            "removed": "担当を解除しました。",
+            "not_removed": "担当を解除できませんでした。"
+          }
+        },
+        "policy": {
+          "title": "このエリアの作業の配り方",
+          "project_title": "{project} のみ",
+          "description": "既定は、作業が届いたときに何が起きるかを決めます。許可リストは、何を要求できるかを決めます。",
+          "default_mode": "既定",
+          "allowed_modes": "許可する方式",
+          "default_must_be_allowed": "既定は、許可した方式のいずれかである必要があります。",
+          "sla_hours": "遅延とみなすまでの時間",
+          "max_open": "1 人あたりの未完了件数の上限",
+          "no_limit": "上限なし"
+        },
+        "my_areas": {
+          "title": "自分のエリア",
+          "description": "所属するエリアで待っている作業と、あなたが抱えている作業です。",
+          "empty": "まだどのエリアにも所属していません。"
         }
       }
     },

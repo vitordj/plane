@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "Orang",
-          "back_aria": "Kembali ke semua area"
+          "back_aria": "Kembali ke semua area",
+          "tab_work": "Pekerjaan",
+          "tab_coordinators": "Koordinator",
+          "tab_policy": "Kebijakan"
         },
         "members": {
           "select_person": "Pilih seseorang",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "Itu bukan mode penugasan.",
           "policy_default_mode_not_allowed": "Mode bawaan harus salah satu dari mode yang diizinkan.",
           "policy_invalid_value": "Batas ini harus berupa bilangan bulat positif."
+        },
+        "work": {
+          "refresh": "Muat ulang",
+          "inbox_title": "Kotak masuk",
+          "inbox_empty": "Tidak ada yang menunggu di area ini.",
+          "in_progress_title": "Sedang berjalan",
+          "in_progress_empty": "Tidak ada yang sedang mengerjakan apa pun di sini.",
+          "attention_title": "Perlu perhatian",
+          "attention_empty": "Tidak ada yang perlu perhatian.",
+          "decisions_title": "Keputusan",
+          "decisions_empty": "Belum ada keputusan yang tercatat.",
+          "nobody_on_it": "Belum ada siapa pun",
+          "waiting_for": "menunggu {duration}",
+          "overdue": "Terlambat",
+          "overdue_tooltip": "Sudah lewat tenggat untuk menyerahkan ini kepada seseorang.",
+          "claim": "Ambil",
+          "assign": "Tugaskan ke…",
+          "return": "Kembalikan ke antrean",
+          "suspend": "Tunda",
+          "transfer": "Pindahkan ke area lain",
+          "reason_label": "Alasan",
+          "reason_placeholder": "Opsional, untuk catatan",
+          "state": {
+            "queued": "Menunggu",
+            "assigned": "Ditugaskan",
+            "allocation_failed": "Tidak ada yang tersedia",
+            "suspended": "Ditunda"
+          },
+          "reason": {
+            "new_item": "Item baru",
+            "awaiting_coordinator": "Menunggu koordinator",
+            "awaiting_claim": "Menunggu seseorang mengambilnya",
+            "no_eligible_member": "Tidak ada yang memenuhi syarat",
+            "executor_unavailable": "Orang itu menjadi tidak tersedia",
+            "manually_returned": "Dikembalikan secara manual"
+          },
+          "toast": {
+            "claimed": "Sekarang milik Anda.",
+            "not_claimed": "Tidak bisa diambil.",
+            "assigned": "Ditugaskan.",
+            "not_assigned": "Tidak bisa ditugaskan.",
+            "returned": "Kembali ke antrean.",
+            "not_returned": "Tidak bisa dikembalikan.",
+            "suspended": "Ditunda.",
+            "not_suspended": "Tidak bisa ditunda.",
+            "transferred": "Dipindahkan ke area lain.",
+            "not_transferred": "Tidak bisa dipindahkan."
+          },
+          "assign_modal": {
+            "title": "Siapa yang mengambil ini?",
+            "empty": "Tidak ada orang di area ini yang bisa mengambil pekerjaan di proyek ini.",
+            "load": "{total} terbuka · {unit} di area ini",
+            "confirm": "Tugaskan"
+          },
+          "excluded": {
+            "already_assigned": "Sudah ada di item ini",
+            "not_a_project_member": "Tidak ada di proyek ini",
+            "project_role_too_low": "Tamu di proyek ini",
+            "bot": "Akun otomatisasi",
+            "at_max_open_items": "Sudah mencapai batas item terbuka",
+            "other": "Saat ini tidak memenuhi syarat"
+          },
+          "transfer_modal": {
+            "title": "Pindahkan ke area lain",
+            "select_area": "Pilih area",
+            "no_target": "Tidak ada area lain yang mencakup proyek ini."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "Diserahkan ke seseorang",
+              "queued": "Dimasukkan ke antrean",
+              "allocation_failed": "Tidak ada yang bisa mengambil",
+              "suspended": "Ditunda",
+              "rejected": "Ditolak"
+            },
+            "mode": {
+              "manual": "Oleh koordinator",
+              "self_claim": "Setiap orang mengambil sendiri",
+              "least_loaded": "Ke orang dengan item terbuka paling sedikit",
+              "explicit": "Ditunjuk langsung"
+            },
+            "trigger": {
+              "public_api": "Sebuah integrasi",
+              "internal_api": "Aplikasi",
+              "ui_claim": "Diambil oleh orangnya",
+              "ui_coordinator": "Koordinator",
+              "reassign": "Penugasan ulang",
+              "availability": "Ketersediaan",
+              "return_to_queue": "Dikembalikan ke antrean",
+              "command": "Perintah pemeliharaan"
+            },
+            "replaced": "menggantikan: {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "Pilih orang",
+          "no_addable": "Semua orang di sini sudah mengoordinasikan area ini.",
+          "add": "Tambah",
+          "empty": "Belum ada yang mengoordinasikan area ini.",
+          "remove_aria": "Hapus {name} dari koordinasi",
+          "note": "Mengoordinasikan sebuah area juga memberi akses ke semua proyek yang dicakupnya, dan mencabut koordinasi akan menarik akses itu kembali.",
+          "toast": {
+            "added": "Koordinator ditambahkan.",
+            "not_added": "Tidak bisa menambahkan koordinator.",
+            "removed": "Koordinasi dicabut.",
+            "not_removed": "Tidak bisa mencabut koordinasi."
+          }
+        },
+        "policy": {
+          "title": "Cara area ini membagikan pekerjaan",
+          "project_title": "Hanya di {project}",
+          "description": "Mode bawaan menentukan apa yang terjadi saat pekerjaan masuk; daftar yang diizinkan menentukan apa yang boleh diminta.",
+          "default_mode": "Bawaan",
+          "allowed_modes": "Diizinkan",
+          "default_must_be_allowed": "Bawaan harus salah satu dari yang diizinkan.",
+          "sla_hours": "Berapa jam sampai dihitung terlambat",
+          "max_open": "Maksimum item terbuka per orang",
+          "no_limit": "Tanpa batas"
+        },
+        "my_areas": {
+          "title": "Area saya",
+          "description": "Apa yang menunggu di area yang Anda ikuti, dan apa yang Anda bawa.",
+          "empty": "Anda belum tergabung di area mana pun."
         }
       }
     },

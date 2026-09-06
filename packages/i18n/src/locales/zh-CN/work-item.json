@@ -281,8 +281,17 @@
         "queued": "此区域手动分派工作，因此该工作项正在等待。",
         "nobody_title": "没有可用成员",
         "nobody": "此区域中没有成员可以访问此项目。",
-        "not_assigned": "未分配"
-      }
+        "not_assigned": "未分配",
+        "not_claimed": "无法认领。",
+        "not_returned": "无法退回。",
+        "not_suspended": "无法暂缓。"
+      },
+      "actions": "操作",
+      "claim": "认领",
+      "return": "退回区域队列",
+      "return_mine": "交回去",
+      "suspend": "暂缓",
+      "yours": "由您负责"
     },
     "bulk_operations": {
       "mixed": "{property}（多种）",

@@ -281,8 +281,17 @@
         "queued": "This area hands work out by hand, so the work item is waiting.",
         "nobody_title": "Nobody available",
         "nobody": "No member of this area has access to this project.",
-        "not_assigned": "Not assigned"
-      }
+        "not_assigned": "Not assigned",
+        "not_claimed": "Couldn't take it.",
+        "not_returned": "Couldn't return it.",
+        "not_suspended": "Couldn't put it on hold."
+      },
+      "actions": "Actions",
+      "claim": "Take it",
+      "return": "Return to the area's queue",
+      "return_mine": "Hand it back",
+      "suspend": "Put on hold",
+      "yours": "yours"
     },
     "bulk_operations": {
       "selected": "{count, plural, one {# selected} other {# selected}}",

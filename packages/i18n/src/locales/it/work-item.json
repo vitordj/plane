@@ -281,8 +281,17 @@
         "queued": "Quest'area distribuisce il lavoro a mano, quindi l'elemento di lavoro resta in attesa.",
         "nobody_title": "Nessuno disponibile",
         "nobody": "Nessun membro di quest'area ha accesso a questo progetto.",
-        "not_assigned": "Non assegnato"
-      }
+        "not_assigned": "Non assegnato",
+        "not_claimed": "Non è stato possibile prenderlo.",
+        "not_returned": "Non è stato possibile rimetterlo in coda.",
+        "not_suspended": "Non è stato possibile sospenderlo."
+      },
+      "actions": "Azioni",
+      "claim": "Prendi in carico",
+      "return": "Rimetti nella coda dell’area",
+      "return_mine": "Restituiscilo",
+      "suspend": "Metti in sospeso",
+      "yours": "tuo"
     },
     "bulk_operations": {
       "mixed": "{property} (misto)",

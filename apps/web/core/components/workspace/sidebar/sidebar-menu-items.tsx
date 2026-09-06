@@ -19,6 +19,7 @@ import { useTranslation } from "@plane/i18n";
 import { ChevronRightIcon } from "@plane/propel/icons";
 import { cn } from "@plane/utils";
 // components
+import { MyAreasSidebarItem } from "@/components/orca/organizational-units";
 import { SidebarNavItem } from "@/components/sidebar/sidebar-navigation";
 // store hooks
 import { useAppTheme } from "@/hooks/store/use-app-theme";
@@ -157,6 +158,9 @@ export const SidebarMenuItems = observer(function SidebarMenuItems() {
                   // oxlint-disable-next-line react/no-array-index-key
                   <SidebarItemBase key={`dynamic_${_index}`} item={item} />
                 ))}
+                {/* Fork addition (Orca): the areas this person belongs to.
+                    Renders itself away for anybody who belongs to none. */}
+                <MyAreasSidebarItem />
                 <SidebarNavItem>
                   <button
                     type="button"

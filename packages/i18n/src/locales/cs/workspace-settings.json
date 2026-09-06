@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "Lidé",
-          "back_aria": "Zpět na všechny oblasti"
+          "back_aria": "Zpět na všechny oblasti",
+          "tab_work": "Práce",
+          "tab_coordinators": "Koordinátoři",
+          "tab_policy": "Pravidla"
         },
         "members": {
           "select_person": "Vyberte osobu",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "To není režim přidělování.",
           "policy_default_mode_not_allowed": "Výchozí režim musí být jedním z povolených režimů.",
           "policy_invalid_value": "Tyto limity musí být kladná celá čísla."
+        },
+        "work": {
+          "refresh": "Obnovit",
+          "inbox_title": "Doručené",
+          "inbox_empty": "V této oblasti nic nečeká.",
+          "in_progress_title": "Probíhá",
+          "in_progress_empty": "Nikdo tu na ničem nepracuje.",
+          "attention_title": "Vyžaduje pozornost",
+          "attention_empty": "Nic nevyžaduje pozornost.",
+          "decisions_title": "Rozhodnutí",
+          "decisions_empty": "Zatím nejsou zaznamenána žádná rozhodnutí.",
+          "nobody_on_it": "Zatím nikdo",
+          "waiting_for": "čeká {duration}",
+          "overdue": "Po termínu",
+          "overdue_tooltip": "Uplynula lhůta pro předání někomu.",
+          "claim": "Vzít si",
+          "assign": "Přidělit…",
+          "return": "Vrátit do fronty",
+          "suspend": "Pozastavit",
+          "transfer": "Předat jiné oblasti",
+          "reason_label": "Důvod",
+          "reason_placeholder": "Nepovinné, zůstane v historii",
+          "state": {
+            "queued": "Čeká",
+            "assigned": "Přiděleno",
+            "allocation_failed": "Nikdo k dispozici",
+            "suspended": "Pozastaveno"
+          },
+          "reason": {
+            "new_item": "Nová položka",
+            "awaiting_coordinator": "Čeká na koordinátora",
+            "awaiting_claim": "Čeká, až si to někdo vezme",
+            "no_eligible_member": "Nikdo nesplňuje podmínky",
+            "executor_unavailable": "Tato osoba přestala být dostupná",
+            "manually_returned": "Ručně vráceno"
+          },
+          "toast": {
+            "claimed": "Teď je to vaše.",
+            "not_claimed": "Nepodařilo se to vzít.",
+            "assigned": "Přiděleno.",
+            "not_assigned": "Nepodařilo se přidělit.",
+            "returned": "Zpět ve frontě.",
+            "not_returned": "Nepodařilo se vrátit.",
+            "suspended": "Pozastaveno.",
+            "not_suspended": "Nepodařilo se pozastavit.",
+            "transferred": "Předáno jiné oblasti.",
+            "not_transferred": "Nepodařilo se předat."
+          },
+          "assign_modal": {
+            "title": "Kdo si to vezme?",
+            "empty": "Nikdo v této oblasti si nemůže vzít práci v tomto projektu.",
+            "load": "{total} otevřených · {unit} v této oblasti",
+            "confirm": "Přidělit"
+          },
+          "excluded": {
+            "already_assigned": "Už u této položky",
+            "not_a_project_member": "Není v tomto projektu",
+            "project_role_too_low": "V tomto projektu host",
+            "bot": "Účet automatizace",
+            "at_max_open_items": "Na limitu otevřených položek",
+            "other": "Nyní nesplňuje podmínky"
+          },
+          "transfer_modal": {
+            "title": "Předat jiné oblasti",
+            "select_area": "Vyberte oblast",
+            "no_target": "Žádná jiná oblast tento projekt nepokrývá."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "Předáno osobě",
+              "queued": "Zařazeno do fronty",
+              "allocation_failed": "Nikdo si to nemohl vzít",
+              "suspended": "Pozastaveno",
+              "rejected": "Odmítnuto"
+            },
+            "mode": {
+              "manual": "Koordinátorem",
+              "self_claim": "Každý si vezme sám",
+              "least_loaded": "Tomu, kdo má nejméně otevřených",
+              "explicit": "Přímo určeno"
+            },
+            "trigger": {
+              "public_api": "Integrace",
+              "internal_api": "Aplikace",
+              "ui_claim": "Vzato osobou",
+              "ui_coordinator": "Koordinátor",
+              "reassign": "Přeřazení",
+              "availability": "Dostupnost",
+              "return_to_queue": "Vrácení do fronty",
+              "command": "Servisní příkaz"
+            },
+            "replaced": "nahrazuje: {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "Vyberte osobu",
+          "no_addable": "Všichni zde už tuto oblast koordinují.",
+          "add": "Přidat",
+          "empty": "Tuto oblast zatím nikdo nekoordinuje.",
+          "remove_aria": "Odebrat {name} z koordinace",
+          "note": "Koordinace oblasti také uděluje přístup ke všem projektům, které pokrývá; odebrání koordinace tento přístup vezme zpět.",
+          "toast": {
+            "added": "Koordinátor přidán.",
+            "not_added": "Koordinátora se nepodařilo přidat.",
+            "removed": "Koordinace odebrána.",
+            "not_removed": "Koordinaci se nepodařilo odebrat."
+          }
+        },
+        "policy": {
+          "title": "Jak tato oblast rozděluje práci",
+          "project_title": "Jen v {project}",
+          "description": "Výchozí režim rozhoduje, co se stane s příchozí prací; seznam povolených rozhoduje, o co lze vůbec požádat.",
+          "default_mode": "Výchozí",
+          "allowed_modes": "Povolené",
+          "default_must_be_allowed": "Výchozí musí být jedním z povolených.",
+          "sla_hours": "Hodiny, než se to počítá jako zpoždění",
+          "max_open": "Nejvíce otevřených položek na osobu",
+          "no_limit": "Bez limitu"
+        },
+        "my_areas": {
+          "title": "Moje oblasti",
+          "description": "Co čeká v oblastech, do kterých patříte, a co nesete vy.",
+          "empty": "Zatím nepatříte do žádné oblasti."
         }
       }
     },

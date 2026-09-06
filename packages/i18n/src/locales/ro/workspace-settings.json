@@ -569,7 +569,10 @@
         },
         "detail": {
           "tab_people": "Persoane",
-          "back_aria": "Înapoi la toate zonele"
+          "back_aria": "Înapoi la toate zonele",
+          "tab_work": "Lucru",
+          "tab_coordinators": "Coordonatori",
+          "tab_policy": "Politică"
         },
         "members": {
           "select_person": "Selectați o persoană",
@@ -703,6 +706,129 @@
           "policy_invalid_mode": "Acesta nu este un mod de atribuire.",
           "policy_default_mode_not_allowed": "Modul implicit trebuie să fie unul dintre modurile permise.",
           "policy_invalid_value": "Aceste limite trebuie să fie numere întregi pozitive."
+        },
+        "work": {
+          "refresh": "Reîmprospătează",
+          "inbox_title": "Intrări",
+          "inbox_empty": "Nu așteaptă nimic în această zonă.",
+          "in_progress_title": "În desfășurare",
+          "in_progress_empty": "Nimeni nu lucrează la nimic aici.",
+          "attention_title": "Necesită atenție",
+          "attention_empty": "Nimic nu necesită atenție.",
+          "decisions_title": "Decizii",
+          "decisions_empty": "Nu s-a înregistrat nicio decizie încă.",
+          "nobody_on_it": "Încă nimeni",
+          "waiting_for": "așteaptă de {duration}",
+          "overdue": "Întârziat",
+          "overdue_tooltip": "A trecut termenul pentru a-l da cuiva.",
+          "claim": "Preia",
+          "assign": "Atribuie…",
+          "return": "Trimite înapoi în coadă",
+          "suspend": "Pune în așteptare",
+          "transfer": "Mută în altă zonă",
+          "reason_label": "Motiv",
+          "reason_placeholder": "Opțional, pentru istoric",
+          "state": {
+            "queued": "În așteptare",
+            "assigned": "Atribuit",
+            "allocation_failed": "Nimeni disponibil",
+            "suspended": "În așteptare"
+          },
+          "reason": {
+            "new_item": "Element nou",
+            "awaiting_coordinator": "Așteaptă coordonatorul",
+            "awaiting_claim": "Așteaptă să fie preluat",
+            "no_eligible_member": "Nimeni eligibil",
+            "executor_unavailable": "Persoana a devenit indisponibilă",
+            "manually_returned": "Returnat manual"
+          },
+          "toast": {
+            "claimed": "Acum este al tău.",
+            "not_claimed": "Nu s-a putut prelua.",
+            "assigned": "Atribuit.",
+            "not_assigned": "Nu s-a putut atribui.",
+            "returned": "Înapoi în coadă.",
+            "not_returned": "Nu s-a putut returna.",
+            "suspended": "Pus în așteptare.",
+            "not_suspended": "Nu s-a putut pune în așteptare.",
+            "transferred": "Mutat în cealaltă zonă.",
+            "not_transferred": "Nu s-a putut muta."
+          },
+          "assign_modal": {
+            "title": "Cine preia?",
+            "empty": "Nimeni din această zonă nu poate prelua lucru în acest proiect.",
+            "load": "{total} deschise · {unit} în această zonă",
+            "confirm": "Atribuie"
+          },
+          "excluded": {
+            "already_assigned": "Deja pe acest element",
+            "not_a_project_member": "Nu face parte din acest proiect",
+            "project_role_too_low": "Invitat în acest proiect",
+            "bot": "Cont de automatizare",
+            "at_max_open_items": "La limita elementelor deschise",
+            "other": "Momentan neeligibil"
+          },
+          "transfer_modal": {
+            "title": "Mută în altă zonă",
+            "select_area": "Alege o zonă",
+            "no_target": "Nicio altă zonă nu acoperă acest proiect."
+          },
+          "decision": {
+            "outcome": {
+              "assigned": "Predat unei persoane",
+              "queued": "Pus în coadă",
+              "allocation_failed": "Nimeni nu a putut prelua",
+              "suspended": "Pus în așteptare",
+              "rejected": "Refuzat"
+            },
+            "mode": {
+              "manual": "De către coordonator",
+              "self_claim": "Fiecare preia singur",
+              "least_loaded": "Celui cu cele mai puține elemente deschise",
+              "explicit": "Indicat direct"
+            },
+            "trigger": {
+              "public_api": "O integrare",
+              "internal_api": "Aplicația",
+              "ui_claim": "Preluat de persoană",
+              "ui_coordinator": "Coordonatorul",
+              "reassign": "Reatribuire",
+              "availability": "Disponibilitate",
+              "return_to_queue": "Returnare în coadă",
+              "command": "O comandă de întreținere"
+            },
+            "replaced": "înlocuiește: {outcome}, {when}"
+          }
+        },
+        "coordinators": {
+          "select_person": "Alege o persoană",
+          "no_addable": "Toți de aici coordonează deja această zonă.",
+          "add": "Adaugă",
+          "empty": "Nimeni nu coordonează încă această zonă.",
+          "remove_aria": "Elimină pe {name} din coordonare",
+          "note": "Coordonarea unei zone acordă și acces la toate proiectele pe care le acoperă, iar retragerea coordonării retrage acel acces.",
+          "toast": {
+            "added": "Coordonator adăugat.",
+            "not_added": "Nu s-a putut adăuga coordonatorul.",
+            "removed": "Coordonare retrasă.",
+            "not_removed": "Nu s-a putut retrage coordonarea."
+          }
+        },
+        "policy": {
+          "title": "Cum împarte această zonă munca",
+          "project_title": "Doar în {project}",
+          "description": "Modul implicit decide ce se întâmplă când sosește lucrul; lista permisă decide ce se poate cere.",
+          "default_mode": "Implicit",
+          "allowed_modes": "Permise",
+          "default_must_be_allowed": "Implicitul trebuie să fie unul dintre cele permise.",
+          "sla_hours": "Ore până să conteze ca întârziere",
+          "max_open": "Maxim de elemente deschise per persoană",
+          "no_limit": "Fără limită"
+        },
+        "my_areas": {
+          "title": "Zonele mele",
+          "description": "Ce așteaptă în zonele din care faci parte și ce duci tu.",
+          "empty": "Nu faci încă parte din nicio zonă."
         }
       }
     },

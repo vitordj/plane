@@ -102,6 +102,15 @@ app.conf.beat_schedule = {
         "task": "plane.bgtasks.organizational_directory_task.resolve_directory_identities",
         "schedule": crontab(minute=20),  # Every hour at :20
     },
+    # Orca: notice work that has waited past its assignment deadline. Nothing
+    # happens at the moment a deadline passes, so a breach can only be found by
+    # looking; fifteen minutes is short enough that an SLA measured in hours is
+    # reported usefully, and each item stays quiet for four hours after an
+    # alert so one nobody can place does not alert ninety-six times a day.
+    "check-every-fifteen-minutes-for-overdue-area-queues": {
+        "task": "plane.bgtasks.organizational_queue_task.sweep_assignment_sla",
+        "schedule": crontab(minute="*/15"),  # Every 15 minutes
+    },
 }
 
 

@@ -12,9 +12,12 @@ import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import type { IOrganizationalUnit } from "@plane/types";
 // components
+import { OrganizationalUnitCoordinatorsTab } from "./coordinators-tab";
+import { AssignmentPolicyForm } from "./policy-form";
 import { OrganizationalUnitFormModal } from "./unit-form-modal";
 import { OrganizationalUnitMembersTab } from "./unit-members-tab";
 import { OrganizationalUnitProjectsTab } from "./unit-projects-tab";
+import { OrganizationalUnitWorkTab } from "./unit-work-tab";
 
 type Props = {
   workspaceSlug: string;
@@ -22,19 +25,25 @@ type Props = {
   onBack: () => void;
 };
 
-type TTab = "members" | "projects";
+type TTab = "work" | "members" | "projects" | "coordinators" | "policy";
 
 const OU = "workspace_settings.settings.organizational_units";
 
 export const OrganizationalUnitDetail = observer(function OrganizationalUnitDetail(props: Props) {
   const { workspaceSlug, unit, onBack } = props;
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<TTab>("members");
+  // Work first: an area exists to carry work, and the roster is what you open
+  // when you are changing who is in it — which is rarer than looking at the
+  // queue.
+  const [activeTab, setActiveTab] = useState<TTab>("work");
   const [isEditing, setIsEditing] = useState(false);
 
-  const tabs: { key: TTab; label: string; count: number }[] = [
+  const tabs: { key: TTab; label: string; count?: number }[] = [
+    { key: "work", label: t(`${OU}.detail.tab_work`) },
     { key: "members", label: t(`${OU}.detail.tab_people`), count: unit.member_count },
     { key: "projects", label: t("common.projects"), count: unit.project_count },
+    { key: "coordinators", label: t(`${OU}.detail.tab_coordinators`) },
+    { key: "policy", label: t(`${OU}.detail.tab_policy`) },
   ];
 
   return (
@@ -74,16 +83,18 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
             onClick={() => setActiveTab(tab.key)}
           >
             {tab.label}
-            <span className="text-xs text-custom-text-400 ml-1.5">{tab.count}</span>
+            {tab.count !== undefined && <span className="text-xs text-custom-text-400 ml-1.5">{tab.count}</span>}
           </button>
         ))}
       </div>
 
-      {activeTab === "members" ? (
-        <OrganizationalUnitMembersTab workspaceSlug={workspaceSlug} unitId={unit.id} />
-      ) : (
-        <OrganizationalUnitProjectsTab workspaceSlug={workspaceSlug} unitId={unit.id} />
+      {activeTab === "work" && <OrganizationalUnitWorkTab workspaceSlug={workspaceSlug} unitId={unit.id} />}
+      {activeTab === "members" && <OrganizationalUnitMembersTab workspaceSlug={workspaceSlug} unitId={unit.id} />}
+      {activeTab === "projects" && <OrganizationalUnitProjectsTab workspaceSlug={workspaceSlug} unitId={unit.id} />}
+      {activeTab === "coordinators" && (
+        <OrganizationalUnitCoordinatorsTab workspaceSlug={workspaceSlug} unitId={unit.id} />
       )}
+      {activeTab === "policy" && <AssignmentPolicyForm workspaceSlug={workspaceSlug} unitId={unit.id} />}
 
       <OrganizationalUnitFormModal
         isOpen={isEditing}
