@@ -143,6 +143,71 @@ class OperationInProgress(OrcaDomainError):
     http_status = status.HTTP_409_CONFLICT
 
 
+class UnitNotInWorkspace(OrcaDomainError):
+    """The caller named an area this workspace does not have, or has retired.
+
+    @description 400 rather than 404: the area is a field of the body, not the
+    address of the request, and a client that sends a stale slug needs to see
+    a rejected field rather than believe the whole route moved.
+    """
+
+    error_code = "ORG_UNIT_NOT_IN_WORKSPACE"
+
+
+class WorkItemNotFound(OrcaDomainError):
+    """No work item with that id in this project, or no binding for that key."""
+
+    error_code = "ORG_WORK_ITEM_NOT_FOUND"
+    http_status = status.HTTP_404_NOT_FOUND
+
+
+class WorkItemHasNoUnit(OrcaDomainError):
+    """The work item exists but no area is responsible for it.
+
+    @description 400, not 404: the item is there, it just is not the kind of
+    item this API can act on. Answering 404 would send the caller looking for a
+    missing route.
+    """
+
+    error_code = "ORG_WORK_ITEM_HAS_NO_UNIT"
+
+
+class AssigneesNotAllowedHere(OrcaDomainError):
+    """The caller put ``assignees`` in the work item block.
+
+    @description Not ignored, refused. The area decides who does the work, and
+    a client whose assignees were silently dropped would believe it had
+    assigned somebody. The way to name a person on this API is
+    ``assignment.mode = explicit``.
+    """
+
+    error_code = "ORG_ASSIGNEES_NOT_ALLOWED_HERE"
+
+
+class ProcessProjectionDisabled(OrcaDomainError):
+    """A ``process`` block arrived before Phase 4 exists.
+
+    @description The block is part of the published contract, so it is refused
+    with its own code rather than as an unknown field: an integration that
+    sends it is not wrong, it is early, and the code says so.
+    """
+
+    error_code = "ORG_PROCESS_PROJECTION_DISABLED"
+
+
+class IfMatchRequired(OrcaDomainError):
+    """A reassignment arrived without ``If-Match``.
+
+    @description 428 rather than 400: the request is well formed, and the
+    server is refusing to act on it until the caller says which decision it
+    believes it is replacing. Two coordinators reassigning at once is the case
+    this exists for.
+    """
+
+    error_code = "ORG_IF_MATCH_REQUIRED"
+    http_status = status.HTTP_428_PRECONDITION_REQUIRED
+
+
 class ExternalBindingConflict(OrcaDomainError):
     """The external key already points at a different work item.
 
