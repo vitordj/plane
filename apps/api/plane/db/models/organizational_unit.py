@@ -86,6 +86,23 @@ class DirectoryIdentityState(models.TextChoices):
     UNRESOLVED = "unresolved", "Unresolved"
 
 
+class GrantSource(models.TextChoices):
+    """
+    Which fact about a person makes the layer grant them a project.
+
+    @description A grant used to have one possible origin — being a member of
+    an area linked to the project — so the origin was implicit in the row's
+    ``membership`` FK. Coordination is a second origin, and it is not a
+    membership: a coordinator may run an area's queue without executing any of
+    its work (RFC §5.2). Naming the origin is what lets the reconciler take
+    back exactly what coordination gave when somebody stops coordinating,
+    leaving whatever their membership still justifies untouched.
+    """
+
+    MEMBERSHIP = "membership", "Membership"
+    COORDINATOR = "coordinator", "Coordinator"
+
+
 class OrganizationalUnit(BaseModel):
     """
     Relational sidecar table representing an organizational unit (an "area",
@@ -296,6 +313,75 @@ class OrganizationalUnitProject(BaseModel):
         return f"{self.organizational_unit_id} -> {self.project_id} ({self.default_role})"
 
 
+class OrganizationalUnitCoordinator(BaseModel):
+    """
+    A person who runs an area's queue.
+
+    @description Deliberately its own table rather than a third value of
+    ``OrganizationalUnitMemberRole`` (RFC §5.2), for two reasons that both cut
+    the same way: coordinating an area is not the same as executing its work —
+    a manager may run the queue of an area whose items they never take — and
+    the ``role`` on a membership is written by SCIM, so an IdP group sync would
+    keep overwriting who coordinates.
+
+    Coordination grants project access of its own: the reconciler materializes
+    a native ``ProjectMember`` at Member for every project the area covers,
+    because a coordinator who cannot open the items in their own queue cannot
+    do the job. That access is provenance-tagged
+    (``GrantSource.COORDINATOR``), so ending the coordination takes back
+    exactly what it gave.
+
+    Attributes:
+        organizational_unit (OrganizationalUnit): The area being coordinated.
+        workspace_member (WorkspaceMember): The coordinator.
+        workspace (Workspace): Denormalized from the unit for cheap querying.
+        is_active (bool): Inactive coordinations stop granting access and stop
+            receiving the queue's alerts, without losing the history.
+    """
+
+    organizational_unit = models.ForeignKey(
+        OrganizationalUnit,
+        on_delete=models.CASCADE,
+        related_name="coordinators",
+    )
+    workspace_member = models.ForeignKey(
+        "db.WorkspaceMember",
+        on_delete=models.CASCADE,
+        related_name="organizational_unit_coordinations",
+    )
+    workspace = models.ForeignKey(
+        "db.Workspace",
+        on_delete=models.CASCADE,
+        related_name="organizational_unit_coordinators",
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ["organizational_unit", "workspace_member", "deleted_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organizational_unit", "workspace_member"],
+                condition=Q(deleted_at__isnull=True),
+                name="org_unit_coordinator_unique_unit_member_when_deleted_at_null",
+            )
+        ]
+        verbose_name = "Organizational Unit Coordinator"
+        verbose_name_plural = "Organizational Unit Coordinators"
+        db_table = "organizational_unit_coordinators"
+        ordering = ("-created_at",)
+
+    def save(self, *args, **kwargs):
+        # Same cross-workspace guard the membership carries: a bare FK cannot
+        # stop a coordination from pointing at a member of another workspace.
+        if self.workspace_member.workspace_id != self.organizational_unit.workspace_id:
+            raise ValidationError("Workspace member and organizational unit belong to different workspaces")
+        self.workspace_id = self.organizational_unit.workspace_id
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.workspace_member_id} coordinates {self.organizational_unit_id}"
+
+
 class OrganizationalUnitGrant(BaseModel):
     """
     Provenance ledger: one row per (membership, unit-project) pair that
@@ -308,7 +394,12 @@ class OrganizationalUnitGrant(BaseModel):
 
     Attributes:
         organizational_unit (OrganizationalUnit): Denormalized source unit.
-        membership (OrganizationalUnitMembership): Source membership.
+        membership (OrganizationalUnitMembership): Source membership, when the
+            access comes from belonging to the area.
+        coordinator (OrganizationalUnitCoordinator): Source coordination, when
+            it comes from running the area's queue instead.
+        grant_source (str): ``membership`` or ``coordinator`` — which of the
+            two above is set.
         unit_project (OrganizationalUnitProject): Source unit-project link.
         workspace_member (WorkspaceMember): The person receiving access.
         project (Project): The target project.
@@ -323,10 +414,27 @@ class OrganizationalUnitGrant(BaseModel):
         on_delete=models.CASCADE,
         related_name="grants",
     )
+    # Exactly one of the two is set, and ``grant_source`` says which. Nullable
+    # because a coordinator need not be a member of the area they run: their
+    # access has no membership to hang from.
     membership = models.ForeignKey(
         OrganizationalUnitMembership,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="grants",
+    )
+    coordinator = models.ForeignKey(
+        OrganizationalUnitCoordinator,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="grants",
+    )
+    grant_source = models.CharField(
+        max_length=16,
+        choices=GrantSource.choices,
+        default=GrantSource.MEMBERSHIP,
     )
     unit_project = models.ForeignKey(
         OrganizationalUnitProject,
@@ -359,7 +467,26 @@ class OrganizationalUnitGrant(BaseModel):
                 fields=["membership", "unit_project"],
                 condition=Q(deleted_at__isnull=True),
                 name="org_unit_grant_unique_membership_unit_project_when_deleted_at_null",
-            )
+            ),
+            # The coordinator half of the same rule. It needs its own
+            # constraint because the one above indexes ``membership``, which is
+            # NULL on every coordinator grant — and Postgres treats NULLs as
+            # distinct, so that index would let the same coordination be
+            # recorded twice for one project.
+            models.UniqueConstraint(
+                fields=["coordinator", "unit_project"],
+                condition=Q(deleted_at__isnull=True) & Q(coordinator__isnull=False),
+                name="org_unit_grant_unique_coordinator_unit_project",
+            ),
+            # A grant with neither origin sources access nobody can explain,
+            # and one with both would be revoked twice.
+            models.CheckConstraint(
+                condition=(
+                    Q(membership__isnull=False, coordinator__isnull=True)
+                    | Q(membership__isnull=True, coordinator__isnull=False)
+                ),
+                name="org_unit_grant_exactly_one_origin",
+            ),
         ]
         verbose_name = "Organizational Unit Grant"
         verbose_name_plural = "Organizational Unit Grants"
@@ -455,6 +582,8 @@ class IssueOrganizationalUnit(BaseModel):
         organizational_unit (OrganizationalUnit): The responsible unit.
         project (Project): Denormalized from the issue for cheap querying.
         workspace (Workspace): Denormalized for cheap querying.
+        last_alerted_at (datetime): Last time the SLA sweep alerted about this
+            item, so a breach that stays unresolved does not alert hourly.
     """
 
     # Deliberately a ForeignKey and not a OneToOneField. A OneToOneField is a
@@ -518,6 +647,10 @@ class IssueOrganizationalUnit(BaseModel):
         blank=True,
         related_name="orca_primary_executions",
     )
+    # When the queue last told somebody this item is overdue. The sweep reads
+    # it to alert once per breach rather than once per run (item 2.4); it is
+    # not an alert log, so it holds only the last one.
+    last_alerted_at = models.DateTimeField(null=True, blank=True)
     # The decision currently in force. Referenced by name to keep the import
     # one-way: the decision log knows about the link's models, not the other
     # way round. Added in migration 0137, after the log's table exists.

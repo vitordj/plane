@@ -61,6 +61,12 @@ ORCA_ERROR_CODES = {
     "ORG_PROCESS_PROJECTION_DISABLED": 4929,
     "ORG_COMPLETION_MANUAL_ONLY": 4930,
     "ORG_INTERNAL_ERROR": 4931,
+    # area queue and coordinator (Phase 2)
+    "ORG_UNIT_PERMISSION_DENIED": 4932,
+    "ORG_COORDINATOR_NOT_FOUND": 4933,
+    "ORG_POLICY_INVALID_MODE": 4934,
+    "ORG_POLICY_DEFAULT_MODE_NOT_ALLOWED": 4935,
+    "ORG_POLICY_INVALID_VALUE": 4936,
 }
 
 # The English prose each code carries. Kept here rather than at the call sites
@@ -99,10 +105,15 @@ ORCA_ERROR_MESSAGES = {
     "ORG_PROCESS_PROJECTION_DISABLED": "Process projection is disabled on this instance",
     "ORG_COMPLETION_MANUAL_ONLY": "This work item can only be completed by a person",
     "ORG_INTERNAL_ERROR": "The operation failed and was recorded as failed",
+    "ORG_UNIT_PERMISSION_DENIED": "You do not have the required role in this organizational unit",
+    "ORG_COORDINATOR_NOT_FOUND": "Coordinator not found in this organizational unit",
+    "ORG_POLICY_INVALID_MODE": "Invalid assignment mode in this policy",
+    "ORG_POLICY_DEFAULT_MODE_NOT_ALLOWED": "The default mode has to be one of the allowed modes",
+    "ORG_POLICY_INVALID_VALUE": "Policy limits have to be positive whole numbers",
 }
 
 
-def orca_error(name, status_code=status.HTTP_400_BAD_REQUEST):
+def orca_error(name, status_code=status.HTTP_400_BAD_REQUEST, **extra):
     """Build the standard error response for an Orca failure.
 
     @description Carries three things at once: ``error`` so an API client or a
@@ -112,16 +123,18 @@ def orca_error(name, status_code=status.HTTP_400_BAD_REQUEST):
     @param name: A key of ``ORCA_ERROR_CODES``. Unknown names raise, on the
         theory that a typo should fail in tests rather than ship a null code.
     @param status_code: HTTP status; defaults to 400.
+    @param extra: Ids the caller can act on — who won a contested claim, which
+        decision is current now. Ids only, never personal data: this body is
+        shown to whoever made the failing request.
     @returns: A DRF ``Response``.
     """
-    return Response(
-        {
-            "error": ORCA_ERROR_MESSAGES[name],
-            "error_code": ORCA_ERROR_CODES[name],
-            "error_message": name,
-        },
-        status=status_code,
-    )
+    body = {
+        "error": ORCA_ERROR_MESSAGES[name],
+        "error_code": ORCA_ERROR_CODES[name],
+        "error_message": name,
+    }
+    body.update(extra)
+    return Response(body, status=status_code)
 
 
 def orca_not_found(name):

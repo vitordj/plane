@@ -78,11 +78,20 @@ class DecisionTrigger(models.TextChoices):
 
 
 class DecisionOutcome(models.TextChoices):
-    """How the allocation ended."""
+    """
+    How the allocation ended.
+
+    @description ``SUSPENDED`` is the coordinator parking an item that is
+    blocked on something outside the area (RFC §6.2). It is its own outcome
+    rather than a queued one: an item nobody can start is not an item waiting
+    for a person, and reading it as queued would put it back on the board the
+    queue's SLA measures.
+    """
 
     ASSIGNED = "assigned", "Assigned"
     QUEUED = "queued", "Queued"
     ALLOCATION_FAILED = "allocation_failed", "Allocation failed"
+    SUSPENDED = "suspended", "Suspended"
     REJECTED = "rejected", "Rejected"
 
 

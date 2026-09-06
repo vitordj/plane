@@ -697,7 +697,12 @@
           "if_match_required": "Esta solicitud necesita una cabecera If-Match con la decisión vigente.",
           "process_projection_disabled": "La proyección de procesos está desactivada en esta instancia.",
           "completion_manual_only": "Este elemento de trabajo solo puede completarlo una persona.",
-          "internal_error": "Algo salió mal. La operación quedó registrada como fallida."
+          "internal_error": "Algo salió mal. La operación quedó registrada como fallida.",
+          "unit_permission_denied": "No tienes el rol necesario en esta área.",
+          "coordinator_not_found": "Esa persona ya no coordina esta área.",
+          "policy_invalid_mode": "Ese no es un modo de asignación.",
+          "policy_default_mode_not_allowed": "El modo predeterminado tiene que ser uno de los modos permitidos.",
+          "policy_invalid_value": "Esos límites tienen que ser números enteros positivos."
         }
       }
     },

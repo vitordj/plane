@@ -697,7 +697,12 @@
           "if_match_required": "이 요청에는 현재 결정이 담긴 If-Match 헤더가 필요합니다.",
           "process_projection_disabled": "이 인스턴스에서는 프로세스 투영이 꺼져 있습니다.",
           "completion_manual_only": "이 작업 항목은 사람만 완료할 수 있습니다.",
-          "internal_error": "문제가 발생했습니다. 이 작업은 실패로 기록되었습니다."
+          "internal_error": "문제가 발생했습니다. 이 작업은 실패로 기록되었습니다.",
+          "unit_permission_denied": "이 영역에서 필요한 역할이 없습니다.",
+          "coordinator_not_found": "그 사람은 더 이상 이 영역을 조율하지 않습니다.",
+          "policy_invalid_mode": "그것은 배정 방식이 아닙니다.",
+          "policy_default_mode_not_allowed": "기본 방식은 허용된 방식 중 하나여야 합니다.",
+          "policy_invalid_value": "이 한도는 양의 정수여야 합니다."
         }
       }
     },

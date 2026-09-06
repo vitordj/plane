@@ -697,7 +697,12 @@
           "if_match_required": "Questa richiesta richiede un’intestazione If-Match con la decisione in vigore.",
           "process_projection_disabled": "La proiezione dei processi è disattivata su questa istanza.",
           "completion_manual_only": "Questo elemento di lavoro può essere completato solo da una persona.",
-          "internal_error": "Qualcosa è andato storto. L’operazione è stata registrata come fallita."
+          "internal_error": "Qualcosa è andato storto. L’operazione è stata registrata come fallita.",
+          "unit_permission_denied": "Non hai il ruolo richiesto in quest’area.",
+          "coordinator_not_found": "Quella persona non coordina più quest’area.",
+          "policy_invalid_mode": "Questa non è una modalità di assegnazione.",
+          "policy_default_mode_not_allowed": "La modalità predefinita deve essere una di quelle consentite.",
+          "policy_invalid_value": "Questi limiti devono essere numeri interi positivi."
         }
       }
     },

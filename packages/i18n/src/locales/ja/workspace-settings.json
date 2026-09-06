@@ -697,7 +697,12 @@
           "if_match_required": "このリクエストには、現在の決定を含む If-Match ヘッダーが必要です。",
           "process_projection_disabled": "プロセス投影はこのインスタンスでは無効です。",
           "completion_manual_only": "この作業項目は人によってのみ完了できます。",
-          "internal_error": "問題が発生しました。この操作は失敗として記録されました。"
+          "internal_error": "問題が発生しました。この操作は失敗として記録されました。",
+          "unit_permission_denied": "このエリアで必要な役割がありません。",
+          "coordinator_not_found": "その人はこのエリアのコーディネーターではなくなりました。",
+          "policy_invalid_mode": "それは割り当てモードではありません。",
+          "policy_default_mode_not_allowed": "既定のモードは、許可されたモードのいずれかである必要があります。",
+          "policy_invalid_value": "これらの上限は正の整数である必要があります。"
         }
       }
     },

@@ -473,7 +473,12 @@
           "if_match_required": "Esta requisição precisa do cabeçalho If-Match com a decisão vigente.",
           "process_projection_disabled": "A projeção de processos está desligada nesta instância.",
           "completion_manual_only": "Este item de trabalho só pode ser concluído por uma pessoa.",
-          "internal_error": "Algo deu errado. A operação foi registrada como falha."
+          "internal_error": "Algo deu errado. A operação foi registrada como falha.",
+          "unit_permission_denied": "Você não tem o papel necessário nesta área.",
+          "coordinator_not_found": "Essa pessoa não coordena mais esta área.",
+          "policy_invalid_mode": "Esse não é um modo de atribuição.",
+          "policy_default_mode_not_allowed": "O modo padrão precisa ser um dos modos permitidos.",
+          "policy_invalid_value": "Esses limites precisam ser números inteiros positivos."
         }
       },
       "projects": {

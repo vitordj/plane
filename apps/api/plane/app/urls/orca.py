@@ -22,6 +22,16 @@ from plane.app.views import (
     OrcaBuildInfoEndpoint,
     OrcaConfigEndpoint,
     OrganizationalUnitPolicyEndpoint,
+    OrganizationalUnitPolicyWriteEndpoint,
+    OrganizationalUnitQueueEndpoint,
+    OrganizationalUnitDecisionsEndpoint,
+    OrganizationalUnitCoordinatorViewSet,
+    IssueOrganizationalUnitCandidatesEndpoint,
+    IssueOrganizationalUnitClaimEndpoint,
+    IssueOrganizationalUnitReassignEndpoint,
+    IssueOrganizationalUnitReturnEndpoint,
+    IssueOrganizationalUnitSuspendEndpoint,
+    IssueOrganizationalUnitTransferEndpoint,
     OrganizationalDirectoryConnectionEndpoint,
     OrganizationalDirectoryResyncEndpoint,
     OrganizationalDirectoryTokenEndpoint,
@@ -66,6 +76,42 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/projects/<uuid:project_id>/policy/",
         OrganizationalUnitPolicyEndpoint.as_view(),
         name="organizational-unit-project-policy",
+    ),
+    # Writing a policy is a separate view from reading one, and deliberately so:
+    # the read answers with the *resolved* policy — project over area over
+    # fallback — and the write saves a single stored row. One view answering
+    # both would have to return something different from what it accepted.
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/policy/write/",
+        OrganizationalUnitPolicyWriteEndpoint.as_view(),
+        name="organizational-unit-policy-write",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/projects/<uuid:project_id>/policy/write/",
+        OrganizationalUnitPolicyWriteEndpoint.as_view(),
+        name="organizational-unit-project-policy-write",
+    ),
+    # The coordinator's surfaces: what the area has waiting, and why it went
+    # where it went.
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/queue/",
+        OrganizationalUnitQueueEndpoint.as_view(),
+        name="organizational-unit-queue",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/decisions/",
+        OrganizationalUnitDecisionsEndpoint.as_view(),
+        name="organizational-unit-decisions",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/coordinators/",
+        OrganizationalUnitCoordinatorViewSet.as_view({"get": "list", "post": "create"}),
+        name="organizational-unit-coordinators",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/coordinators/<uuid:pk>/",
+        OrganizationalUnitCoordinatorViewSet.as_view({"delete": "destroy"}),
+        name="organizational-unit-coordinator",
     ),
     # Workspace Project State Settings
     path(
@@ -175,6 +221,39 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit-assign/",
         IssueOrganizationalUnitAssignEndpoint.as_view(),
         name="issue-organizational-unit-assign",
+    ),
+    # The five things a person does to one item of an area's queue. Each one
+    # goes through the same service the automation API calls, so a claim from
+    # the interface and a reassignment from a robot leave the same record.
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/claim/",
+        IssueOrganizationalUnitClaimEndpoint.as_view(),
+        name="issue-organizational-unit-claim",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/reassign/",
+        IssueOrganizationalUnitReassignEndpoint.as_view(),
+        name="issue-organizational-unit-reassign",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/return/",
+        IssueOrganizationalUnitReturnEndpoint.as_view(),
+        name="issue-organizational-unit-return",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/suspend/",
+        IssueOrganizationalUnitSuspendEndpoint.as_view(),
+        name="issue-organizational-unit-suspend",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/transfer/",
+        IssueOrganizationalUnitTransferEndpoint.as_view(),
+        name="issue-organizational-unit-transfer",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/candidates/",
+        IssueOrganizationalUnitCandidatesEndpoint.as_view(),
+        name="issue-organizational-unit-candidates",
     ),
     # Directory connection administration. Workspace-admin only: issuing a SCIM
     # token hands a machine the power to grant project access.

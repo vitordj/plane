@@ -56,6 +56,12 @@ export const ORCA_ERROR_CODE_KEYS: Record<number, string> = {
   4929: "workspace_settings.settings.organizational_units.errors.process_projection_disabled",
   4930: "workspace_settings.settings.organizational_units.errors.completion_manual_only",
   4931: "workspace_settings.settings.organizational_units.errors.internal_error",
+  // area queue and coordinator
+  4932: "workspace_settings.settings.organizational_units.errors.unit_permission_denied",
+  4933: "workspace_settings.settings.organizational_units.errors.coordinator_not_found",
+  4934: "workspace_settings.settings.organizational_units.errors.policy_invalid_mode",
+  4935: "workspace_settings.settings.organizational_units.errors.policy_default_mode_not_allowed",
+  4936: "workspace_settings.settings.organizational_units.errors.policy_invalid_value",
 };
 
 /** The shape the Orca API returns on failure. Every field may be absent. */

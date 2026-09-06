@@ -21,6 +21,7 @@ from plane.db.models import (
     OrganizationalDirectoryGroupMembership,
     OrganizationalDirectoryIdentity,
     OrganizationalUnit,
+    OrganizationalUnitCoordinator,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
     Project,
@@ -304,6 +305,51 @@ def issue_unit_url(slug, project_id, issue_id):
 
 def issue_assign_url(slug, project_id, issue_id):
     return f"/api/orca/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/organizational-unit-assign/"
+
+
+# --- the area's queue and the coordinator's actions (item 2.2) ----------------
+
+
+def unit_queue_url(slug, unit_id):
+    return f"{units_url(slug)}{unit_id}/queue/"
+
+
+def unit_decisions_url(slug, unit_id):
+    return f"{units_url(slug)}{unit_id}/decisions/"
+
+
+def unit_coordinators_url(slug, unit_id):
+    return f"{units_url(slug)}{unit_id}/coordinators/"
+
+
+def unit_coordinator_url(slug, unit_id, pk):
+    return f"{unit_coordinators_url(slug, unit_id)}{pk}/"
+
+
+def unit_policy_write_url(slug, unit_id):
+    return f"{units_url(slug)}{unit_id}/policy/write/"
+
+
+def unit_project_policy_write_url(slug, unit_id, project_id):
+    return f"{units_url(slug)}{unit_id}/projects/{project_id}/policy/write/"
+
+
+def issue_action_url(slug, project_id, issue_id, action):
+    return f"/api/orca/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/organizational-unit/{action}/"
+
+
+@pytest.fixture
+def add_coordinator(workspace_with_members, workspace_member_of):
+    """Put a person in charge of an area's queue, without the API."""
+
+    def _add(unit, user):
+        return OrganizationalUnitCoordinator.objects.create(
+            organizational_unit=unit,
+            workspace_member=workspace_member_of(user),
+            workspace=workspace_with_members,
+        )
+
+    return _add
 
 
 # --- public automation API (/api/v1/orca/, item 1.4) --------------------------

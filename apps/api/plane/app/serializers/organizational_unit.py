@@ -15,6 +15,7 @@ from plane.db.models import (
     OrganizationalDirectoryIdentity,
     OrganizationalUnit,
     OrganizationalUnitAssignmentPolicy,
+    OrganizationalUnitCoordinator,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
 )
@@ -351,6 +352,125 @@ class IssueRoutingSerializer(BaseSerializer):
             "queued_at",
             "assignment_due_at",
             "primary_executor",
+            "current_assignment_decision",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+
+class OrganizationalUnitCoordinatorSerializer(BaseSerializer):
+    """
+    Who runs an area's queue, with the same light member details the
+    membership serializer carries so one list can render both.
+
+    @description ``workspace_member`` is read-only for the reason the
+    membership gives: re-pointing it would leave the previous person holding
+    the ``ProjectMember`` rows this coordination granted them. Ending a
+    coordination is DELETE, which withdraws first.
+    """
+
+    member_id = serializers.UUIDField(source="workspace_member.member_id", read_only=True)
+    display_name = serializers.CharField(source="workspace_member.member.display_name", read_only=True)
+    email = serializers.CharField(source="workspace_member.member.email", read_only=True)
+    avatar_url = serializers.CharField(source="workspace_member.member.avatar_url", read_only=True)
+    workspace_role = serializers.IntegerField(source="workspace_member.role", read_only=True)
+
+    class Meta:
+        model = OrganizationalUnitCoordinator
+        fields = [
+            "id",
+            "organizational_unit",
+            "workspace_member",
+            "is_active",
+            "member_id",
+            "display_name",
+            "email",
+            "avatar_url",
+            "workspace_role",
+            "created_at",
+        ]
+        read_only_fields = ["organizational_unit", "workspace_member", "created_at"]
+
+
+class QueueItemSerializer(BaseSerializer):
+    """
+    One row of a coordinator's inbox.
+
+    @description Deliberately flatter and wider than ``IssueRoutingSerializer``:
+    a queue row has to be readable without a second request per item, so it
+    carries the work item's identifier, title, native state and due date
+    alongside the routing fields. It does not carry the area — every row on the
+    page belongs to the same one.
+
+    ``assignment_overdue`` and ``age_seconds`` come from the queryset's
+    annotation and the page's single ``now`` (see ``services/orca/queue.py``):
+    computing them per row would let two items on one page be judged against
+    different instants and sort against each other by microseconds.
+    """
+
+    issue_id = serializers.UUIDField(read_only=True)
+    sequence_id = serializers.IntegerField(source="issue.sequence_id", read_only=True)
+    name = serializers.CharField(source="issue.name", read_only=True)
+    project_identifier = serializers.CharField(source="issue.project.identifier", read_only=True)
+    target_date = serializers.DateField(source="issue.target_date", read_only=True)
+    state_group = serializers.CharField(source="issue.state.group", read_only=True, default=None)
+    state_name = serializers.CharField(source="issue.state.name", read_only=True, default=None)
+    assignment_overdue = serializers.BooleanField(read_only=True, default=False)
+    age_seconds = serializers.SerializerMethodField()
+    primary_executor_detail = serializers.SerializerMethodField()
+
+    def get_age_seconds(self, obj) -> int:
+        """
+        @description How long this item has been waiting, in seconds, or
+        ``None`` for one that is not waiting on anybody.
+        @param obj: The ``IssueOrganizationalUnit`` row.
+        @returns int or None.
+        """
+        if obj.queued_at is None:
+            return None
+        now = self.context.get("now")
+        if now is None:
+            return None
+        return int((now - obj.queued_at).total_seconds())
+
+    def get_primary_executor_detail(self, obj) -> dict:
+        """
+        @description The person on the item, as much as a queue row needs to
+        draw an avatar and a name.
+        @param obj: The ``IssueOrganizationalUnit`` row.
+        @returns dict or None.
+        """
+        executor = obj.primary_executor
+        if executor is None:
+            return None
+        return {
+            "id": str(executor.id),
+            "display_name": executor.display_name,
+            "avatar_url": executor.avatar_url,
+        }
+
+    class Meta:
+        model = IssueOrganizationalUnit
+        fields = [
+            "id",
+            "issue_id",
+            "sequence_id",
+            "name",
+            "project",
+            "project_identifier",
+            "target_date",
+            "state_group",
+            "state_name",
+            "routing_state",
+            "queue_reason",
+            "queued_at",
+            "assignment_due_at",
+            "assignment_overdue",
+            "age_seconds",
+            "last_alerted_at",
+            "primary_executor",
+            "primary_executor_detail",
             "current_assignment_decision",
             "created_at",
             "updated_at",

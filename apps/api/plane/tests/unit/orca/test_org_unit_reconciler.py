@@ -14,10 +14,17 @@ grant access to the same project.
 import pytest
 from rest_framework.test import APIClient
 
-from plane.app.services.orca import plan_access, reconcile_access, reconcile_membership
+from plane.app.services.orca import (
+    plan_access,
+    reconcile_access,
+    reconcile_coordinator,
+    reconcile_membership,
+)
 from plane.db.models import (
+    GrantSource,
     OrganizationalProjectAccessState,
     OrganizationalUnit,
+    OrganizationalUnitCoordinator,
     OrganizationalUnitGrant,
     OrganizationalUnitMemberRole,
     OrganizationalUnitMembership,
@@ -96,6 +103,14 @@ def link_project(unit, project, role=ROLE_MEMBER):
         project=project,
         workspace=unit.workspace,
         default_role=role,
+    )
+
+
+def add_coordinator(unit, workspace_member):
+    return OrganizationalUnitCoordinator.objects.create(
+        organizational_unit=unit,
+        workspace_member=workspace_member,
+        workspace=unit.workspace,
     )
 
 
@@ -494,3 +509,187 @@ class TestArchivingAProject:
 
         assert response.status_code == 200
         assert project_member(onboarding, lucas).is_active is True
+
+
+@pytest.mark.unit
+class TestCoordinatorAccess:
+    """
+    Coordination as a source of access (item 2.1).
+
+    Running an area's queue means opening the items in it, so the reconciler
+    materializes a native ``ProjectMember`` for a coordinator on every project
+    the area covers — through the same provenance ledger, tagged as coming
+    from the coordination rather than from a membership, so that ending the
+    coordination takes back exactly that and nothing else.
+    """
+
+    def test_a_coordinator_gets_access_to_every_covered_project(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        pld = make_project("PLD", "PLD")
+        link_project(compliance, onboarding)
+        link_project(compliance, pld)
+
+        maria = make_member("maria")
+        coordinator = add_coordinator(compliance, maria)
+        reconcile_coordinator(coordinator, force_sync=True)
+
+        assert project_member(onboarding, maria).role == ROLE_MEMBER
+        assert project_member(pld, maria).role == ROLE_MEMBER
+        grants = OrganizationalUnitGrant.objects.filter(workspace_member=maria, is_active=True)
+        assert grants.count() == 2
+        assert {grant.grant_source for grant in grants} == {GrantSource.COORDINATOR}
+        assert all(grant.membership_id is None and grant.coordinator_id == coordinator.id for grant in grants)
+
+    def test_a_coordinator_is_a_member_even_where_the_area_grants_guest(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """
+        Coordination is a job, not a seat in the area: it takes the role the
+        job needs rather than the one the area's link happens to hand out.
+        """
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding, role=ROLE_GUEST)
+
+        maria = make_member("maria")
+        reconcile_coordinator(add_coordinator(compliance, maria), force_sync=True)
+
+        assert project_member(onboarding, maria).role == ROLE_MEMBER
+
+    def test_a_manual_admin_is_not_demoted_by_coordinating(self, org_workspace, make_member, make_project, make_unit):
+        """The inherited role is a floor, and Admin granted by hand is above it."""
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+
+        maria = make_member("maria")
+        ProjectMember.objects.create(
+            project=onboarding, member=maria.member, workspace=org_workspace, role=ROLE_ADMIN, is_active=True
+        )
+
+        reconcile_coordinator(add_coordinator(compliance, maria), force_sync=True)
+
+        assert project_member(onboarding, maria).role == ROLE_ADMIN
+
+    def test_ending_the_coordination_restores_the_baseline(self, org_workspace, make_member, make_project, make_unit):
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+
+        maria = make_member("maria")
+        ProjectMember.objects.create(
+            project=onboarding, member=maria.member, workspace=org_workspace, role=ROLE_GUEST, is_active=True
+        )
+        coordinator = add_coordinator(compliance, maria)
+        reconcile_coordinator(coordinator, force_sync=True)
+        assert project_member(onboarding, maria).role == ROLE_MEMBER
+
+        coordinator.is_active = False
+        coordinator.save()
+        reconcile_access(org_workspace.id)
+
+        member = project_member(onboarding, maria)
+        assert member.is_active is True
+        assert member.role == ROLE_GUEST
+        assert OrganizationalUnitGrant.objects.filter(coordinator=coordinator, is_active=True).count() == 0
+
+    def test_ending_the_coordination_removes_access_it_created(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+
+        maria = make_member("maria")
+        coordinator = add_coordinator(compliance, maria)
+        reconcile_coordinator(coordinator, force_sync=True)
+        assert project_member(onboarding, maria).is_active is True
+
+        coordinator.is_active = False
+        coordinator.save()
+        reconcile_access(org_workspace.id)
+
+        assert project_member(onboarding, maria).is_active is False
+
+    def test_a_coordinator_who_is_also_a_member_keeps_access_after_stepping_down(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """
+        The two sources are independent. Dropping the coordination leaves what
+        the membership still justifies — which is the whole reason the ledger
+        records which of the two granted what.
+        """
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+
+        maria = make_member("maria")
+        add_member(compliance, maria)
+        coordinator = add_coordinator(compliance, maria)
+        reconcile_access(org_workspace.id)
+        assert OrganizationalUnitGrant.objects.filter(workspace_member=maria, is_active=True).count() == 2
+
+        coordinator.is_active = False
+        coordinator.save()
+        reconcile_access(org_workspace.id)
+
+        member = project_member(onboarding, maria)
+        assert member.is_active is True
+        assert member.role == ROLE_MEMBER
+        remaining = OrganizationalUnitGrant.objects.filter(workspace_member=maria, is_active=True)
+        assert remaining.count() == 1
+        assert remaining.first().grant_source == GrantSource.MEMBERSHIP
+
+    def test_linking_a_project_later_reaches_the_coordinator_too(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """A project linked after the coordination still grants the coordinator access."""
+        from plane.app.services.orca import reconcile_unit_project
+
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+
+        maria = make_member("maria")
+        add_coordinator(compliance, maria)
+        unit_project = link_project(compliance, onboarding)
+        reconcile_unit_project(unit_project, force_sync=True)
+
+        assert project_member(onboarding, maria).role == ROLE_MEMBER
+
+    def test_an_inactive_unit_grants_a_coordinator_nothing(self, org_workspace, make_member, make_project, make_unit):
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+        compliance.is_active = False
+        compliance.save()
+
+        maria = make_member("maria")
+        reconcile_coordinator(add_coordinator(compliance, maria), force_sync=True)
+
+        assert project_member(onboarding, maria) is None
+
+    def test_the_provenance_names_the_coordination(self, org_workspace, make_member, make_project, make_unit):
+        """The effective-access preview says which of the two origins granted what."""
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+
+        maria = make_member("maria")
+        coordinator = add_coordinator(compliance, maria)
+
+        changes = plan_access(org_workspace.id, [maria.id], [onboarding.id])
+
+        assert len(changes) == 1
+        sources = changes[0].as_dict()["sources"]
+        assert sources == [
+            {
+                "organizational_unit_id": str(compliance.id),
+                "organizational_unit_name": "Compliance",
+                "membership_id": str(coordinator.id),
+                "grant_source": GrantSource.COORDINATOR,
+                "role": ROLE_MEMBER,
+            }
+        ]

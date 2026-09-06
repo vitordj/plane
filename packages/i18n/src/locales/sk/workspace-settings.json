@@ -697,7 +697,12 @@
           "if_match_required": "Táto požiadavka vyžaduje hlavičku If-Match s aktuálnym rozhodnutím.",
           "process_projection_disabled": "Projekcia procesov je v tejto inštancii vypnutá.",
           "completion_manual_only": "Túto pracovnú položku môže dokončiť len človek.",
-          "internal_error": "Niečo sa pokazilo. Operácia bola zaznamenaná ako neúspešná."
+          "internal_error": "Niečo sa pokazilo. Operácia bola zaznamenaná ako neúspešná.",
+          "unit_permission_denied": "Nemáte požadovanú rolu v tejto oblasti.",
+          "coordinator_not_found": "Táto osoba už túto oblasť nekoordinuje.",
+          "policy_invalid_mode": "To nie je režim prideľovania.",
+          "policy_default_mode_not_allowed": "Predvolený režim musí byť jedným z povolených režimov.",
+          "policy_invalid_value": "Tieto limity musia byť kladné celé čísla."
         }
       }
     },

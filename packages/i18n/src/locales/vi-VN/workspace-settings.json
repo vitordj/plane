@@ -697,7 +697,12 @@
           "if_match_required": "Yêu cầu này cần tiêu đề If-Match kèm quyết định hiện hành.",
           "process_projection_disabled": "Phép chiếu quy trình đang tắt trên phiên bản này.",
           "completion_manual_only": "Mục công việc này chỉ có thể do một người hoàn tất.",
-          "internal_error": "Đã xảy ra lỗi. Thao tác được ghi nhận là thất bại."
+          "internal_error": "Đã xảy ra lỗi. Thao tác được ghi nhận là thất bại.",
+          "unit_permission_denied": "Bạn không có vai trò cần thiết trong khu vực này.",
+          "coordinator_not_found": "Người đó không còn điều phối khu vực này.",
+          "policy_invalid_mode": "Đó không phải là một chế độ phân công.",
+          "policy_default_mode_not_allowed": "Chế độ mặc định phải là một trong các chế độ được phép.",
+          "policy_invalid_value": "Các giới hạn này phải là số nguyên dương."
         }
       }
     },

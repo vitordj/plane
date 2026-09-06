@@ -697,7 +697,12 @@
           "if_match_required": "Für diese Anfrage wird ein If-Match-Header mit der aktuellen Entscheidung benötigt.",
           "process_projection_disabled": "Die Prozessprojektion ist auf dieser Instanz ausgeschaltet.",
           "completion_manual_only": "Dieses Arbeitselement kann nur von einer Person abgeschlossen werden.",
-          "internal_error": "Etwas ist schiefgelaufen. Der Vorgang wurde als fehlgeschlagen vermerkt."
+          "internal_error": "Etwas ist schiefgelaufen. Der Vorgang wurde als fehlgeschlagen vermerkt.",
+          "unit_permission_denied": "Sie haben nicht die erforderliche Rolle in diesem Bereich.",
+          "coordinator_not_found": "Diese Person koordiniert diesen Bereich nicht mehr.",
+          "policy_invalid_mode": "Das ist kein Zuweisungsmodus.",
+          "policy_default_mode_not_allowed": "Der Standardmodus muss einer der erlaubten Modi sein.",
+          "policy_invalid_value": "Diese Grenzwerte müssen positive ganze Zahlen sein."
         }
       }
     },

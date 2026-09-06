@@ -697,7 +697,12 @@
           "if_match_required": "Permintaan ini memerlukan header If-Match berisi keputusan yang berlaku.",
           "process_projection_disabled": "Proyeksi proses dimatikan pada instansi ini.",
           "completion_manual_only": "Item kerja ini hanya dapat diselesaikan oleh orang.",
-          "internal_error": "Terjadi kesalahan. Operasi dicatat sebagai gagal."
+          "internal_error": "Terjadi kesalahan. Operasi dicatat sebagai gagal.",
+          "unit_permission_denied": "Anda tidak memiliki peran yang diperlukan di area ini.",
+          "coordinator_not_found": "Orang itu tidak lagi mengoordinasikan area ini.",
+          "policy_invalid_mode": "Itu bukan mode penugasan.",
+          "policy_default_mode_not_allowed": "Mode bawaan harus salah satu dari mode yang diizinkan.",
+          "policy_invalid_value": "Batas ini harus berupa bilangan bulat positif."
         }
       }
     },

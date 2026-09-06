@@ -473,7 +473,12 @@
           "if_match_required": "This request needs an If-Match header with the current decision.",
           "process_projection_disabled": "Process projection is turned off on this instance.",
           "completion_manual_only": "This work item can only be completed by a person.",
-          "internal_error": "Something went wrong. The operation was recorded as failed."
+          "internal_error": "Something went wrong. The operation was recorded as failed.",
+          "unit_permission_denied": "You don't have the required role in this area.",
+          "coordinator_not_found": "That person no longer coordinates this area.",
+          "policy_invalid_mode": "That is not an assignment mode.",
+          "policy_default_mode_not_allowed": "The default mode has to be one of the allowed modes.",
+          "policy_invalid_value": "Those limits have to be positive whole numbers."
         }
       },
       "projects": {

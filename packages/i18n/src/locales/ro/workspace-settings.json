@@ -697,7 +697,12 @@
           "if_match_required": "Această cerere necesită antetul If-Match cu decizia în vigoare.",
           "process_projection_disabled": "Proiecția proceselor este dezactivată pe această instanță.",
           "completion_manual_only": "Această activitate poate fi finalizată doar de o persoană.",
-          "internal_error": "Ceva nu a funcționat. Operațiunea a fost înregistrată ca eșuată."
+          "internal_error": "Ceva nu a funcționat. Operațiunea a fost înregistrată ca eșuată.",
+          "unit_permission_denied": "Nu aveți rolul necesar în această zonă.",
+          "coordinator_not_found": "Persoana respectivă nu mai coordonează această zonă.",
+          "policy_invalid_mode": "Acesta nu este un mod de atribuire.",
+          "policy_default_mode_not_allowed": "Modul implicit trebuie să fie unul dintre modurile permise.",
+          "policy_invalid_value": "Aceste limite trebuie să fie numere întregi pozitive."
         }
       }
     },

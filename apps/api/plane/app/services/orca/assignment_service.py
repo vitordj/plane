@@ -871,6 +871,67 @@ def return_to_queue(
         return AllocationResult(link, decision, DecisionOutcome.QUEUED, None, queue_reason)
 
 
+def suspend(issue, *, actor=None, reason="", expected_decision_id=None) -> AllocationResult:
+    """
+    @description Park an item that is blocked on something outside the area
+    (RFC §6.2): it leaves the queue without going to anybody, and stops being
+    counted as work waiting for a person. The executor, if there was one, is
+    released — the CHECK in the database only allows one in ``assigned``, and
+    keeping them would keep charging the item to their load.
+
+    Their ``IssueAssignee`` row stays, like everywhere else in this module: the
+    person keeps seeing the item, and taking them off it is a human's call.
+    @param issue: The work item.
+    @param actor: The coordinator suspending it.
+    @param reason: Why, for the decision log — the one field that will answer
+        "what was this waiting for?" weeks later.
+    @param expected_decision_id: Optional If-Match against the decision in
+        force, checked under the row lock.
+    @returns The suspension, as an ``AllocationResult`` with no executor.
+    @raises InvalidTransition: The item is already suspended.
+    @raises DecisionStale: The item moved since the caller read it.
+    """
+    with transaction.atomic():
+        link = _locked_link(issue)
+        if expected_decision_id is not None and str(link.current_assignment_decision_id) != str(expected_decision_id):
+            raise DecisionStale(current_decision_id=str(link.current_assignment_decision_id))
+        if link.routing_state == RoutingState.SUSPENDED:
+            raise InvalidTransition(routing_state=link.routing_state)
+
+        previous_executor_id = link.primary_executor_id
+        decision = _record(
+            link,
+            trigger=DecisionTrigger.UI_COORDINATOR,
+            requested_mode=None,
+            resolution=None,
+            outcome=DecisionOutcome.SUSPENDED,
+            snapshot=[],
+            previous_executor_id=previous_executor_id,
+            decided_by=actor,
+            reason=reason,
+        )
+        link.routing_state = RoutingState.SUSPENDED
+        link.primary_executor_id = None
+        link.queue_reason = ""
+        # The clock stops: a suspended item is not waiting for a person, so it
+        # must not accrue queue age or breach an assignment SLA while parked.
+        link.queued_at = None
+        link.assignment_due_at = None
+        link.current_assignment_decision = decision
+        link.save(
+            update_fields=[
+                "routing_state",
+                "primary_executor",
+                "queue_reason",
+                "queued_at",
+                "assignment_due_at",
+                "current_assignment_decision",
+                "updated_at",
+            ]
+        )
+        return AllocationResult(link, decision, DecisionOutcome.SUSPENDED, None)
+
+
 def transfer_unit(
     issue,
     to_unit,

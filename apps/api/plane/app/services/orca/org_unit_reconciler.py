@@ -51,8 +51,10 @@ from django.utils import timezone
 
 # Module imports
 from plane.db.models import (
+    GrantSource,
     OrganizationalProjectAccessState,
     OrganizationalUnit,
+    OrganizationalUnitCoordinator,
     OrganizationalUnitGrant,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
@@ -78,6 +80,37 @@ ACTION_SKIP_MANUAL_DRIFT = "skip_manual_drift"
 ROLE_ADMIN = 20
 ROLE_MEMBER = 15
 ROLE_GUEST = 5
+
+
+@dataclass(frozen=True)
+class AccessSource:
+    """
+    One reason the layer grants a person access to a project.
+
+    @description There are two, and they are not interchangeable. Belonging to
+    an area linked to the project inherits that link's ``default_role``.
+    Coordinating the area inherits Member, whatever the link says, because the
+    job is reading and re-routing the area's queue and that is the role it
+    takes — a coordinator who cannot open the items in their own queue cannot
+    coordinate. Wrapping both in one shape is what lets the planner, the
+    writer and the provenance ledger stay written once.
+    """
+
+    unit_project: OrganizationalUnitProject
+    workspace_member_id: object
+    role: int
+    kind: str
+    membership: Optional[OrganizationalUnitMembership] = None
+    coordinator: Optional[OrganizationalUnitCoordinator] = None
+
+    @property
+    def source_id(self):
+        """@returns Id of the membership or coordination this source is."""
+        return self.membership.id if self.membership is not None else self.coordinator.id
+
+    @property
+    def project_id(self):
+        return self.unit_project.project_id
 
 
 @dataclass
@@ -133,14 +166,17 @@ def _max_edges() -> int:
     return int(getattr(settings, "ORCA_ORG_SYNC_MAX_EDGES", 100))
 
 
-def _active_sources(workspace_id, member_ids=None, project_ids=None):
+def _active_sources(workspace_id, member_ids=None, project_ids=None) -> list[AccessSource]:
     """
-    Every (membership, unit-project) pair that currently sources inherited
-    access in a workspace, optionally narrowed to some members or projects.
+    Every reason the layer currently grants inherited access in a workspace,
+    optionally narrowed to some members or projects.
 
-    @description Only active memberships of active units linked to live,
-    non-archived projects contribute. The workspace member must also still be
-    active in the workspace.
+    @description Only active memberships and active coordinations of active
+    units linked to live, non-archived projects contribute, and the workspace
+    member must also still be active in the workspace. A person who is both a
+    member and the coordinator of the same area yields two sources for the same
+    project: that is the point, since ending one must not take away what the
+    other still justifies.
     """
     queryset = (
         OrganizationalUnitProject.objects.filter(
@@ -158,47 +194,76 @@ def _active_sources(workspace_id, member_ids=None, project_ids=None):
     if not unit_projects:
         return []
 
-    membership_filter = Q(
-        organizational_unit_id__in={up.organizational_unit_id for up in unit_projects},
-        is_active=True,
-        workspace_member__is_active=True,
-    )
+    unit_ids = {unit_project.organizational_unit_id for unit_project in unit_projects}
+
+    membership_filter = Q(organizational_unit_id__in=unit_ids, is_active=True, workspace_member__is_active=True)
+    coordinator_filter = Q(organizational_unit_id__in=unit_ids, is_active=True, workspace_member__is_active=True)
     if member_ids is not None:
         membership_filter &= Q(workspace_member_id__in=member_ids)
+        coordinator_filter &= Q(workspace_member_id__in=member_ids)
 
-    memberships = list(
-        OrganizationalUnitMembership.objects.filter(membership_filter).select_related("workspace_member")
-    )
     memberships_by_unit: dict = {}
-    for membership in memberships:
+    for membership in OrganizationalUnitMembership.objects.filter(membership_filter).select_related("workspace_member"):
         memberships_by_unit.setdefault(membership.organizational_unit_id, []).append(membership)
 
-    sources = []
+    coordinators_by_unit: dict = {}
+    for coordinator in OrganizationalUnitCoordinator.objects.filter(coordinator_filter).select_related(
+        "workspace_member"
+    ):
+        coordinators_by_unit.setdefault(coordinator.organizational_unit_id, []).append(coordinator)
+
+    sources: list[AccessSource] = []
     for unit_project in unit_projects:
         for membership in memberships_by_unit.get(unit_project.organizational_unit_id, []):
-            sources.append((membership, unit_project))
+            sources.append(
+                AccessSource(
+                    unit_project=unit_project,
+                    workspace_member_id=membership.workspace_member_id,
+                    role=unit_project.default_role,
+                    kind=GrantSource.MEMBERSHIP,
+                    membership=membership,
+                )
+            )
+        for coordinator in coordinators_by_unit.get(unit_project.organizational_unit_id, []):
+            sources.append(
+                AccessSource(
+                    unit_project=unit_project,
+                    workspace_member_id=coordinator.workspace_member_id,
+                    # Member, not the link's ``default_role``: coordination is
+                    # a job, not a seat in the area, so it neither inherits an
+                    # Admin link nor is capped by a Guest one. The reconciler
+                    # takes the strongest source, so a coordinator who is also
+                    # an Admin-linked member keeps Admin.
+                    role=ROLE_MEMBER,
+                    kind=GrantSource.COORDINATOR,
+                    coordinator=coordinator,
+                )
+            )
     return sources
 
 
-def _group_sources(sources) -> dict:
+def _group_sources(sources: Iterable[AccessSource]) -> dict:
     """Index active sources by (workspace_member_id, project_id)."""
     grouped: dict = {}
-    for membership, unit_project in sources:
-        key = (membership.workspace_member_id, unit_project.project_id)
-        grouped.setdefault(key, []).append((membership, unit_project))
+    for source in sources:
+        grouped.setdefault((source.workspace_member_id, source.project_id), []).append(source)
     return grouped
 
 
-def _describe_sources(pairs) -> list[dict]:
+def _describe_sources(sources: Iterable[AccessSource]) -> list[dict]:
     """Human-readable provenance for the effective-access response."""
     return [
         {
-            "organizational_unit_id": str(unit_project.organizational_unit_id),
-            "organizational_unit_name": unit_project.organizational_unit.name,
-            "membership_id": str(membership.id),
-            "role": unit_project.default_role,
+            "organizational_unit_id": str(source.unit_project.organizational_unit_id),
+            "organizational_unit_name": source.unit_project.organizational_unit.name,
+            # Kept as ``membership_id`` for both origins so the existing
+            # readers (the effective-access panel, the audit command) do not
+            # have to branch; ``grant_source`` says which kind of id it is.
+            "membership_id": str(source.source_id),
+            "grant_source": source.kind,
+            "role": source.role,
         }
-        for membership, unit_project in pairs
+        for source in sources
     ]
 
 
@@ -320,11 +385,7 @@ def plan_access(workspace_id, member_ids=None, project_ids=None) -> list[AccessC
             continue
         pairs = grouped.get((workspace_member_id, project_id), [])
         inherited = (
-            cap_role_to_workspace_role(
-                max(unit_project.default_role for _, unit_project in pairs), workspace_member.role
-            )
-            if pairs
-            else None
+            cap_role_to_workspace_role(max(source.role for source in pairs), workspace_member.role) if pairs else None
         )
         project_member = project_members.get((workspace_member.member_id, project_id))
         state = states_by_key.get((workspace_member_id, project_id))
@@ -346,11 +407,15 @@ def _sync_grants(workspace_id, grouped, keys) -> None:
     """
     Bring the provenance ledger in line with the currently active sources.
 
-    @description Creates a grant per live (membership, unit-project) pair and
-    revokes grants whose source disappeared, keeping revoked rows for audit.
+    @description Creates a grant per live (source, unit-project) pair — the
+    source being a membership or a coordination — and revokes grants whose
+    source disappeared, keeping revoked rows for audit.
     """
     existing = {
-        (grant.membership_id, grant.unit_project_id): grant
+        # Keyed by origin *and* kind: one person can hold a membership grant
+        # and a coordinator grant on the same unit-project, and the two ids
+        # come from different tables, so the kind is part of the identity.
+        (grant.grant_source, grant.membership_id or grant.coordinator_id, grant.unit_project_id): grant
         for grant in OrganizationalUnitGrant.objects.filter(
             workspace_id=workspace_id,
             workspace_member_id__in={key[0] for key in keys},
@@ -361,26 +426,29 @@ def _sync_grants(workspace_id, grouped, keys) -> None:
     to_create = []
     to_update = []
 
-    for (workspace_member_id, project_id), pairs in grouped.items():
-        for membership, unit_project in pairs:
-            live_keys.add((membership.id, unit_project.id))
-            grant = existing.get((membership.id, unit_project.id))
+    for (workspace_member_id, project_id), sources in grouped.items():
+        for source in sources:
+            key = (source.kind, source.source_id, source.unit_project.id)
+            live_keys.add(key)
+            grant = existing.get(key)
             if grant is None:
                 to_create.append(
                     OrganizationalUnitGrant(
-                        organizational_unit_id=unit_project.organizational_unit_id,
-                        membership_id=membership.id,
-                        unit_project_id=unit_project.id,
+                        organizational_unit_id=source.unit_project.organizational_unit_id,
+                        membership_id=(source.membership.id if source.membership is not None else None),
+                        coordinator_id=(source.coordinator.id if source.coordinator is not None else None),
+                        grant_source=source.kind,
+                        unit_project_id=source.unit_project.id,
                         workspace_member_id=workspace_member_id,
                         project_id=project_id,
                         workspace_id=workspace_id,
-                        granted_role=unit_project.default_role,
+                        granted_role=source.role,
                         is_active=True,
                     )
                 )
-            elif not grant.is_active or grant.granted_role != unit_project.default_role:
+            elif not grant.is_active or grant.granted_role != source.role:
                 grant.is_active = True
-                grant.granted_role = unit_project.default_role
+                grant.granted_role = source.role
                 grant.revoked_at = None
                 to_update.append(grant)
 
@@ -539,9 +607,7 @@ def reconcile_access(workspace_id, member_ids=None, project_ids=None) -> list[Ac
                 continue
             pairs = grouped.get((workspace_member_id, project_id), [])
             inherited = (
-                cap_role_to_workspace_role(
-                    max(unit_project.default_role for _, unit_project in pairs), workspace_member.role
-                )
+                cap_role_to_workspace_role(max(source.role for source in pairs), workspace_member.role)
                 if pairs
                 else None
             )
@@ -628,13 +694,42 @@ def reconcile_membership(membership: OrganizationalUnitMembership, force_sync=Fa
     )
 
 
-def reconcile_unit_project(unit_project: OrganizationalUnitProject, force_sync=False):
-    """Reconcile every member of the unit against one linked project."""
+def workspace_member_ids_for_unit(unit_id) -> list:
+    """
+    @description Everyone whose access one area sources: its members and its
+    coordinators. Both, because a narrowed reconcile that only listed members
+    would leave a coordinator's grant untouched and never notice the area's
+    project list changed under it.
+    @param unit_id: The area.
+    @returns A list of workspace member ids, without duplicates.
+    """
     member_ids = list(
-        OrganizationalUnitMembership.objects.filter(
-            organizational_unit_id=unit_project.organizational_unit_id
-        ).values_list("workspace_member_id", flat=True)
+        OrganizationalUnitMembership.objects.filter(organizational_unit_id=unit_id).values_list(
+            "workspace_member_id", flat=True
+        )
     )
+    member_ids.extend(
+        OrganizationalUnitCoordinator.objects.filter(organizational_unit_id=unit_id).values_list(
+            "workspace_member_id", flat=True
+        )
+    )
+    return list(dict.fromkeys(member_ids))
+
+
+def reconcile_coordinator(coordinator: OrganizationalUnitCoordinator, force_sync=False):
+    """Reconcile every project reachable from one coordination."""
+    project_ids = project_ids_for_unit(coordinator.organizational_unit_id)
+    return dispatch_reconciliation(
+        coordinator.workspace_id,
+        member_ids=[coordinator.workspace_member_id],
+        project_ids=project_ids or None,
+        force_sync=force_sync,
+    )
+
+
+def reconcile_unit_project(unit_project: OrganizationalUnitProject, force_sync=False):
+    """Reconcile every member and coordinator of the unit against one linked project."""
+    member_ids = workspace_member_ids_for_unit(unit_project.organizational_unit_id)
     return dispatch_reconciliation(
         unit_project.workspace_id,
         member_ids=member_ids or None,
@@ -644,15 +739,9 @@ def reconcile_unit_project(unit_project: OrganizationalUnitProject, force_sync=F
 
 
 def reconcile_unit(unit: OrganizationalUnit, force_sync=False):
-    """Reconcile the full cross product of one unit's members and projects."""
-    member_ids = list(
-        OrganizationalUnitMembership.objects.filter(organizational_unit_id=unit.id).values_list(
-            "workspace_member_id", flat=True
-        )
-    )
-    project_ids = list(
-        OrganizationalUnitProject.objects.filter(organizational_unit_id=unit.id).values_list("project_id", flat=True)
-    )
+    """Reconcile the full cross product of one unit's people and projects."""
+    member_ids = workspace_member_ids_for_unit(unit.id)
+    project_ids = project_ids_for_unit(unit.id)
     return dispatch_reconciliation(
         unit.workspace_id,
         member_ids=member_ids or None,

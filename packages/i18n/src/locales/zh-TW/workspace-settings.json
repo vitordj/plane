@@ -697,7 +697,12 @@
           "if_match_required": "此請求需要帶有目前決定的 If-Match 標頭。",
           "process_projection_disabled": "此執行個體已關閉流程投影。",
           "completion_manual_only": "此工作事項只能由人完成。",
-          "internal_error": "發生問題。該操作已記錄為失敗。"
+          "internal_error": "發生問題。該操作已記錄為失敗。",
+          "unit_permission_denied": "您在該區域沒有所需的角色。",
+          "coordinator_not_found": "該成員已不再協調此區域。",
+          "policy_invalid_mode": "這不是一種指派方式。",
+          "policy_default_mode_not_allowed": "預設方式必須是允許的方式之一。",
+          "policy_invalid_value": "這些上限必須是正整數。"
         }
       }
     },

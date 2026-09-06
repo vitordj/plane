@@ -45,6 +45,7 @@ from plane.app.services.orca import (
     set_responsibility,
     unit_covers_project,
     workload_snapshot,
+    workspace_member_ids_for_unit,
 )
 from plane.db.models import (
     AssignmentMode,
@@ -499,11 +500,11 @@ class OrganizationalUnitEffectiveAccessEndpoint(OrganizationalUnitFeatureMixin, 
         if unit is None:
             return orca_not_found("ORG_UNIT_NOT_FOUND")
 
-        member_ids = list(
-            OrganizationalUnitMembership.objects.filter(organizational_unit_id=unit.id).values_list(
-                "workspace_member_id", flat=True
-            )
-        )
+        # Members and coordinators both: a coordinator's access is sourced by
+        # this layer too (item 2.1), so a preview that listed only members
+        # would show an empty plan for an area run by somebody who does not
+        # execute its work.
+        member_ids = workspace_member_ids_for_unit(unit.id)
         project_ids = list(
             OrganizationalUnitProject.objects.filter(organizational_unit_id=unit.id).values_list(
                 "project_id", flat=True

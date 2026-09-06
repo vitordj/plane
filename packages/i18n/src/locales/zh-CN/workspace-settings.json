@@ -697,7 +697,12 @@
           "if_match_required": "此请求需要携带当前决定的 If-Match 标头。",
           "process_projection_disabled": "此实例已关闭流程投影。",
           "completion_manual_only": "此工作项只能由人完成。",
-          "internal_error": "出现问题。该操作已记录为失败。"
+          "internal_error": "出现问题。该操作已记录为失败。",
+          "unit_permission_denied": "您在该区域没有所需的角色。",
+          "coordinator_not_found": "该成员已不再协调此区域。",
+          "policy_invalid_mode": "这不是一种分配方式。",
+          "policy_default_mode_not_allowed": "默认方式必须是允许的方式之一。",
+          "policy_invalid_value": "这些上限必须是正整数。"
         }
       }
     },

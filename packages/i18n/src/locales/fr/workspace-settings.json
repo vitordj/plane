@@ -697,7 +697,12 @@
           "if_match_required": "Cette requête nécessite un en-tête If-Match portant la décision en cours.",
           "process_projection_disabled": "La projection de processus est désactivée sur cette instance.",
           "completion_manual_only": "Cet élément de travail ne peut être terminé que par une personne.",
-          "internal_error": "Une erreur est survenue. L’opération a été enregistrée comme échouée."
+          "internal_error": "Une erreur est survenue. L’opération a été enregistrée comme échouée.",
+          "unit_permission_denied": "Vous n’avez pas le rôle requis dans cette zone.",
+          "coordinator_not_found": "Cette personne ne coordonne plus cette zone.",
+          "policy_invalid_mode": "Ce n’est pas un mode d’attribution.",
+          "policy_default_mode_not_allowed": "Le mode par défaut doit faire partie des modes autorisés.",
+          "policy_invalid_value": "Ces limites doivent être des nombres entiers positifs."
         }
       }
     },

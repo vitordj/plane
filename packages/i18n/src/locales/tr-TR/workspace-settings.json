@@ -697,7 +697,12 @@
           "if_match_required": "Bu istek, geçerli kararı taşıyan bir If-Match başlığı gerektiriyor.",
           "process_projection_disabled": "Süreç izdüşümü bu örnekte kapalı.",
           "completion_manual_only": "Bu iş öğesi yalnızca bir kişi tarafından tamamlanabilir.",
-          "internal_error": "Bir şeyler ters gitti. İşlem başarısız olarak kaydedildi."
+          "internal_error": "Bir şeyler ters gitti. İşlem başarısız olarak kaydedildi.",
+          "unit_permission_denied": "Bu alanda gerekli role sahip değilsiniz.",
+          "coordinator_not_found": "Bu kişi artık bu alanı koordine etmiyor.",
+          "policy_invalid_mode": "Bu bir atama modu değil.",
+          "policy_default_mode_not_allowed": "Varsayılan mod, izin verilen modlardan biri olmalı.",
+          "policy_invalid_value": "Bu sınırlar pozitif tam sayı olmalı."
         }
       }
     },

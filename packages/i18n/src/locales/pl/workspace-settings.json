@@ -697,7 +697,12 @@
           "if_match_required": "To żądanie wymaga nagłówka If-Match z aktualną decyzją.",
           "process_projection_disabled": "Projekcja procesów jest wyłączona w tej instancji.",
           "completion_manual_only": "Ten element pracy może zakończyć tylko osoba.",
-          "internal_error": "Coś poszło nie tak. Operacja została zapisana jako nieudana."
+          "internal_error": "Coś poszło nie tak. Operacja została zapisana jako nieudana.",
+          "unit_permission_denied": "Nie masz wymaganej roli w tym obszarze.",
+          "coordinator_not_found": "Ta osoba nie koordynuje już tego obszaru.",
+          "policy_invalid_mode": "To nie jest tryb przydzielania.",
+          "policy_default_mode_not_allowed": "Tryb domyślny musi być jednym z dozwolonych trybów.",
+          "policy_invalid_value": "Te limity muszą być dodatnimi liczbami całkowitymi."
         }
       }
     },

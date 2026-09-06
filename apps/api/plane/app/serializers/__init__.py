@@ -154,7 +154,9 @@ from .organizational_unit import (
     OrganizationalDirectoryConnectionSerializer,
     OrganizationalDirectoryIdentitySerializer,
     OrganizationalUnitSerializer,
+    OrganizationalUnitCoordinatorSerializer,
     OrganizationalUnitMembershipSerializer,
     OrganizationalUnitMembershipCreateSerializer,
     OrganizationalUnitProjectSerializer,
+    QueueItemSerializer,
 )
