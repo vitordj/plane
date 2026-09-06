@@ -7,6 +7,9 @@
 import { API_BASE_URL } from "@plane/constants";
 import type {
   IAssignmentCandidates,
+  IAvailabilityState,
+  IAvailabilityWindow,
+  IMembershipAllocation,
   IAssignmentDecisionEntry,
   IAssignmentPolicy,
   IAssignmentPolicyResolution,
@@ -495,6 +498,107 @@ export class OrganizationalUnitService extends APIService {
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;
+      });
+  }
+
+  // --- availability and per-area limits (Phase 3) ---------------------------
+
+  /** @description Your own absences, and whether one covers right now. */
+  async getMyAvailability(workspaceSlug: string): Promise<IAvailabilityState> {
+    return this.get(`/api/orca/workspaces/${workspaceSlug}/availability/me/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description Record an absence for yourself.
+   * @param data `unavailable_until` omitted means indefinite, which is allowed
+   * and is what long leave looks like.
+   */
+  async addMyAvailability(
+    workspaceSlug: string,
+    data: { unavailable_from: string; unavailable_until?: string | null; reason?: string }
+  ): Promise<IAvailabilityWindow> {
+    return this.post(`/api/orca/workspaces/${workspaceSlug}/availability/me/`, data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  async removeMyAvailability(workspaceSlug: string, windowId: string): Promise<void> {
+    return this.delete(`/api/orca/workspaces/${workspaceSlug}/availability/me/?id=${windowId}`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /**
+   * @description Somebody else's absences. A coordinator of any area they
+   * belong to, or a workspace Admin — any area, because an absence is not
+   * per-area and demanding the "right" coordinator would leave whoever
+   * noticed unable to record it.
+   */
+  async getMemberAvailability(workspaceSlug: string, workspaceMemberId: string): Promise<IAvailabilityState> {
+    return this.get(`/api/orca/workspaces/${workspaceSlug}/members/${workspaceMemberId}/availability/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async addMemberAvailability(
+    workspaceSlug: string,
+    workspaceMemberId: string,
+    data: { unavailable_from: string; unavailable_until?: string | null; reason?: string }
+  ): Promise<IAvailabilityWindow> {
+    return this.post(`/api/orca/workspaces/${workspaceSlug}/members/${workspaceMemberId}/availability/`, data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  async removeMemberAvailability(workspaceSlug: string, workspaceMemberId: string, windowId: string): Promise<void> {
+    return this.delete(
+      `/api/orca/workspaces/${workspaceSlug}/members/${workspaceMemberId}/availability/?id=${windowId}`
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
+      });
+  }
+
+  /** @description What this area may put on this person. */
+  async getMembershipAllocation(
+    workspaceSlug: string,
+    unitId: string,
+    membershipId: string
+  ): Promise<IMembershipAllocation> {
+    return this.get(`${this.basePath(workspaceSlug)}/${unitId}/members/${membershipId}/allocation/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description Write it. Sending `max_open_items` at all requires being a
+   * coordinator; anybody may send `accepts_new_work` for themselves.
+   */
+  async writeMembershipAllocation(
+    workspaceSlug: string,
+    unitId: string,
+    membershipId: string,
+    data: { accepts_new_work?: boolean; max_open_items?: number | null }
+  ): Promise<IMembershipAllocation> {
+    return this.put(`${this.basePath(workspaceSlug)}/${unitId}/members/${membershipId}/allocation/`, data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response;
       });
   }
 }

@@ -111,6 +111,15 @@ app.conf.beat_schedule = {
         "task": "plane.bgtasks.organizational_queue_task.sweep_assignment_sla",
         "schedule": crontab(minute="*/15"),  # Every 15 minutes
     },
+    # Orca: find work held by somebody who is no longer available to do it — on
+    # holiday, out of the area, deactivated, or without access to the project —
+    # and put it back in the area's queue. Hourly, because the states it
+    # notices change on a human timescale and each pass writes decisions and
+    # notifications. Writes nothing while ORCA_AVAILABILITY_ENABLED is off.
+    "check-every-hour-for-unavailable-executors": {
+        "task": "plane.bgtasks.organizational_availability_task.sweep_unavailable_executors",
+        "schedule": crontab(minute=40),  # Every hour at :40
+    },
 }
 
 

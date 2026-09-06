@@ -67,6 +67,10 @@ ORCA_ERROR_CODES = {
     "ORG_POLICY_INVALID_MODE": 4934,
     "ORG_POLICY_DEFAULT_MODE_NOT_ALLOWED": 4935,
     "ORG_POLICY_INVALID_VALUE": 4936,
+    # availability and per-membership limits (Phase 3)
+    "ORG_INVALID_AVAILABILITY_WINDOW": 4937,
+    "ORG_AVAILABILITY_NOT_FOUND": 4938,
+    "ORG_ALLOCATION_LIMIT_FORBIDDEN": 4939,
 }
 
 # The English prose each code carries. Kept here rather than at the call sites
@@ -110,6 +114,9 @@ ORCA_ERROR_MESSAGES = {
     "ORG_POLICY_INVALID_MODE": "Invalid assignment mode in this policy",
     "ORG_POLICY_DEFAULT_MODE_NOT_ALLOWED": "The default mode has to be one of the allowed modes",
     "ORG_POLICY_INVALID_VALUE": "Policy limits have to be positive whole numbers",
+    "ORG_INVALID_AVAILABILITY_WINDOW": "An absence needs a start, and an end that comes after it",
+    "ORG_AVAILABILITY_NOT_FOUND": "That absence was not found",
+    "ORG_ALLOCATION_LIMIT_FORBIDDEN": "Only a coordinator of this area can set someone's limit",
 }
 
 

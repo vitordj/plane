@@ -481,7 +481,10 @@
           "coordinator_not_found": "Essa pessoa não coordena mais esta área.",
           "policy_invalid_mode": "Esse não é um modo de atribuição.",
           "policy_default_mode_not_allowed": "O modo padrão precisa ser um dos modos permitidos.",
-          "policy_invalid_value": "Esses limites precisam ser números inteiros positivos."
+          "policy_invalid_value": "Esses limites precisam ser números inteiros positivos.",
+          "invalid_availability_window": "Uma ausência precisa de um início e de um fim depois dele.",
+          "availability_not_found": "Essa ausência não está mais lá.",
+          "allocation_limit_forbidden": "Só a coordenação desta área pode definir o limite de alguém."
         },
         "work": {
           "refresh": "Atualizar",
@@ -542,7 +545,11 @@
             "project_role_too_low": "É convidado neste projeto",
             "bot": "Conta de automação",
             "at_max_open_items": "No limite de itens em aberto",
-            "other": "Não elegível agora"
+            "other": "Não elegível agora",
+            "unavailable": "Ausente agora",
+            "opted_out": "Não está recebendo trabalho desta área",
+            "member_limit": "No próprio limite",
+            "policy_limit": "No limite da área"
           },
           "transfer_modal": {
             "title": "Encaminhar para outra área",
@@ -574,7 +581,9 @@
               "command": "Um comando de manutenção"
             },
             "replaced": "substitui: {outcome}, {when}"
-          }
+          },
+          "suggestion": "sugestão: {name}",
+          "suggestion_accept": "atribuir"
         },
         "coordinators": {
           "select_person": "Escolha uma pessoa",
@@ -605,6 +614,33 @@
           "title": "Minhas áreas",
           "description": "O que as áreas das quais você faz parte têm esperando, e o que você está carregando.",
           "empty": "Você ainda não faz parte de nenhuma área."
+        },
+        "availability": {
+          "title": "Disponibilidade",
+          "title_for": "Disponibilidade de {name}",
+          "description": "Enquanto uma ausência está valendo, a distribuição automática da área pula você. Nada do que você já tem é tirado.",
+          "here": "Recebendo trabalho agora.",
+          "away": "Ausente agora.",
+          "from": "De",
+          "until": "Até",
+          "indefinite": "Sem data de volta",
+          "add": "Registrar",
+          "empty": "Nenhuma ausência registrada.",
+          "remove_aria": "Remover esta ausência",
+          "accepts_new_work": "Recebe trabalho novo desta área",
+          "limit_of": "limite {count}",
+          "reason": {
+            "vacation": "Férias",
+            "leave": "Afastamento",
+            "other": "Outro"
+          },
+          "toast": {
+            "added": "Ausência registrada.",
+            "not_added": "Não foi possível registrar.",
+            "removed": "Ausência removida.",
+            "not_removed": "Não foi possível remover.",
+            "not_saved": "Não foi possível salvar."
+          }
         }
       },
       "projects": {

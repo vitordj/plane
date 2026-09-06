@@ -705,7 +705,10 @@
           "coordinator_not_found": "その人はこのエリアのコーディネーターではなくなりました。",
           "policy_invalid_mode": "それは割り当てモードではありません。",
           "policy_default_mode_not_allowed": "既定のモードは、許可されたモードのいずれかである必要があります。",
-          "policy_invalid_value": "これらの上限は正の整数である必要があります。"
+          "policy_invalid_value": "これらの上限は正の整数である必要があります。",
+          "invalid_availability_window": "不在には開始日時と、それより後の終了日時が必要です。",
+          "availability_not_found": "その不在はもうありません。",
+          "allocation_limit_forbidden": "誰かの上限を設定できるのは、このエリアのコーディネーターだけです。"
         },
         "work": {
           "refresh": "更新",
@@ -766,7 +769,11 @@
             "project_role_too_low": "このプロジェクトではゲストです",
             "bot": "自動化アカウント",
             "at_max_open_items": "未完了件数の上限に達しています",
-            "other": "現在は対象外です"
+            "other": "現在は対象外です",
+            "unavailable": "現在は不在",
+            "opted_out": "このエリアからは作業を受けていません",
+            "member_limit": "本人が設定した上限に達しています",
+            "policy_limit": "エリアの上限に達しています"
           },
           "transfer_modal": {
             "title": "別のエリアへ移す",
@@ -798,7 +805,9 @@
               "command": "保守コマンド"
             },
             "replaced": "置き換え: {outcome}（{when}）"
-          }
+          },
+          "suggestion": "候補: {name}",
+          "suggestion_accept": "割り当て"
         },
         "coordinators": {
           "select_person": "担当者を選択",
@@ -829,6 +838,33 @@
           "title": "自分のエリア",
           "description": "所属するエリアで待っている作業と、あなたが抱えている作業です。",
           "empty": "まだどのエリアにも所属していません。"
+        },
+        "availability": {
+          "title": "稼働状況",
+          "title_for": "{name} の稼働状況",
+          "description": "不在の期間中、エリアの自動割り当てはあなたを飛ばします。すでに担当している作業が外されることはありません。",
+          "here": "現在は作業を受けられます。",
+          "away": "現在は不在です。",
+          "from": "開始",
+          "until": "終了",
+          "indefinite": "終了日なし",
+          "add": "登録",
+          "empty": "登録された不在はありません。",
+          "remove_aria": "この不在を削除",
+          "accepts_new_work": "このエリアから新しい作業を受ける",
+          "limit_of": "上限 {count}",
+          "reason": {
+            "vacation": "休暇",
+            "leave": "休職",
+            "other": "その他"
+          },
+          "toast": {
+            "added": "不在を登録しました。",
+            "not_added": "登録できませんでした。",
+            "removed": "不在を削除しました。",
+            "not_removed": "削除できませんでした。",
+            "not_saved": "保存できませんでした。"
+          }
         }
       }
     },

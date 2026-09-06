@@ -705,7 +705,10 @@
           "coordinator_not_found": "Orang itu tidak lagi mengoordinasikan area ini.",
           "policy_invalid_mode": "Itu bukan mode penugasan.",
           "policy_default_mode_not_allowed": "Mode bawaan harus salah satu dari mode yang diizinkan.",
-          "policy_invalid_value": "Batas ini harus berupa bilangan bulat positif."
+          "policy_invalid_value": "Batas ini harus berupa bilangan bulat positif.",
+          "invalid_availability_window": "Ketidakhadiran perlu waktu mulai dan waktu berakhir setelahnya.",
+          "availability_not_found": "Ketidakhadiran itu sudah tidak ada.",
+          "allocation_limit_forbidden": "Hanya koordinator area ini yang bisa menetapkan batas seseorang."
         },
         "work": {
           "refresh": "Muat ulang",
@@ -766,7 +769,11 @@
             "project_role_too_low": "Tamu di proyek ini",
             "bot": "Akun otomatisasi",
             "at_max_open_items": "Sudah mencapai batas item terbuka",
-            "other": "Saat ini tidak memenuhi syarat"
+            "other": "Saat ini tidak memenuhi syarat",
+            "unavailable": "Saat ini tidak ada",
+            "opted_out": "Tidak menerima pekerjaan dari area ini",
+            "member_limit": "Sudah di batas mereka sendiri",
+            "policy_limit": "Sudah di batas area"
           },
           "transfer_modal": {
             "title": "Pindahkan ke area lain",
@@ -798,7 +805,9 @@
               "command": "Perintah pemeliharaan"
             },
             "replaced": "menggantikan: {outcome}, {when}"
-          }
+          },
+          "suggestion": "saran: {name}",
+          "suggestion_accept": "tugaskan"
         },
         "coordinators": {
           "select_person": "Pilih orang",
@@ -829,6 +838,33 @@
           "title": "Area saya",
           "description": "Apa yang menunggu di area yang Anda ikuti, dan apa yang Anda bawa.",
           "empty": "Anda belum tergabung di area mana pun."
+        },
+        "availability": {
+          "title": "Ketersediaan",
+          "title_for": "Ketersediaan {name}",
+          "description": "Selama ketidakhadiran berlangsung, pembagian otomatis area akan melewati Anda. Yang sudah Anda pegang tidak diambil.",
+          "here": "Saat ini menerima pekerjaan.",
+          "away": "Saat ini tidak ada.",
+          "from": "Dari",
+          "until": "Sampai",
+          "indefinite": "Tanpa tanggal berakhir",
+          "add": "Catat",
+          "empty": "Belum ada ketidakhadiran yang dicatat.",
+          "remove_aria": "Hapus ketidakhadiran ini",
+          "accepts_new_work": "Menerima pekerjaan baru dari area ini",
+          "limit_of": "batas {count}",
+          "reason": {
+            "vacation": "Cuti",
+            "leave": "Izin",
+            "other": "Lainnya"
+          },
+          "toast": {
+            "added": "Ketidakhadiran dicatat.",
+            "not_added": "Tidak bisa dicatat.",
+            "removed": "Ketidakhadiran dihapus.",
+            "not_removed": "Tidak bisa dihapus.",
+            "not_saved": "Tidak bisa disimpan."
+          }
         }
       }
     },

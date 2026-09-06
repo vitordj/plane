@@ -705,7 +705,10 @@
           "coordinator_not_found": "该成员已不再协调此区域。",
           "policy_invalid_mode": "这不是一种分配方式。",
           "policy_default_mode_not_allowed": "默认方式必须是允许的方式之一。",
-          "policy_invalid_value": "这些上限必须是正整数。"
+          "policy_invalid_value": "这些上限必须是正整数。",
+          "invalid_availability_window": "缺勤需要一个开始时间，以及在其之后的结束时间。",
+          "availability_not_found": "该缺勤记录已不存在。",
+          "allocation_limit_forbidden": "只有该区域的协调人才能设置某人的上限。"
         },
         "work": {
           "refresh": "刷新",
@@ -766,7 +769,11 @@
             "project_role_too_low": "在该项目中是访客",
             "bot": "自动化账号",
             "at_max_open_items": "已达未完成事项上限",
-            "other": "目前不符合条件"
+            "other": "目前不符合条件",
+            "unavailable": "目前不在",
+            "opted_out": "不接收该区域的工作",
+            "member_limit": "已达其个人上限",
+            "policy_limit": "已达该区域上限"
           },
           "transfer_modal": {
             "title": "转给其他区域",
@@ -798,7 +805,9 @@
               "command": "运维命令"
             },
             "replaced": "取代：{outcome}，{when}"
-          }
+          },
+          "suggestion": "建议：{name}",
+          "suggestion_accept": "指派"
         },
         "coordinators": {
           "select_person": "选择成员",
@@ -829,6 +838,33 @@
           "title": "我的区域",
           "description": "你所属区域中待处理的工作，以及你正在承担的工作。",
           "empty": "你还不属于任何区域。"
+        },
+        "availability": {
+          "title": "可用状态",
+          "title_for": "{name} 的可用状态",
+          "description": "在缺勤期间，该区域的自动分配会跳过你。你已经承担的工作不会被收回。",
+          "here": "目前可以接收工作。",
+          "away": "目前不在。",
+          "from": "开始",
+          "until": "结束",
+          "indefinite": "无结束日期",
+          "add": "记录",
+          "empty": "没有记录任何缺勤。",
+          "remove_aria": "删除此缺勤记录",
+          "accepts_new_work": "接收该区域的新工作",
+          "limit_of": "上限 {count}",
+          "reason": {
+            "vacation": "休假",
+            "leave": "请假",
+            "other": "其他"
+          },
+          "toast": {
+            "added": "已记录缺勤。",
+            "not_added": "无法记录。",
+            "removed": "已删除缺勤记录。",
+            "not_removed": "无法删除。",
+            "not_saved": "无法保存。"
+          }
         }
       }
     },

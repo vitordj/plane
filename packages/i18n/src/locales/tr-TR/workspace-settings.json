@@ -705,7 +705,10 @@
           "coordinator_not_found": "Bu kişi artık bu alanı koordine etmiyor.",
           "policy_invalid_mode": "Bu bir atama modu değil.",
           "policy_default_mode_not_allowed": "Varsayılan mod, izin verilen modlardan biri olmalı.",
-          "policy_invalid_value": "Bu sınırlar pozitif tam sayı olmalı."
+          "policy_invalid_value": "Bu sınırlar pozitif tam sayı olmalı.",
+          "invalid_availability_window": "Bir yokluğun başlangıcı ve ondan sonra gelen bir bitişi olmalı.",
+          "availability_not_found": "O yokluk kaydı artık yok.",
+          "allocation_limit_forbidden": "Birinin sınırını yalnızca bu alanın koordinatörü belirleyebilir."
         },
         "work": {
           "refresh": "Yenile",
@@ -766,7 +769,11 @@
             "project_role_too_low": "Bu projede misafir",
             "bot": "Otomasyon hesabı",
             "at_max_open_items": "Açık öğe sınırında",
-            "other": "Şu anda uygun değil"
+            "other": "Şu anda uygun değil",
+            "unavailable": "Şu anda burada değil",
+            "opted_out": "Bu alandan iş almıyor",
+            "member_limit": "Kendi sınırında",
+            "policy_limit": "Alanın sınırında"
           },
           "transfer_modal": {
             "title": "Başka bir alana taşı",
@@ -798,7 +805,9 @@
               "command": "Bir bakım komutu"
             },
             "replaced": "şunun yerine geçer: {outcome}, {when}"
-          }
+          },
+          "suggestion": "öneri: {name}",
+          "suggestion_accept": "ata"
         },
         "coordinators": {
           "select_person": "Bir kişi seçin",
@@ -829,6 +838,33 @@
           "title": "Alanlarım",
           "description": "Dahil olduğunuz alanlarda ne bekliyor ve siz neyi taşıyorsunuz.",
           "empty": "Henüz hiçbir alana dahil değilsiniz."
+        },
+        "availability": {
+          "title": "Uygunluk",
+          "title_for": "{name} kişisinin uygunluğu",
+          "description": "Bir yokluk sürerken alanın otomatik dağıtımı sizi atlar. Halihazırda üstlendikleriniz elinizden alınmaz.",
+          "here": "Şu anda iş alıyor.",
+          "away": "Şu anda burada değil.",
+          "from": "Başlangıç",
+          "until": "Bitiş",
+          "indefinite": "Bitiş tarihi yok",
+          "add": "Kaydet",
+          "empty": "Kayıtlı yokluk yok.",
+          "remove_aria": "Bu yokluk kaydını sil",
+          "accepts_new_work": "Bu alandan yeni iş alır",
+          "limit_of": "sınır {count}",
+          "reason": {
+            "vacation": "İzin",
+            "leave": "Mazeret",
+            "other": "Diğer"
+          },
+          "toast": {
+            "added": "Yokluk kaydedildi.",
+            "not_added": "Kaydedilemedi.",
+            "removed": "Yokluk kaydı silindi.",
+            "not_removed": "Silinemedi.",
+            "not_saved": "Kaydedilemedi."
+          }
         }
       }
     },

@@ -52,6 +52,10 @@ ALERT_QUIET_PERIOD = timedelta(hours=4)
 # "this has been waiting too long" without parsing the title.
 SENDER_ALLOCATION_FAILED = "in_app:orca_queue:allocation_failed"
 SENDER_ASSIGNMENT_OVERDUE = "in_app:orca_queue:assignment_overdue"
+# A third, for work the availability sweep put back (item 3.4). Its own sender
+# because the coordinator's next move is different: this item had somebody, and
+# what it needs is a new one rather than a first one.
+SENDER_WORK_RETURNED = "in_app:orca_queue:work_returned"
 
 
 def alert_recipients(unit) -> list:
@@ -197,3 +201,20 @@ def may_alert_again(link, *, now=None) -> bool:
     if link.last_alerted_at is None:
         return True
     return (now or timezone.now()) - link.last_alerted_at >= ALERT_QUIET_PERIOD
+
+
+def alert_work_returned(link, *, reason="") -> int:
+    """
+    @description Tell the area that work came back because the person holding
+    it is no longer there (RFC §6.9). Nobody clicked, so without this the item
+    simply reappears in the queue with no explanation — and the explanation is
+    the part a coordinator needs to act.
+    @param link: The ``IssueOrganizationalUnit`` that was returned.
+    @param reason: Why, in the sweep's vocabulary (``away``,
+        ``left_the_area``, ``left_the_workspace``, ``lost_project_access``).
+    @returns How many notifications were written.
+    """
+    title = "A work item came back to the queue: its executor is unavailable"
+    if reason:
+        title = f"A work item came back to the queue ({reason})"
+    return _notify(link, sender=SENDER_WORK_RETURNED, title=title)

@@ -48,3 +48,24 @@ def orca_public_api_enabled() -> bool:
     @returns: ``True`` when the public automation API may answer.
     """
     return bool(organizational_units_enabled() and getattr(settings, "ORCA_PUBLIC_API_ENABLED", False))
+
+
+def orca_availability_enabled() -> bool:
+    """
+    Whether absences and per-membership limits affect anything.
+
+    @description Off by default (RFC §9, Phase 3). With it off the ranking
+    answers as it did before the feature existed — everybody is available,
+    everybody accepts work — and the sweep that returns work held by somebody
+    who went away does nothing. Degrading to the previous behaviour rather than
+    to a broken one is what makes this a switch an operator can flip during an
+    incident.
+
+    Also gated by the layer's own kill switch: availability without the
+    organizational layer has nothing to rank.
+
+    Read at call time, like the two above.
+
+    @returns: ``True`` when availability may exclude people and return work.
+    """
+    return bool(organizational_units_enabled() and getattr(settings, "ORCA_AVAILABILITY_ENABLED", False))

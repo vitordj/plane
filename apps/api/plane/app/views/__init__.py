@@ -262,6 +262,11 @@ from .organizational_unit import (
     OrcaConfigEndpoint,
     OrganizationalUnitPolicyEndpoint,
 )
+from .organizational_availability import (
+    OrcaMemberAvailabilityEndpoint,
+    OrcaMembershipAllocationEndpoint,
+    OrcaMyAvailabilityEndpoint,
+)
 from .organizational_queue import (
     IssueOrganizationalUnitCandidatesEndpoint,
     IssueOrganizationalUnitClaimEndpoint,

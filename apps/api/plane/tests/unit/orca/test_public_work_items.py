@@ -142,7 +142,7 @@ class TestCreating:
         assert response.status_code == 201, response.data
         assert response.data["responsibility"]["routing_state"] == RoutingState.ASSIGNED
         assert response.data["responsibility"]["primary_executor"] is not None
-        assert response.data["decision"]["algorithm_version"] == "lb-1"
+        assert response.data["decision"]["algorithm_version"] == "lb-2"
 
     def test_self_claim_leaves_it_waiting_to_be_taken(self, caller, project, world):
         response = post(caller, project, body(mode="self_claim"))

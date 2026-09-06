@@ -472,6 +472,118 @@ and it shows one area at a time, chosen by a tab, because somebody in four
 areas is answering "what does _this_ area need from me" rather than merging
 four queues into one list.
 
+## Availability
+
+Two questions that look alike and are not, and the layer keeps them apart:
+
+- **is this person here?** — about the person, everywhere. A holiday does not
+  apply to one of somebody's three areas and not the others;
+- **will this area put more on them?** — about one membership. Somebody can be
+  perfectly available and still have stopped taking new work from one area.
+
+The first is a **window**, not a switch: `unavailable_from` and an
+`unavailable_until` that may be `null` for indefinite. A switch has to be
+turned back by somebody who remembers, and the one thing everybody forgets
+after a holiday is the toggle they set before it. Overlapping windows are
+allowed — two systems recording one absence, or somebody extending their own —
+because the question the ranking asks is whether _any_ window covers now. The
+only rule the database enforces is that a window may not end before it starts.
+
+The second is `MembershipAllocationSettings`: `accepts_new_work` and a
+`max_open_items` of that person's own. Turning acceptance off takes nothing
+away — work already held stays held; it only stops the area giving them more.
+
+### What it changes in the ranking
+
+`least_loaded` becomes `lb-2`: `lb-1` plus three exclusions, all read at
+decision time inside the allocation's lock.
+
+| `excluded_reason` | Meaning                                    |
+| ----------------- | ------------------------------------------ |
+| `unavailable`     | An absence covers this instant.            |
+| `opted_out`       | This membership is not accepting new work. |
+| `member_limit`    | At the person's own `max_open_items`.      |
+| `policy_limit`    | At the area's `max_open_items_per_member`. |
+
+The last two are separate on purpose: "the area caps everyone at five" and
+"she set her own limit at two" are different answers to "why was she skipped?",
+and the decision's `candidates_snapshot` is the only place that can give
+either. The stricter of the two wins.
+
+`algorithm_version` moves to `lb-2` on every new decision, and old rows keep
+`lb-1`, so a decision is never read as if it had used today's rules.
+
+### The sweep
+
+An assignment does not expire. The person on an item can go away, leave the
+area, be deactivated, lose access to the project, or be taken off the item
+through Plane's own assignee field — and the item keeps saying their name,
+which is worse than being in a queue, because a queue is something a
+coordinator looks at.
+
+`plane.bgtasks.organizational_availability_task.sweep_unavailable_executors`
+runs hourly and returns those items to their areas' queues with
+`queue_reason=executor_unavailable`, one `AssignmentDecision` per item with
+`trigger=availability`, and an alert to the area's coordinators. It never
+chooses a replacement: putting the work back where a person can see it is the
+whole job, and who takes it next is a human's decision (RFC §1.2).
+
+Five reasons, and only one is an absence:
+
+| Reason                  | What happened                                    |
+| ----------------------- | ------------------------------------------------ |
+| `away`                  | An absence covers now.                           |
+| `left_the_area`         | The membership was deactivated.                  |
+| `left_the_workspace`    | The workspace member was deactivated.            |
+| `lost_project_access`   | No longer an assignable project member.          |
+| `no_longer_an_assignee` | Removed from the item through Plane's own field. |
+
+That last one is invariant I3 breaking from the native side (RFC §12). A
+signal in `services/orca/signals.py` catches it the instant a single assignee
+row is deleted; the app's own "change the assignees" path deletes them as a
+queryset, which fires no signal at all, and the hourly pass is what catches
+that. Both go through the same service, so either way the return is locked,
+recorded and indistinguishable from a coordinator's — except in its trigger,
+which says nobody clicked.
+
+For an operator there is also
+`python manage.py sweep_unavailable_executors [--workspace <slug>] [--write]`,
+which reports by default. Note it does **not** require
+`ORCA_AVAILABILITY_ENABLED`: three of its five reasons strand work whether or
+not the instance has adopted absences. The scheduled task does require it,
+because a scheduled write is a different promise from one an operator asked
+for.
+
+### Coming back is not automatic
+
+A holiday ending gives the person nothing back. The item is in the queue and a
+coordinator decides — which may well be "back to the same person". For items
+that came back this way the queue shows a **suggestion**: the top of the
+ranking, computed on demand, with one click to accept it and
+`reason="accepted_suggestion"` on the resulting decision. Only for those items:
+one that never had anybody is an ordinary queue item, and the coordinator's own
+reading beats a suggestion.
+
+### Who may write what
+
+| Route                                                                 | Who                                                                                                            |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `GET/POST/DELETE .../availability/me/`                                | anybody, for themselves                                                                                        |
+| `GET/POST/DELETE .../members/{workspace_member_id}/availability/`     | a coordinator of **any** area that person belongs to, or a workspace Admin                                     |
+| `GET/PUT .../organizational-units/{unit_id}/members/{pk}/allocation/` | that area's coordinator or an Admin; the person themselves may set `accepts_new_work` but not `max_open_items` |
+
+"Any area" for absences is deliberate: an absence is not per-area, so demanding
+the right coordinator would leave whoever noticed unable to record it. And the
+split on the allocation route is the line between a preference and a rule —
+"not more right now" is the person's to say; a number that shapes how the area
+distributes work is the area's.
+
+Everything above is behind `ORCA_AVAILABILITY_ENABLED`, which ships **off**.
+Off, the helpers answer the way they did before the feature existed — everybody
+available, everybody accepting, no limit — the ranking is `lb-2` in name only,
+the routes answer 404, and the sweep writes nothing. A switch whose off
+position changes the answers is a switch nobody flips during an incident.
+
 ## Directory sync
 
 Microsoft Entra ID can supply unit membership over SCIM 2.0, so onboarding
@@ -491,10 +603,11 @@ in [entra-directory-sync.md](./entra-directory-sync.md).
 
 ## Settings
 
-| Setting                   | Default | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| ------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ORCA_ORG_UNITS_ENABLED`  | `1`     | Kill switch. Accepts `1/true/yes/on` and `0/false/no/off` (any other value refuses to start). Set to `0` and every `/api/orca/` organizational-unit route answers 404 — the directory connection endpoints and the SCIM provisioning endpoints included — both management commands refuse to run, the hourly directory pass and any queued reconciliation task return without writing, and the UI hides the layer. The switch is read where the write would happen, so a task already on the queue when it is flipped does not land afterwards. Existing inherited `ProjectMember` rows are left exactly as they are — the switch stops the layer acting, it does not withdraw access it already granted. Re-enable and reconcile to resume. |
-| `ORCA_ORG_SYNC_MAX_EDGES` | `100`   | Fan-out threshold for inline vs. Celery reconciliation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Setting                     | Default | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ORCA_ORG_UNITS_ENABLED`    | `1`     | Kill switch. Accepts `1/true/yes/on` and `0/false/no/off` (any other value refuses to start). Set to `0` and every `/api/orca/` organizational-unit route answers 404 — the directory connection endpoints and the SCIM provisioning endpoints included — both management commands refuse to run, the hourly directory pass and any queued reconciliation task return without writing, and the UI hides the layer. The switch is read where the write would happen, so a task already on the queue when it is flipped does not land afterwards. Existing inherited `ProjectMember` rows are left exactly as they are — the switch stops the layer acting, it does not withdraw access it already granted. Re-enable and reconcile to resume. |
+| `ORCA_ORG_SYNC_MAX_EDGES`   | `100`   | Fan-out threshold for inline vs. Celery reconciliation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `ORCA_AVAILABILITY_ENABLED` | `0`     | Absences and per-membership limits. Off, the ranking ignores both, the availability routes answer 404 and the hourly sweep writes nothing — the behaviour the layer had before Phase 3. On, `lb-2` excludes people who are away, who stopped accepting work from an area, or who are at a ceiling, and the sweep returns work held by somebody who became unavailable. Same accepted spellings as the switches above.                                                                                                                                                                                                                                                                                                                        |
 
 Directory provisioning is configured per workspace, not per instance — a
 workspace admin issues the SCIM token from **Workspace settings → Areas**.
@@ -520,7 +633,11 @@ policy constraints), `test_assignment_concurrency.py`,
 own surfaces are in `test_unit_queue_api.py` (the permission matrix of every
 route, the ordering, the capabilities, the policy writer) and
 `test_queue_alerts.py` (who hears about a breach, the four-hour quiet period,
-and the sweep's refusals).
+and the sweep's refusals). Availability has three: `test_availability.py` (the
+window's arithmetic and what `lb-2` excludes), `test_availability_api.py` (who
+may write whose absence, and the sweep's five reasons) and
+`test_availability_closing.py` (the round trip, and that nothing moves without
+a decision).
 
 They cover joining and leaving units, the strongest-role resolution across two
 units, manual access surviving removal, manual promotions never being

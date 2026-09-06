@@ -9,16 +9,22 @@ sidecar behavior attached to a core model from the outside, per FORK.md — no
 core model gains a column and no upstream call site is patched.
 """
 
+# Python imports
+import logging
+
 # Django imports
-from django.db.models.signals import post_save, pre_save
+from django.db import transaction
+from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 
 # Module imports
-from plane.db.models import Profile, UserLanguagePreference
+from plane.db.models import IssueAssignee, IssueOrganizationalUnit, Profile, RoutingState, UserLanguagePreference
 from plane.license.models import InstanceConfiguration
 
 from .language import DEFAULT_LANGUAGE_KEY, follower_profiles, get_default_language, normalize_language
+
+logger = logging.getLogger("plane.orca")
 
 # Set on a Profile instance while this module is the one changing its language,
 # so the receiver that records a personal choice can tell its own writes apart
@@ -176,3 +182,74 @@ def apply_default_language_to_followers(sender, instance, **kwargs):
         return
 
     follower_profiles(previous).exclude(language=language).update(language=language, updated_at=timezone.now())
+
+
+def _return_if_executor_was_removed(issue_id, assignee_id) -> None:
+    """
+    Put an item back in its area's queue when its executor is taken off it.
+
+    @description Invariant I3 says an assigned item has a primary executor who
+    is also a live ``IssueAssignee``. Plane's own assignee field can break that
+    from the outside — somebody removes the person in the work item panel — and
+    what is left behind is an item the area believes is being worked on by
+    nobody. The queue is where an item with nobody on it belongs.
+
+    Runs after commit: a removal that rolls back must not leave a decision
+    behind, and the return is a write of its own.
+    @param issue_id: The work item whose assignee was removed.
+    @param assignee_id: The person removed.
+    @returns: None.
+    """
+
+    def _return():
+        from .assignment_service import return_to_queue
+        from plane.db.models import DecisionTrigger, QueueReason
+
+        link = (
+            IssueOrganizationalUnit.objects.filter(
+                issue_id=issue_id, routing_state=RoutingState.ASSIGNED, primary_executor_id=assignee_id
+            )
+            .select_related("issue")
+            .first()
+        )
+        if link is None:
+            return
+        # Re-added in the same breath — the app's "change the assignees" path
+        # deletes them all and recreates them — so the person is still on it
+        # and nothing is wrong.
+        if IssueAssignee.objects.filter(issue_id=issue_id, assignee_id=assignee_id).exists():
+            return
+
+        try:
+            return_to_queue(
+                link.issue,
+                reason="the executor was removed from the work item",
+                queue_reason=QueueReason.EXECUTOR_UNAVAILABLE,
+                trigger=DecisionTrigger.AVAILABILITY,
+            )
+        except Exception:  # noqa: BLE001 - never fail somebody's edit over this
+            logger.exception("orca could not return an item whose executor was removed")
+
+    transaction.on_commit(_return)
+
+
+@receiver(post_delete, sender=IssueAssignee)
+def executor_hard_removed_from_item(sender, instance, **kwargs):
+    """Return the item when its executor's assignee row is deleted outright."""
+    _return_if_executor_was_removed(instance.issue_id, instance.assignee_id)
+
+
+@receiver(post_save, sender=IssueAssignee)
+def executor_soft_removed_from_item(sender, instance, created, **kwargs):
+    """
+    Return the item when its executor's assignee row is soft-deleted.
+
+    @description Soft deletion in this codebase is a ``save()`` with
+    ``deleted_at`` set, so it arrives here rather than at ``post_delete``. The
+    queryset form (``.filter(...).delete()``) writes with ``UPDATE`` and fires
+    no signal at all — that path is covered hourly by the availability sweep,
+    which checks the same invariant from the other side.
+    """
+    if created or instance.deleted_at is None:
+        return
+    _return_if_executor_was_removed(instance.issue_id, instance.assignee_id)

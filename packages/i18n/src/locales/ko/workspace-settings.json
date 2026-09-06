@@ -705,7 +705,10 @@
           "coordinator_not_found": "그 사람은 더 이상 이 영역을 조율하지 않습니다.",
           "policy_invalid_mode": "그것은 배정 방식이 아닙니다.",
           "policy_default_mode_not_allowed": "기본 방식은 허용된 방식 중 하나여야 합니다.",
-          "policy_invalid_value": "이 한도는 양의 정수여야 합니다."
+          "policy_invalid_value": "이 한도는 양의 정수여야 합니다.",
+          "invalid_availability_window": "부재에는 시작 시점과 그보다 뒤의 종료 시점이 필요합니다.",
+          "availability_not_found": "그 부재 기록은 더 이상 없습니다.",
+          "allocation_limit_forbidden": "다른 사람의 한도는 이 영역의 조율 담당자만 정할 수 있습니다."
         },
         "work": {
           "refresh": "새로 고침",
@@ -766,7 +769,11 @@
             "project_role_too_low": "이 프로젝트에서 게스트",
             "bot": "자동화 계정",
             "at_max_open_items": "미완료 항목 한도에 도달",
-            "other": "지금은 대상이 아님"
+            "other": "지금은 대상이 아님",
+            "unavailable": "지금은 부재 중",
+            "opted_out": "이 영역에서는 업무를 받지 않음",
+            "member_limit": "본인이 정한 한도에 도달",
+            "policy_limit": "영역 한도에 도달"
           },
           "transfer_modal": {
             "title": "다른 영역으로 넘기기",
@@ -798,7 +805,9 @@
               "command": "유지 관리 명령"
             },
             "replaced": "대체함: {outcome}, {when}"
-          }
+          },
+          "suggestion": "추천: {name}",
+          "suggestion_accept": "배정"
         },
         "coordinators": {
           "select_person": "사람 선택",
@@ -829,6 +838,33 @@
           "title": "내 영역",
           "description": "내가 속한 영역에서 대기 중인 업무와, 내가 맡고 있는 업무입니다.",
           "empty": "아직 어떤 영역에도 속해 있지 않습니다."
+        },
+        "availability": {
+          "title": "가용 상태",
+          "title_for": "{name} 님의 가용 상태",
+          "description": "부재 기간에는 영역의 자동 배정이 나를 건너뜁니다. 이미 맡고 있는 일은 회수되지 않습니다.",
+          "here": "지금은 업무를 받습니다.",
+          "away": "지금은 부재 중입니다.",
+          "from": "시작",
+          "until": "종료",
+          "indefinite": "종료일 없음",
+          "add": "등록",
+          "empty": "등록된 부재가 없습니다.",
+          "remove_aria": "이 부재 기록 삭제",
+          "accepts_new_work": "이 영역에서 새 업무를 받음",
+          "limit_of": "한도 {count}",
+          "reason": {
+            "vacation": "휴가",
+            "leave": "휴직",
+            "other": "기타"
+          },
+          "toast": {
+            "added": "부재를 등록했습니다.",
+            "not_added": "등록하지 못했습니다.",
+            "removed": "부재 기록을 삭제했습니다.",
+            "not_removed": "삭제하지 못했습니다.",
+            "not_saved": "저장하지 못했습니다."
+          }
         }
       }
     },

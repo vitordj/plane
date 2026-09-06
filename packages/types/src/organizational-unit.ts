@@ -265,6 +265,42 @@ export type TAssignmentPolicyPayload = Partial<
   >
 >;
 
+/** Why somebody is not taking work. Three coarse values, never a diagnosis. */
+export type TUnavailabilityReason = "vacation" | "leave" | "other";
+
+/** Who recorded an absence; v1 only ever writes `manual`. */
+export type TAvailabilitySource = "manual" | "hr" | "directory";
+
+/** One window in which somebody is not taking work. */
+export interface IAvailabilityWindow {
+  id: string;
+  workspace_member: string;
+  member_id: string;
+  display_name: string;
+  unavailable_from: string;
+  /** `null` means indefinite — the caller closes it. */
+  unavailable_until: string | null;
+  reason: TUnavailabilityReason;
+  source: TAvailabilitySource;
+  external_id: string;
+  created_at: string;
+}
+
+export interface IAvailabilityState {
+  available: boolean;
+  current: IAvailabilityWindow | null;
+  windows: IAvailabilityWindow[];
+}
+
+/** What one area may put on one person. */
+export interface IMembershipAllocation {
+  membership: string;
+  member_id: string;
+  accepts_new_work: boolean;
+  max_open_items: number | null;
+  settings: Record<string, unknown> | null;
+}
+
 export interface IOrganizationalUnitWorkload {
   workspace_member_id: string;
   display_name: string;

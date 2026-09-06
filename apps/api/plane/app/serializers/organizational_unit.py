@@ -11,6 +11,7 @@ from rest_framework import serializers
 from plane.db.models import (
     AssignmentDecision,
     IssueOrganizationalUnit,
+    MembershipAllocationSettings,
     OrganizationalDirectoryConnection,
     OrganizationalDirectoryIdentity,
     OrganizationalUnit,
@@ -18,6 +19,7 @@ from plane.db.models import (
     OrganizationalUnitCoordinator,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
+    WorkspaceMemberAvailability,
 )
 from plane.db.models.organizational_unit import OrganizationalUnitMemberRole
 
@@ -476,3 +478,46 @@ class QueueItemSerializer(BaseSerializer):
             "updated_at",
         ]
         read_only_fields = fields
+
+
+class WorkspaceMemberAvailabilitySerializer(BaseSerializer):
+    """
+    One window in which somebody is not taking work.
+
+    @description ``reason`` is one of three coarse values on purpose — the
+    layer needs to know that a person is away, not why in any detail a
+    colleague could read off a queue screen. Nothing here carries a note field
+    for the same reason.
+    """
+
+    member_id = serializers.UUIDField(source="workspace_member.member_id", read_only=True)
+    display_name = serializers.CharField(source="workspace_member.member.display_name", read_only=True)
+
+    class Meta:
+        model = WorkspaceMemberAvailability
+        fields = [
+            "id",
+            "workspace_member",
+            "member_id",
+            "display_name",
+            "unavailable_from",
+            "unavailable_until",
+            "reason",
+            "source",
+            "external_id",
+            "created_at",
+        ]
+        # The window's identity is the person and the interval. Editing one in
+        # place would rewrite history a decision may already have been made
+        # under; the way to change an absence is to delete it and record the
+        # one that is true.
+        read_only_fields = ["workspace_member", "source", "external_id", "created_at"]
+
+
+class MembershipAllocationSettingsSerializer(BaseSerializer):
+    """What one person will accept from one area."""
+
+    class Meta:
+        model = MembershipAllocationSettings
+        fields = ["id", "membership", "accepts_new_work", "max_open_items", "created_at", "updated_at"]
+        read_only_fields = ["id", "membership", "created_at", "updated_at"]

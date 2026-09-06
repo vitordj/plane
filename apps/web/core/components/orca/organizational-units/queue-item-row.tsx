@@ -20,6 +20,8 @@ import { calculateTimeAgoShort, generateWorkItemLink } from "@plane/utils";
 // hooks
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 import { useUser } from "@/hooks/store/user/user-user";
+// components
+import { QueueItemSuggestion } from "./queue-item-suggestion";
 
 type Props = {
   workspaceSlug: string;
@@ -97,6 +99,17 @@ export const QueueItemRow = observer(function QueueItemRow(props: Props) {
           {item.queue_reason && <span>· {t(`${OU}.work.reason.${item.queue_reason}`)}</span>}
           {item.age_seconds !== null && item.queued_at && (
             <span>· {t(`${OU}.work.waiting_for`, { duration: calculateTimeAgoShort(item.queued_at) })}</span>
+          )}
+          {/* Only for an item that came back because its executor became
+              unavailable: there the machine knows the shape of the answer and
+              the coordinator is doing recovery work they did not plan. */}
+          {item.queue_reason === "executor_unavailable" && (
+            <QueueItemSuggestion
+              workspaceSlug={workspaceSlug}
+              unitId={unitId}
+              item={item}
+              canAssign={capabilities.can_assign}
+            />
           )}
           {item.assignment_overdue && (
             <Tooltip tooltipContent={t(`${OU}.work.overdue_tooltip`)}>

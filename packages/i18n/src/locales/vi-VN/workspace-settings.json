@@ -705,7 +705,10 @@
           "coordinator_not_found": "Người đó không còn điều phối khu vực này.",
           "policy_invalid_mode": "Đó không phải là một chế độ phân công.",
           "policy_default_mode_not_allowed": "Chế độ mặc định phải là một trong các chế độ được phép.",
-          "policy_invalid_value": "Các giới hạn này phải là số nguyên dương."
+          "policy_invalid_value": "Các giới hạn này phải là số nguyên dương.",
+          "invalid_availability_window": "Một kỳ vắng mặt cần thời điểm bắt đầu và thời điểm kết thúc sau đó.",
+          "availability_not_found": "Kỳ vắng mặt đó không còn nữa.",
+          "allocation_limit_forbidden": "Chỉ người điều phối khu vực này mới có thể đặt giới hạn cho người khác."
         },
         "work": {
           "refresh": "Làm mới",
@@ -766,7 +769,11 @@
             "project_role_too_low": "Là khách trong dự án này",
             "bot": "Tài khoản tự động",
             "at_max_open_items": "Đã đạt giới hạn việc đang mở",
-            "other": "Hiện chưa đủ điều kiện"
+            "other": "Hiện chưa đủ điều kiện",
+            "unavailable": "Hiện đang vắng mặt",
+            "opted_out": "Không nhận việc từ khu vực này",
+            "member_limit": "Đã đạt giới hạn của họ",
+            "policy_limit": "Đã đạt giới hạn của khu vực"
           },
           "transfer_modal": {
             "title": "Chuyển sang khu vực khác",
@@ -798,7 +805,9 @@
               "command": "Một lệnh bảo trì"
             },
             "replaced": "thay thế: {outcome}, {when}"
-          }
+          },
+          "suggestion": "gợi ý: {name}",
+          "suggestion_accept": "giao"
         },
         "coordinators": {
           "select_person": "Chọn một người",
@@ -829,6 +838,33 @@
           "title": "Khu vực của tôi",
           "description": "Những gì đang chờ ở các khu vực bạn thuộc về, và những gì bạn đang đảm nhận.",
           "empty": "Bạn chưa thuộc khu vực nào."
+        },
+        "availability": {
+          "title": "Tình trạng sẵn sàng",
+          "title_for": "Tình trạng sẵn sàng của {name}",
+          "description": "Trong thời gian vắng mặt, việc phân công tự động của khu vực sẽ bỏ qua bạn. Những gì bạn đang đảm nhận không bị lấy đi.",
+          "here": "Hiện đang nhận việc.",
+          "away": "Hiện đang vắng mặt.",
+          "from": "Từ",
+          "until": "Đến",
+          "indefinite": "Không có ngày kết thúc",
+          "add": "Ghi nhận",
+          "empty": "Chưa ghi nhận kỳ vắng mặt nào.",
+          "remove_aria": "Xoá kỳ vắng mặt này",
+          "accepts_new_work": "Nhận việc mới từ khu vực này",
+          "limit_of": "giới hạn {count}",
+          "reason": {
+            "vacation": "Nghỉ phép",
+            "leave": "Nghỉ việc riêng",
+            "other": "Khác"
+          },
+          "toast": {
+            "added": "Đã ghi nhận kỳ vắng mặt.",
+            "not_added": "Không thể ghi nhận.",
+            "removed": "Đã xoá kỳ vắng mặt.",
+            "not_removed": "Không thể xoá.",
+            "not_saved": "Không thể lưu."
+          }
         }
       }
     },

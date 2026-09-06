@@ -203,4 +203,4 @@ class TestTheLogsAreAppendOnly:
 
         decision.refresh_from_db()
         assert decision.candidates_snapshot == snapshot
-        assert decision.algorithm_version == "lb-1"
+        assert decision.algorithm_version == "lb-2"

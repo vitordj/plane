@@ -32,6 +32,9 @@ from plane.app.views import (
     IssueOrganizationalUnitReturnEndpoint,
     IssueOrganizationalUnitSuspendEndpoint,
     IssueOrganizationalUnitTransferEndpoint,
+    OrcaMemberAvailabilityEndpoint,
+    OrcaMembershipAllocationEndpoint,
+    OrcaMyAvailabilityEndpoint,
     OrganizationalDirectoryConnectionEndpoint,
     OrganizationalDirectoryResyncEndpoint,
     OrganizationalDirectoryTokenEndpoint,
@@ -254,6 +257,24 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/candidates/",
         IssueOrganizationalUnitCandidatesEndpoint.as_view(),
         name="issue-organizational-unit-candidates",
+    ),
+    # Absences, and what one area may put on one person (Phase 3). Recording a
+    # holiday is not an administrative act, so ``availability/me/`` is open to
+    # anybody for themselves; the other two check the area's own roles.
+    path(
+        "orca/workspaces/<str:slug>/availability/me/",
+        OrcaMyAvailabilityEndpoint.as_view(),
+        name="orca-my-availability",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/members/<uuid:workspace_member_id>/availability/",
+        OrcaMemberAvailabilityEndpoint.as_view(),
+        name="orca-member-availability",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/members/<uuid:pk>/allocation/",
+        OrcaMembershipAllocationEndpoint.as_view(),
+        name="organizational-unit-member-allocation",
     ),
     # Directory connection administration. Workspace-admin only: issuing a SCIM
     # token hands a machine the power to grant project access.

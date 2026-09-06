@@ -7,6 +7,9 @@
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import type {
   IAssignmentCandidates,
+  IAvailabilityState,
+  IAvailabilityWindow,
+  IMembershipAllocation,
   IAssignmentDecisionEntry,
   IAssignmentPolicy,
   IAssignmentPolicyResolution,
@@ -162,6 +165,31 @@ export interface IOrganizationalUnitStore {
     options?: { unitId?: string; reason?: string }
   ) => Promise<IIssueRouting>;
   fetchCandidates: (workspaceSlug: string, projectId: string, issueId: string) => Promise<IAssignmentCandidates>;
+  // availability and per-area limits (item 3.3)
+  fetchMyAvailability: (workspaceSlug: string) => Promise<IAvailabilityState>;
+  addMyAvailability: (
+    workspaceSlug: string,
+    data: { unavailable_from: string; unavailable_until?: string | null; reason?: string }
+  ) => Promise<IAvailabilityWindow>;
+  removeMyAvailability: (workspaceSlug: string, windowId: string) => Promise<void>;
+  fetchMemberAvailability: (workspaceSlug: string, workspaceMemberId: string) => Promise<IAvailabilityState>;
+  addMemberAvailability: (
+    workspaceSlug: string,
+    workspaceMemberId: string,
+    data: { unavailable_from: string; unavailable_until?: string | null; reason?: string }
+  ) => Promise<IAvailabilityWindow>;
+  removeMemberAvailability: (workspaceSlug: string, workspaceMemberId: string, windowId: string) => Promise<void>;
+  fetchMembershipAllocation: (
+    workspaceSlug: string,
+    unitId: string,
+    membershipId: string
+  ) => Promise<IMembershipAllocation>;
+  writeMembershipAllocation: (
+    workspaceSlug: string,
+    unitId: string,
+    membershipId: string,
+    data: { accepts_new_work?: boolean; max_open_items?: number | null }
+  ) => Promise<IMembershipAllocation>;
 }
 
 /**
@@ -598,4 +626,43 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
 
   fetchCandidates = async (workspaceSlug: string, projectId: string, issueId: string) =>
     this.service.getCandidates(workspaceSlug, projectId, issueId);
+
+  // --- availability and per-area limits (item 3.3) --------------------------
+  //
+  // None of these are cached in the store. An absence is read at the moment a
+  // form opens and written straight back, and a cached copy would let two
+  // screens disagree about whether somebody is here — which is the one thing
+  // this feature must never do.
+
+  fetchMyAvailability = async (workspaceSlug: string) => this.service.getMyAvailability(workspaceSlug);
+
+  addMyAvailability = async (
+    workspaceSlug: string,
+    data: { unavailable_from: string; unavailable_until?: string | null; reason?: string }
+  ) => this.service.addMyAvailability(workspaceSlug, data);
+
+  removeMyAvailability = async (workspaceSlug: string, windowId: string) =>
+    this.service.removeMyAvailability(workspaceSlug, windowId);
+
+  fetchMemberAvailability = async (workspaceSlug: string, workspaceMemberId: string) =>
+    this.service.getMemberAvailability(workspaceSlug, workspaceMemberId);
+
+  addMemberAvailability = async (
+    workspaceSlug: string,
+    workspaceMemberId: string,
+    data: { unavailable_from: string; unavailable_until?: string | null; reason?: string }
+  ) => this.service.addMemberAvailability(workspaceSlug, workspaceMemberId, data);
+
+  removeMemberAvailability = async (workspaceSlug: string, workspaceMemberId: string, windowId: string) =>
+    this.service.removeMemberAvailability(workspaceSlug, workspaceMemberId, windowId);
+
+  fetchMembershipAllocation = async (workspaceSlug: string, unitId: string, membershipId: string) =>
+    this.service.getMembershipAllocation(workspaceSlug, unitId, membershipId);
+
+  writeMembershipAllocation = async (
+    workspaceSlug: string,
+    unitId: string,
+    membershipId: string,
+    data: { accepts_new_work?: boolean; max_open_items?: number | null }
+  ) => this.service.writeMembershipAllocation(workspaceSlug, unitId, membershipId, data);
 }

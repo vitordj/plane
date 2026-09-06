@@ -17,6 +17,9 @@ import { Avatar, CustomSearchSelect, CustomSelect, Loader } from "@plane/ui";
 // hooks
 import { useMember } from "@/hooks/store/use-member";
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
+// components
+import { AvailabilityForm } from "./availability-form";
+import { MemberAllocationToggle } from "./member-allocation-toggle";
 
 type Props = {
   workspaceSlug: string;
@@ -41,6 +44,9 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  // Whose absences are open below their row; one at a time, because the form
+  // is tall and a list of twelve open ones is unreadable.
+  const [availabilityFor, setAvailabilityFor] = useState<string | null>(null);
 
   const memberships = store.getMembersByUnitId(unitId);
 
@@ -165,45 +171,76 @@ export const OrganizationalUnitMembersTab = observer(function OrganizationalUnit
       ) : (
         <div className="divide-custom-border-200 border-custom-border-200 divide-y rounded border">
           {memberships.map((membership) => (
-            <div key={membership.id} className="flex items-center justify-between gap-3 px-4 py-3">
-              <div className="flex min-w-0 items-center gap-2">
-                <Avatar name={membership.display_name} src={membership.avatar_url} size="md" />
-                <div className="min-w-0">
-                  <p className="text-sm text-custom-text-100 flex min-w-0 items-center gap-2">
-                    <span className="truncate">{membership.display_name}</span>
-                    {/* Removing a directory-added person here is undone by the
+            <div key={membership.id} className="flex flex-col gap-3 px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2">
+                  <Avatar name={membership.display_name} src={membership.avatar_url} size="md" />
+                  <div className="min-w-0">
+                    <p className="text-sm text-custom-text-100 flex min-w-0 items-center gap-2">
+                      <span className="truncate">{membership.display_name}</span>
+                      {/* Removing a directory-added person here is undone by the
                         next sync; the badge is the warning before the click. */}
-                    {membership.sync_source === "scim" && (
-                      <span className="text-custom-text-400 shrink-0 rounded bg-layer-1 px-1.5 py-0.5 text-[10px] tracking-wide uppercase">
-                        {directoryBadge}
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-xs text-custom-text-300 truncate">{membership.email}</p>
+                      {membership.sync_source === "scim" && (
+                        <span className="text-custom-text-400 shrink-0 rounded bg-layer-1 px-1.5 py-0.5 text-[10px] tracking-wide uppercase">
+                          {directoryBadge}
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-xs text-custom-text-300 truncate">{membership.email}</p>
+                  </div>
+                </div>
+                <div className="flex flex-shrink-0 items-center gap-2">
+                  <CustomSelect
+                    value={membership.role}
+                    label={roleLabel(membership.role)}
+                    onChange={(value: TOrganizationalUnitMemberRole) => handleRoleChange(membership.id, value)}
+                    buttonClassName="text-xs"
+                  >
+                    {unitRoles.map((role) => (
+                      <CustomSelect.Option key={role.value} value={role.value}>
+                        {role.label}
+                      </CustomSelect.Option>
+                    ))}
+                  </CustomSelect>
+                  <button
+                    type="button"
+                    className="text-xs text-custom-text-300 hover:bg-custom-background-80 focus-visible:ring-custom-primary-100 rounded px-2 py-1 outline-none focus-visible:ring-2"
+                    onClick={() =>
+                      setAvailabilityFor((current) =>
+                        current === membership.workspace_member ? null : membership.workspace_member
+                      )
+                    }
+                  >
+                    {t(`${OU}.availability.title`)}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={t(`${OU}.members.remove_aria`, { name: membership.display_name })}
+                    className="text-custom-text-300 hover:bg-custom-background-80 focus-visible:ring-custom-primary-100 rounded p-1 outline-none focus-visible:ring-2"
+                    onClick={() => handleRemove(membership.id, membership.display_name)}
+                  >
+                    <X className="size-4" />
+                  </button>
                 </div>
               </div>
-              <div className="flex flex-shrink-0 items-center gap-2">
-                <CustomSelect
-                  value={membership.role}
-                  label={roleLabel(membership.role)}
-                  onChange={(value: TOrganizationalUnitMemberRole) => handleRoleChange(membership.id, value)}
-                  buttonClassName="text-xs"
-                >
-                  {unitRoles.map((role) => (
-                    <CustomSelect.Option key={role.value} value={role.value}>
-                      {role.label}
-                    </CustomSelect.Option>
-                  ))}
-                </CustomSelect>
-                <button
-                  type="button"
-                  aria-label={t(`${OU}.members.remove_aria`, { name: membership.display_name })}
-                  className="text-custom-text-300 hover:bg-custom-background-80 focus-visible:ring-custom-primary-100 rounded p-1 outline-none focus-visible:ring-2"
-                  onClick={() => handleRemove(membership.id, membership.display_name)}
-                >
-                  <X className="size-4" />
-                </button>
-              </div>
+              {/* What this area may put on them — off does not take anything
+                  away, it only stops the area giving them more. Renders
+                  nothing while availability is switched off. */}
+              <MemberAllocationToggle
+                workspaceSlug={workspaceSlug}
+                unitId={unitId}
+                membershipId={membership.id}
+                canSetLimit
+              />
+              {availabilityFor === membership.workspace_member && (
+                <div className="border-custom-border-200 rounded border p-3">
+                  <AvailabilityForm
+                    workspaceSlug={workspaceSlug}
+                    workspaceMemberId={membership.workspace_member}
+                    memberName={membership.display_name}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>

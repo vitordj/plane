@@ -12,7 +12,7 @@ import { useTranslation } from "@plane/i18n";
 import { Loader } from "@plane/ui";
 // components
 import { PageHead } from "@/components/core/page-title";
-import { OrganizationalUnitWorkTab } from "@/components/orca/organizational-units";
+import { AvailabilityForm, OrganizationalUnitWorkTab } from "@/components/orca/organizational-units";
 // hooks
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 
@@ -66,6 +66,12 @@ const MyAreasPage = observer(function MyAreasPage() {
           <h3 className="text-xl text-custom-text-100 font-medium">{title}</h3>
           <p className="text-sm text-custom-text-300">{t(`${OU}.my_areas.description`)}</p>
         </div>
+
+        {/* Your own absences live here rather than in profile Preferences: an
+            absence belongs to a workspace membership, and that page is not
+            workspace-scoped. This is also the page where knowing you are
+            marked away actually matters. */}
+        <AvailabilityForm workspaceSlug={workspaceSlug.toString()} />
 
         {isLoading ? (
           <Loader className="flex flex-col gap-2">

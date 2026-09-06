@@ -3,7 +3,7 @@
 # See the LICENSE file for details.
 
 """
-The assignment service: policy resolution, the lb-1 ranking, and the states.
+The assignment service: policy resolution, the lb-2 ranking, and the states.
 
 Every rule here is one an allocation is wrong without, and every one of them
 was previously either absent or restated at a call site:
@@ -250,7 +250,10 @@ class TestRanking:
         ranked = rank_candidates(unit, project.id, resolve_policy(unit, project.id))
 
         assert [candidate.user_id for candidate in ranked.eligible] == [idle.id]
-        assert [candidate.excluded_reason for candidate in ranked.excluded] == ["at_max_open_items"]
+        # ``policy_limit``, not a generic "at the cap": the area's ceiling and a
+        # person's own are different rules, and the snapshot says which one
+        # skipped them (lb-2, RFC §3.2).
+        assert [candidate.excluded_reason for candidate in ranked.excluded] == ["policy_limit"]
 
     def test_the_order_is_deterministic_on_a_tie(self, unit, project, staffed):
         first = rank_candidates(unit, project.id)
@@ -316,7 +319,7 @@ class TestAllocate:
         assert result.link.primary_executor_id == result.chosen_user_id
         assert IssueAssignee.objects.filter(issue=issue, assignee_id=result.chosen_user_id).exists()
         assert result.decision.candidates_snapshot  # the ranking is on the record
-        assert result.decision.algorithm_version == "lb-1"
+        assert result.decision.algorithm_version == "lb-2"
         assert result.decision.policy_version == 1
 
     def test_least_loaded_with_nobody_eligible_fails_loudly(

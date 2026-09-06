@@ -481,7 +481,10 @@
           "coordinator_not_found": "That person no longer coordinates this area.",
           "policy_invalid_mode": "That is not an assignment mode.",
           "policy_default_mode_not_allowed": "The default mode has to be one of the allowed modes.",
-          "policy_invalid_value": "Those limits have to be positive whole numbers."
+          "policy_invalid_value": "Those limits have to be positive whole numbers.",
+          "invalid_availability_window": "An absence needs a start, and an end that comes after it.",
+          "availability_not_found": "That absence is no longer there.",
+          "allocation_limit_forbidden": "Only a coordinator of this area can set someone's limit."
         },
         "work": {
           "refresh": "Refresh",
@@ -542,7 +545,11 @@
             "project_role_too_low": "Guest in this project",
             "bot": "Automation account",
             "at_max_open_items": "At the limit of open items",
-            "other": "Not eligible right now"
+            "other": "Not eligible right now",
+            "unavailable": "Away right now",
+            "opted_out": "Not taking work from this area",
+            "member_limit": "At their own limit",
+            "policy_limit": "At the area's limit"
           },
           "transfer_modal": {
             "title": "Move to another area",
@@ -574,7 +581,9 @@
               "command": "A maintenance command"
             },
             "replaced": "replaces: {outcome}, {when}"
-          }
+          },
+          "suggestion": "suggestion: {name}",
+          "suggestion_accept": "assign"
         },
         "coordinators": {
           "select_person": "Choose a person",
@@ -605,6 +614,33 @@
           "title": "My areas",
           "description": "What the areas you belong to have waiting, and what you are carrying.",
           "empty": "You don't belong to any area yet."
+        },
+        "availability": {
+          "title": "Availability",
+          "title_for": "{name}'s availability",
+          "description": "While an absence is running, the area's automatic allocation skips you. Nothing you already hold is taken away.",
+          "here": "Taking work right now.",
+          "away": "Away right now.",
+          "from": "From",
+          "until": "Until",
+          "indefinite": "No end date",
+          "add": "Record",
+          "empty": "No absences recorded.",
+          "remove_aria": "Remove this absence",
+          "accepts_new_work": "Takes new work from this area",
+          "limit_of": "limit {count}",
+          "reason": {
+            "vacation": "Vacation",
+            "leave": "Leave",
+            "other": "Other"
+          },
+          "toast": {
+            "added": "Absence recorded.",
+            "not_added": "Couldn't record it.",
+            "removed": "Absence removed.",
+            "not_removed": "Couldn't remove it.",
+            "not_saved": "Couldn't save it."
+          }
         }
       },
       "projects": {

@@ -705,7 +705,10 @@
           "coordinator_not_found": "Táto osoba už túto oblasť nekoordinuje.",
           "policy_invalid_mode": "To nie je režim prideľovania.",
           "policy_default_mode_not_allowed": "Predvolený režim musí byť jedným z povolených režimov.",
-          "policy_invalid_value": "Tieto limity musia byť kladné celé čísla."
+          "policy_invalid_value": "Tieto limity musia byť kladné celé čísla.",
+          "invalid_availability_window": "Neprítomnosť potrebuje začiatok a konec po ňom.",
+          "availability_not_found": "Táto neprítomnosť už neexistuje.",
+          "allocation_limit_forbidden": "Limit niekoho iného môže nastaviť len koordinátor tejto oblasti."
         },
         "work": {
           "refresh": "Obnoviť",
@@ -766,7 +769,11 @@
             "project_role_too_low": "V tomto projekte hosť",
             "bot": "Účet automatizácie",
             "at_max_open_items": "Na limite otvorených položiek",
-            "other": "Teraz nespĺňa podmienky"
+            "other": "Teraz nespĺňa podmienky",
+            "unavailable": "Momentálne neprítomný",
+            "opted_out": "Neprijíma prácu z tejto oblasti",
+            "member_limit": "Na vlastnom limite",
+            "policy_limit": "Na limite oblasti"
           },
           "transfer_modal": {
             "title": "Odovzdať inej oblasti",
@@ -798,7 +805,9 @@
               "command": "Servisný príkaz"
             },
             "replaced": "nahrádza: {outcome}, {when}"
-          }
+          },
+          "suggestion": "návrh: {name}",
+          "suggestion_accept": "prideliť"
         },
         "coordinators": {
           "select_person": "Vyberte osobu",
@@ -829,6 +838,33 @@
           "title": "Moje oblasti",
           "description": "Čo čaká v oblastiach, do ktorých patríte, a čo nesiete vy.",
           "empty": "Zatiaľ nepatríte do žiadnej oblasti."
+        },
+        "availability": {
+          "title": "Dostupnosť",
+          "title_for": "Dostupnosť: {name}",
+          "description": "Počas neprítomnosti vás automatické prideľovanie oblasti preskakuje. Nič, čo už máte, sa vám neberie.",
+          "here": "Momentálne prijíma prácu.",
+          "away": "Momentálne neprítomný.",
+          "from": "Od",
+          "until": "Do",
+          "indefinite": "Bez dátumu návratu",
+          "add": "Zaznamenať",
+          "empty": "Nie sú zaznamenané žiadne neprítomnosti.",
+          "remove_aria": "Odobrať túto neprítomnosť",
+          "accepts_new_work": "Prijíma novú prácu z tejto oblasti",
+          "limit_of": "limit {count}",
+          "reason": {
+            "vacation": "Dovolenka",
+            "leave": "Voľno",
+            "other": "Iné"
+          },
+          "toast": {
+            "added": "Neprítomnosť zaznamenaná.",
+            "not_added": "Nepodarilo sa zaznamenať.",
+            "removed": "Neprítomnosť odobratá.",
+            "not_removed": "Nepodarilo sa odobrať.",
+            "not_saved": "Nepodarilo sa uložiť."
+          }
         }
       }
     },

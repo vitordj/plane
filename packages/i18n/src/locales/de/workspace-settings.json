@@ -705,7 +705,10 @@
           "coordinator_not_found": "Diese Person koordiniert diesen Bereich nicht mehr.",
           "policy_invalid_mode": "Das ist kein Zuweisungsmodus.",
           "policy_default_mode_not_allowed": "Der Standardmodus muss einer der erlaubten Modi sein.",
-          "policy_invalid_value": "Diese Grenzwerte müssen positive ganze Zahlen sein."
+          "policy_invalid_value": "Diese Grenzwerte müssen positive ganze Zahlen sein.",
+          "invalid_availability_window": "Eine Abwesenheit braucht einen Beginn und ein Ende danach.",
+          "availability_not_found": "Diese Abwesenheit gibt es nicht mehr.",
+          "allocation_limit_forbidden": "Nur die Koordination dieses Bereichs kann jemandes Limit festlegen."
         },
         "work": {
           "refresh": "Aktualisieren",
@@ -766,7 +769,11 @@
             "project_role_too_low": "Nur Gast in diesem Projekt",
             "bot": "Automatisierungskonto",
             "at_max_open_items": "Am Limit offener Elemente",
-            "other": "Derzeit nicht infrage kommend"
+            "other": "Derzeit nicht infrage kommend",
+            "unavailable": "Derzeit abwesend",
+            "opted_out": "Nimmt keine Arbeit aus diesem Bereich an",
+            "member_limit": "Am eigenen Limit",
+            "policy_limit": "Am Limit des Bereichs"
           },
           "transfer_modal": {
             "title": "In einen anderen Bereich verschieben",
@@ -798,7 +805,9 @@
               "command": "Ein Wartungsbefehl"
             },
             "replaced": "ersetzt: {outcome}, {when}"
-          }
+          },
+          "suggestion": "Vorschlag: {name}",
+          "suggestion_accept": "zuweisen"
         },
         "coordinators": {
           "select_person": "Person wählen",
@@ -829,6 +838,33 @@
           "title": "Meine Bereiche",
           "description": "Was in Ihren Bereichen wartet und was Sie selbst tragen.",
           "empty": "Sie gehören noch zu keinem Bereich."
+        },
+        "availability": {
+          "title": "Verfügbarkeit",
+          "title_for": "Verfügbarkeit von {name}",
+          "description": "Während einer Abwesenheit überspringt Sie die automatische Verteilung des Bereichs. Was Sie bereits halten, wird Ihnen nicht weggenommen.",
+          "here": "Nimmt derzeit Arbeit an.",
+          "away": "Derzeit abwesend.",
+          "from": "Von",
+          "until": "Bis",
+          "indefinite": "Ohne Enddatum",
+          "add": "Eintragen",
+          "empty": "Keine Abwesenheiten eingetragen.",
+          "remove_aria": "Diese Abwesenheit entfernen",
+          "accepts_new_work": "Nimmt neue Arbeit aus diesem Bereich an",
+          "limit_of": "Limit {count}",
+          "reason": {
+            "vacation": "Urlaub",
+            "leave": "Freistellung",
+            "other": "Sonstiges"
+          },
+          "toast": {
+            "added": "Abwesenheit eingetragen.",
+            "not_added": "Konnte nicht eingetragen werden.",
+            "removed": "Abwesenheit entfernt.",
+            "not_removed": "Konnte nicht entfernt werden.",
+            "not_saved": "Konnte nicht gespeichert werden."
+          }
         }
       }
     },

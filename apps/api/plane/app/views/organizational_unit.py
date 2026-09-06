@@ -35,6 +35,7 @@ from plane.app.services.orca import (
     MODE_APPEND,
     MODE_FILL_EMPTY,
     OrcaDomainError,
+    orca_availability_enabled,
     orca_public_api_enabled,
     organizational_units_enabled,
     plan_access,
@@ -145,6 +146,10 @@ class OrcaConfigEndpoint(BaseAPIView):
                 # that told everyone to go and call it would be wrong on every
                 # instance that has not opened it.
                 "public_api_enabled": orca_public_api_enabled(),
+                # Third switch, same reasoning: with availability off the
+                # ranking ignores absences, so a form for recording them would
+                # be collecting something the product does not act on.
+                "availability_enabled": orca_availability_enabled(),
             },
             status=status.HTTP_200_OK,
         )

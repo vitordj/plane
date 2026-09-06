@@ -705,7 +705,10 @@
           "coordinator_not_found": "Quella persona non coordina più quest’area.",
           "policy_invalid_mode": "Questa non è una modalità di assegnazione.",
           "policy_default_mode_not_allowed": "La modalità predefinita deve essere una di quelle consentite.",
-          "policy_invalid_value": "Questi limiti devono essere numeri interi positivi."
+          "policy_invalid_value": "Questi limiti devono essere numeri interi positivi.",
+          "invalid_availability_window": "Un’assenza ha bisogno di un inizio e di una fine successiva.",
+          "availability_not_found": "Quell’assenza non c’è più.",
+          "allocation_limit_forbidden": "Solo il coordinamento di quest’area può fissare il limite di qualcuno."
         },
         "work": {
           "refresh": "Aggiorna",
@@ -766,7 +769,11 @@
             "project_role_too_low": "È ospite in questo progetto",
             "bot": "Account di automazione",
             "at_max_open_items": "Al limite di elementi aperti",
-            "other": "Al momento non idoneo"
+            "other": "Al momento non idoneo",
+            "unavailable": "Al momento assente",
+            "opted_out": "Non riceve lavoro da quest’area",
+            "member_limit": "Al proprio limite",
+            "policy_limit": "Al limite dell’area"
           },
           "transfer_modal": {
             "title": "Sposta in un’altra area",
@@ -798,7 +805,9 @@
               "command": "Un comando di manutenzione"
             },
             "replaced": "sostituisce: {outcome}, {when}"
-          }
+          },
+          "suggestion": "suggerimento: {name}",
+          "suggestion_accept": "assegna"
         },
         "coordinators": {
           "select_person": "Scegli una persona",
@@ -829,6 +838,33 @@
           "title": "Le mie aree",
           "description": "Cosa è in attesa nelle aree di cui fai parte, e cosa stai portando tu.",
           "empty": "Non fai ancora parte di nessun’area."
+        },
+        "availability": {
+          "title": "Disponibilità",
+          "title_for": "Disponibilità di {name}",
+          "description": "Durante un’assenza la distribuzione automatica dell’area ti salta. Nulla di ciò che hai già ti viene tolto.",
+          "here": "Al momento riceve lavoro.",
+          "away": "Al momento assente.",
+          "from": "Dal",
+          "until": "Al",
+          "indefinite": "Senza data di rientro",
+          "add": "Registra",
+          "empty": "Nessuna assenza registrata.",
+          "remove_aria": "Rimuovi questa assenza",
+          "accepts_new_work": "Riceve nuovo lavoro da quest’area",
+          "limit_of": "limite {count}",
+          "reason": {
+            "vacation": "Ferie",
+            "leave": "Congedo",
+            "other": "Altro"
+          },
+          "toast": {
+            "added": "Assenza registrata.",
+            "not_added": "Non è stato possibile registrarla.",
+            "removed": "Assenza rimossa.",
+            "not_removed": "Non è stato possibile rimuoverla.",
+            "not_saved": "Non è stato possibile salvare."
+          }
         }
       }
     },

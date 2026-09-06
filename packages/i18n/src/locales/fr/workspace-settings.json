@@ -705,7 +705,10 @@
           "coordinator_not_found": "Cette personne ne coordonne plus cette zone.",
           "policy_invalid_mode": "Ce n’est pas un mode d’attribution.",
           "policy_default_mode_not_allowed": "Le mode par défaut doit faire partie des modes autorisés.",
-          "policy_invalid_value": "Ces limites doivent être des nombres entiers positifs."
+          "policy_invalid_value": "Ces limites doivent être des nombres entiers positifs.",
+          "invalid_availability_window": "Une absence a besoin d’un début et d’une fin postérieure.",
+          "availability_not_found": "Cette absence n’existe plus.",
+          "allocation_limit_forbidden": "Seule la coordination de cette zone peut fixer la limite de quelqu’un."
         },
         "work": {
           "refresh": "Actualiser",
@@ -766,7 +769,11 @@
             "project_role_too_low": "Invité sur ce projet",
             "bot": "Compte d’automatisation",
             "at_max_open_items": "A atteint la limite d’éléments en cours",
-            "other": "Non éligible pour le moment"
+            "other": "Non éligible pour le moment",
+            "unavailable": "Absent en ce moment",
+            "opted_out": "Ne prend pas de travail de cette zone",
+            "member_limit": "À sa propre limite",
+            "policy_limit": "À la limite de la zone"
           },
           "transfer_modal": {
             "title": "Transférer vers une autre zone",
@@ -798,7 +805,9 @@
               "command": "Une commande de maintenance"
             },
             "replaced": "remplace : {outcome}, {when}"
-          }
+          },
+          "suggestion": "suggestion : {name}",
+          "suggestion_accept": "attribuer"
         },
         "coordinators": {
           "select_person": "Choisissez une personne",
@@ -829,6 +838,33 @@
           "title": "Mes zones",
           "description": "Ce qui attend dans les zones dont vous faites partie, et ce que vous portez.",
           "empty": "Vous ne faites encore partie d’aucune zone."
+        },
+        "availability": {
+          "title": "Disponibilité",
+          "title_for": "Disponibilité de {name}",
+          "description": "Pendant une absence, la répartition automatique de la zone vous ignore. Rien de ce que vous avez déjà ne vous est retiré.",
+          "here": "Disponible pour du travail en ce moment.",
+          "away": "Absent en ce moment.",
+          "from": "Du",
+          "until": "Au",
+          "indefinite": "Sans date de retour",
+          "add": "Enregistrer",
+          "empty": "Aucune absence enregistrée.",
+          "remove_aria": "Supprimer cette absence",
+          "accepts_new_work": "Reçoit du nouveau travail de cette zone",
+          "limit_of": "limite {count}",
+          "reason": {
+            "vacation": "Congés",
+            "leave": "Absence",
+            "other": "Autre"
+          },
+          "toast": {
+            "added": "Absence enregistrée.",
+            "not_added": "Impossible de l’enregistrer.",
+            "removed": "Absence supprimée.",
+            "not_removed": "Impossible de la supprimer.",
+            "not_saved": "Impossible d’enregistrer."
+          }
         }
       }
     },

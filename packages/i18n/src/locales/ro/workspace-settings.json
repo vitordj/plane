@@ -705,7 +705,10 @@
           "coordinator_not_found": "Persoana respectivă nu mai coordonează această zonă.",
           "policy_invalid_mode": "Acesta nu este un mod de atribuire.",
           "policy_default_mode_not_allowed": "Modul implicit trebuie să fie unul dintre modurile permise.",
-          "policy_invalid_value": "Aceste limite trebuie să fie numere întregi pozitive."
+          "policy_invalid_value": "Aceste limite trebuie să fie numere întregi pozitive.",
+          "invalid_availability_window": "O absență are nevoie de un început și de un sfârșit după el.",
+          "availability_not_found": "Acea absență nu mai există.",
+          "allocation_limit_forbidden": "Doar coordonatorul acestei zone poate stabili limita cuiva."
         },
         "work": {
           "refresh": "Reîmprospătează",
@@ -766,7 +769,11 @@
             "project_role_too_low": "Invitat în acest proiect",
             "bot": "Cont de automatizare",
             "at_max_open_items": "La limita elementelor deschise",
-            "other": "Momentan neeligibil"
+            "other": "Momentan neeligibil",
+            "unavailable": "În prezent absent",
+            "opted_out": "Nu preia lucru din această zonă",
+            "member_limit": "La limita proprie",
+            "policy_limit": "La limita zonei"
           },
           "transfer_modal": {
             "title": "Mută în altă zonă",
@@ -798,7 +805,9 @@
               "command": "O comandă de întreținere"
             },
             "replaced": "înlocuiește: {outcome}, {when}"
-          }
+          },
+          "suggestion": "sugestie: {name}",
+          "suggestion_accept": "atribuie"
         },
         "coordinators": {
           "select_person": "Alege o persoană",
@@ -829,6 +838,33 @@
           "title": "Zonele mele",
           "description": "Ce așteaptă în zonele din care faci parte și ce duci tu.",
           "empty": "Nu faci încă parte din nicio zonă."
+        },
+        "availability": {
+          "title": "Disponibilitate",
+          "title_for": "Disponibilitatea lui {name}",
+          "description": "Cât timp o absență este activă, distribuirea automată a zonei te sare. Nu ți se ia nimic din ce ai deja.",
+          "here": "În prezent primește lucru.",
+          "away": "În prezent absent.",
+          "from": "De la",
+          "until": "Până la",
+          "indefinite": "Fără dată de întoarcere",
+          "add": "Înregistrează",
+          "empty": "Nu s-a înregistrat nicio absență.",
+          "remove_aria": "Elimină această absență",
+          "accepts_new_work": "Primește lucru nou din această zonă",
+          "limit_of": "limită {count}",
+          "reason": {
+            "vacation": "Concediu",
+            "leave": "Absență",
+            "other": "Altceva"
+          },
+          "toast": {
+            "added": "Absență înregistrată.",
+            "not_added": "Nu s-a putut înregistra.",
+            "removed": "Absență eliminată.",
+            "not_removed": "Nu s-a putut elimina.",
+            "not_saved": "Nu s-a putut salva."
+          }
         }
       }
     },

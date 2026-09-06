@@ -370,6 +370,9 @@ CELERY_IMPORTS = (
     "plane.bgtasks.organizational_directory_task",
     # Same reason, for the assignment-SLA sweep that runs every 15 minutes.
     "plane.bgtasks.organizational_queue_task",
+    # And for the hourly sweep that returns work held by somebody who has
+    # become unavailable to do it.
+    "plane.bgtasks.organizational_availability_task",
 )
 
 FILE_SIZE_LIMIT = int(os.environ.get("FILE_SIZE_LIMIT", 5242880))
@@ -617,6 +620,16 @@ ORCA_PUBLIC_API_RATE_LIMIT = os.environ.get("ORCA_PUBLIC_API_RATE_LIMIT", "300/m
 # than the literal's tidiness, and the file already extends REST_FRAMEWORK
 # after the fact for drf-spectacular below.
 REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["orca_public"] = ORCA_PUBLIC_API_RATE_LIMIT
+
+# Third switch, in front of availability (RFC §9, Phase 3). Off means the
+# ranking behaves exactly as it did before Phase 3 — everybody counts as
+# available and as accepting work — and the hourly sweep that returns work held
+# by somebody who went away writes nothing. That is the point of the switch: an
+# instance can adopt the queue without adopting absences, and turning it off
+# mid-flight degrades to the previous behaviour rather than to a broken one.
+#
+# Same strict parser as the two switches above.
+ORCA_AVAILABILITY_ENABLED = env_flag("ORCA_AVAILABILITY_ENABLED", default=False)
 
 ENABLE_DRF_SPECTACULAR = os.environ.get("ENABLE_DRF_SPECTACULAR", "0") == "1"
 

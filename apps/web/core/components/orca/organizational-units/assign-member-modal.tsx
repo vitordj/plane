@@ -36,7 +36,14 @@ const EXCLUDED_REASONS = [
   "not_a_project_member",
   "project_role_too_low",
   "bot",
+  // `at_max_open_items` is what lb-1 called the policy ceiling; lb-2 tells the
+  // area's ceiling and a person's own apart, and old decisions still carry the
+  // old name.
   "at_max_open_items",
+  "unavailable",
+  "opted_out",
+  "member_limit",
+  "policy_limit",
 ] as const;
 
 const excludedReasonKey = (reason: string): string =>

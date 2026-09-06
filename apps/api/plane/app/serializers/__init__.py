@@ -158,5 +158,7 @@ from .organizational_unit import (
     OrganizationalUnitMembershipSerializer,
     OrganizationalUnitMembershipCreateSerializer,
     OrganizationalUnitProjectSerializer,
+    MembershipAllocationSettingsSerializer,
     QueueItemSerializer,
+    WorkspaceMemberAvailabilitySerializer,
 )

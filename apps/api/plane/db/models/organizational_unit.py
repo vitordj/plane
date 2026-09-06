@@ -86,6 +86,37 @@ class DirectoryIdentityState(models.TextChoices):
     UNRESOLVED = "unresolved", "Unresolved"
 
 
+class UnavailabilityReason(models.TextChoices):
+    """
+    Why somebody is not taking work.
+
+    @description Three values on purpose, and none of them medical: the layer
+    needs to know that a person is away, not why in any detail a colleague
+    could read off a queue screen. ``LEAVE`` covers every kind of leave and
+    ``OTHER`` everything else, which is what keeps this column from turning
+    into a health record.
+    """
+
+    VACATION = "vacation", "Vacation"
+    LEAVE = "leave", "Leave"
+    OTHER = "other", "Other"
+
+
+class AvailabilitySource(models.TextChoices):
+    """
+    Who recorded an absence.
+
+    @description ``MANUAL`` is all v1 writes (RFC §5.2). The other two exist
+    now so that an HR feed or a directory sync can later add and withdraw its
+    own rows without touching what a person entered by hand — the same rule
+    the memberships follow one layer up.
+    """
+
+    MANUAL = "manual", "Manual"
+    HR = "hr", "HR system"
+    DIRECTORY = "directory", "Directory"
+
+
 class GrantSource(models.TextChoices):
     """
     Which fact about a person makes the layer grant them a project.
@@ -705,3 +736,141 @@ class IssueOrganizationalUnit(BaseModel):
 
     def __str__(self):
         return f"{self.issue_id} -> {self.organizational_unit_id}"
+
+
+class WorkspaceMemberAvailability(BaseModel):
+    """
+    A window in which somebody is not taking new work.
+
+    @description Vacation, leave, or anything else that means "do not put more
+    on this person" (RFC §5.2, §6.9). Deliberately a window rather than a
+    boolean: a boolean has to be switched back by somebody who remembers, and
+    the one thing everybody forgets after a holiday is the toggle they set
+    before it.
+
+    An open-ended window (``unavailable_until`` null) is allowed and means
+    indefinite — somebody on long leave, or an absence whose end nobody knows
+    yet. It is the caller's job to close it, and the ranking treats it as
+    unavailable until then.
+
+    Overlapping windows are allowed on purpose. Two systems recording the same
+    absence, or a person extending their own, are both normal; what matters is
+    whether *any* window covers the moment being asked about, which is a
+    question no uniqueness constraint could answer better than the query does.
+
+    Attributes:
+        workspace_member (WorkspaceMember): The person who is away.
+        workspace (Workspace): Denormalized from the member for cheap querying.
+        unavailable_from (datetime): Start of the window.
+        unavailable_until (datetime): End, or ``None`` for indefinite.
+        reason (str): ``vacation``, ``leave`` or ``other``.
+        source (str): Who recorded it; v1 only ever writes ``manual``.
+        external_id (str): The record's id in the system that pushed it.
+    """
+
+    workspace_member = models.ForeignKey(
+        "db.WorkspaceMember",
+        on_delete=models.CASCADE,
+        related_name="orca_availability",
+    )
+    workspace = models.ForeignKey(
+        "db.Workspace",
+        on_delete=models.CASCADE,
+        related_name="orca_member_availability",
+    )
+    unavailable_from = models.DateTimeField()
+    unavailable_until = models.DateTimeField(null=True, blank=True)
+    reason = models.CharField(
+        max_length=16,
+        choices=UnavailabilityReason.choices,
+        default=UnavailabilityReason.VACATION,
+    )
+    source = models.CharField(
+        max_length=16,
+        choices=AvailabilitySource.choices,
+        default=AvailabilitySource.MANUAL,
+    )
+    external_id = models.CharField(max_length=255, blank=True, default="", db_index=True)
+
+    class Meta:
+        constraints = [
+            # A window that ends before it starts covers nothing and would read
+            # as "available" everywhere, which is the opposite of what whoever
+            # typed it meant.
+            models.CheckConstraint(
+                condition=Q(unavailable_until__isnull=True) | Q(unavailable_until__gt=models.F("unavailable_from")),
+                name="orca_availability_until_after_from",
+            )
+        ]
+        indexes = [
+            # The ranking's question: is this person covered right now? Asked
+            # once per candidate, per allocation.
+            models.Index(
+                fields=["workspace_member", "unavailable_from", "unavailable_until"],
+                name="orca_availability_window_idx",
+            )
+        ]
+        verbose_name = "Workspace Member Availability"
+        verbose_name_plural = "Workspace Member Availability"
+        db_table = "orca_workspace_member_availability"
+        ordering = ("-unavailable_from",)
+
+    def save(self, *args, **kwargs):
+        # The workspace is the member's, always; a bare FK would let the two
+        # disagree and the ranking reads by workspace.
+        self.workspace_id = self.workspace_member.workspace_id
+        super().save(*args, **kwargs)
+
+    def covers(self, at) -> bool:
+        """
+        @description Whether this window covers an instant.
+        @param at: The moment to test.
+        @returns ``True`` when the window has started and has not ended.
+        """
+        if at < self.unavailable_from:
+            return False
+        return self.unavailable_until is None or at < self.unavailable_until
+
+    def __str__(self):
+        return f"{self.workspace_member_id} away from {self.unavailable_from} ({self.reason})"
+
+
+class MembershipAllocationSettings(BaseModel):
+    """
+    What one person will accept from one area.
+
+    @description Availability is about a person everywhere; this is about a
+    person *in this area* (RFC §5.2). Somebody can be perfectly available and
+    still not be taking new work from one of their three areas, and the way to
+    say that has to be per membership or it says the wrong thing about the
+    other two.
+
+    ``accepts_new_work=False`` takes the person out of that area's automatic
+    ranking without touching what they already hold: work is not taken away
+    from somebody because they stopped accepting more.
+
+    Attributes:
+        membership (OrganizationalUnitMembership): The membership this governs.
+        accepts_new_work (bool): Whether the area's ranking may pick them.
+        max_open_items (int): Their own ceiling, or ``None``. Independent of
+            the policy's ``max_open_items_per_member``: one is the area's rule
+            for everybody, this is one person's own limit, and the stricter of
+            the two wins.
+    """
+
+    membership = models.OneToOneField(
+        OrganizationalUnitMembership,
+        on_delete=models.CASCADE,
+        related_name="allocation_settings",
+    )
+    accepts_new_work = models.BooleanField(default=True)
+    max_open_items = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Membership Allocation Settings"
+        verbose_name_plural = "Membership Allocation Settings"
+        db_table = "orca_membership_allocation_settings"
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.membership_id}: accepts={self.accepts_new_work} max={self.max_open_items}"

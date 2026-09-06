@@ -67,6 +67,7 @@ from plane.db.models import (
     StateGroup,
 )
 
+from .availability import settings_by_membership, unavailable_member_ids
 from .coverage import unit_covers_project
 from .metrics import record_assignment_outcome, record_decision_superseded, record_no_candidate
 from .errors import (
@@ -84,8 +85,11 @@ logger = logging.getLogger("plane.orca.assignment")
 CLOSED_STATE_GROUPS = [StateGroup.COMPLETED.value, StateGroup.CANCELLED.value]
 
 # Bumped when the ranking changes, and frozen into every decision, so an old
-# decision is never read as if it had used today's rules.
-ALGORITHM_VERSION = "lb-1"
+# decision is never read as if it had used today's rules. ``lb-2`` is
+# ``lb-1`` plus the three Phase 3 exclusions — away, not accepting work from
+# this area, over that person's own ceiling — which change *who* the same
+# numbers pick, so a decision made under either must say which it was.
+ALGORITHM_VERSION = "lb-2"
 
 # The minimum project role that can hold an assignment, matching Plane's own
 # assignee validation.
@@ -270,9 +274,15 @@ def resolve_policy(unit, project_id, requested_mode: Optional[str] = None) -> Po
 
 
 def _membership_map(unit) -> dict:
-    """@description Active area memberships by user id. @returns dict user_id -> workspace_member_id."""
+    """
+    @description Active area memberships by user id.
+    @returns dict ``user_id -> (workspace_member_id, membership_id)``. The
+        membership id is carried because the Phase 3 rules — accepting work,
+        a personal ceiling — are per membership, not per person: somebody can
+        be taking work from one of their areas and not from another.
+    """
     return {
-        membership.workspace_member.member_id: membership.workspace_member_id
+        membership.workspace_member.member_id: (membership.workspace_member_id, membership.id)
         for membership in OrganizationalUnitMembership.objects.filter(
             organizational_unit=unit, is_active=True, workspace_member__is_active=True
         ).select_related("workspace_member")
@@ -329,14 +339,35 @@ def _last_automatic_assignment(user_ids) -> dict:
     return last
 
 
+def membership_settings_cap(membership_settings):
+    """
+    @description One person's own ceiling on open work, or ``None``.
+    @param membership_settings: A ``MembershipAllocationSettings`` or ``None``.
+    @returns int or ``None``.
+    """
+    return None if membership_settings is None else membership_settings.max_open_items
+
+
 def rank_candidates(
     unit, project_id, policy: Optional[PolicyResolution] = None, exclude_user_ids: Iterable = ()
 ) -> RankedCandidates:
     """
-    @description The ``lb-1`` ranking (RFC §6.4): least total open work first,
-    then least open work in this area, then whoever went longest without an
-    automatic assignment (never, first), then user id so two runs over the same
-    data always agree.
+    @description The ``lb-2`` ranking (RFC §6.4, §6.9): least total open work
+    first, then least open work in this area, then whoever went longest without
+    an automatic assignment (never, first), then user id so two runs over the
+    same data always agree.
+
+    ``lb-2`` is ``lb-1`` plus three exclusions, all read at decision time:
+    somebody an absence covers right now (``unavailable``), somebody who
+    stopped accepting work from this area (``opted_out``), and somebody at
+    their own ceiling (``member_limit``) or the area's (``policy_limit``).
+    Each lands in ``candidates_snapshot`` with its reason, because "why was
+    she skipped?" is what a coordinator asks about a ranking and the decision
+    is the only place that can answer it.
+
+    An unavailable person simply leaves the ranking. The work they already
+    hold stays theirs and is not redistributed here — returning it is the
+    sweep's job (RFC §6.9), and it needs a decision of its own.
     @param unit: The responsible area.
     @param project_id: Project of the work item.
     @param policy: Resolved policy, for ``max_open_items_per_member``.
@@ -364,10 +395,16 @@ def rank_candidates(
     }
 
     skip = {str(user_id) for user_id in exclude_user_ids}
+    # Two batched reads rather than one query per candidate: the roster's
+    # absences, and what each membership says it will accept.
+    away = unavailable_member_ids(workspace_member_id for workspace_member_id, _ in memberships.values())
+    per_membership = settings_by_membership(membership_id for _, membership_id in memberships.values())
+
     excluded = []
     eligible_ids = []
-    for user_id in memberships:
+    for user_id, (workspace_member_id, membership_id) in memberships.items():
         member = project_members.get(user_id)
+        membership_settings = per_membership.get(membership_id)
         if str(user_id) in skip:
             excluded.append(Candidate(user_id=user_id, excluded_reason="already_assigned"))
         elif member is None:
@@ -376,23 +413,47 @@ def rank_candidates(
             excluded.append(Candidate(user_id=user_id, excluded_reason="project_role_too_low"))
         elif getattr(member.member, "is_bot", False):
             excluded.append(Candidate(user_id=user_id, excluded_reason="bot"))
+        elif workspace_member_id in away:
+            # Away, everywhere. Not a per-area decision: a holiday does not
+            # apply to one of somebody's three areas and not the others.
+            excluded.append(
+                Candidate(user_id=user_id, workspace_member_id=workspace_member_id, excluded_reason="unavailable")
+            )
+        elif membership_settings is not None and not membership_settings.accepts_new_work:
+            # Here, but not taking more from *this* area.
+            excluded.append(
+                Candidate(user_id=user_id, workspace_member_id=workspace_member_id, excluded_reason="opted_out")
+            )
         else:
             eligible_ids.append(user_id)
 
     total_open, unit_open = _load_counts(unit, unit.workspace_id, eligible_ids)
     last_auto = _last_automatic_assignment(eligible_ids)
-    cap = policy.max_open_items_per_member if policy else None
+    policy_cap = policy.max_open_items_per_member if policy else None
 
     eligible = []
     for user_id in eligible_ids:
+        workspace_member_id, membership_id = memberships[user_id]
         candidate = Candidate(
             user_id=user_id,
-            workspace_member_id=memberships[user_id],
+            workspace_member_id=workspace_member_id,
             total_open=total_open.get(user_id, 0),
             unit_open=unit_open.get(user_id, 0),
             last_auto_at=last_auto.get(user_id),
         )
-        if cap is not None and candidate.total_open >= cap:
+        # Two ceilings, and they are different rules: the area's applies to
+        # everybody in it, the person's own is theirs. The stricter one wins,
+        # and the snapshot says which one it was — "why was she skipped?" is
+        # answered differently by "the area caps everyone at five" and "she
+        # set her own limit at two".
+        member_cap = membership_settings_cap(per_membership.get(membership_id))
+        reason = None
+        if member_cap is not None and candidate.total_open >= member_cap:
+            reason = "member_limit"
+        elif policy_cap is not None and candidate.total_open >= policy_cap:
+            reason = "policy_limit"
+
+        if reason is not None:
             excluded.append(
                 Candidate(
                     user_id=user_id,
@@ -400,7 +461,7 @@ def rank_candidates(
                     total_open=candidate.total_open,
                     unit_open=candidate.unit_open,
                     last_auto_at=candidate.last_auto_at,
-                    excluded_reason="at_max_open_items",
+                    excluded_reason=reason,
                 )
             )
         else:

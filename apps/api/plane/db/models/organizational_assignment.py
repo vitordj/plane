@@ -283,7 +283,12 @@ class AssignmentDecision(AppendOnlyModel):
     policy_version = models.PositiveIntegerField(null=True, blank=True)
     # The ranking that produced this decision. Bumped when the algorithm
     # changes, so old decisions are not read as if they used today's rules.
-    algorithm_version = models.CharField(max_length=16, default="lb-1")
+    # The ranking that produced this row. The service always writes it
+    # explicitly (``assignment_service.ALGORITHM_VERSION``); the default is
+    # what a hand-built row gets, so it tracks the current algorithm rather
+    # than freezing the first one — a row claiming ``lb-1`` while the service
+    # runs ``lb-2`` would be a lie nobody wrote on purpose.
+    algorithm_version = models.CharField(max_length=16, default="lb-2")
     outcome = models.CharField(max_length=20, choices=DecisionOutcome.choices)
     candidates_snapshot = models.JSONField(default=list)
     chosen_assignee = models.ForeignKey(

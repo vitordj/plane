@@ -62,6 +62,10 @@ export const ORCA_ERROR_CODE_KEYS: Record<number, string> = {
   4934: "workspace_settings.settings.organizational_units.errors.policy_invalid_mode",
   4935: "workspace_settings.settings.organizational_units.errors.policy_default_mode_not_allowed",
   4936: "workspace_settings.settings.organizational_units.errors.policy_invalid_value",
+  // availability and per-membership limits
+  4937: "workspace_settings.settings.organizational_units.errors.invalid_availability_window",
+  4938: "workspace_settings.settings.organizational_units.errors.availability_not_found",
+  4939: "workspace_settings.settings.organizational_units.errors.allocation_limit_forbidden",
 };
 
 /** The shape the Orca API returns on failure. Every field may be absent. */

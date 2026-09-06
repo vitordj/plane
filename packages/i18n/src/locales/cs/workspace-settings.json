@@ -705,7 +705,10 @@
           "coordinator_not_found": "Tato osoba už tuto oblast nekoordinuje.",
           "policy_invalid_mode": "To není režim přidělování.",
           "policy_default_mode_not_allowed": "Výchozí režim musí být jedním z povolených režimů.",
-          "policy_invalid_value": "Tyto limity musí být kladná celá čísla."
+          "policy_invalid_value": "Tyto limity musí být kladná celá čísla.",
+          "invalid_availability_window": "Nepřítomnost potřebuje začátek a konec po něm.",
+          "availability_not_found": "Tato nepřítomnost už neexistuje.",
+          "allocation_limit_forbidden": "Limit někoho jiného může nastavit jen koordinátor této oblasti."
         },
         "work": {
           "refresh": "Obnovit",
@@ -766,7 +769,11 @@
             "project_role_too_low": "V tomto projektu host",
             "bot": "Účet automatizace",
             "at_max_open_items": "Na limitu otevřených položek",
-            "other": "Nyní nesplňuje podmínky"
+            "other": "Nyní nesplňuje podmínky",
+            "unavailable": "Momentálně nepřítomen",
+            "opted_out": "Nepřijímá práci z této oblasti",
+            "member_limit": "Na vlastním limitu",
+            "policy_limit": "Na limitu oblasti"
           },
           "transfer_modal": {
             "title": "Předat jiné oblasti",
@@ -798,7 +805,9 @@
               "command": "Servisní příkaz"
             },
             "replaced": "nahrazuje: {outcome}, {when}"
-          }
+          },
+          "suggestion": "návrh: {name}",
+          "suggestion_accept": "přidělit"
         },
         "coordinators": {
           "select_person": "Vyberte osobu",
@@ -829,6 +838,33 @@
           "title": "Moje oblasti",
           "description": "Co čeká v oblastech, do kterých patříte, a co nesete vy.",
           "empty": "Zatím nepatříte do žádné oblasti."
+        },
+        "availability": {
+          "title": "Dostupnost",
+          "title_for": "Dostupnost: {name}",
+          "description": "Během nepřítomnosti vás automatické přidělování oblasti přeskakuje. Nic, co už máte, se vám nebere.",
+          "here": "Momentálně přijímá práci.",
+          "away": "Momentálně nepřítomen.",
+          "from": "Od",
+          "until": "Do",
+          "indefinite": "Bez data návratu",
+          "add": "Zaznamenat",
+          "empty": "Nejsou zaznamenány žádné nepřítomnosti.",
+          "remove_aria": "Odebrat tuto nepřítomnost",
+          "accepts_new_work": "Přijímá novou práci z této oblasti",
+          "limit_of": "limit {count}",
+          "reason": {
+            "vacation": "Dovolená",
+            "leave": "Volno",
+            "other": "Jiné"
+          },
+          "toast": {
+            "added": "Nepřítomnost zaznamenána.",
+            "not_added": "Nepodařilo se zaznamenat.",
+            "removed": "Nepřítomnost odebrána.",
+            "not_removed": "Nepodařilo se odebrat.",
+            "not_saved": "Nepodařilo se uložit."
+          }
         }
       }
     },
