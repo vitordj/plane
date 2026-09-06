@@ -64,7 +64,7 @@ coordenador de outra área, lead sem coordenação, membro da área em
 
 ---
 
-## 2.3 — Interface `[~]`
+## 2.3 — Interface `[x]`
 
 Padrão: reutilizar componentes de `@plane/ui` e `@plane/propel`; nenhum CSS
 novo fora do tema. Todas as strings no catálogo i18n
@@ -93,7 +93,7 @@ novo fora do tema. Todas as strings no catálogo i18n
 - [x] `pnpm --filter web check:lint` e `check:types` limpos (rodados nesta sessão: lint 739 avisos e 0 erros — a linha de base do repositório, teto `--max-warnings=11957`; `check:types` exit 0 via `pnpm turbo run check:types --filter=web`, que constrói os pacotes antes).
 - [x] `check:sync` do i18n verde: 4.274 chaves em 19 locales, 100%.
 - [x] Teste de store para fila e ações: `apps/web/core/store/orca/organizational-unit.store.test.ts`, 11 casos, vitest adicionado ao `apps/web` (config em `vitest.config.ts`, ambiente `node`) e rodando no CI (`Run Web Unit Tests` no `stage.yml`).
-- [ ] Teste de componente para `queue-list.tsx`. **Não feito, e a razão não é falta de tempo:** o repositório não tem nenhuma infraestrutura de teste de componente React — sem ambiente DOM (`jsdom`/`happy-dom`) e sem biblioteca de render (`@testing-library/react`) no catálogo do workspace. Adicionar isso é escolher a stack de teste de UI do repositório inteiro, não um detalhe deste item. O que falta, exatamente: três entradas no `pnpm-workspace.yaml` (`@testing-library/react`, `@testing-library/jest-dom`, `jsdom`), um segundo projeto no `vitest.config.ts` com `environment: "jsdom"`, e um `setupFiles` que registre os matchers. Feito isso, o teste em si é curto: `queue-list.tsx` recebe `items` e `capabilities` e decide entre a lista e o estado vazio.
+- [x] Teste de componente para `queue-list.tsx`: `queue-list.test.tsx`, 5 casos (uma linha por item, estado vazio, contagem no título, ordem do servidor preservada, capabilities repassadas a toda linha). **A infraestrutura entrou junto, e é menor do que a nota anterior previa:** duas entradas de catálogo (`@testing-library/react`, `jsdom`), um segundo projeto no `vitest.config.ts` com `environment: "jsdom"` e um `vitest.setup.ts` de quatro linhas que desmonta o que o teste anterior renderizou. `@testing-library/jest-dom` ficou de fora: os matchers dele resolvem asserções que `expect(...).toBeTruthy()` já responde, e uma dependência a menos é uma dependência a menos. O `queue-item-row` é mockado de propósito — ele puxa store, router e toast, e renderizá-lo faria um teste de "a seção desenha suas linhas" falhar por motivos que não são da seção.
 
 ---
 

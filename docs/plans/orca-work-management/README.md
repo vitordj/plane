@@ -46,7 +46,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 18                | `[~]` 15/18 (P0.0–P0.11, P0.14, P0.15, P0.16) · P0.12, P0.13 e P0.17 parciais                         | —               |
 | D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · suíte verde no CI — faltam migrações, `check:types` e a auditoria num dump              | —               |
 | 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois | —               |
-| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[~]` 5/6 · 2.3 falta só o teste de componente (stack de teste de UI inexistente no repositório)      | —               |
+| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[x]` 6/6 · 2.3 fechado com o teste de componente; Gate 2 continua pedindo a área piloto em staging   | —               |
 | 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[x]` 6/6 · código completo atrás de `ORCA_AVAILABILITY_ENABLED` (desligada); Gate 3 pede staging     | —               |
 | 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[~]` 6/7 · 4.1 aberto por falta de acesso à doc oficial do Compose (A5), não por trabalho pendente   | —               |
 | 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[~]` 3/4 · 5.2 é condicional e a condição é uma medição em staging que ninguém fez ainda             | —               |
@@ -85,12 +85,19 @@ detalhamento que respeita `ProjectMember` e diz quantas linhas escondeu, e
 [`orca-executive-metrics.md`](../../orca-executive-metrics.md), que é o critério
 do Gate 5 que código fecha: cada número com a sua consulta SQL.
 
+Também fechado nesta sessão: **o 2.3**, cujo único pendente era um teste de
+componente que a nota do item dava como bloqueado por não existir stack de
+teste de UI no repositório. A stack passou a existir com o vitest da segunda
+sessão; faltavam duas dependências (`@testing-library/react`, `jsdom`) e um
+segundo projeto no `vitest.config.ts`. `queue-list.test.tsx` tem cinco casos e
+a suíte do web foi para 16.
+
 Verificado nesta sessão: suíte Orca **972 testes verdes**
 (`pytest plane/tests/unit/orca -q -m unit`), `makemigrations --check` limpo,
 `0141` aplicada → revertida → reaplicada, `ruff check` limpo,
 `pnpm turbo run check:types --filter=web` exit 0, `check:lint` e `check:format`
-limpos, `check:sync` do i18n 100% em 19 locales, e os 11 testes de store do web
-verdes.
+limpos, `check:sync` do i18n 100% em 19 locales, e os **16 testes do web**
+verdes (11 de store, 5 de componente).
 
 **O que sobra em todo o plano, agora, é gate e não item**: uma área piloto com
 coordenador nomeado usando a fila em staging (Gates 2 e 3), um processo real
