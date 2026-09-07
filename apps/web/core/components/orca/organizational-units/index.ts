@@ -4,10 +4,14 @@
  * See the LICENSE file for details.
  */
 
+export * from "./assign-member-modal";
 export * from "./directory-sync-panel";
 export * from "./issue-unit-property";
+export * from "./queue-item-row";
+export * from "./queue-list";
 export * from "./unit-detail";
 export * from "./unit-form-modal";
 export * from "./unit-list";
 export * from "./unit-members-tab";
 export * from "./unit-projects-tab";
+export * from "./unit-work-tab";

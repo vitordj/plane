@@ -665,6 +665,51 @@
             "not_resynced": "Resincronizarea nu a putut fi finalizată."
           }
         },
+        "work": {
+          "tab": "Lucru",
+          "inbox": "Căsuță de intrare",
+          "in_progress": "În desfășurare",
+          "empty_inbox": "Nimic nu așteaptă. Activitățile preluate de această zonă apar aici până când cineva se ocupă de ele.",
+          "empty_in_progress": "Nimeni nu lucrează la nimic pentru această zonă în acest moment.",
+          "claim": "Preluați",
+          "assign": "Atribuiți lui…",
+          "return_to_queue": "Returnați în coadă",
+          "overdue": "Întârziat",
+          "unassigned": "Nimeni atribuit",
+          "executor_count": "{count, plural, one {# activitate} few {# activități} other {# de activități}}",
+          "age": {
+            "just_now": "Chiar acum",
+            "minutes": "{count, plural, one {# minut} few {# minute} other {# de minute}}",
+            "hours": "{count, plural, one {# oră} few {# ore} other {# de ore}}",
+            "days": "{count, plural, one {# zi} few {# zile} other {# de zile}}"
+          },
+          "reason": {
+            "new_item": "Preluat recent",
+            "awaiting_coordinator": "Așteaptă un coordonator",
+            "awaiting_claim": "Așteaptă ca cineva să îl preia",
+            "no_eligible_member": "Nimeni din această zonă nu îl poate prelua",
+            "executor_unavailable": "Executantul nu este disponibil",
+            "manually_returned": "Returnat în coadă"
+          },
+          "assign_modal": {
+            "title": "Atribuiți această activitate",
+            "search": "Căutați după nume sau adresă de e-mail",
+            "no_candidates": "Nimeni din această zonă nu poate prelua încă lucru. Adăugați mai întâi persoane în zonă.",
+            "assigning": "Se atribuie…",
+            "open_items": "{count, plural, one {# element deschis} few {# elemente deschise} other {# de elemente deschise}}"
+          },
+          "toast": {
+            "claimed_title": "Activitate preluată",
+            "claimed": "Acum vă aparține și a părăsit căsuța de intrare a acestei zone.",
+            "not_claimed": "Nepreluat",
+            "assigned_title": "Activitate atribuită",
+            "assigned": "{name} se ocupă acum de ea.",
+            "not_assigned": "Neatribuit",
+            "returned_title": "Returnat în coadă",
+            "returned": "Așteaptă din nou pe cineva.",
+            "not_returned": "Nereturnat"
+          }
+        },
         "errors": {
           "unit_not_found": "Această zonă nu mai există.",
           "name_required": "O zonă are nevoie de un nume.",

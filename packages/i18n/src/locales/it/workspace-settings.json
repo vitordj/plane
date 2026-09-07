@@ -665,6 +665,51 @@
             "not_resynced": "Impossibile completare la risincronizzazione."
           }
         },
+        "work": {
+          "tab": "Lavoro",
+          "inbox": "Posta in arrivo",
+          "in_progress": "In corso",
+          "empty_inbox": "Non c’è nulla in attesa. Gli elementi di lavoro presi in carico da quest’area compaiono qui finché qualcuno non se ne occupa.",
+          "empty_in_progress": "Al momento nessuno sta lavorando a qualcosa per quest’area.",
+          "claim": "Prenderlo",
+          "assign": "Assegnare a…",
+          "return_to_queue": "Rimettere in coda",
+          "overdue": "In ritardo",
+          "unassigned": "Nessun responsabile",
+          "executor_count": "{count, plural, one {# elemento di lavoro} many {# elemento di lavoro} other {# elementi di lavoro}}",
+          "age": {
+            "just_now": "Proprio ora",
+            "minutes": "{count, plural, one {# minuto} many {# minuto} other {# minuti}}",
+            "hours": "{count, plural, one {# ora} many {# ora} other {# ore}}",
+            "days": "{count, plural, one {# giorno} many {# giorno} other {# giorni}}"
+          },
+          "reason": {
+            "new_item": "Appena preso in carico",
+            "awaiting_coordinator": "In attesa di un coordinatore",
+            "awaiting_claim": "In attesa che qualcuno lo prenda",
+            "no_eligible_member": "Nessuno di quest’area può prenderlo",
+            "executor_unavailable": "L’esecutore non è disponibile",
+            "manually_returned": "Rimesso in coda"
+          },
+          "assign_modal": {
+            "title": "Assegnare questo elemento di lavoro",
+            "search": "Cercare per nome o indirizzo e-mail",
+            "no_candidates": "Nessuno di quest’area può ancora prendere lavoro. Aggiunga prima delle persone all’area.",
+            "assigning": "Assegnazione in corso…",
+            "open_items": "{count, plural, one {# elemento aperto} many {# elemento aperto} other {# elementi aperti}}"
+          },
+          "toast": {
+            "claimed_title": "Elemento di lavoro preso",
+            "claimed": "Ora è suo ed è uscito dalla posta in arrivo di quest’area.",
+            "not_claimed": "Non preso",
+            "assigned_title": "Elemento di lavoro assegnato",
+            "assigned": "Ora se ne occupa {name}.",
+            "not_assigned": "Non assegnato",
+            "returned_title": "Rimesso in coda",
+            "returned": "È di nuovo in attesa di qualcuno.",
+            "not_returned": "Non rimesso in coda"
+          }
+        },
         "errors": {
           "unit_not_found": "Quell’area non esiste più.",
           "name_required": "Un’area deve avere un nome.",

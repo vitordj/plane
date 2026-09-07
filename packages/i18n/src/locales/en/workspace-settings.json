@@ -441,6 +441,51 @@
             "not_resynced": "The resync could not be completed."
           }
         },
+        "work": {
+          "tab": "Work",
+          "inbox": "Inbox",
+          "in_progress": "In progress",
+          "empty_inbox": "Nothing is waiting. Work items this area takes on show up here until somebody is on them.",
+          "empty_in_progress": "Nobody is working on anything for this area right now.",
+          "claim": "Take it",
+          "assign": "Assign to…",
+          "return_to_queue": "Return to queue",
+          "overdue": "Overdue",
+          "unassigned": "Nobody assigned",
+          "executor_count": "{count, plural, one {# work item} other {# work items}}",
+          "age": {
+            "just_now": "Just now",
+            "minutes": "{count, plural, one {# minute} other {# minutes}}",
+            "hours": "{count, plural, one {# hour} other {# hours}}",
+            "days": "{count, plural, one {# day} other {# days}}"
+          },
+          "reason": {
+            "new_item": "Newly taken on",
+            "awaiting_coordinator": "Waiting for a coordinator",
+            "awaiting_claim": "Waiting for someone to take it",
+            "no_eligible_member": "Nobody in this area can take it",
+            "executor_unavailable": "Its executor is unavailable",
+            "manually_returned": "Returned to the queue"
+          },
+          "assign_modal": {
+            "title": "Assign this work item",
+            "search": "Search by name or email",
+            "no_candidates": "Nobody in this area can take work yet. Add people to the area first.",
+            "assigning": "Assigning…",
+            "open_items": "{count, plural, one {# open item} other {# open items}}"
+          },
+          "toast": {
+            "claimed_title": "Work item taken",
+            "claimed": "It is yours now, and it has left this area's inbox.",
+            "not_claimed": "Not taken",
+            "assigned_title": "Work item assigned",
+            "assigned": "{name} is on it now.",
+            "not_assigned": "Not assigned",
+            "returned_title": "Returned to the queue",
+            "returned": "It is waiting for somebody again.",
+            "not_returned": "Not returned"
+          }
+        },
         "errors": {
           "unit_not_found": "That area no longer exists.",
           "name_required": "An area needs a name.",
