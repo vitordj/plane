@@ -102,6 +102,14 @@ app.conf.beat_schedule = {
         "task": "plane.bgtasks.organizational_directory_task.resolve_directory_identities",
         "schedule": crontab(minute=20),  # Every hour at :20
     },
+    # Orca: expire the automation API's idempotency receipts. Daily, in the same
+    # small hours as the cleanup tasks above, and after the last of them: the
+    # table only grows while an integration is calling, so the exact minute
+    # does not matter -- having a window at all does.
+    "check-every-day-to-delete-orca-automation-operations": {
+        "task": "plane.bgtasks.orca_automation_cleanup_task.delete_orca_automation_operations",
+        "schedule": crontab(hour=4, minute=0),  # UTC 04:00
+    },
 }
 
 

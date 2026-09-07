@@ -368,6 +368,10 @@ CELERY_IMPORTS = (
     # The hourly beat entry in plane/celery.py names this module's task; the
     # worker can only run it if it imported the module at startup.
     "plane.bgtasks.organizational_directory_task",
+    # Same for the daily receipt retention: beat hands the worker a name, and a
+    # worker that never imported the module answers it with "Received
+    # unregistered task" once a day, silently.
+    "plane.bgtasks.orca_automation_cleanup_task",
 )
 
 FILE_SIZE_LIMIT = int(os.environ.get("FILE_SIZE_LIMIT", 5242880))
@@ -615,6 +619,16 @@ ORCA_PUBLIC_API_RATE_LIMIT = os.environ.get("ORCA_PUBLIC_API_RATE_LIMIT", "300/m
 # than the literal's tidiness, and the file already extends REST_FRAMEWORK
 # after the fact for drf-spectacular below.
 REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["orca_public"] = ORCA_PUBLIC_API_RATE_LIMIT
+
+# Retention for the automation API's idempotency receipts (RFC §6.7). One row
+# per accepted mutation, each holding the whole response body, and nothing
+# removed them: the table had no ceiling. Far longer than the log windows above
+# (14 and 7 days) rather than shorter, because deleting a receipt un-spends its
+# key — see plane/bgtasks/orca_automation_cleanup_task.py for what a key
+# arriving after its receipt is gone actually does, per operation. Note that 0
+# expires everything rather than keeping it, same as the windows above -- to
+# stop the task instead, drop its beat entry.
+ORCA_AUTOMATION_OPERATION_RETENTION_DAYS = _retention_days("ORCA_AUTOMATION_OPERATION_RETENTION_DAYS", 30)
 
 ENABLE_DRF_SPECTACULAR = os.environ.get("ENABLE_DRF_SPECTACULAR", "0") == "1"
 

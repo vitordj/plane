@@ -284,6 +284,7 @@ jobs:
           fi
           for var in ORCA_ORG_UNITS_ENABLED ORCA_ORG_SYNC_MAX_EDGES \
                      ORCA_PUBLIC_API_ENABLED ORCA_PUBLIC_API_RATE_LIMIT \
+                     ORCA_AUTOMATION_OPERATION_RETENTION_DAYS \
                      SCIM_RATE_LIMIT SCIM_AUTH_FAILURE_RATE_LIMIT; do
             seen=$(printf '%s\n' "$body" | grep -cE "^\s*-\s+\"?${var}=" || true)
             if [ "$seen" -ne "$api_services" ]; then

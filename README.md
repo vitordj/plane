@@ -67,6 +67,7 @@ Whatever runs the stack, three things have to be true:
 | `ORCA_ORG_UNITS_ENABLED`                      |    No    | Kill switch of the organizational layer (Areas); forwarded to api, worker, beat and migrator. `1/true/yes/on` or `0/false/no/off`                                                       | `1`                                        |
 | `ORCA_PUBLIC_API_ENABLED`                     |    No    | Second switch, in front of the automation API at `/api/v1/orca/`. Requires `ORCA_ORG_UNITS_ENABLED` as well; the namespace answers 404 while it is off                                  | `0`                                        |
 | `ORCA_PUBLIC_API_RATE_LIMIT`                  |    No    | Budget per API token for the automation API. Read at process start, so a change needs a restart                                                                                        | `300/minute`                               |
+| `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS`    |    No    | Days the automation API remembers an `Idempotency-Key`. Expired daily by the beat; `0` expires every receipt, it does not disable the expiry                                            | `30`                                       |
 
 ### 🚀 Fork Workflow & Git Strategy
 

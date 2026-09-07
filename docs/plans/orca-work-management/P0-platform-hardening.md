@@ -853,9 +853,52 @@ resposta devolve — um sistema chamador receberia links `http://localhost:8000`
 
 ---
 
+## P0.20 — Recibos da API de automação sem prazo de validade `[x]`
+
+**Problema.** `AutomationOperation` ganha uma linha por mutação aceita pela API
+de automação, e cada linha guarda o corpo inteiro da resposta em
+`response_snapshot` (RFC §6.7) — de propósito, porque um replay tem de
+responder o que a primeira chamada respondeu. **Nada removia essas linhas.** A
+tabela crescia sem teto enquanto uma integração chamasse, com o payload
+completo dentro, e o §6.7 não fixa prazo nenhum.
+
+Toda tabela comparável do repositório tem janela e job diário em
+`cleanup_task.py`: logs de API e de webhook em 14 dias, logs de e-mail em 7.
+Esta não tinha, e é a única que cresce por evento de sistema externo.
+
+**A dificuldade real não é a janela, é o que ela custa.** Apagar um recibo
+**desgasta a sua chave de idempotência** — o oposto da garantia que a tabela
+existe para dar. Verificado com testes, por operação:
+
+- **Criação**: é find-or-create no `ExternalWorkItemBinding`, e o job nunca toca em bindings. A chave expirada vira operação nova, mas o binding resolve o mesmo work item e o early return de `_place` impede a realocação. O efeito observável é só a ausência do header `Idempotent-Replay` e um corpo descrevendo o presente em vez do snapshot original — **o status é 201 nos dois casos**, o que uma asserção errada minha nesta sessão só revelou quando o teste rodou.
+- **Reatribuição**: exige `If-Match`. Uma retentativa com o id de decisão da chamada original é stale por definição, e é recusada com `ORG_DECISION_STALE`.
+- **Transferência**: não tem `If-Match` e **reexecutaria**. O destino não muda se o item já está lá, mas a transferência é registrada de novo e a alocação pode escolher outro executor. É o caso que a janela tem de cobrir — daí 30 dias, e não 14 ou 7.
+
+**Mudança.**
+
+- `plane/bgtasks/orca_automation_cleanup_task.py` (novo): reaproveita `process_cleanup_task` e `BATCH_SIZE` do `cleanup_task.py` upstream em vez de copiar o laço de lotes. Corta por `created_at`, não `completed_at`, que é nulo enquanto a operação está em curso: uma linha `in_progress` mais velha que a janela é operação que morreu no meio (§6.7 já a trata como abandonada aos 60 segundos), e excluí-las vazaria justamente os recibos que nada mais resolve.
+- `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS`, default 30, pelo helper `_retention_days` que já valida e recusa negativo. **0 expira tudo**, não desliga — pinado em teste, porque é a leitura errada óbvia.
+- `CELERY_IMPORTS` + entrada diária no `beat_schedule` às 04:00 UTC. As duas são obrigatórias: a autodescoberta do Celery só acha módulos chamados `tasks`, então um `*_task.py` fora do `CELERY_IMPORTS` responde ao tique do beat com "Received unregistered task" uma vez por dia, em silêncio — é o que o `test_celery_task_registration.py` já documentava para as outras duas tarefas do fork, e a nova entrou na mesma lista parametrizada.
+- Compose (quatro serviços da imagem da api), `.env.example`, tabela do README, e a variável entra na lista do job `compose_env_forwarding` do P0.19. O worker e o beat-worker são os que rodam o expurgo, então aqui o encaminhamento aos quatro não é só simetria.
+- `docs/orca-public-api.md`: a seção de idempotência diz que a chave é lembrada por 30 dias e o que muda depois disso, em linguagem de cliente.
+
+**Aceite.**
+
+- [x] `pytest plane/tests/unit/orca/test_automation_operation_cleanup.py plane/tests/unit/orca/test_celery_task_registration.py` → **22 passed** (11 novos + 11 do registro, que agora cobrem a tarefa nova).
+- [x] Cobertos: recibo além da janela apagado com `all_objects` (hard delete), recibo dentro dela intacto, janela lida de `settings`, `0` expirando tudo, `in_progress` abandonado coletado, e uma corrida de idades numa só execução.
+- [x] Cobertos os quatro que justificam a política: o binding sobrevive ao recibo; a mesma chamada depois da expiração acha o item em vez de duplicá-lo (1 `Issue`, 1 binding); a alocação não é refeita (1 `AssignmentDecision`, mesmos assignees); e uma chave dentro da janela ainda replica.
+- [x] `python manage.py makemigrations --check --dry-run` → "No changes detected" (nenhum modelo mudou).
+- [x] `ruff check .` e `ruff format --check .` limpos sobre `apps/api` na **versão pinada do CI** (0.9.7 — a do ambiente, 0.15.8, discorda em quatro arquivos upstream).
+- [x] `docker compose config` rende a janela nos quatro serviços, no default e com valor do operador.
+- [ ] Confirmar num ambiente com dados que a primeira execução não apaga mais do que se espera — o expurgo é irreversível, e nenhum ambiente tem recibos hoje porque a API está desligada.
+
+**Arquivos:** `apps/api/plane/bgtasks/orca_automation_cleanup_task.py`, `apps/api/plane/settings/common.py`, `apps/api/plane/celery.py`, `apps/api/plane/tests/unit/orca/test_automation_operation_cleanup.py`, `apps/api/plane/tests/unit/orca/test_celery_task_registration.py`, `docker-compose-orca.yml`, `.github/workflows/stage.yml`, `README.md`, `.env.example`, `docs/orca-public-api.md`, `docs/orca-work-management-rfc.md`, este plano.
+
+---
+
 ## Gate P0
 
-- [ ] Todos os 20 itens (P0.0–P0.19) `[x]` ou `[-]` com motivo.
+- [ ] Todos os 21 itens (P0.0–P0.20) `[x]` ou `[-]` com motivo.
 - [ ] CI de `stage` verde com suíte upstream (P0.8) e ruff (P0.9).
 - [ ] Ensaio completo de RC documentado em `docs/release-runbook.md`: PR criada pelo job, promoção por digest, deploy em staging, rollback.
 - [ ] Nenhuma conta com a senha antiga da migração em nenhum ambiente.

@@ -60,6 +60,16 @@ its status. Fixing the payload changes the request, and a changed request needs
 a **new key**. Derive a new one (vary `event_id`, or add an attempt counter)
 when you resend a corrected body.
 
+**A key is remembered for 30 days**, not forever. Receipts older than
+`ORCA_AUTOMATION_OPERATION_RETENTION_DAYS` are expired daily, so a retry
+arriving after that is a new operation rather than a replay. This is not a
+window you need to design around: a creation still resolves through your
+`external` key to the same work item and does not re-run the allocation — you
+get the same `201`, without the `Idempotent-Replay` header and describing the
+item's present state rather than the original snapshot — and a reassignment
+retried with its original `If-Match` is refused as stale. A transfer is the one operation that would genuinely run again —
+which matters only if something in your system can retry a call a month late.
+
 ---
 
 ## Creating work
