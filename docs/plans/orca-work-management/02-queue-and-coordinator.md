@@ -116,30 +116,47 @@ transferência entre áreas a partir do item.
 
 ---
 
-## 2.4 — Alertas e varredura de SLA de atribuição `[ ]` — **não entregue**
+## 2.4 — Alertas e varredura de SLA de atribuição `[x]`
 
 - Tarefa Celery `plane.bgtasks.organizational_queue_task.sweep_assignment_sla` a cada 15 min (registrar em `plane/celery.py` e no `include` de `settings/common.py`, com o mesmo comentário explicativo das tarefas Orca existentes).
-- Para cada item `queued`/`allocation_failed` com `assignment_due_at < now()` sem alerta nas últimas 4 h (guardar `last_alerted_at` em `IssueOrganizationalUnit`, campo novo na mesma fase, migração `0140`), criar notificação nativa (`Notification`) para os coordenadores da área e, se não houver coordenador, para o `lead`.
+- Para cada item `queued`/`allocation_failed` com `assignment_due_at < now()` sem alerta nas últimas 4 h (guardar `last_alerted_at` em `IssueOrganizationalUnit`, campo novo na mesma fase, migração `0139`), criar notificação nativa (`Notification`) para os coordenadores da área e, se não houver coordenador, para o `lead`.
 - Alerta imediato (no serviço) quando uma alocação termina em `allocation_failed`.
 
 **Testes:** sweep cria notificação uma vez; repetição dentro de 4 h não
 duplica; sem coordenador cai para o lead; `ORCA_ORG_UNITS_ENABLED=0` faz a
 tarefa sair sem efeito (padrão da `organizational_directory_task`).
 
-**Não entregue.** A sessão de agente que carregava este item foi rejeitada pelo
-limite de uso de 5 horas ao ser disparada às 06:45 UTC de 07/09, e não executou
-nenhum passo. Nada deste item existe no código: não há
-`bgtasks/organizational_queue_task.py`, não há `services/orca/alerts.py`, e o
-gancho de alerta imediato **não** está em `_apply_queued`.
+**Entregue** na branch `feat/orca-phase2-alerts`, cortada de
+`feat/orca-phase2-minimum` (o redisparo da sessão que o limite de uso de 5 h
+havia rejeitado às 06:45 UTC de 07/09 sem executar nenhum passo).
 
-O campo `IssueOrganizationalUnit.last_alerted_at`, de que a varredura depende,
-**existe** — entrou na migração `0139` junto com o 2.1, de propósito, para que
-este item não precise de migração própria.
+O que existe agora:
 
-Consequência para o gate: o Gate 2-mínimo pede que o coordenador piloto receba
-alerta de `allocation_failed`. Sem este item, esse critério não tem como
-fechar, nem pelo caminho alternativo previsto (o alerta imediato do serviço),
-que também é deste item.
+- `app/services/orca/alerts.py` — `recipients_for(unit)` (coordenadores ativos;
+  o `lead` como **fallback**, não como destinatário adicional; área sem
+  nenhum dos dois é registrada em log com ids apenas, RFC §11) e
+  `notify(link, kind)`, que escreve `Notification` nativa com
+  `sender="in_app:orca:<kind>"` e `triggered_by=None`.
+- `bgtasks/organizational_queue_task.py` — `sweep_assignment_sla`
+  (`@shared_task`), no beat a cada 15 min, com janela de re-alerta de 4 h em
+  `last_alerted_at`, gravada por `update()` porque a tabela é estado mutável
+  e não um ledger append-only; e `notify_allocation_failed`, a tarefa do
+  alerta imediato.
+- O gancho de `_apply_queued`: só para `ALLOCATION_FAILED`, via
+  `transaction.on_commit` (RFC §12, decisão F10), chamando uma função que
+  **captura qualquer exceção e registra em log, nunca propaga** — o achado (2)
+  do PR #13. Removê-lo derruba exatamente os três testes de broker fora do ar.
+- `plane.bgtasks.organizational_queue_task` em `CELERY_IMPORTS`, e
+  `test_celery_task_registration.py` estendido para as duas tarefas novas
+  (a armadilha "Received unregistered task" documentada pelo PR #15).
+
+**Sem migração**, como planejado: `IssueOrganizationalUnit.last_alerted_at`
+entrou na `0139` junto com o 2.1 de propósito.
+`makemigrations --check --dry-run` → "No changes detected".
+
+Fora deste item: a renderização desta notificação na caixa de entrada do
+`apps/web` (o card nativo lê `data.issue_activity`, que estas linhas não têm) e
+a tradução do `title`/`message` nas 19 locales — ambas são 2.5.
 
 ---
 
@@ -163,7 +180,7 @@ que também é deste item.
 
 - [~] 2.1, 2.2 e a parte mínima de 2.3 **entregues e verificadas**, aguardando merge em `stage` e implantação em staging.
 - [ ] Área piloto com coordenador definido (pendência de negócio no README do plano).
-- [ ] Coordenador piloto consegue, em staging: ver a fila, receber alerta de `allocation_failed`, atribuir manualmente, devolver à fila. **Bloqueado pelo 2.4**, que não foi entregue: o alerta imediato do serviço, que este critério aceitava como suficiente, também é do 2.4. Ver, atribuir e devolver já têm código.
+- [ ] Coordenador piloto consegue, em staging: ver a fila, receber alerta de `allocation_failed`, atribuir manualmente, devolver à fila. **Desbloqueado**: o 2.4 foi entregue, então as quatro pernas têm código. Falta só exercitá-las em staging com uma pessoa.
 - [ ] Runbook: como desligar a API (`ORCA_PUBLIC_API_ENABLED=0`) e o que acontece com operações em voo.
 
 Data: ____ · Quem verificou: ____

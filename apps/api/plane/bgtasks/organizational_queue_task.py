@@ -39,6 +39,7 @@ from datetime import timedelta
 import logging
 
 # Django imports
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
@@ -96,7 +97,18 @@ def sweep_assignment_sla(self):
 
         # Evaluated against one ``now`` for the whole pass, so an item does not
         # fall on the wrong side of the deadline because the loop took a second.
-        overdue = (
+        #
+        # Ids first, and deliberately not ``.iterator()`` over the rows. A
+        # chunked iterator holds a server-side cursor open for the whole loop,
+        # which in this task's autocommit context wraps every notification and
+        # every stamp below into one transaction that commits at the very end:
+        # a pass that dies halfway would then lose alerts it had already
+        # written. Paying one extra query per item buys per-item commits, so a
+        # crash leaves the areas already told stamped as told, and the rest for
+        # the next tick fifteen minutes later. The set is bounded by "past its
+        # deadline and not alerted in four hours", which is small in any
+        # workspace where somebody is working the queue at all.
+        pks = list(
             IssueOrganizationalUnit.objects.filter(
                 routing_state__in=WAITING_STATES,
                 assignment_due_at__isnull=False,
@@ -104,31 +116,46 @@ def sweep_assignment_sla(self):
             )
             # "Nobody has been told, or the last telling is old enough."
             .filter(Q(last_alerted_at__isnull=True) | Q(last_alerted_at__lt=cutoff))
-            .select_related("issue", "issue__project", "issue__state", "organizational_unit")
             .order_by("assignment_due_at")
+            .values_list("pk", flat=True)
         )
 
-        for link in overdue.iterator(chunk_size=200):
+        for pk in pks:
             try:
-                receivers = notify(link, KIND_ASSIGNMENT_OVERDUE)
+                # The notification and the stamp are one unit: a crash between
+                # them would alert the area and then alert it again on the next
+                # tick, having recorded nothing.
+                with transaction.atomic():
+                    link = (
+                        IssueOrganizationalUnit.objects.select_related(
+                            "issue", "issue__project", "issue__state", "organizational_unit"
+                        )
+                        .filter(pk=pk)
+                        .first()
+                    )
+                    if link is None:
+                        # Cleared or deleted since the ids were read.
+                        continue
+
+                    if not notify(link, KIND_ASSIGNMENT_OVERDUE):
+                        # Nobody to tell. Deliberately *not* stamped: stamping
+                        # would start a four-hour silence for an alert that
+                        # never went out, so the moment a coordinator is
+                        # appointed the next tick reaches them instead of
+                        # waiting out a window nobody heard.
+                        continue
+
+                    # ``update()`` on the queryset rather than ``link.save()``:
+                    # this writes one column and must not fire the model's
+                    # ``save()``, which stamps ``updated_by`` from the current
+                    # user — there is no user here, and the item did not
+                    # change, only what we told people about it.
+                    IssueOrganizationalUnit.objects.filter(pk=pk).update(last_alerted_at=now)
             except Exception as exception:
                 # One area's bad configuration is not the sweep's failure.
                 log_exception(exception)
                 continue
 
-            if not receivers:
-                # Nobody to tell. Deliberately *not* stamped: stamping would
-                # start a four-hour silence for an alert that never went out,
-                # so the moment a coordinator is appointed the next tick
-                # reaches them instead of waiting out a window nobody heard.
-                continue
-
-            # ``update()`` on the queryset rather than ``link.save()``: this
-            # writes one column and must not fire the model's ``save()``, which
-            # stamps ``updated_by`` from the current user — there is no user
-            # here, and the item did not change, only what we told people about
-            # it.
-            IssueOrganizationalUnit.objects.filter(pk=link.pk).update(last_alerted_at=now)
             alerted += 1
 
         if alerted:
