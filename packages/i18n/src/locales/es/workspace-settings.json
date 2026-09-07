@@ -665,6 +665,51 @@
             "not_resynced": "No se pudo completar la resincronización."
           }
         },
+        "work": {
+          "tab": "Trabajo",
+          "inbox": "Bandeja de entrada",
+          "in_progress": "En curso",
+          "empty_inbox": "No hay nada esperando. Los elementos de trabajo que asume esta área aparecen aquí hasta que alguien los toma.",
+          "empty_in_progress": "Nadie está trabajando en nada para esta área en este momento.",
+          "claim": "Tomarlo",
+          "assign": "Asignar a…",
+          "return_to_queue": "Devolver a la cola",
+          "overdue": "Vencido",
+          "unassigned": "Sin responsable",
+          "executor_count": "{count, plural, one {# elemento de trabajo} other {# elementos de trabajo}}",
+          "age": {
+            "just_now": "Justo ahora",
+            "minutes": "{count, plural, one {# minuto} other {# minutos}}",
+            "hours": "{count, plural, one {# hora} other {# horas}}",
+            "days": "{count, plural, one {# día} other {# días}}"
+          },
+          "reason": {
+            "new_item": "Recién asumido",
+            "awaiting_coordinator": "Esperando a un coordinador",
+            "awaiting_claim": "Esperando a que alguien lo tome",
+            "no_eligible_member": "Nadie de esta área puede tomarlo",
+            "executor_unavailable": "Su ejecutor no está disponible",
+            "manually_returned": "Devuelto a la cola"
+          },
+          "assign_modal": {
+            "title": "Asignar este elemento de trabajo",
+            "search": "Buscar por nombre o correo electrónico",
+            "no_candidates": "Todavía nadie de esta área puede asumir trabajo. Agregue personas al área primero.",
+            "assigning": "Asignando…",
+            "open_items": "{count, plural, one {# elemento abierto} other {# elementos abiertos}}"
+          },
+          "toast": {
+            "claimed_title": "Elemento de trabajo tomado",
+            "claimed": "Ahora es suyo y ha salido de la bandeja de entrada de esta área.",
+            "not_claimed": "No tomado",
+            "assigned_title": "Elemento de trabajo asignado",
+            "assigned": "{name} lo tiene ahora.",
+            "not_assigned": "No asignado",
+            "returned_title": "Devuelto a la cola",
+            "returned": "Vuelve a esperar a alguien.",
+            "not_returned": "No devuelto"
+          }
+        },
         "errors": {
           "unit_not_found": "Esa área ya no existe.",
           "name_required": "Un área necesita un nombre.",

@@ -665,6 +665,51 @@
             "not_resynced": "Nie udało się ukończyć ponownej synchronizacji."
           }
         },
+        "work": {
+          "tab": "Praca",
+          "inbox": "Skrzynka odbiorcza",
+          "in_progress": "W toku",
+          "empty_inbox": "Nic nie czeka. Elementy pracy przejmowane przez ten obszar pojawiają się tutaj, dopóki ktoś się nimi nie zajmie.",
+          "empty_in_progress": "Obecnie nikt nie pracuje nad niczym dla tego obszaru.",
+          "claim": "Przejmij",
+          "assign": "Przypisz do…",
+          "return_to_queue": "Zwróć do kolejki",
+          "overdue": "Po terminie",
+          "unassigned": "Brak osoby odpowiedzialnej",
+          "executor_count": "{count, plural, one {# element pracy} few {# elementy pracy} many {# elementów pracy} other {# elementu pracy}}",
+          "age": {
+            "just_now": "Przed chwilą",
+            "minutes": "{count, plural, one {# minuta} few {# minuty} many {# minut} other {# minuty}}",
+            "hours": "{count, plural, one {# godzina} few {# godziny} many {# godzin} other {# godziny}}",
+            "days": "{count, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}"
+          },
+          "reason": {
+            "new_item": "Nowo przejęty",
+            "awaiting_coordinator": "Oczekuje na koordynatora",
+            "awaiting_claim": "Oczekuje, aż ktoś go przejmie",
+            "no_eligible_member": "Nikt w tym obszarze nie może go przejąć",
+            "executor_unavailable": "Osoba wykonująca jest niedostępna",
+            "manually_returned": "Zwrócony do kolejki"
+          },
+          "assign_modal": {
+            "title": "Przypisz ten element pracy",
+            "search": "Szukaj według nazwy lub adresu e-mail",
+            "no_candidates": "Nikt w tym obszarze nie może jeszcze przejąć pracy. Proszę najpierw dodać osoby do obszaru.",
+            "assigning": "Przypisywanie…",
+            "open_items": "{count, plural, one {# otwarty element} few {# otwarte elementy} many {# otwartych elementów} other {# otwartego elementu}}"
+          },
+          "toast": {
+            "claimed_title": "Element pracy przejęty",
+            "claimed": "Należy teraz do Pana/Pani i opuścił skrzynkę odbiorczą tego obszaru.",
+            "not_claimed": "Nie przejęto",
+            "assigned_title": "Element pracy przypisany",
+            "assigned": "Teraz zajmuje się nim {name}.",
+            "not_assigned": "Nie przypisano",
+            "returned_title": "Zwrócony do kolejki",
+            "returned": "Ponownie oczekuje na kogoś.",
+            "not_returned": "Nie zwrócono"
+          }
+        },
         "errors": {
           "unit_not_found": "Ten obszar już nie istnieje.",
           "name_required": "Obszar potrzebuje nazwy.",

@@ -665,6 +665,51 @@
             "not_resynced": "Không thể hoàn tất đồng bộ lại."
           }
         },
+        "work": {
+          "tab": "Công việc",
+          "inbox": "Hộp thư đến",
+          "in_progress": "Đang thực hiện",
+          "empty_inbox": "Không có gì đang chờ. Các mục công việc mà khu vực này tiếp nhận sẽ hiện ở đây cho đến khi có người nhận.",
+          "empty_in_progress": "Hiện không có ai đang làm việc gì cho khu vực này.",
+          "claim": "Nhận việc",
+          "assign": "Giao cho…",
+          "return_to_queue": "Trả lại hàng đợi",
+          "overdue": "Quá hạn",
+          "unassigned": "Chưa giao cho ai",
+          "executor_count": "{count, plural, one {# mục công việc} other {# mục công việc}}",
+          "age": {
+            "just_now": "Vừa xong",
+            "minutes": "{count, plural, one {# phút} other {# phút}}",
+            "hours": "{count, plural, one {# giờ} other {# giờ}}",
+            "days": "{count, plural, one {# ngày} other {# ngày}}"
+          },
+          "reason": {
+            "new_item": "Vừa được tiếp nhận",
+            "awaiting_coordinator": "Đang chờ một điều phối viên",
+            "awaiting_claim": "Đang chờ ai đó nhận",
+            "no_eligible_member": "Không ai trong khu vực này có thể nhận",
+            "executor_unavailable": "Người thực hiện không sẵn sàng",
+            "manually_returned": "Đã trả lại hàng đợi"
+          },
+          "assign_modal": {
+            "title": "Giao mục công việc này",
+            "search": "Tìm theo tên hoặc email",
+            "no_candidates": "Chưa có ai trong khu vực này có thể nhận việc. Bạn hãy thêm người vào khu vực trước.",
+            "assigning": "Đang giao…",
+            "open_items": "{count, plural, one {# mục đang mở} other {# mục đang mở}}"
+          },
+          "toast": {
+            "claimed_title": "Đã nhận mục công việc",
+            "claimed": "Nó thuộc về bạn và đã rời hộp thư đến của khu vực này.",
+            "not_claimed": "Chưa nhận",
+            "assigned_title": "Đã giao mục công việc",
+            "assigned": "{name} đang phụ trách.",
+            "not_assigned": "Chưa giao",
+            "returned_title": "Đã trả lại hàng đợi",
+            "returned": "Nó lại đang chờ người nhận.",
+            "not_returned": "Chưa trả lại"
+          }
+        },
         "errors": {
           "unit_not_found": "Khu vực đó không còn tồn tại.",
           "name_required": "Khu vực cần có tên.",

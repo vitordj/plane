@@ -665,6 +665,51 @@
             "not_resynced": "Die erneute Synchronisierung konnte nicht abgeschlossen werden."
           }
         },
+        "work": {
+          "tab": "Arbeit",
+          "inbox": "Posteingang",
+          "in_progress": "In Bearbeitung",
+          "empty_inbox": "Nichts wartet. Arbeitselemente, die dieser Bereich übernimmt, erscheinen hier, bis sich jemand darum kümmert.",
+          "empty_in_progress": "Derzeit arbeitet niemand an etwas für diesen Bereich.",
+          "claim": "Übernehmen",
+          "assign": "Zuweisen an…",
+          "return_to_queue": "In die Warteschlange zurückgeben",
+          "overdue": "Überfällig",
+          "unassigned": "Niemand zugewiesen",
+          "executor_count": "{count, plural, one {# Arbeitselement} other {# Arbeitselemente}}",
+          "age": {
+            "just_now": "Gerade eben",
+            "minutes": "{count, plural, one {# Minute} other {# Minuten}}",
+            "hours": "{count, plural, one {# Stunde} other {# Stunden}}",
+            "days": "{count, plural, one {# Tag} other {# Tage}}"
+          },
+          "reason": {
+            "new_item": "Neu übernommen",
+            "awaiting_coordinator": "Wartet auf einen Koordinator",
+            "awaiting_claim": "Wartet darauf, dass jemand übernimmt",
+            "no_eligible_member": "Niemand in diesem Bereich kann es übernehmen",
+            "executor_unavailable": "Die ausführende Person ist nicht verfügbar",
+            "manually_returned": "In die Warteschlange zurückgegeben"
+          },
+          "assign_modal": {
+            "title": "Dieses Arbeitselement zuweisen",
+            "search": "Nach Name oder E-Mail-Adresse suchen",
+            "no_candidates": "Niemand in diesem Bereich kann bisher Arbeit übernehmen. Fügen Sie dem Bereich zuerst Personen hinzu.",
+            "assigning": "Wird zugewiesen…",
+            "open_items": "{count, plural, one {# offenes Element} other {# offene Elemente}}"
+          },
+          "toast": {
+            "claimed_title": "Arbeitselement übernommen",
+            "claimed": "Es gehört jetzt Ihnen und hat den Posteingang dieses Bereichs verlassen.",
+            "not_claimed": "Nicht übernommen",
+            "assigned_title": "Arbeitselement zugewiesen",
+            "assigned": "{name} kümmert sich jetzt darum.",
+            "not_assigned": "Nicht zugewiesen",
+            "returned_title": "In die Warteschlange zurückgegeben",
+            "returned": "Es wartet wieder auf jemanden.",
+            "not_returned": "Nicht zurückgegeben"
+          }
+        },
         "errors": {
           "unit_not_found": "Diesen Bereich gibt es nicht mehr.",
           "name_required": "Ein Bereich braucht einen Namen.",

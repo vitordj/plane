@@ -665,6 +665,51 @@
             "not_resynced": "다시 동기화를 완료할 수 없습니다."
           }
         },
+        "work": {
+          "tab": "작업",
+          "inbox": "받은 편지함",
+          "in_progress": "진행 중",
+          "empty_inbox": "대기 중인 것이 없습니다. 이 영역이 맡은 작업 항목은 누군가 맡을 때까지 여기에 표시됩니다.",
+          "empty_in_progress": "현재 이 영역을 위해 작업하고 있는 사람이 없습니다.",
+          "claim": "맡기",
+          "assign": "담당자 지정…",
+          "return_to_queue": "대기열로 반환",
+          "overdue": "기한 초과",
+          "unassigned": "담당자 없음",
+          "executor_count": "{count, plural, one {작업 항목 #개} other {작업 항목 #개}}",
+          "age": {
+            "just_now": "방금",
+            "minutes": "{count, plural, one {#분} other {#분}}",
+            "hours": "{count, plural, one {#시간} other {#시간}}",
+            "days": "{count, plural, one {#일} other {#일}}"
+          },
+          "reason": {
+            "new_item": "새로 맡음",
+            "awaiting_coordinator": "코디네이터를 기다리는 중",
+            "awaiting_claim": "누군가 맡기를 기다리는 중",
+            "no_eligible_member": "이 영역에는 맡을 수 있는 사람이 없습니다",
+            "executor_unavailable": "실행자가 대응할 수 없습니다",
+            "manually_returned": "대기열로 반환됨"
+          },
+          "assign_modal": {
+            "title": "이 작업 항목 할당",
+            "search": "이름 또는 이메일로 검색",
+            "no_candidates": "이 영역에는 아직 작업을 맡을 수 있는 사람이 없습니다. 먼저 영역에 사람을 추가하십시오.",
+            "assigning": "할당하는 중…",
+            "open_items": "{count, plural, one {미완료 #개} other {미완료 #개}}"
+          },
+          "toast": {
+            "claimed_title": "작업 항목을 맡았습니다",
+            "claimed": "이제 귀하의 것이며 이 영역의 받은 편지함에서 벗어났습니다.",
+            "not_claimed": "맡지 못했습니다",
+            "assigned_title": "작업 항목을 할당했습니다",
+            "assigned": "이제 {name}님이 담당합니다.",
+            "not_assigned": "할당하지 못했습니다",
+            "returned_title": "대기열로 반환했습니다",
+            "returned": "다시 담당자를 기다리고 있습니다.",
+            "not_returned": "반환하지 못했습니다"
+          }
+        },
         "errors": {
           "unit_not_found": "해당 영역이 더 이상 없습니다.",
           "name_required": "영역에는 이름이 필요합니다.",

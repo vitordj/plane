@@ -665,6 +665,51 @@
             "not_resynced": "Yeniden senkronizasyon tamamlanamadı."
           }
         },
+        "work": {
+          "tab": "Çalışma",
+          "inbox": "Gelen kutusu",
+          "in_progress": "Devam ediyor",
+          "empty_inbox": "Bekleyen bir şey yok. Bu alanın üstlendiği iş öğeleri, biri onlarla ilgilenene kadar burada görünür.",
+          "empty_in_progress": "Şu anda bu alan için kimse bir şey üzerinde çalışmıyor.",
+          "claim": "Üstlenin",
+          "assign": "Şu kişiye atayın…",
+          "return_to_queue": "Kuyruğa geri gönderin",
+          "overdue": "Gecikmiş",
+          "unassigned": "Kimse atanmadı",
+          "executor_count": "{count, plural, one {# iş öğesi} other {# iş öğesi}}",
+          "age": {
+            "just_now": "Az önce",
+            "minutes": "{count, plural, one {# dakika} other {# dakika}}",
+            "hours": "{count, plural, one {# saat} other {# saat}}",
+            "days": "{count, plural, one {# gün} other {# gün}}"
+          },
+          "reason": {
+            "new_item": "Yeni üstlenildi",
+            "awaiting_coordinator": "Bir koordinatör bekliyor",
+            "awaiting_claim": "Birinin üstlenmesini bekliyor",
+            "no_eligible_member": "Bu alandaki kimse bunu üstlenemez",
+            "executor_unavailable": "Yürütücüsü müsait değil",
+            "manually_returned": "Kuyruğa geri gönderildi"
+          },
+          "assign_modal": {
+            "title": "Bu iş öğesini atayın",
+            "search": "Ada veya e-posta adresine göre arayın",
+            "no_candidates": "Bu alandaki kimse henüz iş üstlenemez. Önce alana kişi ekleyin.",
+            "assigning": "Atanıyor…",
+            "open_items": "{count, plural, one {# açık öğe} other {# açık öğe}}"
+          },
+          "toast": {
+            "claimed_title": "İş öğesi üstlenildi",
+            "claimed": "Artık sizin ve bu alanın gelen kutusundan çıktı.",
+            "not_claimed": "Üstlenilmedi",
+            "assigned_title": "İş öğesi atandı",
+            "assigned": "Artık {name} ilgileniyor.",
+            "not_assigned": "Atanmadı",
+            "returned_title": "Kuyruğa geri gönderildi",
+            "returned": "Yeniden birini bekliyor.",
+            "not_returned": "Geri gönderilmedi"
+          }
+        },
         "errors": {
           "unit_not_found": "Bu alan artık yok.",
           "name_required": "Bir alanın adı olmalı.",

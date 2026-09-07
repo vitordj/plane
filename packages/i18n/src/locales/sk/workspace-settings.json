@@ -665,6 +665,51 @@
             "not_resynced": "Opätovnú synchronizáciu sa nepodarilo dokončiť."
           }
         },
+        "work": {
+          "tab": "Práca",
+          "inbox": "Doručená pošta",
+          "in_progress": "Prebieha",
+          "empty_inbox": "Nič nečaká. Pracovné položky, ktoré táto oblasť preberá, sa tu zobrazujú, kým sa ich niekto neujme.",
+          "empty_in_progress": "Nikto práve nepracuje na ničom pre túto oblasť.",
+          "claim": "Prevziať",
+          "assign": "Priradiť používateľovi…",
+          "return_to_queue": "Vrátiť do frontu",
+          "overdue": "Po termíne",
+          "unassigned": "Nikto nepriradený",
+          "executor_count": "{count, plural, one {# pracovná položka} few {# pracovné položky} many {# pracovnej položky} other {# pracovných položiek}}",
+          "age": {
+            "just_now": "Práve teraz",
+            "minutes": "{count, plural, one {# minúta} few {# minúty} many {# minúty} other {# minút}}",
+            "hours": "{count, plural, one {# hodina} few {# hodiny} many {# hodiny} other {# hodín}}",
+            "days": "{count, plural, one {# deň} few {# dni} many {# dňa} other {# dní}}"
+          },
+          "reason": {
+            "new_item": "Novo prevzaté",
+            "awaiting_coordinator": "Čaká na koordinátora",
+            "awaiting_claim": "Čaká, kým si to niekto prevezme",
+            "no_eligible_member": "Nikto v tejto oblasti to nemôže prevziať",
+            "executor_unavailable": "Vykonávateľ nie je k dispozícii",
+            "manually_returned": "Vrátené do frontu"
+          },
+          "assign_modal": {
+            "title": "Priradiť túto pracovnú položku",
+            "search": "Hľadať podľa mena alebo e-mailu",
+            "no_candidates": "Nikto v tejto oblasti zatiaľ nemôže prevziať prácu. Pridajte prosím najprv osoby do oblasti.",
+            "assigning": "Priraďovanie…",
+            "open_items": "{count, plural, one {# otvorená položka} few {# otvorené položky} many {# otvorenej položky} other {# otvorených položiek}}"
+          },
+          "toast": {
+            "claimed_title": "Pracovná položka prevzatá",
+            "claimed": "Teraz patrí Vám a opustila doručenú poštu tejto oblasti.",
+            "not_claimed": "Neprevzaté",
+            "assigned_title": "Pracovná položka priradená",
+            "assigned": "Teraz sa o ňu stará {name}.",
+            "not_assigned": "Nepriradené",
+            "returned_title": "Vrátené do frontu",
+            "returned": "Znovu čaká na niekoho.",
+            "not_returned": "Nevrátené"
+          }
+        },
         "errors": {
           "unit_not_found": "Táto oblasť už neexistuje.",
           "name_required": "Oblasť potrebuje názov.",
