@@ -14,3 +14,4 @@ export * from "./unit-form-modal";
 export * from "./unit-list";
 export * from "./unit-members-tab";
 export * from "./unit-projects-tab";
+export * from "./unit-work-tab";
