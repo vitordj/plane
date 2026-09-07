@@ -177,6 +177,13 @@ def guest_client(guest_user):
 
 
 @pytest.fixture
+def second_client(second_user):
+    client = APIClient()
+    client.force_authenticate(user=second_user)
+    return client
+
+
+@pytest.fixture
 def outsider_client(outsider_user):
     client = APIClient()
     client.force_authenticate(user=outsider_user)

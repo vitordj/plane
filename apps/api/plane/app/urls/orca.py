@@ -22,6 +22,13 @@ from plane.app.views import (
     OrcaBuildInfoEndpoint,
     OrcaConfigEndpoint,
     OrganizationalUnitPolicyEndpoint,
+    IssueClaimEndpoint,
+    IssueReassignEndpoint,
+    IssueReturnEndpoint,
+    IssueTransferEndpoint,
+    OrganizationalUnitCoordinatorViewSet,
+    OrganizationalUnitDecisionsEndpoint,
+    OrganizationalUnitQueueEndpoint,
     OrganizationalDirectoryConnectionEndpoint,
     OrganizationalDirectoryResyncEndpoint,
     OrganizationalDirectoryTokenEndpoint,
@@ -165,6 +172,29 @@ urlpatterns = [
         OrganizationalUnitWorkloadEndpoint.as_view(),
         name="organizational-unit-workload",
     ),
+    # The coordinator's inbox and allocation log (item 2.2).
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/queue/",
+        OrganizationalUnitQueueEndpoint.as_view(),
+        name="organizational-unit-queue",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/decisions/",
+        OrganizationalUnitDecisionsEndpoint.as_view(),
+        name="organizational-unit-decisions",
+    ),
+    # Who coordinates an area. Admin-only writes; reads open to member,
+    # coordinator, or admin (see OrganizationalUnitCoordinatorViewSet).
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/coordinators/",
+        OrganizationalUnitCoordinatorViewSet.as_view({"get": "list", "post": "create"}),
+        name="organizational-unit-coordinators",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/coordinators/<uuid:pk>/",
+        OrganizationalUnitCoordinatorViewSet.as_view({"delete": "destroy"}),
+        name="organizational-unit-coordinator",
+    ),
     # Work item ownership by organizational unit, and unit-based assignment.
     path(
         "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/",
@@ -175,6 +205,27 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit-assign/",
         IssueOrganizationalUnitAssignEndpoint.as_view(),
         name="issue-organizational-unit-assign",
+    ),
+    # The coordinator's four actions on one work item (item 2.2).
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/claim/",
+        IssueClaimEndpoint.as_view(),
+        name="issue-organizational-unit-claim",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/return/",
+        IssueReturnEndpoint.as_view(),
+        name="issue-organizational-unit-return",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/reassign/",
+        IssueReassignEndpoint.as_view(),
+        name="issue-organizational-unit-reassign",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/transfer/",
+        IssueTransferEndpoint.as_view(),
+        name="issue-organizational-unit-transfer",
     ),
     # Directory connection administration. Workspace-admin only: issuing a SCIM
     # token hands a machine the power to grant project access.
