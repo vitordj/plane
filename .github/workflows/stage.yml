@@ -246,6 +246,76 @@ jobs:
           echo "Every credential in ${compose} is required; none falls back to a published value."
 
   # ---------------------------------------------------------------------------
+  # Configuration that silently does nothing is the other half of the P0.18
+  # defect. Two ways it happens: a Django setting placed on `api` alone, which
+  # the three other containers sharing that image never see; and a variable the
+  # README tells an operator to set that the Compose file never reads at all --
+  # which is how ORCA_PUBLIC_API_ENABLED came to be documented, defaulted and
+  # unreachable, leaving the automation API answering 404 whatever was set.
+  # Same shape as compose_credentials: cheap, every event, gates build-push.
+  # ---------------------------------------------------------------------------
+  compose_env_forwarding:
+    name: Compose forwards every documented variable
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Refuse a setting that does not reach the processes that read it
+        run: |
+          set -euo pipefail
+          compose="docker-compose-orca.yml"
+          readme="README.md"
+          status=0
+
+          body=$(grep -vE '^[[:space:]]*#' "$compose")
+
+          # Each of these is read once per process at import time, so it has to
+          # reach all four containers sharing the api image -- api, worker,
+          # beat-worker and migrator. One that lands only on `api` is ignored by
+          # the other three, which is the kill-switch failure ORCA_ORG_UNITS_ENABLED
+          # already carries a comment about.
+          api_services=$(printf '%s\n' "$body" | grep -cE '^\s*image:\s*\$\{ORCA_IMAGE_REPOSITORY:-[^}]+\}/api:' || true)
+          if [ "$api_services" -lt 2 ]; then
+            echo "::error file=$compose::found ${api_services} services on the api image -- the file shape changed and this job stopped checking anything"
+            exit 1
+          fi
+          for var in ORCA_ORG_UNITS_ENABLED ORCA_ORG_SYNC_MAX_EDGES \
+                     ORCA_PUBLIC_API_ENABLED ORCA_PUBLIC_API_RATE_LIMIT \
+                     ORCA_AUTOMATION_OPERATION_RETENTION_DAYS \
+                     SCIM_RATE_LIMIT SCIM_AUTH_FAILURE_RATE_LIMIT; do
+            seen=$(printf '%s\n' "$body" | grep -cE "^\s*-\s+\"?${var}=" || true)
+            if [ "$seen" -ne "$api_services" ]; then
+              echo "::error file=$compose::${var} reaches ${seen} of the ${api_services} services sharing the api image"
+              status=1
+            fi
+          done
+
+          # Every variable the README's configuration table documents, in either
+          # the `${VAR:-default}` form or the bare passthrough one the platform
+          # generates into. A name only the README knows is a setting an operator
+          # sets and nothing honours.
+          vars=$(sed -nE 's/^\|[[:space:]]*(`[A-Z][A-Z0-9_]*`([[:space:]]*\/[[:space:]]*`[A-Z][A-Z0-9_]*`)*)[[:space:]]*\|.*/\1/p' "$readme" \
+                 | grep -oE '[A-Z][A-Z0-9_]+' | sort -u)
+          if [ -z "$vars" ]; then
+            echo "::error file=$readme::found no documented variables -- the table shape changed and this job stopped checking anything"
+            exit 1
+          fi
+          for var in $vars; do
+            if ! printf '%s\n' "$body" | grep -qE "\\$\{${var}[:}]|^\s*-\s+${var}\s*$"; then
+              echo "::error file=$readme::${var} is documented as a deploy variable but $compose never reads it"
+              status=1
+            fi
+          done
+
+          if [ "$status" -ne 0 ]; then
+            exit 1
+          fi
+          echo "Every documented variable is read, and every api-image setting reaches all ${api_services} services."
+
+  # ---------------------------------------------------------------------------
   # PR Labeler & Template Manager (Pull Requests ONLY)
   # ---------------------------------------------------------------------------
   labeler:
@@ -552,7 +622,7 @@ jobs:
 
   build-push:
     name: Build & Push ${{ matrix.service }}
-    needs: [ci, api_tests, api_lint, changes, compose_provenance, compose_credentials]
+    needs: [ci, api_tests, api_lint, changes, compose_provenance, compose_credentials, compose_env_forwarding]
     # `ci` and `api_tests` are each scoped to the paths they cover, so either
     # may legitimately be skipped — a web-only change skips api_tests, and a
     # config-only change skips ci. A skipped dependency would normally skip

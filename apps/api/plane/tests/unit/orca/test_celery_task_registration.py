@@ -34,9 +34,13 @@ TASK_MODULE = "plane.bgtasks.organizational_unit_task"
 DIRECTORY_TASK_NAME = "plane.bgtasks.organizational_directory_task.resolve_directory_identities"
 DIRECTORY_TASK_MODULE = "plane.bgtasks.organizational_directory_task"
 
+CLEANUP_TASK_NAME = "plane.bgtasks.orca_automation_cleanup_task.delete_orca_automation_operations"
+CLEANUP_TASK_MODULE = "plane.bgtasks.orca_automation_cleanup_task"
+
 TASKS = [
     pytest.param(TASK_MODULE, TASK_NAME, id="reconcile_organizational_access"),
     pytest.param(DIRECTORY_TASK_MODULE, DIRECTORY_TASK_NAME, id="resolve_directory_identities"),
+    pytest.param(CLEANUP_TASK_MODULE, CLEANUP_TASK_NAME, id="delete_orca_automation_operations"),
 ]
 
 
@@ -72,6 +76,11 @@ class TestOrganizationalTaskRegistration:
 
         assert DIRECTORY_TASK_NAME in scheduled
         assert DIRECTORY_TASK_NAME in celery_app.tasks
+        # Same for the daily receipt retention: nothing else would notice a
+        # drift, because a beat entry that names an unregistered task fails in
+        # the worker, once a day, where nobody is looking.
+        assert CLEANUP_TASK_NAME in scheduled
+        assert CLEANUP_TASK_NAME in celery_app.tasks
 
     def test_the_registered_task_is_the_one_the_dispatcher_queues(self):
         # A name can be registered by a callable other than the one the
