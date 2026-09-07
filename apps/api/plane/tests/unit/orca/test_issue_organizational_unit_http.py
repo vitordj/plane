@@ -17,6 +17,7 @@ import uuid
 import pytest
 
 from plane.db.models import (
+    AssignmentDecision,
     AssignmentMode,
     IssueAssignee,
     IssueOrganizationalUnit,
@@ -678,3 +679,127 @@ class TestThePolicyRoute:
         response = admin_client.get(unit_policy_url(workspace_with_members.slug, covering_unit.id))
 
         assert response.status_code == 404
+
+
+@pytest.mark.unit
+class TestMarkingTheAreaThatIsAlreadyTheArea:
+    """
+    R1.A1 — a POST that reads as idempotent used to empty the executor.
+
+    ``set_responsibility`` only diverted to ``transfer_unit`` when the area
+    changed. The same area fell through to ``allocate``, which re-runs the
+    policy from scratch, and under ``manual`` that ends in ``_apply_queued``,
+    which clears ``primary_executor``. Answer 200, work silently back in the
+    coordinator's queue, one off the executor's load, and the item screen
+    unchanged because the ``IssueAssignee`` row survives.
+
+    The public route has had this guard since Phase 1. One service, two
+    behaviours, depending on which door the caller came through.
+    """
+
+    def test_re_posting_the_same_area_leaves_the_executor_alone(
+        self,
+        admin_client,
+        workspace_with_members,
+        unit,
+        project_with_admin,
+        make_issue,
+        link_project,
+        add_member,
+        plain_user,
+        grant_manual_access,
+    ):
+        project = project_with_admin
+        issue = make_issue(project)
+        link_project(unit, project, ROLE_MEMBER)
+        add_member(unit, plain_user)
+        grant_manual_access(project, plain_user)
+        grant = admin_client.post(
+            issue_unit_url(workspace_with_members.slug, project.id, issue.id),
+            {"organizational_unit_id": str(unit.id), "mode": "least_loaded"},
+            format="json",
+        )
+        assert grant.status_code in (200, 201), grant.data
+        link = IssueOrganizationalUnit.objects.get(issue=issue)
+        assert link.routing_state == RoutingState.ASSIGNED
+        before_executor = link.primary_executor_id
+        before_decisions = AssignmentDecision.objects.filter(issue=issue).count()
+
+        again = admin_client.post(
+            issue_unit_url(workspace_with_members.slug, project.id, issue.id),
+            {"organizational_unit_id": str(unit.id)},
+            format="json",
+        )
+
+        assert again.status_code in (200, 201), again.data
+        link.refresh_from_db()
+        assert link.routing_state == RoutingState.ASSIGNED
+        assert link.primary_executor_id == before_executor
+        # No decision either: an audit entry for an event that did not happen.
+        assert AssignmentDecision.objects.filter(issue=issue).count() == before_decisions
+
+    def test_naming_a_mode_still_allocates(
+        self,
+        admin_client,
+        workspace_with_members,
+        unit,
+        project_with_admin,
+        make_issue,
+        link_project,
+        add_member,
+        plain_user,
+        grant_manual_access,
+    ):
+        """
+        The guard is about "is this area responsible?", not about refusing work.
+        A caller that names a mode is asking to allocate, and still does.
+        """
+        project = project_with_admin
+        issue = make_issue(project)
+        link_project(unit, project, ROLE_MEMBER)
+        add_member(unit, plain_user)
+        grant_manual_access(project, plain_user)
+        admin_client.post(
+            issue_unit_url(workspace_with_members.slug, project.id, issue.id),
+            {"organizational_unit_id": str(unit.id)},
+            format="json",
+        )
+        before = AssignmentDecision.objects.filter(issue=issue).count()
+
+        again = admin_client.post(
+            issue_unit_url(workspace_with_members.slug, project.id, issue.id),
+            {"organizational_unit_id": str(unit.id), "mode": "least_loaded"},
+            format="json",
+        )
+
+        assert again.status_code in (200, 201), again.data
+        assert AssignmentDecision.objects.filter(issue=issue).count() > before
+
+    def test_a_different_area_still_transfers(
+        self,
+        admin_client,
+        workspace_with_members,
+        unit,
+        second_unit,
+        project_with_admin,
+        make_issue,
+        link_project,
+    ):
+        project = project_with_admin
+        issue = make_issue(project)
+        link_project(unit, project, ROLE_MEMBER)
+        link_project(second_unit, project, ROLE_MEMBER)
+        admin_client.post(
+            issue_unit_url(workspace_with_members.slug, project.id, issue.id),
+            {"organizational_unit_id": str(unit.id)},
+            format="json",
+        )
+
+        moved = admin_client.post(
+            issue_unit_url(workspace_with_members.slug, project.id, issue.id),
+            {"organizational_unit_id": str(second_unit.id)},
+            format="json",
+        )
+
+        assert moved.status_code in (200, 201), moved.data
+        assert IssueOrganizationalUnit.objects.get(issue=issue).organizational_unit_id == second_unit.id

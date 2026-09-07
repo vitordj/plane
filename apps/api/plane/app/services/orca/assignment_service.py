@@ -994,6 +994,23 @@ def set_responsibility(
     first use (event with ``from_unit=None``), delegates to ``transfer_unit``
     when another area already owns the item, and then allocates under the
     area's policy.
+
+    **Marking the area that is already the area changes nothing** (R1.A5's
+    sibling, review finding R1.A1). Re-POSTing the same area used to fall
+    through to ``allocate``, which re-runs the policy from scratch: under
+    ``manual`` that ends in ``_apply_queued``, which clears
+    ``primary_executor``. So a POST that reads as idempotent -- and that the
+    interface makes when somebody sets the area on an item that already has it
+    -- answered 200 and quietly pushed assigned work back into the coordinator's
+    queue, dropping the executor and one from their load, while the item screen
+    showed no change because the ``IssueAssignee`` row survives. The public
+    route has carried this guard since Phase 1 and documents it at length in
+    ``_place``; the same service was behaving two ways depending on the door.
+
+    A caller that names a mode or an executor is not asking "is this area
+    responsible?" but "allocate now", so it still allocates -- which is what the
+    separate ``organizational-unit-assign/`` route is for, and it has a
+    different name on purpose.
     @param exclude_user_ids: People the ranking must not choose, for a caller
         adding somebody alongside whoever is already on the item.
     @param collaborators: People to attach alongside the executor, answerable
@@ -1010,6 +1027,20 @@ def set_responsibility(
         raise UnitNotCoveringProject(unit_id=str(unit.id), project_id=str(issue.project_id))
 
     existing = IssueOrganizationalUnit.objects.filter(issue=issue).first()
+    if (
+        existing is not None
+        and existing.organizational_unit_id == unit.id
+        and requested_mode is None
+        and explicit_executor is None
+    ):
+        # Already true, so nothing to decide and nothing to record: a decision
+        # written here would be an audit entry for an event that did not happen.
+        link = (
+            IssueOrganizationalUnit.objects.select_related("current_assignment_decision").filter(pk=existing.pk).first()
+        )
+        outcome = DecisionOutcome.ASSIGNED if link.routing_state == RoutingState.ASSIGNED else DecisionOutcome.QUEUED
+        return AllocationResult(link, link.current_assignment_decision, outcome, link.primary_executor_id)
+
     if existing is not None and existing.organizational_unit_id != unit.id:
         transfer = transfer_unit(
             issue,
