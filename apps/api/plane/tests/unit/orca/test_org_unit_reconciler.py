@@ -679,3 +679,100 @@ class TestCoordinatorAccess:
         assert grant.grant_source == GrantSource.MEMBERSHIP
         assert grant.membership_id == membership.id
         assert grant.coordinator_id is None
+
+
+@pytest.mark.unit
+class TestAWorkspaceDemotionIsNotAManualChoice:
+    """
+    R1.A2 — access that outlived the area that granted it.
+
+    The layer only lowers or withdraws while the current ``ProjectMember.role``
+    still equals the role it last wrote. That drift check assumes a difference
+    can only have come from a person, and the core breaks the assumption: a
+    demotion to workspace Guest rewrites every one of that person's
+    ``ProjectMember`` rows to 5 on its own.
+
+    The layer used to see the rewrite, agree with it -- the capped target is 5
+    too, so there is nothing to write -- and leave ``last_applied_role`` naming
+    the old role. On the way back up, the drift check compared against that
+    stale claim, saw a difference, and recorded the core's write as a human's
+    choice. Leaving the area then restored that "choice" instead of withdrawing,
+    and somebody who only ever reached the project through the area kept it.
+    """
+
+    def test_the_claim_follows_the_workspace_cap_down(self, org_workspace, make_member, make_project, make_unit):
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding, role=ROLE_MEMBER)
+        bruno = make_member("bruno")
+        reconcile_membership(add_member(compliance, bruno), force_sync=True)
+
+        bruno.role = ROLE_GUEST
+        bruno.save()
+        ProjectMember.objects.filter(member=bruno.member, project=onboarding).update(role=ROLE_GUEST)
+        reconcile_access(org_workspace.id)
+
+        state = OrganizationalProjectAccessState.objects.get(workspace_member=bruno, project=onboarding)
+        # The whole fix: the claim names the role the person actually holds.
+        assert state.last_applied_role == ROLE_GUEST
+        assert state.baseline_role is None
+        assert state.created_by_org_layer is True
+
+    def test_leaving_the_area_after_a_round_trip_through_guest_withdraws_access(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """The four steps of the finding, in order."""
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding, role=ROLE_MEMBER)
+        bruno = make_member("bruno")
+        membership = add_member(compliance, bruno)
+        reconcile_membership(membership, force_sync=True)
+        assert project_member(onboarding, bruno).role == ROLE_MEMBER
+
+        # 2. Demoted to workspace Guest; the core rewrites the ProjectMember.
+        bruno.role = ROLE_GUEST
+        bruno.save()
+        ProjectMember.objects.filter(member=bruno.member, project=onboarding).update(role=ROLE_GUEST)
+        reconcile_access(org_workspace.id)
+
+        # 3. Restored to workspace Member.
+        bruno.role = ROLE_MEMBER
+        bruno.save()
+        reconcile_access(org_workspace.id)
+        assert project_member(onboarding, bruno).role == ROLE_MEMBER
+        state = OrganizationalProjectAccessState.objects.get(workspace_member=bruno, project=onboarding)
+        # Nobody chose anything by hand, so there is no baseline to fall back to.
+        assert state.baseline_role is None
+
+        # 4. Leaves the area. The only reason he was in the project is gone.
+        membership.is_active = False
+        membership.save()
+        reconcile_access(org_workspace.id)
+
+        assert project_member(onboarding, bruno).is_active is False
+
+    def test_a_real_manual_promotion_still_survives_the_same_round_trip(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """
+        The fix must not cost the guarantee it sits next to: access a person
+        granted by hand outlives the area, round trip or no round trip.
+        """
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding, role=ROLE_GUEST)
+        ana = make_member("ana")
+        ProjectMember.objects.create(
+            project=onboarding, member=ana.member, workspace=org_workspace, role=ROLE_ADMIN, is_active=True
+        )
+        membership = add_member(compliance, ana)
+        reconcile_membership(membership, force_sync=True)
+
+        membership.is_active = False
+        membership.save()
+        reconcile_access(org_workspace.id)
+
+        member_row = project_member(onboarding, ana)
+        assert member_row.is_active is True
+        assert member_row.role == ROLE_ADMIN

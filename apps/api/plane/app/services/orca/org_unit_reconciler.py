@@ -555,6 +555,22 @@ def _apply_change(workspace_member, project_id, project_member, state, action, r
             state.created_by_org_layer = False
             state.last_applied_role = role
             state.project_member = project_member
+        elif role is not None and state.last_applied_role is not None and state.last_applied_role != role:
+            # The claim is still ours, but the effective role moved without this
+            # layer writing it -- which happens when the workspace role caps it,
+            # because demoting somebody to workspace Guest rewrites every
+            # ProjectMember of theirs to 5 (``workspace/member.py``). Nothing to
+            # write on the member: the target and the current role already
+            # agree. What must not be left behind is a ``last_applied_role``
+            # naming a role nobody holds (review finding R1.A2).
+            #
+            # Leaving it stale is what turned a core demotion into a "manual
+            # choice": on the way back up the drift check compared the current
+            # role against a claim two steps old, saw a difference, and recorded
+            # the core's own write as a human's -- after which leaving the area
+            # restored that role instead of withdrawing access, and somebody who
+            # only ever had the project through the area kept it.
+            state.last_applied_role = role
 
     state.last_reconciled_at = now
     state.save()
@@ -625,7 +641,16 @@ def reconcile_access(workspace_id, member_ids=None, project_ids=None) -> list[Ac
             action, role = _decide(project_member, state, inherited)
             current_role = project_member.role if project_member and project_member.is_active else None
 
-            if action != ACTION_NONE or (role is not None and (state is None or state.last_applied_role is None)):
+            # ACTION_NONE usually means there is nothing to record either. Two
+            # exceptions: a first sighting, where the inherited role matches a
+            # role somebody had already set by hand and the state row has to
+            # start existing; and a live claim whose role no longer matches what
+            # the person holds, which is how a workspace-level demotion reaches
+            # us (R1.A2) and which must not be left naming a role nobody has.
+            if action != ACTION_NONE or (
+                role is not None
+                and (state is None or state.last_applied_role is None or state.last_applied_role != role)
+            ):
                 _apply_change(
                     workspace_member,
                     project_id,
