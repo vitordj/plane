@@ -12,7 +12,6 @@ import { resolveOrcaErrorKey } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
-import type { IQueueRow } from "@plane/types";
 import { Avatar, EModalPosition, EModalWidth, Input, Loader, ModalCore } from "@plane/ui";
 // hooks
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
@@ -21,8 +20,15 @@ type Props = {
   isOpen: boolean;
   workspaceSlug: string;
   unitId: string;
-  /** The work item being handed out; `null` closes the modal. */
-  row: IQueueRow | null;
+  /** What the modal's subtitle shows for the item being handed out. */
+  subtitle?: string;
+  /**
+   * Does the actual assignment. The modal has no opinion on what that call
+   * updates — a queue row, a routing state, anything else with an
+   * `executor_id` to send — so the caller supplies it and the modal only
+   * drives the picking and the toast.
+   */
+  onAssign: (userId: string) => Promise<unknown>;
   onClose: () => void;
 };
 
@@ -53,7 +59,7 @@ type TCandidate = {
  * filtering the list here would hide the reason.
  */
 export const AssignMemberModal = observer(function AssignMemberModal(props: Props) {
-  const { isOpen, workspaceSlug, unitId, row, onClose } = props;
+  const { isOpen, workspaceSlug, unitId, subtitle, onAssign, onClose } = props;
   const store = useOrganizationalUnit();
   const { t } = useTranslation();
 
@@ -101,10 +107,9 @@ export const AssignMemberModal = observer(function AssignMemberModal(props: Prop
   }, [candidates, search]);
 
   const handleAssign = async (candidate: TCandidate) => {
-    if (!row) return;
     setAssigningUserId(candidate.userId);
     try {
-      await store.assign(workspaceSlug, unitId, row, candidate.userId);
+      await onAssign(candidate.userId);
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: t(`${OU}.work.toast.assigned_title`),
@@ -127,11 +132,7 @@ export const AssignMemberModal = observer(function AssignMemberModal(props: Prop
       <div className="flex flex-col gap-4 p-5">
         <div className="flex flex-col gap-1">
           <h3 className="text-lg text-custom-text-100 font-medium">{t(`${OU}.work.assign_modal.title`)}</h3>
-          {row && (
-            <p className="text-sm text-custom-text-300 truncate">
-              {row.project.identifier}-{row.sequence_id} · {row.name}
-            </p>
-          )}
+          {subtitle && <p className="text-sm text-custom-text-300 truncate">{subtitle}</p>}
         </div>
 
         <div className="relative">

@@ -124,7 +124,13 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
         isOpen={rowToAssign !== null}
         workspaceSlug={workspaceSlug}
         unitId={unitId}
-        row={rowToAssign}
+        subtitle={
+          rowToAssign ? `${rowToAssign.project.identifier}-${rowToAssign.sequence_id} · ${rowToAssign.name}` : undefined
+        }
+        onAssign={(userId) => {
+          if (!rowToAssign) return Promise.resolve();
+          return store.assign(workspaceSlug, unitId, rowToAssign, userId);
+        }}
         onClose={() => setRowToAssign(null)}
       />
     </div>

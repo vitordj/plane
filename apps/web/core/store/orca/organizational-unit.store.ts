@@ -119,6 +119,20 @@ export interface IOrganizationalUnitStore {
     unitId: string
   ) => Promise<{ unit: IOrganizationalUnit; routing: IIssueRouting | null }>;
   clearIssueUnit: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
+  claimIssueRouting: (workspaceSlug: string, projectId: string, issueId: string) => Promise<IIssueRouting>;
+  reassignIssueRouting: (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    executorId: string,
+    options?: { reason?: string; expectedDecisionId?: string | null }
+  ) => Promise<IIssueRouting>;
+  returnIssueRouting: (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    options?: { reason?: string; expectedDecisionId?: string | null }
+  ) => Promise<IIssueRouting>;
   fetchQueue: (workspaceSlug: string, unitId: string) => Promise<IUnitQueue>;
   claim: (workspaceSlug: string, unitId: string, row: IQueueRow) => Promise<IIssueRouting>;
   assign: (workspaceSlug: string, unitId: string, row: IQueueRow, executorId: string) => Promise<IIssueRouting>;
@@ -188,6 +202,9 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       fetchWorkload: action,
       fetchMyUnits: action,
       assignIssueFromUnit: action,
+      claimIssueRouting: action,
+      reassignIssueRouting: action,
+      returnIssueRouting: action,
       fetchQueue: action,
       claim: action,
       assign: action,
@@ -408,6 +425,32 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
 
   clearIssueUnit = async (workspaceSlug: string, projectId: string, issueId: string) =>
     this.service.clearIssueOrganizationalUnit(workspaceSlug, projectId, issueId);
+
+  /**
+   * @description The three routing actions, read straight off the work
+   * item's own panel rather than a queue row. `claim`/`assign`/`returnToQueue`
+   * below exist for the Work tab and update `queueByUnit` as a side effect;
+   * these do not; a panel showing one item has no queue page to keep in sync,
+   * so writing to `queueByUnit` here would only ever plant a row nothing else
+   * populated.
+   */
+  claimIssueRouting = (workspaceSlug: string, projectId: string, issueId: string) =>
+    this.service.claimIssue(workspaceSlug, projectId, issueId);
+
+  reassignIssueRouting = (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    executorId: string,
+    options?: { reason?: string; expectedDecisionId?: string | null }
+  ) => this.service.reassignIssue(workspaceSlug, projectId, issueId, executorId, options);
+
+  returnIssueRouting = (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    options?: { reason?: string; expectedDecisionId?: string | null }
+  ) => this.service.returnIssue(workspaceSlug, projectId, issueId, options);
 
   /**
    * @description The two lists the Work tab shows, in two requests: what is
