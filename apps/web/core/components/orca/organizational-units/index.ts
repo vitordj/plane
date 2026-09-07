@@ -6,6 +6,8 @@
 
 export * from "./directory-sync-panel";
 export * from "./issue-unit-property";
+export * from "./queue-item-row";
+export * from "./queue-list";
 export * from "./unit-detail";
 export * from "./unit-form-modal";
 export * from "./unit-list";
