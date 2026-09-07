@@ -31,7 +31,7 @@ from rest_framework.response import Response
 # Module imports
 from plane.api.serializers.orca import queue_row, unit_payload
 from plane.app.permissions.base import ROLE
-from plane.app.permissions.organizational_unit import may_see_queue
+from plane.app.permissions.organizational_unit import may_see_queue, readable_project_ids
 from plane.app.services.orca import ALL_STATES, queue_queryset
 from plane.db.models import (
     OrganizationalUnit,
@@ -178,6 +178,7 @@ class UnitQueueEndpoint(OrcaWorkspaceReadEndpoint):
             overdue=overdue,
             project_id=request.query_params.get("project"),
             now=now,
+            visible_project_ids=readable_project_ids(request.user, unit),
         )
 
         return self.paginate(

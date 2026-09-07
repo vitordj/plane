@@ -27,6 +27,7 @@ from plane.db.models import (
     AssignmentMode,
     IssueOrganizationalUnit,
     OrganizationalUnitAssignmentPolicy,
+    ProjectMember,
     QueueReason,
     RoutingState,
 )
@@ -341,3 +342,56 @@ class TestReadingTheQueue:
 
         assert response.status_code == 404
         assert response.data["error_message"] == "ORG_PUBLIC_API_DISABLED"
+
+
+@pytest.mark.unit
+class TestTheQueueOnlyReportsWorkTheReaderCouldOpen:
+    """
+    R1.A7 — being in the area is not the same as being able to open its
+    projects, and the layer itself is what pulls those apart.
+
+    Archiving a project drops it from ``_active_sources``, so the reconciler
+    deactivates the ``ProjectMember`` rows it had granted, and
+    ``unit_covers_project`` stops counting it as covered. Both halves agree the
+    project is out of reach. The queue, filtered only by area and state, kept
+    handing out its work item titles and its executors' email addresses to
+    anybody still in the area.
+
+    The internal queue reuses this same query (decision M6), so leaving it
+    would have put the leak on a screen rather than only behind an API key.
+    """
+
+    def test_a_reader_who_lost_project_access_sees_none_of_its_work(
+        self, insider, plain_user, workspace_with_members, unit, project, queued
+    ):
+        queued()
+        ProjectMember.objects.filter(member=plain_user, project=project).update(is_active=False)
+
+        response = insider.get(public_queue_url(workspace_with_members.slug, unit.slug))
+
+        assert response.status_code == 200
+        assert response.data["results"] == []
+
+    def test_a_reader_who_kept_access_still_sees_it(self, insider, workspace_with_members, unit, project, queued):
+        queued()
+
+        response = insider.get(public_queue_url(workspace_with_members.slug, unit.slug))
+
+        assert response.status_code == 200
+        assert response.data["results"]
+
+    def test_a_workspace_admin_is_not_restricted(
+        self, admin_token_client, plain_user, workspace_with_members, unit, project, covered, queued
+    ):
+        """
+        An admin already sees every project through the interface, and building
+        the id set for a large tenant to tell them what they can already read
+        would be a query for nothing.
+        """
+        queued()
+        ProjectMember.objects.filter(project=project).update(is_active=False)
+
+        response = admin_token_client.get(public_queue_url(workspace_with_members.slug, unit.slug))
+
+        assert response.status_code == 200
+        assert response.data["results"]

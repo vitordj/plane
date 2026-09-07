@@ -280,13 +280,21 @@ def _membership_map(unit) -> dict:
     }
 
 
-def _load_counts(unit, workspace_id, user_ids) -> tuple:
+def load_counts(unit, workspace_id, user_ids) -> tuple:
     """
     @description Open work per person, counted over the whole workspace and
     then within the area, as ``lb-1`` requires. Only the **primary executor**
     counts: a collaborator left on an item from an earlier assignment is not
     the person answerable for it, and counting them would keep pushing them
     down the ranking for work they no longer own.
+
+    Public, and the only definition of "how much work does this person have"
+    in the layer. ``workload_snapshot`` used to answer the same question by
+    counting ``IssueAssignee`` rows, which is defect D4 living on outside the
+    service: a reassignment keeps the previous executor as an assignee on
+    purpose (RFC §6.8), so the two answers disagreed permanently and the
+    coordinator's "assign to..." screen showed people holding work they had
+    handed over (review finding R1.A11).
     @returns ``(total_open_by_user, unit_open_by_user)``.
     """
     if not user_ids:
@@ -380,7 +388,7 @@ def rank_candidates(
         else:
             eligible_ids.append(user_id)
 
-    total_open, unit_open = _load_counts(unit, unit.workspace_id, eligible_ids)
+    total_open, unit_open = load_counts(unit, unit.workspace_id, eligible_ids)
     last_auto = _last_automatic_assignment(eligible_ids)
     cap = policy.max_open_items_per_member if policy else None
 

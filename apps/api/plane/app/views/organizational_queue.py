@@ -51,6 +51,7 @@ from plane.app.permissions.organizational_unit import (
     UNIT_MEMBER,
     allow_issue_unit_role,
     allow_unit_role,
+    readable_project_ids,
     is_unit_coordinator,
     is_workspace_admin,
     link_for_issue,
@@ -316,6 +317,7 @@ class OrganizationalUnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
             overdue=_tri_state(request.query_params.get("overdue")),
             project_id=request.query_params.get("project"),
             now=now,
+            visible_project_ids=readable_project_ids(request.user, unit),
         ).select_related("issue__state", "issue__project")
 
         executor_id = request.query_params.get("executor")

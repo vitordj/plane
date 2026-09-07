@@ -20,10 +20,9 @@ from dataclasses import dataclass
 from typing import Optional
 
 # Django imports
-from django.db.models import Count
 
 # Module imports
-from plane.app.services.orca.assignment_service import allocate, rank_candidates, resolve_policy
+from plane.app.services.orca.assignment_service import allocate, load_counts, rank_candidates, resolve_policy
 from plane.app.services.orca.errors import OrcaDomainError
 from plane.db.models import (
     DecisionTrigger,
@@ -179,23 +178,27 @@ def workload_snapshot(unit: OrganizationalUnit) -> list[dict]:
             for membership in memberships
         ]
 
-    load = (
-        IssueAssignee.objects.filter(
-            assignee_id__in=[membership.workspace_member.member_id for membership in memberships],
-            project_id__in=unit_project_ids,
-        )
-        .exclude(issue__state__group__in=CLOSED_STATE_GROUPS)
-        .values("assignee_id")
-        .annotate(open_issues=Count("id", distinct=True))
-    )
-    load_by_user = {row["assignee_id"]: row["open_issues"] for row in load}
+    # The same count the ranker uses, from the same function, so the screen a
+    # coordinator picks from and the ``least_loaded`` ranking of the same area
+    # cannot disagree about who is busy (R1.A11). Counting ``IssueAssignee``
+    # here, as this did, was defect D4 surviving outside the service: a
+    # reassignment leaves the previous executor on the item deliberately, so
+    # every reassignment used to add a permanent discrepancy.
+    member_ids = [membership.workspace_member.member_id for membership in memberships]
+    total_open, unit_open = load_counts(unit, unit.workspace_id, member_ids)
 
     return [
         {
             "workspace_member_id": str(membership.workspace_member_id),
             "display_name": membership.workspace_member.member.display_name,
             "role": membership.role,
-            "open_issues": load_by_user.get(membership.workspace_member.member_id, 0),
+            # What this area is holding them accountable for, which is what the
+            # decision on this screen is about.
+            "open_issues": unit_open.get(membership.workspace_member.member_id, 0),
+            # And what they are carrying everywhere, because somebody free in
+            # this area may be buried in another. The ranker breaks ties on
+            # exactly this pair, in this order.
+            "total_open_issues": total_open.get(membership.workspace_member.member_id, 0),
         }
         for membership in memberships
     ]

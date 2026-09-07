@@ -703,14 +703,26 @@ class TestEffectiveAccessAndWorkload:
         second_user,
         make_issue,
     ):
-        from plane.db.models import IssueAssignee
+        from plane.db.models import IssueAssignee, IssueOrganizationalUnit, RoutingState
 
         link_project(unit, project)
         add_member(unit, plain_user)
         add_member(unit, second_user)
         issue = make_issue(project)
+        # Executor, not merely assignee. Since R1.A11 this route reports what
+        # the ranker counts, so an ``IssueAssignee`` row on its own weighs
+        # nothing -- which is the point: a reassignment leaves the previous
+        # executor on the item, and they are no longer answerable for it.
         IssueAssignee.objects.create(
             issue=issue, assignee=plain_user, project=project, workspace=workspace_with_members
+        )
+        IssueOrganizationalUnit.objects.create(
+            issue=issue,
+            organizational_unit=unit,
+            project=project,
+            workspace=workspace_with_members,
+            routing_state=RoutingState.ASSIGNED,
+            primary_executor=plain_user,
         )
 
         response = admin_client.get(workload_url(workspace_with_members.slug, unit.id))

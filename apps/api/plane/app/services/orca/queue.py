@@ -34,7 +34,7 @@ WAITING_STATES = (RoutingState.QUEUED, RoutingState.ALLOCATION_FAILED)
 ALL_STATES = "all"
 
 
-def queue_queryset(unit, *, routing_state=None, overdue=None, project_id=None, now=None):
+def queue_queryset(unit, *, routing_state=None, overdue=None, project_id=None, now=None, visible_project_ids=None):
     """
     @description The area's queue, filtered and ordered (RFC §7.2, §8.1).
     @param unit: The ``OrganizationalUnit`` whose work to list.
@@ -43,6 +43,12 @@ def queue_queryset(unit, *, routing_state=None, overdue=None, project_id=None, n
     @param overdue: ``True`` keeps only items past ``assignment_due_at``;
         ``False`` keeps only the rest; ``None`` keeps both.
     @param project_id: Restrict to one project.
+    @param visible_project_ids: Projects the reader may be shown work from, or
+        ``None`` for no restriction. Being in the area is not the same as being
+        able to open its projects -- archiving one withdraws the access the
+        layer granted, and the queue used to keep reporting its rows anyway
+        (R1.A7). Passed in rather than derived here so this stays one query per
+        page and so the caller, which knows who is asking, decides.
     @param now: The instant "overdue" is judged against. Passed in so every row
         of one page is judged against the same moment — a page evaluated
         row-by-row against ``now()`` can order two items by microseconds.
@@ -61,6 +67,9 @@ def queue_queryset(unit, *, routing_state=None, overdue=None, project_id=None, n
 
     if project_id:
         queryset = queryset.filter(project_id=project_id)
+
+    if visible_project_ids is not None:
+        queryset = queryset.filter(project_id__in=visible_project_ids)
 
     is_overdue = Case(
         When(Q(assignment_due_at__isnull=False) & Q(assignment_due_at__lt=now), then=Value(True)),

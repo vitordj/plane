@@ -223,10 +223,96 @@ class TestAssignmentEngine:
         maria = make_unit_member("maria")
         make_unit_member("ana")
         reconcile_access(workspace.id)
-        assign(make_issue(project, open_state, owner, "Open"), maria)
-        assign(make_issue(project, done_state, owner, "Closed"), maria)
+        # ``carry`` and not ``assign``: since R1.A11 this snapshot measures what
+        # the ranker measures, which is the executor, not everybody left on the
+        # item. A test written with ``assign`` would be asserting the defect.
+        carry(make_issue(project, open_state, owner, "Open"), maria, unit)
+        carry(make_issue(project, done_state, owner, "Closed"), maria, unit)
 
         snapshot = {row["display_name"]: row["open_issues"] for row in workload_snapshot(unit)}
 
         assert snapshot[maria.display_name] == 1
         assert sum(snapshot.values()) == 1
+
+
+@pytest.mark.unit
+class TestTheScreenAndTheRankerAgreeOnLoad:
+    """
+    R1.A11 — defect D4 survived outside the service, on the screen.
+
+    D4 was "load counts any assignee", and D0.5 closed it in the ranker: only
+    the primary executor counts, because a collaborator left on an item from an
+    earlier assignment is not answerable for it. ``workload_snapshot`` kept
+    counting ``IssueAssignee`` rows, and reassignment deliberately leaves the
+    previous executor on the item (RFC §6.8), so every reassignment added a
+    permanent disagreement between the two numbers.
+
+    Decision M5 sends the coordinator's "assign to..." modal to this very
+    snapshot. Without this, that screen would have shown somebody holding work
+    they had handed over, while ``least_loaded`` in the same area considered
+    them free -- and a coordinator who catches the two disagreeing once stops
+    believing either.
+    """
+
+    def test_a_reassignment_does_not_leave_phantom_load_behind(
+        self, workspace, project, unit, open_state, owner, make_unit_member
+    ):
+        ana = make_unit_member("ana")
+        bruno = make_unit_member("bruno")
+        reconcile_access(workspace.id)
+        issue = make_issue(project, open_state, owner, "Onboarding")
+        link = carry(issue, ana, unit)
+
+        # Reassign the way the service does: the new executor takes over and the
+        # previous one stays an assignee on purpose.
+        assign(issue, bruno)
+        link.primary_executor = bruno
+        link.save(update_fields=["primary_executor"])
+
+        snapshot = {row["display_name"]: row["open_issues"] for row in workload_snapshot(unit)}
+
+        assert snapshot[bruno.display_name] == 1
+        # Ana is still an IssueAssignee, and holds nothing.
+        assert IssueAssignee.objects.filter(issue=issue, assignee=ana).exists()
+        assert snapshot[ana.display_name] == 0
+
+    def test_the_snapshot_and_the_ranking_report_the_same_counts(
+        self, workspace, project, unit, open_state, owner, make_unit_member
+    ):
+        ana = make_unit_member("ana")
+        bruno = make_unit_member("bruno")
+        reconcile_access(workspace.id)
+        issue = make_issue(project, open_state, owner, "Onboarding")
+        link = carry(issue, ana, unit)
+        assign(issue, bruno)
+        link.primary_executor = bruno
+        link.save(update_fields=["primary_executor"])
+        carry(make_issue(project, open_state, owner, "Second"), bruno, unit)
+
+        # ``candidates_for`` reports the ranker's workspace-wide count, which is
+        # the snapshot's ``total_open_issues``. Same function underneath, so the
+        # two cannot drift; this asserts the wiring.
+        snapshot = {row["workspace_member_id"]: row["total_open_issues"] for row in workload_snapshot(unit)}
+        ranked = {str(candidate.user_id): candidate.open_issues for candidate in candidates_for(unit, project.id)}
+
+        for person in (ana, bruno):
+            workspace_member_id = str(WorkspaceMember.objects.get(member=person, workspace=workspace).id)
+            assert snapshot[workspace_member_id] == ranked[str(person.id)]
+
+    def test_the_snapshot_reports_load_outside_the_area_too(
+        self, workspace, project, unit, open_state, owner, make_unit_member
+    ):
+        """
+        Somebody free in this area may be buried in another, and the ranker
+        breaks ties on exactly that. The screen says both numbers rather than
+        inventing a third meaning for one.
+        """
+        ana = make_unit_member("ana")
+        reconcile_access(workspace.id)
+        other = OrganizationalUnit.objects.create(workspace=workspace, name="Legal", slug="legal")
+        carry(make_issue(project, open_state, owner, "Elsewhere"), ana, other)
+
+        row = next(row for row in workload_snapshot(unit) if row["display_name"] == ana.display_name)
+
+        assert row["open_issues"] == 0
+        assert row["total_open_issues"] == 1

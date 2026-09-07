@@ -49,6 +49,7 @@ from plane.db.models import (
     OrganizationalUnit,
     OrganizationalUnitCoordinator,
     OrganizationalUnitMembership,
+    ProjectMember,
     WorkspaceMember,
 )
 from plane.utils.orca_error_codes import orca_error, orca_not_found
@@ -151,6 +152,35 @@ def viewer_standing(user, unit) -> dict:
         "is_coordinator": is_unit_coordinator(user, unit),
         "is_member": is_unit_member(user, unit),
     }
+
+
+def readable_project_ids(user, unit):
+    """
+    @description Which of an area's projects this caller may be shown work from,
+    or ``None`` when the caller may be shown all of them (review finding R1.A7).
+
+    Being a member of an area is not the same as being able to open its
+    projects, and the layer itself is what pulls those apart: archiving a
+    project drops it from ``_active_sources``, so the reconciler deactivates the
+    ``ProjectMember`` rows it had granted, and ``unit_covers_project`` stops
+    counting it as covered. Both halves agree that the project is out of reach
+    while the queue, filtered only by area and state, kept handing out its work
+    item titles and its executors' email addresses.
+
+    ``None`` rather than a list of every id for a workspace admin, so the caller
+    can skip the filter entirely instead of building a set the size of the
+    tenant.
+
+    @param user: The requesting user.
+    @param unit: The ``OrganizationalUnit`` whose queue is being read.
+    @returns A set of project ids, or ``None`` for no restriction.
+    """
+    if is_workspace_admin(user, unit.workspace_id):
+        return None
+    return set(
+        ProjectMember.objects.filter(member=user, is_active=True, project__workspace_id=unit.workspace_id)
+        .values_list("project_id", flat=True)
+    )
 
 
 def unit_for_issue(issue_id, *, slug=None, project_id=None):
@@ -274,6 +304,7 @@ __all__ = [
     "link_for_issue",
     "may_see_queue",
     "permission_denied",
+    "readable_project_ids",
     "unit_for_issue",
     "viewer_standing",
 ]

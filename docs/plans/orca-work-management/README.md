@@ -50,7 +50,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6                                                                                             | —               |
 | 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                             | —               |
 | 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                             | —               |
-| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[~]` 6/20 · **os seis S2 fechados**; restam dez S3 e quatro S4                                                      | n/a             |
+| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[~]` 8/20 · os seis S2 e os dois S3 que tocavam a Fase 2; restam 8 S3 e 4 S4                                        | n/a             |
 
 ## Próximo item recomendado
 
@@ -61,8 +61,9 @@ qualquer deploy: era o único achado cujo custo crescia sozinho. O **`R1.A5`** e
 também, e com eles cai a condição de código para `ORCA_PUBLIC_API_ENABLED=1`
 em produção — o que resta ali é staging e o Gate 2-mínimo. Com o **`R1.A1`**, o
 **`R1.A2`** e o **`R1.A4`**, **os seis achados S2 estão fechados**. O que resta
-em R1 são dez S3 e quatro S4, nenhum com prazo. O próximo item de código é o
-**`R1.A7`** ou o **`R1.A11`**, os dois que ainda caem sobre a Fase 2.
+em R1 são dez S3 e quatro S4, nenhum com prazo. O **`R1.A7`** e o **`R1.A11`**,
+os dois S3 que caíam sobre o código da Fase 2, também estão fechados. O que
+resta em R1 são oito S3 e quatro S4, nenhum com prazo e nenhum sobre a Fase 2.
 
 **Antes de escolher qualquer item, saiba destas quatro coisas.**
 
@@ -98,7 +99,7 @@ negócio (P0.12, P0.13, P0.17).
    fecha a auditoria do Gate D0, que só precisa de um dump.
 3. ~~`R1.A5` e `R1.A6`~~ — fechados em 07/09. A condição que resta para
    `ORCA_PUBLIC_API_ENABLED=1` em produção é staging, não código.
-4. **`R1.A7` e `R1.A11`** — o que resta dos que caem sobre o código da Fase 2.
+4. ~~`R1.A7` e `R1.A11`~~ — fechados em 07/09.
 5. **2.3 completa, 2.5 e 2.6** — fechar a Fase 2 inteira.
 6. **Fase 3** (disponibilidade), cuja migração agora é `0140`.
 

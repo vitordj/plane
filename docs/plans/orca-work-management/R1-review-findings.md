@@ -64,11 +64,11 @@ camada em "escolha manual", e a frase que justifica o M3 deixa de ser verdade.
 
 ## S3 — dez achados
 
-- [ ] **R1.A7** — A fila mostra título e e-mail de trabalho em projeto cujo acesso o próprio reconciliador retirou. `app/services/orca/queue.py:54`. **Toca o M6.**
+- [x] **R1.A7** — A fila mostra título e e-mail de trabalho em projeto cujo acesso o próprio reconciliador retirou. `app/services/orca/queue.py:54`. **Corrigido em 07/09** pela correção que a revisão propôs: `queue_queryset` aceita `visible_project_ids`, e as duas views passam os projetos em que o leitor tem `ProjectMember` ativo, com Admin de workspace sem restrição. Uma consulta a mais por página, não por linha. O helper `readable_project_ids` fica ao lado do `may_see_queue`, então a fila da aba Trabalho e a da API pública não podem divergir.
 - [ ] **R1.A8** — `set_responsibility` lê-e-cria o vínculo fora de lock: duas chamadas simultâneas dão `IntegrityError`. `assignment_service.py:993-1018`.
 - [ ] **R1.A9** — Inversão de ordem entre o lock consultivo de área e o lock de linha: deadlock possível. `assignment_service.py:628-631` contra `900-954`.
 - [ ] **R1.A10** — Remoção de grupo no Entra desativa o `lead` em silêncio, e re-adicioná-lo dá 500. `app/services/orca/directory_projector.py:248-258`.
-- [ ] **R1.A11** — `workload/` conta qualquer assignee, o ranking conta executor principal, e a Fase 2 lê `workload/`. O defeito D4 sobreviveu fora do serviço. `assignment_engine.py:182-191`. **Toca o M5.**
+- [x] **R1.A11** — `workload/` conta qualquer assignee, o ranking conta executor principal, e a Fase 2 lê `workload/`. O defeito D4 sobreviveu fora do serviço. `assignment_engine.py:182-191`. **Corrigido em 07/09**: `_load_counts` virou `load_counts`, pública, e `workload_snapshot` passou a chamá-la — mesma função, então as duas contas não podem divergir. A rota devolve `open_issues` (o que a área cobra dessa pessoa) e `total_open_issues` (o que ela carrega em todo lugar), que é o par pelo qual o `lb-1` desempata, em vez de inventar uma terceira definição. Dois testes antigos que contavam `IssueAssignee` foram corrigidos: pinavam o defeito.
 - [ ] **R1.A12** — `Idempotency-Key` é única por workspace e não por token: um token queima o espaço de chaves de outro. `automation_operation.py:216`.
 - [ ] **R1.A13** — `ORCA_PUBLIC_API_RATE_LIMIT` malformado vira 500 por requisição em vez de falha de boot. `throttles/orca_public.py:47`.
 - [ ] **R1.A14** — O append-only só sobrevive ao cascade de soft-delete por causa de um `print()` e um `continue`. `bgtasks/deletion_task.py:94-96`.
