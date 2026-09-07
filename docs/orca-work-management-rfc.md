@@ -1,8 +1,12 @@
 # Especificação — Gestão de trabalho por área (Orca)
 
-**Status:** especificação para implementação. Revisão 2 (03/09/2026).
-**Base analisada:** `stage` em `79221cb6` (Plane CE v1.4.1). Nenhuma seção
-marcada como "proposta" está implementada.
+**Status:** especificação em implementação. Revisão 7 (07/09/2026).
+**Base analisada:** `stage` em `f490a2d7` (após o merge do PR #14) mais a
+ponta do PR #15 em `31d35e2b`. A base upstream é **Plane CE v1.4.2**
+(`package.json` → `1.5.0-plane.1.4.2`), não a 1.4.1 desta revisão inicial.
+**O que está implementado é a tabela de §2.1**, e ela é a única resposta
+para "isto já existe?"; as seções ainda marcadas "proposta" são as das
+Fases 2 a 5.
 **Leitura obrigatória antes:** [FORK.md](../FORK.md), [AGENTS.md](../AGENTS.md),
 [organizational-units.md](./organizational-units.md),
 [entra-directory-sync.md](./entra-directory-sync.md).
@@ -117,7 +121,7 @@ Consequências diretas:
 | Papel `lead` na área | Só rótulo | `OrganizationalUnitMemberRole`; nenhuma permissão decorre disso |
 | "Minhas áreas" e carga por integrante | Sim | `UserOrganizationalUnitsEndpoint`, `OrganizationalUnitWorkloadEndpoint` em `apps/api/plane/app/views/organizational_unit.py` |
 | Tela da área | Só membros e projetos | `apps/web/core/components/orca/organizational-units/unit-detail.tsx` |
-| Rotas Orca por API key | Sim | `/api/v1/orca/` (`apps/api/plane/api/urls/orca.py`, views em `api/views/orca/`), atrás de `ORCA_PUBLIC_API_ENABLED`, desligada até o Gate 2-mínimo |
+| Rotas Orca por API key | Sim | `/api/v1/orca/` (`apps/api/plane/api/urls/orca.py`, views em `api/views/orca/`), atrás de `ORCA_PUBLIC_API_ENABLED`, desligada até o Gate 2-mínimo. O `docker-compose-orca.yml` só passou a **encaminhar** a flag no P0.19 (linhas 108-109 e as dos outros três serviços); antes disso, ligá-la na plataforma não tinha efeito nenhum |
 | Códigos de erro Orca traduzíveis | Sim | `apps/api/plane/utils/orca_error_codes.py` + `packages/constants/src/orca/error-codes.ts` + catálogo i18n |
 | Kill switch | Sim | `OrganizationalUnitFeatureMixin` |
 | Rate limit dedicado | SCIM e API pública | `apps/api/plane/throttles/scim.py`, `throttles/orca_public.py` (por token) |
@@ -126,36 +130,83 @@ Consequências diretas:
 | Executor principal | Sim | `IssueOrganizationalUnit.primary_executor`; auditado por `audit_organizational_routing` |
 | Reatribuição quando alguém sai | Parcial | `audit_organizational_routing --write` devolve à fila quem perdeu elegibilidade; automático no evento é Fase 3 |
 | Política automática na criação | Sim | `POST /api/v1/orca/.../work-items/` cria o item, marca a área e aplica a política numa operação idempotente (Fase 1, itens 1.4-1.5) |
+| Chave externa e recibo idempotente da automação | Sim | `ExternalWorkItemBinding` e `AutomationOperation` em `apps/api/plane/db/models/organizational_automation.py` (migração `0138_orca_automation_binding`); serviço do §6.7 em `apps/api/plane/app/services/orca/automation_operation.py` (Fase 1, item 1.3) |
+| Expurgo dos recibos de automação | Sim | `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS`, 30 dias, em `apps/api/plane/settings/common.py`; job diário `delete_orca_automation_operations` em `apps/api/plane/bgtasks/orca_automation_cleanup_task.py`, agendado em `apps/api/plane/celery.py` (P0.20) |
 | Dashboard da área / executivo | Não | — |
 
-### 2.2 Defeitos que precisam fechar antes de qualquer automação
+### 2.2 Defeitos que fecharam na Fase D0
 
-Confirmados por leitura. Nenhum tem teste hoje. Identificadores D1 a D4 são
-usados na fase D0.
+**Os quatro estão fechados** (PR #9, mesclado em `stage` em 05/09/2026) e
+**cada um está pinado por teste**. A tabela completa por invariante está em
+[`D0-domain-foundation.md`](./plans/orca-work-management/D0-domain-foundation.md)
+§Testes por invariante; abaixo fica o teste que pina cada defeito, porque é
+o que impede que ele volte.
 
-**D1 — Área sem cobertura do projeto.**
-`IssueOrganizationalUnitEndpoint.post` (views/organizational_unit.py, ~l.525)
-só confere `workspace_id`. Não exige `OrganizationalUnitProject` ativo ligando
-área e projeto. A UI (`issue-unit-property.tsx`, l.67) filtra apenas por
-`is_active`. O engine (`assignment_engine.py`, ~l.105) acrescenta o projeto do
-item à lista de projetos da área quando ele não está lá, escondendo a
-inconsistência.
+Os quatro arquivos citados aqui foram **executados** ao escrever esta revisão,
+não só lidos: `pytest test_issue_unit_coverage.py
+test_issue_serializer_orca_features.py test_assignment_concurrency.py
+test_assignment_service.py -q` → **94 passed** em 1m52s, num PostgreSQL 16
+local sobre `31d35e2b`. O texto que estava aqui — "confirmados por leitura,
+nenhum tem teste hoje" — era verdade quando foi escrito, em 03/09, e deixou de
+ser em 05/09 com o merge do PR #9; ficou dois dias afirmando o contrário do
+que a árvore mostrava. É o tipo de defasagem que faz uma sessão nova refazer
+trabalho pronto, e por isso o §2.1 e este §2.2 são os dois lugares que toda
+revisão precisa reconferir.
 
-**D2 — Herança implícita de assignees na API pública.**
-`apps/api/plane/api/serializers/issue.py` (~l.188) copia os assignees do
-último item criado pelo mesmo usuário no projeto quando `assignees` vem vazio
-ou omitido. O upstream usa `default_assignee` do projeto. Para um robô, isso
-torna o resultado dependente de histórico e conflita com a fila.
+A descrição de cada um permanece no passado, como registro do que o código
+fazia: quem for ler um destes caminhos precisa saber por que ele tem a forma
+que tem. Os identificadores D1 a D4 continuam sendo os nomes usados na fase
+D0. **Nenhum destes quatro é trabalho a fazer.**
 
-**D3 — Ranking e gravação sem lock.**
-`assign_from_unit` calcula o ranking e depois faz `IssueAssignee.objects.create`
-sem `select_for_update` nem lock por área. N criações simultâneas podem
-escolher a mesma pessoa.
+**D1 — Área sem cobertura do projeto.** *Fechado no D0.1 (`d3e7702b`).*
+`IssueOrganizationalUnitEndpoint.post` só conferia `workspace_id`, sem exigir
+um `OrganizationalUnitProject` ativo ligando área e projeto; a UI
+(`issue-unit-property.tsx`) filtrava apenas por `is_active`; e o engine
+(`assignment_engine.py`) acrescentava o projeto do item à lista da área quando
+ele não estava lá, o que transformava "não coberto" em "coberto" e escondia a
+inconsistência. A regra vale hoje nas três camadas —
+`plane/tests/unit/orca/test_issue_unit_coverage.py`, cujo módulo inteiro
+existe para isso: `TestTheCoverageRule::test_an_unlinked_project_is_not_covered`
+(l.48), `TestTheEndpointRefuses::test_an_area_that_does_not_cover_the_project_cannot_be_made_responsible`
+(l.94) e `TestTheEngineFindsNobody::test_an_uncovered_project_has_no_candidates`
+(l.162).
+
+**D2 — Herança implícita de assignees na API pública.** *Fechado no D0.2
+(`cc1ef703`).* `apps/api/plane/api/serializers/issue.py` copiava os assignees
+do último item criado pela mesma pessoa no projeto quando `assignees` vinha
+vazio ou omitido, o que tornava o resultado dependente de histórico invisível
+e conflitava com a fila. O `create` dos dois serializers voltou à regra do
+upstream — o `default_assignee` do projeto, se ainda for válido, e nada mais
+(`api/serializers/issue.py`, ramo `else` em l.190-211). As duas metades estão
+pinadas em `test_issue_serializer_orca_features.py`:
+`TestDefaultAssignee::test_assignees_are_no_longer_inherited_from_the_previous_work_item`
+(l.169) e, na API pública,
+`TestPublicApiDefaultAssignee::test_nothing_is_inherited_from_the_previous_work_item`
+(l.241).
+
+**D3 — Ranking e gravação sem lock.** *Fechado no D0.5 (`b6000021`).*
+`assign_from_unit` calculava o ranking e só depois fazia
+`IssueAssignee.objects.create`, sem `select_for_update` nem lock por área, de
+modo que N criações simultâneas podiam escolher a mesma pessoa. O
+`assignment_service.py` faz o ranking sob lock consultivo por área e a
+transição de estado sob lock de linha. Os dois lados estão pinados por
+concorrência real, em threads, em `test_assignment_concurrency.py`:
+`test_simultaneous_allocations_spread_evenly` (l.129 — vinte itens, quatro
+pessoas, tudo ao mesmo tempo, resultado `[5, 5, 5, 5]`) e
+`test_only_one_claim_wins` (l.149 — dez pessoas no mesmo item, uma
+atribuição e nove recusas).
 
 **D4 — Carga é "total da pessoa nos projetos da área", não declarada.**
-O engine conta todo `IssueAssignee` aberto nos projetos da área, inclusive
-itens de outras áreas ou pessoais, e não distingue principal de colaborador.
-A seção 6.4 fixa a regra.
+*Fechado no D0.5 (`b6000021`).* O engine contava todo `IssueAssignee` aberto
+nos projetos da área, inclusive itens de outras áreas ou pessoais, e não
+distinguia principal de colaborador. A carga é hoje o que a §6.4 fixa —
+itens abertos em que a pessoa é **executor principal** —, pinada em
+`test_assignment_service.py::TestRanking`:
+`test_only_the_primary_executor_is_charged` (l.197 — um colaborador deixado
+no item não é cobrado) e `test_finished_work_stops_counting` (l.185). O
+recorte por cobertura, que é onde D1 e D4 se encontram, está em
+`test_issue_unit_coverage.py::TestTheEngineFindsNobody::test_work_in_an_uncovered_project_stops_counting_toward_load`
+(l.185).
 
 ### 2.3 Correções factuais ao debate
 
@@ -1098,16 +1149,27 @@ Toda entrada de log carrega `workspace_id`, `unit_id`, `issue_id`,
   skill `branch-name`. PR contra `stage` com título Conventional Commit e
   escopo `orca` (`feat(orca):`, `fix(orca):`, `docs(orca):`, `test(orca):`).
   O labeler injeta o template; preencher o checklist.
-- **Não rodar** `pnpm check`, `pnpm build`, `check:types` ou migrações
-  dentro da sessão de agente (AGENTS.md). Listar os comandos para o
-  desenvolvedor. Rodar localmente `ruff check` e `ruff format` em
-  `apps/api`, e `pnpm fix` nos pacotes tocados.
+- **O que a sessão de agente pode rodar:** `ruff check` e `ruff format` em
+  `apps/api`, `pnpm fix` nos pacotes tocados, e também — ao contrário do que
+  as revisões anteriores deste documento afirmavam —
+  `pnpm install --frozen-lockfile`, `pnpm check:types --filter=web`,
+  `check:lint`, `check:format`, `check:sync`, `pytest` e as migrações. O que o AGENTS.md
+  protege é o **volume de saída no contexto**, não a execução: redirecionar
+  para arquivo e ler só o resumo (`tail`), nunca despejar a saída inteira. A
+  receita e os tempos medidos estão em
+  [`HANDOFF-PROMPT.md`](./plans/orca-work-management/HANDOFF-PROMPT.md)
+  §Ambiente local. `pnpm build` e a suíte upstream inteira continuam melhor
+  no CI, por tempo, não por impossibilidade.
 - **Migrações:** gerar com `python3 apps/api/manage.py makemigrations`;
-  conferir dependência explícita na última Orca (`0134_orca_user_language_preference`);
+  conferir dependência explícita na última Orca — hoje
+  `0138_orca_automation_binding`, não a `0134` desta revisão inicial (a
+  listagem de `apps/api/plane/db/migrations/` é a fonte);
   nunca editar migrações já mescladas; nunca apagar.
 - **Testes backend:** `docker compose -f docker-compose-test.yml run --rm
   api-tests pytest plane/tests/unit/orca/ -q`; ver
-  `apps/api/tests/RUNNING_TESTS.md`.
+  `apps/api/tests/RUNNING_TESTS.md`. Sem daemon Docker, a sessão sobe
+  PostgreSQL e Redis por conta própria (`HANDOFF-PROMPT.md` §Ambiente local)
+  e roda a mesma suíte.
 - **Códigos de erro:** três lugares (`utils/orca_error_codes.py`,
   `packages/constants/src/orca/error-codes.ts`, catálogo i18n). O teste
   `test_orca_error_codes.py` verifica a paridade.

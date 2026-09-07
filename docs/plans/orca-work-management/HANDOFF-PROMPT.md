@@ -12,8 +12,9 @@ docs técnicas seguem as convenções do repositório (inglês nos identificador
 mensagens de commit, escopo `orca`).
 
 Leia, nesta ordem, antes de qualquer alteração:
-1. AGENTS.md e FORK.md (regras do fork: sidecar, sem coluna em modelo core, não
-   rodar builds/migrações/suíte completa na sessão, commits `feat(orca):` etc.)
+1. AGENTS.md e FORK.md (regras do fork: sidecar, sem coluna em modelo core,
+   commits `feat(orca):`, e a regra de saída: rode as verificações, mas nunca
+   com a saída indo para o contexto)
 2. docs/orca-work-management-rfc.md — seções 1, 2, 3 (conceito, estado atual,
    24 decisões fechadas F1–F24), depois as seções citadas pelo item que você
    vai executar. Não reabra decisão fechada sem registrar em §4.2.
@@ -47,12 +48,16 @@ Regras de execução:
 - Testes acompanham o item. Todo item que toca alocação termina com teste de
   concorrência (RFC §10; padrão em D0.5). Marque @pytest.mark.unit.
 - O que você pode rodar na sessão: ruff check/format em apps/api, grep, leitura,
-  git — e, com o ambiente local da seção "Ambiente local" deste arquivo,
-  pytest (suíte Orca, um arquivo, ou a suíte inteira quando o item pede),
-  `makemigrations --check` e `migrate` num banco vazio. O que continua fora:
-  pnpm check/build/check:types (sem node_modules), docker, deploy, e qualquer
-  verificação que precise de um banco com dados. Para essas, liste os comandos
-  exatos para o desenvolvedor.
+  git; com a seção "Ambiente local — backend" deste arquivo, pytest (suíte Orca,
+  um arquivo, ou a suíte inteira quando o item pede), `makemigrations --check` e
+  `migrate` num banco vazio; e com a seção "Ambiente local — frontend",
+  `pnpm install --frozen-lockfile`, `pnpm check:types --filter=web`,
+  `check:lint`, `check:format` e `check:sync`. Rode com a saída redirecionada
+  para arquivo e leia só o `tail`: o que o AGENTS.md protege é o volume de
+  saída no contexto, não a execução. O que continua **de fato** fora: docker,
+  deploy, `git push --delete`, `pnpm build` inteiro (tempo) e qualquer
+  verificação que precise de um banco **com dados**. Para essas, liste os
+  comandos exatos para o desenvolvedor.
 - Um item só é marcado `[x]` com os seus testes executados e verdes na sessão,
   não só escritos. Diga no relatório o comando e o resultado.
 - Ao terminar: marque o item `[x]` no arquivo da fase e atualize a contagem no
@@ -69,16 +74,22 @@ Contexto que você não precisa redescobrir:
 - Rotas Orca internas: apps/api/plane/app/urls/orca.py sob /api/orca/, sessão.
   API pública nativa: apps/api/plane/api/ sob /api/v1/, APIKeyAuthentication.
 - Kill switch: ORCA_ORG_UNITS_ENABLED via OrganizationalUnitFeatureMixin (404).
-- Defeitos conhecidos D1–D4 (RFC §2.2): cobertura área↔projeto não validada;
-  API pública herda assignees do último item do criador; ranking sem lock;
-  carga conta qualquer assignee.
+- Os defeitos D1–D4 (RFC §2.2) estão **fechados** desde o PR #9 (05/09/2026) e
+  cada um tem teste que o pina — não são trabalho a fazer, e "corrigi-los" de
+  novo é o erro mais fácil de cometer aqui. Eram: cobertura área↔projeto não
+  validada (D1, hoje pinado por test_issue_unit_coverage.py); API pública
+  herdando assignees do último item do criador (D2, test_issue_serializer_orca_features.py);
+  ranking sem lock (D3, test_assignment_concurrency.py); carga contando
+  qualquer assignee (D4, test_assignment_service.py::TestRanking).
 - Plane CE não tem custom properties; a única fonte da verdade da área é
   IssueOrganizationalUnit.
 ```
 
 ---
 
-## Ambiente local para rodar a suíte na sessão
+## Ambiente local
+
+### Backend — a suíte e as migrações
 
 Confirmado duas vezes (PR #12 e a sessão de planejamento do bloco 1.4 → 1.8).
 O contêiner da sessão não tem Docker, mas tem os binários do PostgreSQL 16,
@@ -134,6 +145,34 @@ saída no contexto, não a execução em si: rodar sempre com `-q` e `| tail -20
 com `--create-db`. PostgreSQL aqui é 16 e no CI é 15.7; nada até agora
 dependeu disso, mas é o primeiro lugar a olhar se divergirem. O ambiente
 morre com o contêiner — a receita é o que fica.
+
+
+### Frontend — tipos, lint, formato e i18n
+
+Medido nesta sessão (07/09/2026) na ponta do PR #15, `31d35e2b`, num contêiner
+com o store do pnpm quente em `/root/.local/share/pnpm/store/v11`. Os tempos
+são de parede; um store frio troca os 19 s do primeiro comando por minutos.
+
+O detalhe que custa tempo a quem não sabe: **`check:types` precisa passar pelo
+turbo.** A tarefa declara `dependsOn: ["^build"]` em `turbo.json`, então a
+forma `pnpm --filter web check:types` roda o `tsc` sem antes construir os
+pacotes do workspace e falha com 5 126 erros, 4 363 deles `TS2307: Cannot find
+module '@plane/…'`. Não é o código: é a ausência do build. A forma que passa é
+`pnpm check:types --filter=web`, que deixa o turbo construir os 11 alvos
+primeiro.
+
+```bash
+pnpm install --frozen-lockfile          # exit 0 · 19 s com store quente
+pnpm check:types --filter=web           # exit 0 · 61 s (turbo: 11 tarefas)
+pnpm --filter web check:lint            # exit 0 · 1 s · 733 warnings, 0 errors
+pnpm --filter web check:format          # exit 0 · 3 s
+pnpm --filter @plane/i18n check:sync    # exit 0 · 2 s · en 4.176 chaves + 18 locales em 100 %
+```
+
+Como sempre: `> /tmp/x.log 2>&1` e `tail`. O `check:types` é o único que passa
+de um minuto, e é o que mais vale rodar: o README do plano listou por dias o
+`check:types` entre o que faltava para o Gate D0, porque se acreditava que a
+sessão não o executava.
 
 
 ## Variantes
