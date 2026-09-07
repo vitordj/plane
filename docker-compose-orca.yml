@@ -84,7 +84,7 @@ services:
       - "SECRET_KEY=${SERVICE_HEX_64_DJANGO:?set a 64-char hex Django secret, e.g. openssl rand -hex 32}"
       - SERVICE_HEX_64_LIVE
       - "LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE:?set a 64-char hex live-server secret, e.g. openssl rand -hex 32}"
-      - DOMAIN_NAME=${SERVICE_FQDN_PROXY:-localhost}
+      - DOMAIN_NAME=${DOMAIN_NAME:-${SERVICE_FQDN_PROXY:-localhost}}
       - "DATABASE_URL=postgres://${SERVICE_USER_DATABASE:?set the PostgreSQL user}:${SERVICE_PASSWORD_DATABASE:?set a generated PostgreSQL password, there is no default}@plane-db:5432/${POSTGRES_DB:-plane}"
       - REDIS_URL=redis://plane-redis:6379/0
       - "AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:?set the RabbitMQ user}:${SERVICE_PASSWORD_RABBITMQ:?set a generated RabbitMQ password, there is no default}@plane-mq:5672//"
@@ -102,12 +102,17 @@ services:
       # would keep writing ProjectMember rows after the API went dark.
       - ORCA_ORG_UNITS_ENABLED=${ORCA_ORG_UNITS_ENABLED:-1}
       - ORCA_ORG_SYNC_MAX_EDGES=${ORCA_ORG_SYNC_MAX_EDGES:-100}
+      # Second switch, in front of the automation API at /api/v1/orca/. Read
+      # once per process at import time, so it has to reach the four containers
+      # too: a value that lands only on `api` is silently ignored by the rest.
+      - ORCA_PUBLIC_API_ENABLED=${ORCA_PUBLIC_API_ENABLED:-0}
+      - ORCA_PUBLIC_API_RATE_LIMIT=${ORCA_PUBLIC_API_RATE_LIMIT:-300/minute}
       - SCIM_RATE_LIMIT=${SCIM_RATE_LIMIT:-600/minute}
       - SCIM_AUTH_FAILURE_RATE_LIMIT=${SCIM_AUTH_FAILURE_RATE_LIMIT:-30/minute}
       - GUNICORN_WORKERS=${GUNICORN_WORKERS:-1}
       - FILE_SIZE_LIMIT=${FILE_SIZE_LIMIT:-5242880}
       - SERVICE_URL_PROXY
-      - "WEB_URL=${SERVICE_URL_PROXY:-http://localhost:8000}"
+      - "WEB_URL=${WEB_URL:-${SERVICE_URL_PROXY:-http://localhost:8000}}"
     depends_on:
       - plane-db
       - plane-redis
@@ -132,7 +137,7 @@ services:
     environment:
       - "SECRET_KEY=${SERVICE_HEX_64_DJANGO:?set a 64-char hex Django secret, e.g. openssl rand -hex 32}"
       - "LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE:?set a 64-char hex live-server secret, e.g. openssl rand -hex 32}"
-      - DOMAIN_NAME=${SERVICE_FQDN_PROXY:-localhost}
+      - DOMAIN_NAME=${DOMAIN_NAME:-${SERVICE_FQDN_PROXY:-localhost}}
       - "DATABASE_URL=postgres://${SERVICE_USER_DATABASE:?set the PostgreSQL user}:${SERVICE_PASSWORD_DATABASE:?set a generated PostgreSQL password, there is no default}@plane-db:5432/${POSTGRES_DB:-plane}"
       - REDIS_URL=redis://plane-redis:6379/0
       - "AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:?set the RabbitMQ user}:${SERVICE_PASSWORD_RABBITMQ:?set a generated RabbitMQ password, there is no default}@plane-mq:5672//"
@@ -150,11 +155,16 @@ services:
       # would keep writing ProjectMember rows after the API went dark.
       - ORCA_ORG_UNITS_ENABLED=${ORCA_ORG_UNITS_ENABLED:-1}
       - ORCA_ORG_SYNC_MAX_EDGES=${ORCA_ORG_SYNC_MAX_EDGES:-100}
+      # Second switch, in front of the automation API at /api/v1/orca/. Read
+      # once per process at import time, so it has to reach the four containers
+      # too: a value that lands only on `api` is silently ignored by the rest.
+      - ORCA_PUBLIC_API_ENABLED=${ORCA_PUBLIC_API_ENABLED:-0}
+      - ORCA_PUBLIC_API_RATE_LIMIT=${ORCA_PUBLIC_API_RATE_LIMIT:-300/minute}
       - SCIM_RATE_LIMIT=${SCIM_RATE_LIMIT:-600/minute}
       - SCIM_AUTH_FAILURE_RATE_LIMIT=${SCIM_AUTH_FAILURE_RATE_LIMIT:-30/minute}
       - FILE_SIZE_LIMIT=${FILE_SIZE_LIMIT:-5242880}
       - SERVICE_URL_PROXY
-      - "WEB_URL=${SERVICE_URL_PROXY:-http://localhost:8000}"
+      - "WEB_URL=${WEB_URL:-${SERVICE_URL_PROXY:-http://localhost:8000}}"
     depends_on:
       - api
       - plane-db
@@ -174,7 +184,7 @@ services:
     environment:
       - "SECRET_KEY=${SERVICE_HEX_64_DJANGO:?set a 64-char hex Django secret, e.g. openssl rand -hex 32}"
       - "LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE:?set a 64-char hex live-server secret, e.g. openssl rand -hex 32}"
-      - DOMAIN_NAME=${SERVICE_FQDN_PROXY:-localhost}
+      - DOMAIN_NAME=${DOMAIN_NAME:-${SERVICE_FQDN_PROXY:-localhost}}
       - "DATABASE_URL=postgres://${SERVICE_USER_DATABASE:?set the PostgreSQL user}:${SERVICE_PASSWORD_DATABASE:?set a generated PostgreSQL password, there is no default}@plane-db:5432/${POSTGRES_DB:-plane}"
       - REDIS_URL=redis://plane-redis:6379/0
       - "AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:?set the RabbitMQ user}:${SERVICE_PASSWORD_RABBITMQ:?set a generated RabbitMQ password, there is no default}@plane-mq:5672//"
@@ -192,11 +202,16 @@ services:
       # would keep writing ProjectMember rows after the API went dark.
       - ORCA_ORG_UNITS_ENABLED=${ORCA_ORG_UNITS_ENABLED:-1}
       - ORCA_ORG_SYNC_MAX_EDGES=${ORCA_ORG_SYNC_MAX_EDGES:-100}
+      # Second switch, in front of the automation API at /api/v1/orca/. Read
+      # once per process at import time, so it has to reach the four containers
+      # too: a value that lands only on `api` is silently ignored by the rest.
+      - ORCA_PUBLIC_API_ENABLED=${ORCA_PUBLIC_API_ENABLED:-0}
+      - ORCA_PUBLIC_API_RATE_LIMIT=${ORCA_PUBLIC_API_RATE_LIMIT:-300/minute}
       - SCIM_RATE_LIMIT=${SCIM_RATE_LIMIT:-600/minute}
       - SCIM_AUTH_FAILURE_RATE_LIMIT=${SCIM_AUTH_FAILURE_RATE_LIMIT:-30/minute}
       - FILE_SIZE_LIMIT=${FILE_SIZE_LIMIT:-5242880}
       - SERVICE_URL_PROXY
-      - "WEB_URL=${SERVICE_URL_PROXY:-http://localhost:8000}"
+      - "WEB_URL=${WEB_URL:-${SERVICE_URL_PROXY:-http://localhost:8000}}"
     depends_on:
       - api
       - plane-db
@@ -216,7 +231,7 @@ services:
     environment:
       - "SECRET_KEY=${SERVICE_HEX_64_DJANGO:?set a 64-char hex Django secret, e.g. openssl rand -hex 32}"
       - "LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE:?set a 64-char hex live-server secret, e.g. openssl rand -hex 32}"
-      - DOMAIN_NAME=${SERVICE_FQDN_PROXY:-localhost}
+      - DOMAIN_NAME=${DOMAIN_NAME:-${SERVICE_FQDN_PROXY:-localhost}}
       - "DATABASE_URL=postgres://${SERVICE_USER_DATABASE:?set the PostgreSQL user}:${SERVICE_PASSWORD_DATABASE:?set a generated PostgreSQL password, there is no default}@plane-db:5432/${POSTGRES_DB:-plane}"
       - REDIS_URL=redis://plane-redis:6379/0
       - "AMQP_URL=amqp://${SERVICE_USER_RABBITMQ:?set the RabbitMQ user}:${SERVICE_PASSWORD_RABBITMQ:?set a generated RabbitMQ password, there is no default}@plane-mq:5672//"
@@ -234,11 +249,16 @@ services:
       # would keep writing ProjectMember rows after the API went dark.
       - ORCA_ORG_UNITS_ENABLED=${ORCA_ORG_UNITS_ENABLED:-1}
       - ORCA_ORG_SYNC_MAX_EDGES=${ORCA_ORG_SYNC_MAX_EDGES:-100}
+      # Second switch, in front of the automation API at /api/v1/orca/. Read
+      # once per process at import time, so it has to reach the four containers
+      # too: a value that lands only on `api` is silently ignored by the rest.
+      - ORCA_PUBLIC_API_ENABLED=${ORCA_PUBLIC_API_ENABLED:-0}
+      - ORCA_PUBLIC_API_RATE_LIMIT=${ORCA_PUBLIC_API_RATE_LIMIT:-300/minute}
       - SCIM_RATE_LIMIT=${SCIM_RATE_LIMIT:-600/minute}
       - SCIM_AUTH_FAILURE_RATE_LIMIT=${SCIM_AUTH_FAILURE_RATE_LIMIT:-30/minute}
       - FILE_SIZE_LIMIT=${FILE_SIZE_LIMIT:-5242880}
       - SERVICE_URL_PROXY
-      - "WEB_URL=${SERVICE_URL_PROXY:-http://localhost:8000}"
+      - "WEB_URL=${WEB_URL:-${SERVICE_URL_PROXY:-http://localhost:8000}}"
     depends_on:
       - plane-db
       - plane-redis
@@ -251,7 +271,7 @@ services:
     environment:
       - "SECRET_KEY=${SERVICE_HEX_64_DJANGO:?set a 64-char hex Django secret, e.g. openssl rand -hex 32}"
       - "LIVE_SERVER_SECRET_KEY=${SERVICE_HEX_64_LIVE:?set a 64-char hex live-server secret, e.g. openssl rand -hex 32}"
-      - DOMAIN_NAME=${SERVICE_FQDN_PROXY:-localhost}
+      - DOMAIN_NAME=${DOMAIN_NAME:-${SERVICE_FQDN_PROXY:-localhost}}
       - "DATABASE_URL=postgres://${SERVICE_USER_DATABASE:?set the PostgreSQL user}:${SERVICE_PASSWORD_DATABASE:?set a generated PostgreSQL password, there is no default}@plane-db:5432/${POSTGRES_DB:-plane}"
       - REDIS_URL=redis://plane-redis:6379/0
       - API_BASE_URL=http://api:8000

@@ -37,7 +37,7 @@ Whatever runs the stack, three things have to be true:
 <summary>Worked example: Coolify</summary>
 
 1. **Create Application**: Add a new **Docker Compose** resource pointing to this repository (`stage` or `prod` branch) with file path `docker-compose-orca.yml`.
-2. **Assign Domain**: In **Domains**, route your URL to the **`proxy`** service on container port `80`. Coolify is also what supplies `SERVICE_FQDN_PROXY`, the default `DOMAIN_NAME` resolves from — set `DOMAIN_NAME` explicitly anywhere else.
+2. **Assign Domain**: In **Domains**, route your URL to the **`proxy`** service on container port `80`. Coolify is also what supplies `SERVICE_FQDN_PROXY` and `SERVICE_URL_PROXY`, which `DOMAIN_NAME` and `WEB_URL` fall back to — set those two explicitly anywhere else, or the stack comes up on `localhost`.
 3. **Configure Secrets & Deploy**: Add the required secrets in **Environment Variables** and click **Deploy**.
 
 </details>
@@ -54,7 +54,8 @@ Whatever runs the stack, three things have to be true:
 | :-------------------------------------------- | :------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------- |
 | `SERVICE_HEX_64_DJANGO`                       | **Yes**  | Django session cryptography key; reaches the containers as `SECRET_KEY`. No default, so the stack refuses to start without it                                                           | _User-provided (64-char hex)_              |
 | `SERVICE_HEX_64_LIVE`                         | **Yes**  | WebSocket encryption key; reaches the containers as `LIVE_SERVER_SECRET_KEY`                                                                                                            | _User-provided (64-char hex)_              |
-| `DOMAIN_NAME`                                 |    No    | Public application domain                                                                                                                                                               | Auto-resolved from `${SERVICE_FQDN_PROXY}` |
+| `DOMAIN_NAME`                                 |    No    | Public application domain. Set it explicitly on any platform that does not supply `SERVICE_FQDN_PROXY`; an explicit value wins over it                                                  | `${SERVICE_FQDN_PROXY}`, else `localhost`  |
+| `WEB_URL`                                     |    No    | Absolute public URL, scheme included. Django builds CSRF/CORS origins, attachment URLs and the automation API's `web_url` from it, so `localhost` here leaks into links a robot sends   | `${SERVICE_URL_PROXY}`, else `http://localhost:8000` |
 | `SERVICE_USER_DATABASE` / `SERVICE_PASSWORD_DATABASE`     | **Yes** | PostgreSQL credentials. Deliberately without a default: a fallback would boot the stack on a password published in this repository, and nothing in the deployment would say so | _User-provided; Coolify generates both_ |
 | `POSTGRES_DB`                                 |    No    | PostgreSQL database schema (a name, not a credential)                                                                                                                                   | `plane`                                    |
 | `SERVICE_USER_RABBITMQ` / `SERVICE_PASSWORD_RABBITMQ`     | **Yes** | RabbitMQ credentials, on the same terms as the database ones                                                                                                                            | _User-provided; Coolify generates both_ |

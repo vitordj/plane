@@ -805,9 +805,57 @@ mesclar em `stage`.
 
 ---
 
+## P0.19 — Variáveis documentadas que o Compose de implantação não lê `[x]`
+
+**Problema.** O P0.18 corrigiu a metade de credenciais de um defeito que tem
+duas metades: o README documentava nomes que o Compose não lê. A outra metade
+ficou, e atinge justamente o que a Fase 1 entregou.
+
+`ORCA_PUBLIC_API_ENABLED` e `ORCA_PUBLIC_API_RATE_LIMIT` estão no
+`.env.example`, na tabela do README como variáveis de implantação, e são lidas
+em `plane/settings/common.py` (605 e 611, a segunda alimentando
+`DEFAULT_THROTTLE_RATES["orca_public"]`). O `docker-compose-orca.yml` usa lista
+`environment:` explícita, sem `env_file` — e **nenhuma das duas aparecia nela**,
+em nenhum dos quatro serviços que compartilham a imagem da api, enquanto
+`ORCA_ORG_UNITS_ENABLED` e `ORCA_ORG_SYNC_MAX_EDGES` estão duas linhas acima.
+Consequência: ligar `ORCA_PUBLIC_API_ENABLED=1` na plataforma não fazia nada e
+`/api/v1/orca/` continuaria respondendo 404 para sempre — o **Gate 2-mínimo**,
+que é literalmente "libera `ORCA_PUBLIC_API_ENABLED` em produção", era
+impossível de cumprir, e nada no deploy diria por quê.
+
+Segunda ocorrência, na direção oposta: `DOMAIN_NAME` e `WEB_URL` eram fixados
+em `${SERVICE_FQDN_PROXY:-localhost}` e `${SERVICE_URL_PROXY:-http://localhost:8000}`,
+que são variáveis mágicas do Coolify. Definir `DOMAIN_NAME` no ambiente era
+**ignorado**, apesar de o README mandar fazer exatamente isso fora do Coolify —
+e o P0.17 registra que o alvo da 4UM não é o Coolify. `WEB_URL` não é
+cosmético: `common.py:326` deriva dele o `AWS_S3_CUSTOM_DOMAIN` (URL dos
+anexos do MinIO) e o `work_item_url()` da API nova
+(`api/serializers/orca/work_items.py:180`) o usa para montar o `web_url` que a
+resposta devolve — um sistema chamador receberia links `http://localhost:8000`.
+
+**Mudança.**
+
+- `docker-compose-orca.yml`: as duas flags da API pública passam a ser encaminhadas aos quatro serviços da imagem da api (`api`, `worker`, `beat-worker`, `migrator`), com os defaults do `.env.example` (`0` e `300/minute`). Só o `api` serve o namespace hoje, mas a flag é lida uma vez por processo no import, então os quatro têm de concordar — a mesma razão que já estava escrita em cima do `ORCA_ORG_UNITS_ENABLED`.
+- `docker-compose-orca.yml`: `DOMAIN_NAME` e `WEB_URL` passam à cadeia `${DOMAIN_NAME:-${SERVICE_FQDN_PROXY:-localhost}}` e `${WEB_URL:-${SERVICE_URL_PROXY:-http://localhost:8000}}`. Um valor explícito ganha; sem ele, o caminho Coolify fica idêntico ao que era.
+- `stage.yml`, job novo `compose_env_forwarding`: falha quando uma das seis variáveis de `settings` (as duas novas, as duas do `ORCA_ORG_*` e as duas do SCIM) não chega aos quatro serviços da imagem da api, e quando qualquer nome da tabela do README não é lido pelo Compose em nenhuma das duas formas. Gateia `build-push`, igual ao `compose_credentials`.
+- README: `DOMAIN_NAME` com a precedência real, linha nova para `WEB_URL`, e a nota do exemplo Coolify dizendo que fora dele os dois precisam ser definidos.
+
+**Aceite.**
+
+- [x] `docker compose config` com o ambiente mínimo rende `ORCA_PUBLIC_API_ENABLED: "0"` e `ORCA_PUBLIC_API_RATE_LIMIT: 300/minute` nos quatro serviços.
+- [x] Com `ORCA_PUBLIC_API_ENABLED=1 ORCA_PUBLIC_API_RATE_LIMIT=60/minute` no ambiente, os quatro serviços recebem esses valores.
+- [x] `DOMAIN_NAME` e `WEB_URL` explícitos vencem; sem eles, `SERVICE_FQDN_PROXY` / `SERVICE_URL_PROXY` do Coolify rendem o mesmo de antes; sem nenhum dos dois, `localhost` como antes.
+- [x] O guard de credenciais do P0.18 continua recusando o ambiente sem `SERVICE_PASSWORD_DATABASE`.
+- [x] O job `compose_env_forwarding` passa na árvore corrigida, e falha na árvore anterior nomeando os três achados e numa reversão plantada (flag removida de um dos quatro serviços → "reaches 3 of the 4").
+- [ ] Um deploy real com `ORCA_PUBLIC_API_ENABLED=1` respondendo diferente de 404 em `/api/v1/orca/` — pertence ao Gate 2-mínimo, não a este item.
+
+**Arquivos:** `docker-compose-orca.yml`, `.github/workflows/stage.yml`, `README.md`, este plano.
+
+---
+
 ## Gate P0
 
-- [ ] Todos os 19 itens (P0.0–P0.18) `[x]` ou `[-]` com motivo.
+- [ ] Todos os 20 itens (P0.0–P0.19) `[x]` ou `[-]` com motivo.
 - [ ] CI de `stage` verde com suíte upstream (P0.8) e ruff (P0.9).
 - [ ] Ensaio completo de RC documentado em `docs/release-runbook.md`: PR criada pelo job, promoção por digest, deploy em staging, rollback.
 - [ ] Nenhuma conta com a senha antiga da migração em nenhum ambiente.
