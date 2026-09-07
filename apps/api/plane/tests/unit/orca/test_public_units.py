@@ -129,6 +129,99 @@ class TestListingAreas:
         assert response.status_code == 403
 
 
+class TestWhichProjectsACallerIsToldAbout:
+    """
+    R1.A5 — the area structure is workspace-wide, the project map is not.
+
+    Plane lets any member mint an API token, Guests included, and this route
+    used to answer every one of them with the id and identifier of every project
+    every area covers. The native project route has always filtered to the
+    projects a caller belongs to plus the ones public to the workspace; this one
+    filtered nothing, so a Guest with a token read the private project map of
+    the whole tenant. Combined with the member listing, that is the org chart
+    and the project map for the role least entitled to either.
+
+    The area still appears. That it exists is not the secret; what it covers is.
+    """
+
+    def test_a_guest_is_not_told_about_a_private_project_they_do_not_belong_to(
+        self, token_client, guest_user, workspace_with_members, unit, project, covered
+    ):
+        # `network` defaults to 2, "visible to the whole workspace", so a test
+        # that skipped this line would pass against the unfixed code and prove
+        # nothing: the caller was entitled to that project all along.
+        project.network = 0
+        project.save(update_fields=["network"])
+
+        response = token_client(guest_user).get(public_units_url(workspace_with_members.slug))
+
+        assert response.status_code == 200
+        area = next(row for row in response.data["results"] if row["slug"] == "compliance")
+        assert area["projects"] == []
+
+    def test_the_area_is_still_listed_with_an_empty_project_list(
+        self, token_client, guest_user, workspace_with_members, unit, project, covered
+    ):
+        project.network = 0
+        project.save(update_fields=["network"])
+
+        response = token_client(guest_user).get(public_units_url(workspace_with_members.slug))
+
+        slugs = [row["slug"] for row in response.data["results"]]
+        assert "compliance" in slugs
+
+    def test_a_project_the_caller_belongs_to_is_reported(
+        self, token_client, guest_user, workspace_with_members, unit, project, covered, grant_manual_access
+    ):
+        project.network = 0
+        project.save(update_fields=["network"])
+        grant_manual_access(project, guest_user)
+
+        response = token_client(guest_user).get(public_units_url(workspace_with_members.slug))
+
+        area = next(row for row in response.data["results"] if row["slug"] == "compliance")
+        assert [row["project_id"] for row in area["projects"]] == [str(project.id)]
+
+    def test_a_project_public_to_the_workspace_is_reported(
+        self, token_client, guest_user, workspace_with_members, unit, project, covered
+    ):
+        """Same predicate the native project route uses, so the two agree."""
+        assert project.network == 2  # the default, and what this test is about
+
+        response = token_client(guest_user).get(public_units_url(workspace_with_members.slug))
+
+        area = next(row for row in response.data["results"] if row["slug"] == "compliance")
+        assert [row["project_id"] for row in area["projects"]] == [str(project.id)]
+
+    def test_a_workspace_admin_still_sees_everything(
+        self, admin_token_client, workspace_with_members, unit, project, covered
+    ):
+        project.network = 0
+        project.save(update_fields=["network"])
+
+        response = admin_token_client.get(public_units_url(workspace_with_members.slug))
+
+        area = next(row for row in response.data["results"] if row["slug"] == "compliance")
+        assert [row["project_id"] for row in area["projects"]] == [str(project.id)]
+
+    def test_a_project_is_reported_once_however_many_memberships_matched(
+        self, token_client, plain_user, workspace_with_members, unit, project, covered, grant_manual_access
+    ):
+        """
+        The membership filter joins ProjectMember. Without ``distinct`` the join
+        repeats the project per matching row, and the caller sees duplicates.
+        """
+        project.network = 0
+        project.save(update_fields=["network"])
+        grant_manual_access(project, plain_user)
+
+        response = token_client(plain_user).get(public_units_url(workspace_with_members.slug))
+
+        area = next(row for row in response.data["results"] if row["slug"] == "compliance")
+        assert [row["project_id"] for row in area["projects"]] == [str(project.id)]
+
+
+@pytest.mark.unit
 @pytest.mark.unit
 class TestReadingTheQueue:
     def test_the_area_reports_what_is_waiting(self, insider, workspace_with_members, unit, queued):

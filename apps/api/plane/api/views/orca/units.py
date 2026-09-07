@@ -21,6 +21,7 @@ shared with the internal inbox through ``permissions.organizational_unit``.
 """
 
 # Django imports
+from django.db.models import Q
 from django.utils import timezone
 
 # Third party imports
@@ -29,6 +30,7 @@ from rest_framework.response import Response
 
 # Module imports
 from plane.api.serializers.orca import queue_row, unit_payload
+from plane.app.permissions.base import ROLE
 from plane.app.permissions.organizational_unit import may_see_queue
 from plane.app.services.orca import ALL_STATES, queue_queryset
 from plane.db.models import (
@@ -90,8 +92,13 @@ class UnitListEndpoint(OrcaWorkspaceReadEndpoint):
         # render one page.
         links = (
             OrganizationalUnitProject.objects.filter(organizational_unit__in=units, project__archived_at__isnull=True)
+            .filter(self._projects_visible_to(request.user, member))
             .select_related("project")
             .order_by("project__identifier")
+            # The membership predicate below joins ProjectMember, which returns
+            # a row per matching membership; without this a project would repeat
+            # once per membership row the join produced.
+            .distinct()
         )
         by_unit = {}
         for link in links:
@@ -102,6 +109,37 @@ class UnitListEndpoint(OrcaWorkspaceReadEndpoint):
             queryset=units,
             on_results=lambda rows: [unit_payload(unit, by_unit.get(unit.id, [])) for unit in rows],
         )
+
+    @staticmethod
+    def _projects_visible_to(user, member):
+        """
+        @description Which covered projects this caller may be told about
+        (review finding R1.A5).
+
+        The area structure is workspace-wide information and stays visible to
+        any member. The projects an area covers are not: the native route
+        (``api/views/project.py``) shows a caller the projects they belong to
+        plus the ones public to the workspace, and this route showed every
+        project to anyone holding a token. A Guest -- and Plane lets any member
+        mint a token -- could read the id and identifier of every private
+        project in the tenant, which together with the area list is the
+        org chart and the project map for the role least entitled to either.
+
+        Same predicate as the native route, so the two cannot drift into
+        disagreeing about what a person may see. Workspace admins see
+        everything, as they already do through the interface.
+
+        An area whose projects all fall outside the filter still appears, with
+        an empty ``projects`` list: that the area exists is not the secret.
+
+        @returns A ``Q`` for filtering ``OrganizationalUnitProject``.
+        """
+        if member.role == ROLE.ADMIN.value:
+            return Q()
+        return Q(
+            project__project_projectmember__member=user,
+            project__project_projectmember__is_active=True,
+        ) | Q(project__network=2)
 
 
 class UnitQueueEndpoint(OrcaWorkspaceReadEndpoint):
