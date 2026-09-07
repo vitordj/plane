@@ -8,7 +8,7 @@ who is already overloaded. It is not in a position to know any of that, and
 the moment it guesses, the guess is wrong.
 
 This API takes the other half of the decision away from the caller. You say
-*which area is responsible*; the area's own policy decides *who*.
+_which area is responsible_; the area's own policy decides _who_.
 
 - Base: `https://<your-plane>/api/v1/orca/`
 - Authentication: `X-Api-Key`, an ordinary Plane API token
@@ -34,24 +34,24 @@ key = "orca-" + sha256(f"{source}|{external_id}|{operation}|{event_id}").hexdige
 `uuid4()` is the wrong answer. A webhook redelivered after your worker was
 killed gets a new UUID, and a new key is a new operation — you get two work
 items for one event, which is the failure this whole mechanism exists to
-prevent. The key must be a function of the *event*, so the same event always
+prevent. The key must be a function of the _event_, so the same event always
 produces the same key.
 
 What the server does with it (RFC §6.7):
 
-| Situation | Answer |
-| --- | --- |
-| First call | The operation runs. `201` on creation, `200` on the others. |
+| Situation                                    | Answer                                                                            |
+| -------------------------------------------- | --------------------------------------------------------------------------------- |
+| First call                                   | The operation runs. `201` on creation, `200` on the others.                       |
 | Same key, **same** body, first call finished | The recorded response, with header `Idempotent-Replay: true`. Nothing runs again. |
-| Same key, **different** body | `409 ORG_IDEMPOTENCY_PAYLOAD_MISMATCH`. Nothing runs. |
-| Same key, first call still running | `409 ORG_OPERATION_IN_PROGRESS`. Back off and retry. |
-| Same key, first call died mid-flight | After 60 seconds the key is taken over and the operation runs. |
+| Same key, **different** body                 | `409 ORG_IDEMPOTENCY_PAYLOAD_MISMATCH`. Nothing runs.                             |
+| Same key, first call still running           | `409 ORG_OPERATION_IN_PROGRESS`. Back off and retry.                              |
+| Same key, first call died mid-flight         | After 60 seconds the key is taken over and the operation runs.                    |
 
 Two consequences worth internalizing:
 
 **A replay answers the original, not the present.** If somebody reassigned the
 item in your interface between your first call and your retry, the retry still
-reports the *first* allocation. That is deliberate: a retry must not read as
+reports the _first_ allocation. That is deliberate: a retry must not read as
 though it changed something. When you want current state, do a `GET`.
 
 **A 4xx spends the key.** A request refused for a bad payload is recorded as a
@@ -78,7 +78,7 @@ which matters only if something in your system can retry a call a month late.
 POST /api/v1/orca/workspaces/{slug}/projects/{project_id}/work-items/
 ```
 
-One call finds-or-creates the work item behind *your* key, makes an area
+One call finds-or-creates the work item behind _your_ key, makes an area
 responsible, runs that area's policy, and records which call caused all of it.
 Doing it as four calls would mean four chances to half-succeed, and a work item
 nobody owns is worse than no work item at all.
@@ -154,7 +154,7 @@ second decision, `"created": false`. That matters because each webhook is a
 different event and therefore derives a different idempotency key: without
 this, an item assigned under `least_loaded` would be handed to somebody else
 every time the source record was touched. To actually move work, use
-`reassign/` or `transfer/`. Sending a *different* `unit` is a real instruction
+`reassign/` or `transfer/`. Sending a _different_ `unit` is a real instruction
 and does transfer the item.
 
 ### `work_item` — ordinary Plane content
@@ -176,32 +176,32 @@ error. A silently ignored field is a bug you find weeks later.
 
 `assignment.mode` is one of:
 
-| Mode | What happens |
-| --- | --- |
-| `default` | Whatever the area's policy says. Use this unless you have a reason not to. |
-| `least_loaded` | The area's ranking picks the least loaded eligible member and assigns them. |
-| `manual` | The item waits in the area's queue for a coordinator. |
-| `self_claim` | The item waits for a member of the area to claim it. |
-| `explicit` | You name the person: `"primary_executor": "<user-uuid>"`, optionally with `"collaborators": ["<user-uuid>"]`. |
+| Mode           | What happens                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------- |
+| `default`      | Whatever the area's policy says. Use this unless you have a reason not to.                                    |
+| `least_loaded` | The area's ranking picks the least loaded eligible member and assigns them.                                   |
+| `manual`       | The item waits in the area's queue for a coordinator.                                                         |
+| `self_claim`   | The item waits for a member of the area to claim it.                                                          |
+| `explicit`     | You name the person: `"primary_executor": "<user-uuid>"`, optionally with `"collaborators": ["<user-uuid>"]`. |
 
 A mode the area's policy forbids is **refused**, never quietly downgraded
 (`400 ORG_ASSIGNMENT_MODE_NOT_ALLOWED`). A caller that asked for
 `least_loaded` and silently got `manual` would believe the work was assigned
 while it sat in a queue.
 
-`assignment_due_at` is when somebody must be *on* the item — a deadline for
+`assignment_due_at` is when somebody must be _on_ the item — a deadline for
 the allocation, not for the work.
 
 ### What "assigned" and "queued" mean in the answer
 
 `responsibility.routing_state` tells you where the item stands:
 
-| State | Meaning |
-| --- | --- |
-| `assigned` | Somebody is on it; `primary_executor` says who. |
-| `queued` | Waiting for a person. `queue_reason` says what for. |
+| State               | Meaning                                                  |
+| ------------------- | -------------------------------------------------------- |
+| `assigned`          | Somebody is on it; `primary_executor` says who.          |
+| `queued`            | Waiting for a person. `queue_reason` says what for.      |
 | `allocation_failed` | The area tried and found nobody eligible. Needs a human. |
-| `suspended` | Parked. |
+| `suspended`         | Parked.                                                  |
 
 `queued` is a **success**, not a failure: the area accepted responsibility and
 the item is in its inbox. `decision` records why it went the way it did, which
@@ -229,7 +229,7 @@ GET /api/v1/orca/workspaces/{slug}/units/
 ```
 
 Every active area, the projects it covers, and the resolved policy for each —
-what *would* happen, not which rows exist. Read it at startup so you never
+what _would_ happen, not which rows exist. Read it at startup so you never
 guess at a slug or discover a forbidden mode by having a request refused.
 
 ```http
@@ -308,27 +308,27 @@ prose may be reworded, the codes are permanent once shipped.
 }
 ```
 
-| Code | Name | HTTP | When |
-| ---- | ---- | ---- | ---- |
-| 4900 | `ORG_UNIT_NOT_FOUND` | 404 | The area in the URL does not exist here |
-| 4906 | `ORG_UNIT_NOT_IN_WORKSPACE` | 400 | The `unit` in the body does not exist, or is retired |
-| 4911 | `ORG_WORK_ITEM_NOT_FOUND` | 404 | No such item in this project, or no binding for that key |
-| 4912 | `ORG_WORK_ITEM_HAS_NO_UNIT` | 400 | The item exists but no area is responsible for it |
-| 4916 | `ORG_UNIT_NOT_COVERING_PROJECT` | 400 | The area is not linked to that project |
-| 4917 | `ORG_ASSIGNMENT_MODE_NOT_ALLOWED` | 400 | The area's policy forbids the mode you asked for |
-| 4918 | `ORG_EXECUTOR_NOT_ELIGIBLE` | 400 | That person cannot hold work of this area on this project |
-| 4919 | `ORG_WORK_ITEM_ALREADY_CLAIMED` | 409 | Somebody took it first |
-| 4920 | `ORG_DECISION_STALE` | **412** | Your `If-Match` is not the current decision |
-| 4921 | `ORG_INVALID_ROUTING_TRANSITION` | 400 | The item cannot move that way from where it is |
-| 4922 | `ORG_PUBLIC_API_DISABLED` | 404 | This instance has the automation API switched off |
-| 4923 | `ORG_IDEMPOTENCY_KEY_REQUIRED` | 400 | Header missing, empty, or over 255 characters |
-| 4924 | `ORG_IDEMPOTENCY_PAYLOAD_MISMATCH` | 409 | Key reused with a different body |
-| 4925 | `ORG_OPERATION_IN_PROGRESS` | 409 | The first call with this key is still running |
-| 4926 | `ORG_EXTERNAL_BINDING_CONFLICT` | 409 | That external key belongs to another work item |
-| 4927 | `ORG_ASSIGNEES_NOT_ALLOWED_HERE` | 400 | `assignees` in the `work_item` block |
-| 4928 | `ORG_IF_MATCH_REQUIRED` | 428 | `reassign` without `If-Match` |
-| 4929 | `ORG_PROCESS_PROJECTION_DISABLED` | 400 | A `process` block (Phase 4) |
-| 4931 | `ORG_INTERNAL_ERROR` | 500 | The operation failed and was recorded as failed |
+| Code | Name                               | HTTP    | When                                                      |
+| ---- | ---------------------------------- | ------- | --------------------------------------------------------- |
+| 4900 | `ORG_UNIT_NOT_FOUND`               | 404     | The area in the URL does not exist here                   |
+| 4906 | `ORG_UNIT_NOT_IN_WORKSPACE`        | 400     | The `unit` in the body does not exist, or is retired      |
+| 4911 | `ORG_WORK_ITEM_NOT_FOUND`          | 404     | No such item in this project, or no binding for that key  |
+| 4912 | `ORG_WORK_ITEM_HAS_NO_UNIT`        | 400     | The item exists but no area is responsible for it         |
+| 4916 | `ORG_UNIT_NOT_COVERING_PROJECT`    | 400     | The area is not linked to that project                    |
+| 4917 | `ORG_ASSIGNMENT_MODE_NOT_ALLOWED`  | 400     | The area's policy forbids the mode you asked for          |
+| 4918 | `ORG_EXECUTOR_NOT_ELIGIBLE`        | 400     | That person cannot hold work of this area on this project |
+| 4919 | `ORG_WORK_ITEM_ALREADY_CLAIMED`    | 409     | Somebody took it first                                    |
+| 4920 | `ORG_DECISION_STALE`               | **412** | Your `If-Match` is not the current decision               |
+| 4921 | `ORG_INVALID_ROUTING_TRANSITION`   | 400     | The item cannot move that way from where it is            |
+| 4922 | `ORG_PUBLIC_API_DISABLED`          | 404     | This instance has the automation API switched off         |
+| 4923 | `ORG_IDEMPOTENCY_KEY_REQUIRED`     | 400     | Header missing, empty, or over 255 characters             |
+| 4924 | `ORG_IDEMPOTENCY_PAYLOAD_MISMATCH` | 409     | Key reused with a different body                          |
+| 4925 | `ORG_OPERATION_IN_PROGRESS`        | 409     | The first call with this key is still running             |
+| 4926 | `ORG_EXTERNAL_BINDING_CONFLICT`    | 409     | That external key belongs to another work item            |
+| 4927 | `ORG_ASSIGNEES_NOT_ALLOWED_HERE`   | 400     | `assignees` in the `work_item` block                      |
+| 4928 | `ORG_IF_MATCH_REQUIRED`            | 428     | `reassign` without `If-Match`                             |
+| 4929 | `ORG_PROCESS_PROJECTION_DISABLED`  | 400     | A `process` block (Phase 4)                               |
+| 4931 | `ORG_INTERNAL_ERROR`               | 500     | The operation failed and was recorded as failed           |
 
 A malformed body that is not one of these answers `400` with
 `"error_message": "VALIDATION_ERROR"` and a `detail` object naming the
@@ -343,16 +343,188 @@ own web app receives `409` for the same condition. The public API answers
 The token grants nothing of its own — the effective permission is that of the
 **user the token belongs to** (RFC §7.1):
 
-| Route | Requires |
-| --- | --- |
-| `POST work-items/`, `reassign/`, `transfer/` | Active project member, role Member or Admin |
-| `GET by-external/` | Active member of the item's project, any role |
-| `GET units/` | Active workspace member |
-| `GET units/{slug}/queue/` | Member of that area, or workspace Admin |
+| Route                                        | Requires                                      |
+| -------------------------------------------- | --------------------------------------------- |
+| `POST work-items/`, `reassign/`, `transfer/` | Active project member, role Member or Admin   |
+| `GET by-external/`                           | Active member of the item's project, any role |
+| `GET units/`                                 | Active workspace member                       |
+| `GET units/{slug}/queue/`                    | Member of that area, or workspace Admin       |
 
 Rate limit: `ORCA_PUBLIC_API_RATE_LIMIT`, default `300/minute`, **per token**,
 answering `429` with `{"error_code": 5900, "error_message": "RATE_LIMIT_EXCEEDED"}`.
 The limit is read at process start, so changing it needs a restart.
+
+---
+
+## Runbook: switching the API off
+
+This is the operator's half of the Gate 2-minimum criterion "the automation
+API can be switched off". It answers one question — _what happens to work
+already in flight when somebody flips the switch_ — because that is the part
+an operator cannot infer from the switch's name.
+
+Every claim below names the file it was read from, so a reader can check it
+rather than believe it.
+
+### The switch, and what it takes to move it
+
+`ORCA_PUBLIC_API_ENABLED` is read **once, when the process starts**: settings
+resolve it through `env_flag` at import time
+(`apps/api/plane/settings/common.py:609`, `apps/api/plane/utils/orca_env.py:57`).
+Changing the variable in the environment does nothing to a running container.
+Turning the API off is therefore two steps, and the second is the one that
+matters:
+
+```bash
+# 1. Set it in the deployment's environment
+ORCA_PUBLIC_API_ENABLED=0
+
+# 2. Restart the services that carry it. docker-compose-orca.yml forwards the
+#    variable to api, worker, beat-worker and migrator (lines 108, 162, 210,
+#    258); only `api` serves /api/v1/orca/, but the others read the same flag
+#    and must not disagree with it.
+docker compose -f docker-compose-orca.yml up -d --no-deps api worker beat-worker
+```
+
+Confirm the value the app actually has, from inside the app rather than from
+the shell that set it:
+
+```bash
+curl -s -H "Cookie: <session>" \
+  https://plane.example.com/api/orca/workspaces/<slug>/config/
+# {"organizational_units_enabled": true, "public_api_enabled": false}
+```
+
+That endpoint is deliberately outside both kill switches
+(`apps/api/plane/app/views/organizational_unit.py:127`), so it keeps answering
+when the API it reports on does not. `GET /api/orca/build-info/` tells you
+which commit the container is running, which is the other half of "is this the
+process I just restarted".
+
+### What the API does while it is off
+
+Every route under `/api/v1/orca/` answers **404** with a coded body:
+
+```json
+{
+  "error": "The Orca public automation API is disabled on this instance",
+  "error_code": 4922,
+  "error_message": "ORG_PUBLIC_API_DISABLED"
+}
+```
+
+All six routes (`apps/api/plane/api/urls/orca.py`) derive from
+`OrcaPublicBaseAPIView`, and the refusal is raised in
+`OrcaPublicApiFeatureMixin.initial` **before** `super().initial()` runs
+(`apps/api/plane/api/views/orca/base.py:49`) — that is, before authentication,
+permissions and the throttle. So the answer is the same 404 for a valid token,
+an expired one and no token at all, and a caller cannot use the endpoint to
+learn whether its credential is still good.
+
+`ORCA_PUBLIC_API_ENABLED` also requires `ORCA_ORG_UNITS_ENABLED`
+(`apps/api/plane/app/services/orca/feature_flags.py:50`): turning the
+organizational layer off shuts the automation API too, but not the other way
+round.
+
+### What happens to a receipt that was in progress
+
+An `AutomationOperation` row is `in_progress` only for the duration of one
+request: `begin_operation` opens it and the endpoint closes it with
+`complete`/`fail`, and an unhandled exception inside the block records
+`ORG_INTERNAL_ERROR` before re-raising
+(`apps/api/plane/app/services/orca/automation_operation.py:278-306`).
+
+**Flipping the switch cannot by itself strand a receipt.** The 404 is raised in
+`initial()`, before `post()` reaches `begin_operation`, so a call refused by
+the switch opens no receipt at all.
+
+What _can_ strand one is the restart in step 2. A request already inside the
+block is either allowed to finish — and writes its outcome normally — or the
+process dies without unwinding (`SIGKILL`, an OOM kill, a stop timeout that
+expires), in which case the `except` clause never runs and the row stays
+`in_progress` with `completed_at` NULL. Prefer a graceful stop for exactly this
+reason. To see whether it happened:
+
+```sql
+SELECT id, workspace_id, operation_type, idempotency_key, created_at
+FROM automation_operations
+WHERE status = 'in_progress'
+ORDER BY created_at DESC;
+```
+
+Such a row is not harmful while the API is off: nothing can reach it, and it
+holds no lock. It is a spent key waiting to be resolved.
+
+### How re-enabling resolves it (RFC §6.7)
+
+Set `ORCA_PUBLIC_API_ENABLED=1` and restart, as above. Nothing sweeps the
+stranded receipts in the background — **the client's own retry is what
+resolves them**, through `start_operation` → `_existing`
+(`automation_operation.py:168–228`). For a retry carrying the same
+`Idempotency-Key`:
+
+| The receipt is                   | The retry sends       | What happens                                                                                                                                                                                         |
+| -------------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `succeeded` or `failed`          | the same payload      | Replay: the recorded body and status come back, with `Idempotent-Replay: true`. Nothing runs.                                                                                                        |
+| `in_progress`, older than 60 s   | the same payload      | **Resumed.** `_resume` restarts the sixty-second clock and the operation runs again from the beginning. This is the case a restart leaves behind — every stranded receipt is far past sixty seconds. |
+| `in_progress`, younger than 60 s | the same payload      | `409 ORG_OPERATION_IN_PROGRESS` — a real concurrent call. Back off and retry.                                                                                                                        |
+| anything                         | a _different_ payload | `409 ORG_IDEMPOTENCY_PAYLOAD_MISMATCH`, checked before status (`_existing`). A client that corrects its body needs a new key.                                                                        |
+
+"Runs again from the beginning" is safe to different degrees depending on what
+the operation was, and this is the same analysis the retention window rests on:
+
+- **Creation** (`POST work-items/`) is find-or-create on the external binding,
+  and `_place` returns early when the area asking is the area that already owns
+  the item (`apps/api/plane/api/views/orca/work_items.py:256–284`). The retry
+  reports the item's current state; it does not create a second item and does
+  not re-run the allocation.
+- **Reassignment** requires `If-Match`. A retry carrying the decision id from
+  the original call is stale by definition, so it is refused with
+  `412 ORG_DECISION_STALE` rather than reassigning again.
+- **Transfer** takes no `If-Match` and _does_ re-execute. If the item is
+  already in the area the body names, the destination is unchanged, but the
+  transfer is recorded again and the allocation may pick a different executor.
+  This is the one case where an operator should look at the item after a
+  resumed transfer.
+
+If no client ever retries, the receipt simply stays `in_progress` until
+retention removes it. That is a row in a table, not a stuck operation.
+
+### What retention does to it (P0.20)
+
+The daily beat task
+`plane.bgtasks.orca_automation_cleanup_task.delete_orca_automation_operations`
+(04:00 UTC, `apps/api/plane/celery.py:109`) deletes receipts by **`created_at`,
+regardless of status** — deliberately, so a row that died mid-flight is not
+leaked forever (`orca_automation_cleanup_task.py:59–80`). Two consequences for
+an operator:
+
+- The task consults **no** feature flag, so it keeps expiring receipts while
+  the API is off, as long as `beat-worker` and `worker` are running.
+- **Deleting a receipt un-spends its idempotency key.** If the API stays off
+  longer than `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS` (default 30), a client
+  that retries after it is re-enabled is treated as a _first_ call, not a
+  replay. For creation that is harmless for the reasons above; for transfer it
+  re-executes. `0` expires every receipt at the next daily run rather than
+  disabling the expiry — to stop the expiry, remove the beat entry.
+
+### What the switch does not touch
+
+- **The interface.** `/api/orca/…` is gated by `ORCA_ORG_UNITS_ENABLED` alone,
+  through a different mixin
+  (`OrganizationalUnitFeatureMixin`, `apps/api/plane/app/views/organizational_unit.py:103`).
+  People go on marking areas, claiming, reassigning and returning work.
+- **The queue itself.** No queued or assigned item changes state, and
+  `queue_queryset` (`apps/api/plane/app/services/orca/queue.py`) is untouched.
+  The one visible difference is that the _public_ reading of it,
+  `GET /api/v1/orca/workspaces/<slug>/units/<unit_slug>/queue/`, answers 404
+  like every other route in the namespace; the area's own queue in the app does
+  not go through it.
+- **Background work.** The access reconciler and the directory task answer to
+  `ORCA_ORG_UNITS_ENABLED`, not to this switch.
+- **Work items already created by the API.** They are ordinary Plane work
+  items with an area, a decision log and a binding. Nothing about them depends
+  on the switch that created them.
 
 ---
 
@@ -382,13 +554,13 @@ if result.replayed:
 
 ## Not here yet
 
-| Wanted | Where it is |
-| --- | --- |
-| `process` block (template, instance, step) | Phase 4 — refused with `ORG_PROCESS_PROJECTION_DISABLED` today |
-| `completion_due_at` | Phase 4, with the service-level record that stores it. Refused rather than accepted and dropped |
-| `POST .../complete/` | Phase 4 |
-| Coordinator access to another area's queue | Phase 2, when the coordinator role exists |
-| Availability and holidays affecting the ranking | Phase 3 |
+| Wanted                                          | Where it is                                                                                     |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `process` block (template, instance, step)      | Phase 4 — refused with `ORG_PROCESS_PROJECTION_DISABLED` today                                  |
+| `completion_due_at`                             | Phase 4, with the service-level record that stores it. Refused rather than accepted and dropped |
+| `POST .../complete/`                            | Phase 4                                                                                         |
+| Coordinator access to another area's queue      | Phase 2, when the coordinator role exists                                                       |
+| Availability and holidays affecting the ranking | Phase 3                                                                                         |
 
 The full design, including the invariants these endpoints preserve, is in
 [`docs/orca-work-management-rfc.md`](./orca-work-management-rfc.md).
