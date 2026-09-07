@@ -50,6 +50,12 @@ ORCA_ERROR_CODES = {
     # directory provisioning
     "ORG_DIRECTORY_WORKSPACE_NOT_FOUND": 4914,
     "ORG_DIRECTORY_TOKEN_REQUIRED": 4915,
+    # unit coordinators (item 2.2)
+    "ORG_NOT_UNIT_COORDINATOR": 4932,
+    "ORG_COORDINATOR_ALREADY_SET": 4933,
+    "ORG_COORDINATOR_NOT_FOUND": 4934,
+    "ORG_NOT_THE_EXECUTOR": 4935,
+    "ORG_COORDINATOR_MUST_BE_MEMBER": 4936,
     # public automation API (RFC §7.3)
     "ORG_PUBLIC_API_DISABLED": 4922,
     "ORG_IDEMPOTENCY_KEY_REQUIRED": 4923,
@@ -89,6 +95,11 @@ ORCA_ERROR_MESSAGES = {
     "ORG_INVALID_ROUTING_TRANSITION": "This work item cannot move to that state from its current one",
     "ORG_DIRECTORY_WORKSPACE_NOT_FOUND": "Workspace not found",
     "ORG_DIRECTORY_TOKEN_REQUIRED": "Issue a SCIM token before enabling directory provisioning",
+    "ORG_NOT_UNIT_COORDINATOR": "Only this area's coordinator, or a workspace admin, may do this",
+    "ORG_COORDINATOR_ALREADY_SET": "This person already coordinates this organizational unit",
+    "ORG_COORDINATOR_NOT_FOUND": "Coordinator not found",
+    "ORG_NOT_THE_EXECUTOR": "Only the current executor, this area's coordinator, or a workspace admin, may do this",
+    "ORG_COORDINATOR_MUST_BE_MEMBER": "A coordinator must be an active member or admin of the workspace",
     "ORG_PUBLIC_API_DISABLED": "The Orca public automation API is disabled on this instance",
     "ORG_IDEMPOTENCY_KEY_REQUIRED": "This request needs an Idempotency-Key header",
     "ORG_IDEMPOTENCY_PAYLOAD_MISMATCH": "This Idempotency-Key was already used with a different payload",
