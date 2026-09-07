@@ -14,10 +14,18 @@ grant access to the same project.
 import pytest
 from rest_framework.test import APIClient
 
-from plane.app.services.orca import plan_access, reconcile_access, reconcile_membership
+from plane.app.services.orca import (
+    plan_access,
+    reconcile_access,
+    reconcile_coordinator,
+    reconcile_membership,
+    reconcile_unit,
+)
 from plane.db.models import (
+    GrantSource,
     OrganizationalProjectAccessState,
     OrganizationalUnit,
+    OrganizationalUnitCoordinator,
     OrganizationalUnitGrant,
     OrganizationalUnitMemberRole,
     OrganizationalUnitMembership,
@@ -494,3 +502,180 @@ class TestArchivingAProject:
 
         assert response.status_code == 200
         assert project_member(onboarding, lucas).is_active is True
+
+
+def add_coordinator(unit, workspace_member):
+    return OrganizationalUnitCoordinator.objects.create(
+        organizational_unit=unit,
+        workspace_member=workspace_member,
+        workspace=unit.workspace,
+    )
+
+
+@pytest.mark.unit
+class TestCoordinatorAccess:
+    """
+    Coordinating an area is a second way to reach its projects.
+
+    The point of every test here is the same asymmetry: coordination grants on
+    its own account, so it must also be withdrawn on its own account — without
+    disturbing what a membership, or a human, already justified.
+    """
+
+    def test_a_coordinator_reaches_every_project_the_area_covers(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """Coordination alone is enough; belonging to the area is not required (RFC §5.2)."""
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        pld = make_project("PLD", "PLD")
+        link_project(compliance, onboarding)
+        link_project(compliance, pld)
+
+        rita = make_member("rita")
+        reconcile_coordinator(add_coordinator(compliance, rita), force_sync=True)
+
+        assert project_member(onboarding, rita).role == ROLE_MEMBER
+        assert project_member(pld, rita).role == ROLE_MEMBER
+        assert not OrganizationalUnitMembership.objects.filter(
+            organizational_unit=compliance, workspace_member=rita
+        ).exists()
+
+    def test_a_coordinator_grant_names_the_coordination_not_a_membership(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """
+        Provenance is what makes the withdrawal below surgical, so it is pinned
+        here on its own: the grant carries the coordination and no membership.
+        """
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+
+        rita = make_member("rita")
+        coordinator = add_coordinator(compliance, rita)
+        reconcile_coordinator(coordinator, force_sync=True)
+
+        grant = OrganizationalUnitGrant.objects.get(workspace_member=rita, project=onboarding, is_active=True)
+        assert grant.grant_source == GrantSource.COORDINATOR
+        assert grant.coordinator_id == coordinator.id
+        assert grant.membership_id is None
+        # Member, not the link's default_role: coordinating is permission to
+        # hand work out, never to administer the projects it lives in.
+        assert grant.granted_role == ROLE_MEMBER
+
+    def test_a_coordinator_does_not_inherit_a_role_above_member(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """An area that grants Admin to its members still only grants Member to its coordinator."""
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding, role=ROLE_ADMIN)
+
+        rita = make_member("rita")
+        reconcile_coordinator(add_coordinator(compliance, rita), force_sync=True)
+
+        assert project_member(onboarding, rita).role == ROLE_MEMBER
+
+    def test_a_manual_admin_is_not_demoted_by_becoming_a_coordinator(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """The inherited role is a floor. A role a human chose above it stands."""
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+
+        rita = make_member("rita")
+        ProjectMember.objects.create(
+            project=onboarding,
+            member_id=rita.member_id,
+            workspace=org_workspace,
+            role=ROLE_ADMIN,
+            is_active=True,
+        )
+
+        reconcile_coordinator(add_coordinator(compliance, rita), force_sync=True)
+
+        assert project_member(onboarding, rita).role == ROLE_ADMIN
+
+    def test_removing_the_coordinator_restores_the_baseline(self, org_workspace, make_member, make_project, make_unit):
+        """
+        What coordination added is what coordination takes back: a person who
+        was a Guest by hand is a Guest again, not deactivated.
+        """
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+
+        rita = make_member("rita")
+        ProjectMember.objects.create(
+            project=onboarding,
+            member_id=rita.member_id,
+            workspace=org_workspace,
+            role=ROLE_GUEST,
+            is_active=True,
+        )
+
+        coordinator = add_coordinator(compliance, rita)
+        reconcile_coordinator(coordinator, force_sync=True)
+        assert project_member(onboarding, rita).role == ROLE_MEMBER
+
+        coordinator.is_active = False
+        coordinator.save()
+        reconcile_coordinator(coordinator, force_sync=True)
+
+        member = project_member(onboarding, rita)
+        assert member.is_active is True
+        assert member.role == ROLE_GUEST
+        assert not OrganizationalUnitGrant.objects.filter(
+            coordinator=coordinator, project=onboarding, is_active=True
+        ).exists()
+
+    def test_a_coordinator_who_is_also_a_member_keeps_access_after_stepping_down(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """
+        The two ties are independent sources. Ending one leaves the other
+        standing — which is the whole reason a grant records which is which.
+        """
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+
+        rita = make_member("rita")
+        add_member(compliance, rita)
+        coordinator = add_coordinator(compliance, rita)
+        reconcile_unit(compliance, force_sync=True)
+
+        assert (
+            OrganizationalUnitGrant.objects.filter(workspace_member=rita, project=onboarding, is_active=True).count()
+            == 2
+        )
+
+        coordinator.is_active = False
+        coordinator.save()
+        reconcile_unit(compliance, force_sync=True)
+
+        member = project_member(onboarding, rita)
+        assert member.is_active is True
+        assert member.role == ROLE_MEMBER
+        remaining = OrganizationalUnitGrant.objects.filter(workspace_member=rita, project=onboarding, is_active=True)
+        assert remaining.count() == 1
+        assert remaining.first().grant_source == GrantSource.MEMBERSHIP
+
+    def test_a_membership_grant_is_untouched_by_the_new_column(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """Nothing changes for an area with no coordinator: the old shape is the default."""
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+
+        ana = make_member("ana")
+        membership = add_member(compliance, ana)
+        reconcile_membership(membership, force_sync=True)
+
+        grant = OrganizationalUnitGrant.objects.get(workspace_member=ana, project=onboarding, is_active=True)
+        assert grant.grant_source == GrantSource.MEMBERSHIP
+        assert grant.membership_id == membership.id
+        assert grant.coordinator_id is None

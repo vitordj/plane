@@ -63,9 +63,11 @@ from .project_custom_settings import ProjectCustomSettings
 from .organizational_unit import (
     DirectoryIdentityState,
     DirectorySyncSource,
+    GrantSource,
     IssueOrganizationalUnit,
     OrganizationalProjectAccessState,
     OrganizationalUnit,
+    OrganizationalUnitCoordinator,
     OrganizationalUnitGrant,
     OrganizationalUnitMemberRole,
     OrganizationalUnitMembership,

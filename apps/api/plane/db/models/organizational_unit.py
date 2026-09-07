@@ -53,6 +53,22 @@ class QueueReason(models.TextChoices):
     MANUALLY_RETURNED = "manually_returned", "Manually returned"
 
 
+class GrantSource(models.TextChoices):
+    """
+    Which kind of tie sources one inherited project access.
+
+    @description A grant used to have exactly one possible origin — a unit
+    membership — so the FK to it was the whole answer. Coordination is a second
+    origin that is not a membership (a coordinator need not belong to the area,
+    RFC §5.2), and the two have to stay tellable apart: removing somebody from
+    the coordination must take back only what coordinating gave them, leaving
+    whatever their membership still justifies.
+    """
+
+    MEMBERSHIP = "membership", "Membership"
+    COORDINATOR = "coordinator", "Coordinator"
+
+
 class DirectorySyncSource(models.TextChoices):
     """
     Where a row in the organizational layer came from.
@@ -296,9 +312,72 @@ class OrganizationalUnitProject(BaseModel):
         return f"{self.organizational_unit_id} -> {self.project_id} ({self.default_role})"
 
 
+class OrganizationalUnitCoordinator(BaseModel):
+    """
+    Who answers for an area's work — as opposed to who does it.
+
+    Deliberately not a third value of ``OrganizationalUnitMemberRole``. A
+    coordinator is not required to belong to the area (RFC §5.2): the person who
+    hands work out may sit outside the team doing it, and modelling that as a
+    membership would grant them the area's inherited access as a side effect of
+    the role rather than as a decision. Kept as its own row, coordination can be
+    given and taken back on its own, and the grant ledger can say which of the
+    two ties is paying for a given project access.
+
+    Attributes:
+        organizational_unit (OrganizationalUnit): The area being coordinated.
+        workspace_member (WorkspaceMember): The coordinator.
+        workspace (Workspace): Denormalized from the unit for cheap querying.
+        is_active (bool): Inactive rows stop sourcing access, like memberships.
+    """
+
+    organizational_unit = models.ForeignKey(
+        OrganizationalUnit,
+        on_delete=models.CASCADE,
+        related_name="coordinators",
+    )
+    workspace_member = models.ForeignKey(
+        "db.WorkspaceMember",
+        on_delete=models.CASCADE,
+        related_name="coordinated_units",
+    )
+    workspace = models.ForeignKey(
+        "db.Workspace",
+        on_delete=models.CASCADE,
+        related_name="organizational_unit_coordinators",
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ["organizational_unit", "workspace_member", "deleted_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organizational_unit", "workspace_member"],
+                condition=Q(deleted_at__isnull=True),
+                name="org_unit_coordinator_unique_unit_member_when_deleted_at_null",
+            )
+        ]
+        verbose_name = "Organizational Unit Coordinator"
+        verbose_name_plural = "Organizational Unit Coordinators"
+        db_table = "organizational_unit_coordinators"
+        ordering = ("-created_at",)
+
+    def save(self, *args, **kwargs):
+        # Same cross-workspace guard the memberships carry: a bare FK cannot
+        # stop a coordinator row from pointing at a WorkspaceMember of another
+        # tenant, and this row grants project access.
+        if self.workspace_member.workspace_id != self.organizational_unit.workspace_id:
+            raise ValidationError("Workspace member and organizational unit belong to different workspaces")
+        self.workspace_id = self.organizational_unit.workspace_id
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.workspace_member_id} coordinates {self.organizational_unit_id}"
+
+
 class OrganizationalUnitGrant(BaseModel):
     """
-    Provenance ledger: one row per (membership, unit-project) pair that
+    Provenance ledger: one row per (source, unit-project) pair that
     sources inherited project access.
 
     Grants record *why* a person has inherited access to a project. They never
@@ -308,7 +387,16 @@ class OrganizationalUnitGrant(BaseModel):
 
     Attributes:
         organizational_unit (OrganizationalUnit): Denormalized source unit.
-        membership (OrganizationalUnitMembership): Source membership.
+        membership (OrganizationalUnitMembership): Source membership, when the
+            grant comes from belonging to the area. ``None`` on a coordinator
+            grant — a coordinator need not be a member, so there is no
+            membership row for such a grant to point at.
+        coordinator (OrganizationalUnitCoordinator): Source coordination, when
+            the grant comes from answering for the area instead.
+        grant_source (str): Which of the two FKs above is the source. Redundant
+            with them by construction, and kept anyway: it is what lets a query
+            filter or group by origin without a two-column ``IS NULL`` dance,
+            and the CHECKs below make the redundancy impossible to break.
         unit_project (OrganizationalUnitProject): Source unit-project link.
         workspace_member (WorkspaceMember): The person receiving access.
         project (Project): The target project.
@@ -327,6 +415,20 @@ class OrganizationalUnitGrant(BaseModel):
         OrganizationalUnitMembership,
         on_delete=models.CASCADE,
         related_name="grants",
+        null=True,
+        blank=True,
+    )
+    coordinator = models.ForeignKey(
+        OrganizationalUnitCoordinator,
+        on_delete=models.CASCADE,
+        related_name="grants",
+        null=True,
+        blank=True,
+    )
+    grant_source = models.CharField(
+        max_length=16,
+        choices=GrantSource.choices,
+        default=GrantSource.MEMBERSHIP,
     )
     unit_project = models.ForeignKey(
         OrganizationalUnitProject,
@@ -359,7 +461,34 @@ class OrganizationalUnitGrant(BaseModel):
                 fields=["membership", "unit_project"],
                 condition=Q(deleted_at__isnull=True),
                 name="org_unit_grant_unique_membership_unit_project_when_deleted_at_null",
-            )
+            ),
+            # The coordinator half of the same rule. A separate constraint
+            # rather than a wider one over both columns, because a partial
+            # unique index over two nullable columns treats every NULL as
+            # distinct and would police neither.
+            models.UniqueConstraint(
+                fields=["coordinator", "unit_project"],
+                condition=Q(deleted_at__isnull=True),
+                name="org_unit_grant_unique_coordinator_unit_project_when_deleted_at_null",
+            ),
+            # A grant with neither source is provenance that explains nothing;
+            # one with both would be revoked twice over when either tie ends.
+            models.CheckConstraint(
+                condition=(
+                    Q(membership__isnull=False, coordinator__isnull=True)
+                    | Q(membership__isnull=True, coordinator__isnull=False)
+                ),
+                name="org_unit_grant_exactly_one_source",
+            ),
+            # ``grant_source`` is what queries read; the FKs are what the
+            # reconciler revokes by. They must never disagree.
+            models.CheckConstraint(
+                condition=(
+                    Q(grant_source=GrantSource.MEMBERSHIP, membership__isnull=False)
+                    | Q(grant_source=GrantSource.COORDINATOR, coordinator__isnull=False)
+                ),
+                name="org_unit_grant_source_matches_relation",
+            ),
         ]
         verbose_name = "Organizational Unit Grant"
         verbose_name_plural = "Organizational Unit Grants"
@@ -509,6 +638,10 @@ class IssueOrganizationalUnit(BaseModel):
     queued_at = models.DateTimeField(null=True, blank=True)
     # Effective assignment SLA for this item (RFC §6.6).
     assignment_due_at = models.DateTimeField(null=True, blank=True)
+    # When the area was last told this item is waiting past its deadline. The
+    # sweep reads it to avoid alerting the same people about the same item every
+    # fifteen minutes; ``None`` means nobody has been told yet.
+    last_alerted_at = models.DateTimeField(null=True, blank=True)
     # SET_NULL, not CASCADE: deleting a person must not delete the record that
     # their area owned the work.
     primary_executor = models.ForeignKey(

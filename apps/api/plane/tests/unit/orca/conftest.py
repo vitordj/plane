@@ -21,6 +21,7 @@ from plane.db.models import (
     OrganizationalDirectoryGroupMembership,
     OrganizationalDirectoryIdentity,
     OrganizationalUnit,
+    OrganizationalUnitCoordinator,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
     Project,
@@ -223,6 +224,20 @@ def add_member(workspace_with_members, workspace_member_of):
 
 
 @pytest.fixture
+def add_coordinator(workspace_with_members, workspace_member_of):
+    """Make a user coordinator of a unit without going through the API."""
+
+    def _add(unit, user):
+        return OrganizationalUnitCoordinator.objects.create(
+            organizational_unit=unit,
+            workspace_member=workspace_member_of(user),
+            workspace=workspace_with_members,
+        )
+
+    return _add
+
+
+@pytest.fixture
 def grant_manual_access(workspace_with_members):
     """Create a native ProjectMember by hand, as an admin would in the UI."""
 
@@ -304,6 +319,41 @@ def issue_unit_url(slug, project_id, issue_id):
 
 def issue_assign_url(slug, project_id, issue_id):
     return f"/api/orca/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/organizational-unit-assign/"
+
+
+# --- the coordinator's routes (item 2.2) --------------------------------------
+
+
+def issue_claim_url(slug, project_id, issue_id):
+    return f"{issue_unit_url(slug, project_id, issue_id)}claim/"
+
+
+def issue_reassign_url(slug, project_id, issue_id):
+    return f"{issue_unit_url(slug, project_id, issue_id)}reassign/"
+
+
+def issue_return_url(slug, project_id, issue_id):
+    return f"{issue_unit_url(slug, project_id, issue_id)}return/"
+
+
+def issue_transfer_url(slug, project_id, issue_id):
+    return f"{issue_unit_url(slug, project_id, issue_id)}transfer/"
+
+
+def unit_queue_url(slug, unit_id):
+    return f"{units_url(slug)}{unit_id}/queue/"
+
+
+def unit_decisions_url(slug, unit_id):
+    return f"{units_url(slug)}{unit_id}/decisions/"
+
+
+def coordinators_url(slug, unit_id):
+    return f"{units_url(slug)}{unit_id}/coordinators/"
+
+
+def coordinator_url(slug, unit_id, pk):
+    return f"{coordinators_url(slug, unit_id)}{pk}/"
 
 
 # --- public automation API (/api/v1/orca/, item 1.4) --------------------------
