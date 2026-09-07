@@ -176,6 +176,46 @@ def notify(link, kind: str) -> int:
     return len(receiver_ids)
 
 
+def notify_allocation_failed_safely(link_id) -> None:
+    """
+    @description Queue the immediate ``allocation_failed`` alert, and swallow
+    whatever goes wrong doing it.
+    @param link_id: The ``IssueOrganizationalUnit`` id. An id and not the
+        object, because this runs after the transaction that wrote it has
+        committed and the in-memory instance may be stale by then.
+
+    Called from ``transaction.on_commit`` (RFC §12, decision F10): an alert is
+    an effect on the outside world, and firing it inside the transaction means
+    firing it for allocations that then roll back.
+
+    **Why every exception is caught here.** ``on_commit`` callbacks run *after*
+    the commit, on the request's thread, and an exception raised from one
+    escapes into the caller — this is the failure PR #13 found in the public
+    API, where a broker that was down turned a successful write into a 500,
+    marked the idempotency receipt ``failed``, and made every retry of that key
+    replay the same 500 forever. The allocation is already committed and
+    correct by the time this runs; the item really is in ``allocation_failed``
+    and the queue really does show it. An alert that does not go out is bad. An
+    alert that takes the allocation down with it is worse, and it takes down
+    the exact call whose failure it was trying to report.
+
+    ``Exception`` rather than ``BaseException`` on purpose: a worker being shut
+    down or a request being cancelled should still unwind.
+    """
+    from plane.bgtasks.organizational_queue_task import notify_allocation_failed
+
+    try:
+        notify_allocation_failed.delay(str(link_id))
+    except Exception:
+        # ``logger.exception`` and not ``log_exception``: this is a delivery
+        # failure of a notification, not a defect in the allocation, and it
+        # belongs in the logs of the process that could not reach the broker.
+        logger.exception(
+            "Could not queue the Orca allocation-failed alert; the allocation itself stands.",
+            extra={"issue_organizational_unit_id": str(link_id)},
+        )
+
+
 def _payload(link, kind: str) -> dict:
     """
     @description What a client needs to render the alert and act on it, with
@@ -208,5 +248,6 @@ __all__ = [
     "KIND_ALLOCATION_FAILED",
     "KIND_ASSIGNMENT_OVERDUE",
     "notify",
+    "notify_allocation_failed_safely",
     "recipients_for",
 ]

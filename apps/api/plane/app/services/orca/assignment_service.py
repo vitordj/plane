@@ -67,6 +67,7 @@ from plane.db.models import (
     StateGroup,
 )
 
+from .alerts import notify_allocation_failed_safely
 from .coverage import unit_covers_project
 from .metrics import record_assignment_outcome, record_decision_superseded, record_no_candidate
 from .errors import (
@@ -572,6 +573,20 @@ def _apply_queued(link, decision, *, state, queue_reason, sla_seconds=None, assi
             "updated_at",
         ]
     )
+
+    if state == RoutingState.ALLOCATION_FAILED:
+        # An item nobody could be assigned to is the one queue state that has
+        # to raise something on its own: whoever asked for the allocation --
+        # often a robot through the automation API -- has been told the work
+        # was handed over, and it is sitting there with no owner and, if the
+        # area set no SLA, no deadline for the sweep to notice either.
+        #
+        # ``on_commit`` and not here (RFC §12, decision F10): alerting inside
+        # the transaction alerts for allocations that then roll back. And the
+        # callee swallows every exception rather than propagating -- see its
+        # docstring for the PR #13 failure that rule comes from.
+        link_id = link.id
+        transaction.on_commit(lambda: notify_allocation_failed_safely(link_id))
 
 
 def _locked_link(issue):

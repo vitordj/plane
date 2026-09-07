@@ -46,11 +46,18 @@ CLEANUP_TASK_MODULE = "plane.bgtasks.orca_automation_cleanup_task"
 SLA_SWEEP_TASK_NAME = "plane.bgtasks.organizational_queue_task.sweep_assignment_sla"
 SLA_SWEEP_TASK_MODULE = "plane.bgtasks.organizational_queue_task"
 
+# Not on the beat: dispatched with ``.delay()`` from
+# ``assignment_service._apply_queued`` after the transaction commits. Same trap
+# either way -- the producer's lazy import registers nothing in the worker.
+IMMEDIATE_ALERT_TASK_NAME = "plane.bgtasks.organizational_queue_task.notify_allocation_failed"
+IMMEDIATE_ALERT_TASK_MODULE = "plane.bgtasks.organizational_queue_task"
+
 TASKS = [
     pytest.param(TASK_MODULE, TASK_NAME, id="reconcile_organizational_access"),
     pytest.param(DIRECTORY_TASK_MODULE, DIRECTORY_TASK_NAME, id="resolve_directory_identities"),
     pytest.param(CLEANUP_TASK_MODULE, CLEANUP_TASK_NAME, id="delete_orca_automation_operations"),
     pytest.param(SLA_SWEEP_TASK_MODULE, SLA_SWEEP_TASK_NAME, id="sweep_assignment_sla"),
+    pytest.param(IMMEDIATE_ALERT_TASK_MODULE, IMMEDIATE_ALERT_TASK_NAME, id="notify_allocation_failed"),
 ]
 
 
@@ -96,6 +103,21 @@ class TestOrganizationalTaskRegistration:
         # told that its work is past its assignment deadline.
         assert SLA_SWEEP_TASK_NAME in scheduled
         assert SLA_SWEEP_TASK_NAME in celery_app.tasks
+
+    def test_the_immediate_alert_is_the_task_the_service_hook_queues(self):
+        # The hook in ``_apply_queued`` reaches this symbol through a lazy
+        # import inside ``notify_allocation_failed_safely``, which registers it
+        # in the *web* process and proves nothing about the worker. Pin the
+        # name the worker registers to the callable the hook queues, so a
+        # rename cannot leave the hook queueing a name nothing answers -- and
+        # the failure would be invisible, because the hook swallows every
+        # exception by design.
+        from plane.bgtasks.organizational_queue_task import notify_allocation_failed
+
+        celery_app.loader.import_default_modules()
+
+        assert notify_allocation_failed.name == IMMEDIATE_ALERT_TASK_NAME
+        assert celery_app.tasks[IMMEDIATE_ALERT_TASK_NAME] is notify_allocation_failed._get_current_object()
 
     def test_the_registered_task_is_the_one_the_dispatcher_queues(self):
         # A name can be registered by a callable other than the one the

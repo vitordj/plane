@@ -46,6 +46,7 @@ from django.utils import timezone
 from celery import shared_task
 
 # Module imports
+from plane.db.models import RoutingState
 from plane.utils.exception_logger import log_exception
 
 logger = logging.getLogger("plane.worker")
@@ -141,3 +142,63 @@ def sweep_assignment_sla(self):
         raise self.retry(exc=exception)
 
     return alerted
+
+
+@shared_task
+def notify_allocation_failed(link_id):
+    """
+    Tell an area, right away, that nobody could be assigned to one of its items.
+
+    @description The queue's own sweep only speaks once a deadline has passed,
+    and an item may have no deadline at all. ``allocation_failed`` needs no
+    deadline to be worth reporting: the allocator ran, found nobody eligible,
+    and whoever asked — often a robot through the automation API — believes the
+    work was handed over. This is the immediate half of item 2.4, queued from
+    ``assignment_service._apply_queued`` after the transaction commits.
+    @param link_id: The ``IssueOrganizationalUnit`` id, as a string.
+    @returns How many notifications were written.
+
+    Deliberately does **not** touch ``last_alerted_at``. That stamp is the
+    sweep's re-alert window for a passed deadline; spending it here would mean
+    an item that failed allocation and then breached its SLA reports only the
+    first of the two.
+    """
+    from plane.app.services.orca import organizational_units_enabled
+    from plane.app.services.orca.alerts import KIND_ALLOCATION_FAILED, notify
+    from plane.db.models import IssueOrganizationalUnit
+
+    if not organizational_units_enabled():
+        logger.info("Organizational layer disabled; skipping the allocation-failed alert.")
+        return 0
+
+    try:
+        link = (
+            IssueOrganizationalUnit.objects.select_related(
+                "issue", "issue__project", "issue__state", "organizational_unit"
+            )
+            .filter(pk=link_id)
+            .first()
+        )
+        if link is None:
+            # The item's link was cleared or the item deleted between the
+            # commit and this task running. Nothing to report and nothing wrong.
+            logger.info("Orca allocation-failed alert: link %s is gone; nothing to report.", link_id)
+            return 0
+
+        if link.routing_state != RoutingState.ALLOCATION_FAILED:
+            # Somebody claimed it, or a coordinator assigned it, in the seconds
+            # between the commit and this task. The alert would be a false alarm.
+            logger.info(
+                "Orca allocation-failed alert: link %s already moved to %s; not alerting.",
+                link_id,
+                link.routing_state,
+            )
+            return 0
+
+        return notify(link, KIND_ALLOCATION_FAILED)
+    except Exception as exception:
+        # No retry: by the time this fails the allocation is committed, and the
+        # sweep will pick the item up once its deadline passes. A retry storm
+        # over a notification is not worth risking against a wedged database.
+        log_exception(exception)
+        return 0
