@@ -4,6 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import type { TIssuePriorities } from "./issues";
+import type { TPaginatedResponse } from "./pagination";
+import type { TStateGroups } from "./state";
+
 /**
  * Types for the Orca organizational layer: units (areas, squads, committees)
  * that group workspace members and grant them project access through the
@@ -73,6 +77,75 @@ export interface IAssignmentPolicyResolution {
   assignment_sla_seconds: number | null;
   max_open_items_per_member: number | null;
   policy: Record<string, unknown> | null;
+}
+
+/**
+ * The area's queue, as the Work tab reads it. Wider than the public
+ * `queue_row`: a coordinator deciding what to do next needs the work item's
+ * own project, state and priority on the same line, and the three action
+ * flags below so the row can hide what this viewer may not do.
+ */
+export interface IQueueRow {
+  issue_id: string;
+  sequence_id: number;
+  name: string;
+  project: { id: string; identifier: string; name: string };
+  state: { id: string; name: string; color: string; group: TStateGroups } | null;
+  priority: TIssuePriorities;
+  target_date: string | null;
+  routing_state: TRoutingState;
+  queue_reason: TQueueReason;
+  queued_at: string | null;
+  assignment_due_at: string | null;
+  /** Past `assignment_due_at` with nobody on it — the row the coordinator owes. */
+  assignment_overdue: boolean;
+  age_seconds: number;
+  primary_executor: { id: string; display_name: string; email: string; avatar_url: string } | null;
+  /** Sent back as `expected_decision_id`, so two coordinators cannot both act. */
+  current_decision_id: string | null;
+  permissions: IQueueRowPermissions;
+}
+
+/**
+ * What this viewer may do to this row, decided by the server. The interface
+ * only hides what these deny; the API refuses it regardless (RFC §1.2), so a
+ * stale flag costs a toast, never an unauthorized write.
+ */
+export interface IQueueRowPermissions {
+  can_claim: boolean;
+  can_assign: boolean;
+  can_return: boolean;
+}
+
+/** Who the viewer is to this area, sent once per page rather than per row. */
+export interface IQueueViewer {
+  is_admin: boolean;
+  is_coordinator: boolean;
+  is_member: boolean;
+}
+
+/** One page of the queue: the native cursor envelope plus `viewer`. */
+export type IQueuePage = TPaginatedResponse<IQueueRow[]> & { viewer: IQueueViewer };
+
+/**
+ * Someone who allocates an area's work. Distinct from the area's lead, and
+ * from its membership: a coordinator need not belong to the area they route
+ * work for (RFC §5.2).
+ */
+export interface IOrganizationalUnitCoordinator {
+  id: string;
+  workspace_member: string;
+  member: { id: string; display_name: string; email: string; avatar_url: string };
+  is_active: boolean;
+  created_at: string;
+}
+
+/** The policy body an admin submits; every field but the mode is optional. */
+export interface IAssignmentPolicyPayload {
+  default_mode: TAssignmentMode;
+  allowed_modes: TAssignmentMode[];
+  assignment_sla_seconds?: number | null;
+  max_open_items_per_member?: number | null;
 }
 
 /** What reconciliation would do, or did, for one person on one project. */
