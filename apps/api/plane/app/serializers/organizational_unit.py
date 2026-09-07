@@ -10,11 +10,13 @@ from rest_framework import serializers
 # Module imports
 from plane.db.models import (
     AssignmentDecision,
+    Issue,
     IssueOrganizationalUnit,
     OrganizationalDirectoryConnection,
     OrganizationalDirectoryIdentity,
     OrganizationalUnit,
     OrganizationalUnitAssignmentPolicy,
+    OrganizationalUnitCoordinator,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
 )
@@ -304,6 +306,37 @@ class AssignmentPolicySerializer(BaseSerializer):
         read_only_fields = ["id", "organizational_unit", "version", "created_at", "updated_at"]
 
 
+class OrganizationalUnitCoordinatorSerializer(BaseSerializer):
+    """
+    Who answers for an area's work, as the coordinators/ endpoint shows it.
+
+    ``member`` is a small nested view of the person, shaped like the one
+    ``unit-members-tab.tsx`` already renders — the interface has one card for
+    "a person and their standing in an area" and this keeps it reusable for
+    coordinators too.
+    """
+
+    member = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrganizationalUnitCoordinator
+        fields = ["id", "workspace_member", "member", "is_active", "created_at"]
+        # workspace_member is the coordinator's identity, not an editable
+        # attribute — same reasoning as OrganizationalUnitMembershipSerializer:
+        # swapping the person goes through DELETE + POST, which withdraws the
+        # access coordinating gave before granting it to somebody else.
+        read_only_fields = ["workspace_member", "created_at"]
+
+    def get_member(self, obj) -> dict:
+        user = obj.workspace_member.member
+        return {
+            "id": str(user.id),
+            "display_name": user.display_name,
+            "email": user.email,
+            "avatar_url": user.avatar_url,
+        }
+
+
 class AssignmentDecisionSerializer(BaseSerializer):
     """
     One allocation, as the interface shows it.
@@ -333,6 +366,32 @@ class AssignmentDecisionSerializer(BaseSerializer):
             "created_at",
         ]
         read_only_fields = fields
+
+
+class AssignmentDecisionIssueSerializer(BaseSerializer):
+    """The work item, exactly as the decision log needs to name it."""
+
+    class Meta:
+        model = Issue
+        fields = ["id", "sequence_id", "name", "project_id"]
+        read_only_fields = fields
+
+
+class AssignmentDecisionDetailSerializer(AssignmentDecisionSerializer):
+    """
+    ``AssignmentDecisionSerializer`` plus what the coordinator's decision log
+    needs: which item it was about, and one level into what it replaced.
+
+    ``supersedes`` nests the plain serializer rather than this one, so the
+    chain stops after one level instead of walking every decision an item
+    ever had (RFC §5.2: "supersedes expandido em um nível").
+    """
+
+    issue = AssignmentDecisionIssueSerializer(read_only=True)
+    supersedes = AssignmentDecisionSerializer(read_only=True)
+
+    class Meta(AssignmentDecisionSerializer.Meta):
+        fields = AssignmentDecisionSerializer.Meta.fields + ["issue"]
 
 
 class IssueRoutingSerializer(BaseSerializer):

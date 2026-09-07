@@ -665,6 +665,51 @@
             "not_resynced": "Sinkronisasi ulang tidak dapat diselesaikan."
           }
         },
+        "work": {
+          "tab": "Pekerjaan",
+          "inbox": "Kotak masuk",
+          "in_progress": "Sedang berjalan",
+          "empty_inbox": "Tidak ada yang menunggu. Item kerja yang diambil area ini muncul di sini sampai ada yang menanganinya.",
+          "empty_in_progress": "Saat ini tidak ada yang sedang mengerjakan apa pun untuk area ini.",
+          "claim": "Ambil",
+          "assign": "Tugaskan kepada…",
+          "return_to_queue": "Kembalikan ke antrean",
+          "overdue": "Terlambat",
+          "unassigned": "Belum ada penanggung jawab",
+          "executor_count": "{count, plural, one {# item kerja} other {# item kerja}}",
+          "age": {
+            "just_now": "Baru saja",
+            "minutes": "{count, plural, one {# menit} other {# menit}}",
+            "hours": "{count, plural, one {# jam} other {# jam}}",
+            "days": "{count, plural, one {# hari} other {# hari}}"
+          },
+          "reason": {
+            "new_item": "Baru diambil",
+            "awaiting_coordinator": "Menunggu koordinator",
+            "awaiting_claim": "Menunggu seseorang mengambilnya",
+            "no_eligible_member": "Tidak ada di area ini yang dapat mengambilnya",
+            "executor_unavailable": "Pelaksananya tidak tersedia",
+            "manually_returned": "Dikembalikan ke antrean"
+          },
+          "assign_modal": {
+            "title": "Tugaskan item kerja ini",
+            "search": "Cari berdasarkan nama atau email",
+            "no_candidates": "Belum ada di area ini yang dapat mengambil pekerjaan. Tambahkan orang ke area ini terlebih dahulu.",
+            "assigning": "Menugaskan…",
+            "open_items": "{count, plural, one {# item terbuka} other {# item terbuka}}"
+          },
+          "toast": {
+            "claimed_title": "Item kerja diambil",
+            "claimed": "Sekarang menjadi milik Anda dan telah keluar dari kotak masuk area ini.",
+            "not_claimed": "Tidak diambil",
+            "assigned_title": "Item kerja ditugaskan",
+            "assigned": "{name} yang menanganinya sekarang.",
+            "not_assigned": "Tidak ditugaskan",
+            "returned_title": "Dikembalikan ke antrean",
+            "returned": "Item ini menunggu seseorang lagi.",
+            "not_returned": "Tidak dikembalikan"
+          }
+        },
         "errors": {
           "unit_not_found": "Area itu sudah tidak ada.",
           "name_required": "Area memerlukan nama.",
@@ -688,6 +733,11 @@
           "invalid_routing_transition": "Item kerja ini tidak dapat berpindah ke status itu dari status saat ini.",
           "directory_workspace_not_found": "Ruang kerja itu sudah tidak ada.",
           "directory_token_required": "Terbitkan token SCIM sebelum mengaktifkan penyediaan dari direktori.",
+          "not_unit_coordinator": "Hanya koordinator area ini atau admin ruang kerja yang dapat melakukan ini.",
+          "coordinator_already_set": "Orang ini sudah menjadi koordinator area ini.",
+          "coordinator_not_found": "Koordinator tidak ditemukan.",
+          "not_the_executor": "Hanya eksekutor saat ini, koordinator area ini, atau admin ruang kerja yang dapat melakukan ini.",
+          "coordinator_must_be_member": "Koordinator harus menjadi anggota aktif atau admin ruang kerja.",
           "public_api_disabled": "API otomatisasi dimatikan pada instansi ini.",
           "idempotency_key_required": "Permintaan ini memerlukan header Idempotency-Key.",
           "idempotency_payload_mismatch": "Kunci itu sudah dipakai untuk permintaan lain.",

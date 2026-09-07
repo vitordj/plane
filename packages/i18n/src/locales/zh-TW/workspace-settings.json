@@ -665,6 +665,51 @@
             "not_resynced": "無法完成重新同步。"
           }
         },
+        "work": {
+          "tab": "工作",
+          "inbox": "收件匣",
+          "in_progress": "進行中",
+          "empty_inbox": "沒有等待中的項目。此區域承接的工作事項會顯示在這裡，直到有人接手。",
+          "empty_in_progress": "目前沒有人在為此區域處理任何工作。",
+          "claim": "接手",
+          "assign": "指派給…",
+          "return_to_queue": "退回佇列",
+          "overdue": "已逾期",
+          "unassigned": "無負責人",
+          "executor_count": "{count, plural, one {# 個工作事項} other {# 個工作事項}}",
+          "age": {
+            "just_now": "剛剛",
+            "minutes": "{count, plural, one {# 分鐘} other {# 分鐘}}",
+            "hours": "{count, plural, one {# 小時} other {# 小時}}",
+            "days": "{count, plural, one {# 天} other {# 天}}"
+          },
+          "reason": {
+            "new_item": "剛剛承接",
+            "awaiting_coordinator": "等待協調人員",
+            "awaiting_claim": "等待有人接手",
+            "no_eligible_member": "此區域中沒有人可以接手",
+            "executor_unavailable": "執行人目前無法處理",
+            "manually_returned": "已退回佇列"
+          },
+          "assign_modal": {
+            "title": "指派此工作事項",
+            "search": "依姓名或電子郵件搜尋",
+            "no_candidates": "此區域中尚無人可以承接工作。請先將成員加入該區域。",
+            "assigning": "正在指派…",
+            "open_items": "{count, plural, one {# 項未完成} other {# 項未完成}}"
+          },
+          "toast": {
+            "claimed_title": "已接手工作事項",
+            "claimed": "它現在屬於您，並已離開此區域的收件匣。",
+            "not_claimed": "未接手",
+            "assigned_title": "已指派工作事項",
+            "assigned": "現在由 {name} 負責。",
+            "not_assigned": "未指派",
+            "returned_title": "已退回佇列",
+            "returned": "它再次在等待有人接手。",
+            "not_returned": "未退回"
+          }
+        },
         "errors": {
           "unit_not_found": "該區域已不存在。",
           "name_required": "區域需要一個名稱。",
@@ -688,6 +733,11 @@
           "invalid_routing_transition": "此工作事項無法從目前狀態轉為該狀態。",
           "directory_workspace_not_found": "該工作區已不存在。",
           "directory_token_required": "請先簽發 SCIM 權杖，再開啟目錄佈建。",
+          "not_unit_coordinator": "只有該區域的協調員或工作區管理員才能執行此操作。",
+          "coordinator_already_set": "此人已經在協調該區域。",
+          "coordinator_not_found": "找不到協調員。",
+          "not_the_executor": "只有目前的執行者、該區域的協調員或工作區管理員才能執行此操作。",
+          "coordinator_must_be_member": "協調員必須是工作區的有效成員或管理員。",
           "public_api_disabled": "此執行個體已關閉自動化 API。",
           "idempotency_key_required": "此請求需要 Idempotency-Key 標頭。",
           "idempotency_payload_mismatch": "該金鑰已用於另一個請求。",

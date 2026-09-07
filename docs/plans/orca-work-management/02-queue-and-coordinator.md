@@ -12,15 +12,31 @@ decisões. O **Gate 2-mínimo** é o que libera a API pública em produção.
 
 ---
 
-## 2.1 — Migração 0140: coordenadores e acesso reconciliado `[ ]`
+## 2.1 — Migração 0139: coordenadores e acesso reconciliado `[x]`
 
 - Modelo `OrganizationalUnitCoordinator` (RFC §5.2) em `organizational_unit.py`.
 - `org_unit_reconciler.py`: coordenadores ativos de uma área recebem `ProjectMember` (role Member, 15) em todos os projetos cobertos, com `OrganizationalUnitGrant` de origem própria. Adicionar campo `grant_source` (`membership` | `coordinator`) em `OrganizationalUnitGrant` na mesma migração, default `membership`, para que a remoção do coordenador retire só o que ele ganhou por isso e respeite o piso/proveniência já existentes. Reaproveitar toda a lógica de `baseline_role`/`last_applied_role`.
 - Testes em `test_org_unit_reconciler.py`: coordenador ganha acesso; coordenador que já era membro manual Admin não é rebaixado; remoção do coordenador restaura baseline; coordenador que também é membro da área mantém acesso após deixar a coordenação.
 
+**Entregue (07/09).** A migração saiu **`0139`**, não `0140`: `0139` estava
+livre e a Fase 3, que a reservava, passou a `0140` — Django liga migrações por
+dependência, e a convenção do repositório é depender explicitamente da última
+Orca (`0138_orca_automation_binding`).
+
+O item era maior do que este arquivo dizia. `OrganizationalUnitGrant.membership`
+era FK **obrigatória** e o reconciliador iterava pares `(membership,
+unit_project)`; um coordenador pode não ser membro da área (F16, RFC §5.2),
+então não existe membership para o grant apontar. Um campo `grant_source` não
+bastava. O que foi feito: `membership` anulável, FK `coordinator` própria,
+`grant_source` (`membership` | `coordinator`), CHECK de exclusividade entre as
+duas FKs e constraint parcial única `(coordinator, unit_project)`. No
+reconciliador, "fonte" deixou de ser o par e passou a carregar a sua origem;
+`baseline_role`, `last_applied_role`, `cap_role_to_workspace_role` e a detecção
+de drift ficaram intocados.
+
 ---
 
-## 2.2 — Permissão de coordenador e endpoints internos `[ ]`
+## 2.2 — Permissão de coordenador e endpoints internos `[x]`
 
 - `apps/api/plane/app/permissions/organizational_unit.py` (novo): `is_unit_coordinator(user, unit)`, `is_unit_member(user, unit)`; decorator `allow_unit_role(["coordinator", "member"], unit_kwarg="unit_id")` no espírito de `allow_permission`, que também aceita Workspace Admin sempre.
 - Endpoints (RFC §8.1): `claim/`, `reassign/`, `return/`, `transfer/`, `queue/`, `decisions/`, `policy PUT` (área e projeto), `coordinators/` CRUD. Todos usam o serviço D0.5 com `trigger` correto (`ui_claim`, `ui_coordinator`, `reassign`, `return_to_queue`).
@@ -32,9 +48,31 @@ Member do projeto, Member de outro projeto, Guest, coordenador da área,
 coordenador de outra área, lead sem coordenação, membro da área em
 `self_claim` vs `manual`).
 
+**Entregue (07/09).** Todos os endpoints, inclusive os dois que a ordem de
+corte permitia sacrificar (`transfer` e `decisions`): `claim`, `return`,
+`reassign`, `transfer`, `queue`, `decisions`, `coordinators` CRUD e `policy
+PUT`. Arquivos novos: `app/permissions/organizational_unit.py` (helpers
+`is_unit_coordinator`, `is_unit_member`, `may_see_queue` e os decorators
+`allow_unit_role`, `allow_issue_unit_role`) e
+`app/views/organizational_queue.py`. A view pública
+`UnitQueueEndpoint._may_see_queue` passou a chamar o helper compartilhado,
+então "quem vê a fila" tem uma definição só.
+
+Cinco códigos de erro novos, 4932–4936, nos três lugares e nas 19 locales.
+`policy PUT` é Admin do workspace e **não** herdou o decorator do `policy GET`,
+que aceita Guest — a revisão adversarial da mesma noite sinalizou esse risco de
+copiar-e-colar e o código já estava certo. O `return` é o único cuja permissão
+não é fixa: coordenador, Admin, ou quem detém o item.
+
+**Testes:** 55 em `test_organizational_queue_http.py` e 27 em
+`test_orca_unit_permissions.py`, incluindo a matriz do RFC §10 por endpoint, a
+flag desligada respondendo 404, duas claims sequenciais (200 e 409), o
+`expected_decision_id` velho (409) e o fluxo `claim → return → reassign` com
+`ProjectMember.values_list` idêntico antes e depois.
+
 ---
 
-## 2.3 — Interface `[ ]`
+## 2.3 — Interface `[~]` (parte mínima entregue)
 
 Padrão: reutilizar componentes de `@plane/ui` e `@plane/propel`; nenhum CSS
 novo fora do tema. Todas as strings no catálogo i18n
@@ -57,13 +95,28 @@ novo fora do tema. Todas as strings no catálogo i18n
 - Transferir para outra área a partir do item (modal com áreas que cobrem o projeto).
 
 **Aceite.**
-- [ ] `pnpm --filter web check:lint` e `check:types` limpos (local).
-- [ ] `check:sync` do i18n verde.
-- [ ] Teste de store para fila e ações (vitest) e um teste de componente para `queue-list.tsx`.
+- [x] `pnpm --filter web check:lint` e `check:types` limpos (local) — `check:types` roda como `pnpm check:types --filter=web`, pelo turbo; isolado, falha por falta do build dos pacotes.
+- [x] `check:sync` do i18n verde (19 locales, 100%).
+- [ ] Teste de store para fila e ações (vitest) e um teste de componente para `queue-list.tsx`. **Aberto por decisão** (plano da madrugada, M8): `apps/web` não tem vitest configurado — só `vite.config.ts`, e o vitest do monorepo vive em `packages/codemods` e `apps/live`. Montar a configuração dentro do mesmo PR que entrega a aba foi julgado risco maior que o benefício. Item próprio, antes do Gate 2 completo.
+
+**Parte mínima entregue (07/09).** `packages/types/src/organizational-unit.ts`
+com as formas da fila; service e store (`queueByUnit`, `fetchQueue`, `claim`,
+`assign`, `returnToQueue`); `queue-item-row.tsx`, `queue-list.tsx`,
+`assign-member-modal.tsx`, `unit-work-tab.tsx`; terceira aba em
+`unit-detail.tsx`; menu de ações em `issue-unit-property.tsx`; strings novas no
+bloco `organizational_units.work` das 19 locales.
+
+Verificado na sessão, na árvore integrada: `pnpm check:types --filter=web`,
+`pnpm --filter web check:lint`, `pnpm --filter web check:format` e
+`pnpm --filter @plane/i18n check:sync` — todos exit 0.
+
+**Falta para a parte completa:** seção "Atenção", `decision-timeline.tsx`,
+`policy-form.tsx`, `coordinators-tab.tsx`, a página "Minha Área" e a
+transferência entre áreas a partir do item.
 
 ---
 
-## 2.4 — Alertas e varredura de SLA de atribuição `[ ]`
+## 2.4 — Alertas e varredura de SLA de atribuição `[ ]` — **não entregue**
 
 - Tarefa Celery `plane.bgtasks.organizational_queue_task.sweep_assignment_sla` a cada 15 min (registrar em `plane/celery.py` e no `include` de `settings/common.py`, com o mesmo comentário explicativo das tarefas Orca existentes).
 - Para cada item `queued`/`allocation_failed` com `assignment_due_at < now()` sem alerta nas últimas 4 h (guardar `last_alerted_at` em `IssueOrganizationalUnit`, campo novo na mesma fase, migração `0140`), criar notificação nativa (`Notification`) para os coordenadores da área e, se não houver coordenador, para o `lead`.
@@ -72,6 +125,21 @@ novo fora do tema. Todas as strings no catálogo i18n
 **Testes:** sweep cria notificação uma vez; repetição dentro de 4 h não
 duplica; sem coordenador cai para o lead; `ORCA_ORG_UNITS_ENABLED=0` faz a
 tarefa sair sem efeito (padrão da `organizational_directory_task`).
+
+**Não entregue.** A sessão de agente que carregava este item foi rejeitada pelo
+limite de uso de 5 horas ao ser disparada às 06:45 UTC de 07/09, e não executou
+nenhum passo. Nada deste item existe no código: não há
+`bgtasks/organizational_queue_task.py`, não há `services/orca/alerts.py`, e o
+gancho de alerta imediato **não** está em `_apply_queued`.
+
+O campo `IssueOrganizationalUnit.last_alerted_at`, de que a varredura depende,
+**existe** — entrou na migração `0139` junto com o 2.1, de propósito, para que
+este item não precise de migração própria.
+
+Consequência para o gate: o Gate 2-mínimo pede que o coordenador piloto receba
+alerta de `allocation_failed`. Sem este item, esse critério não tem como
+fechar, nem pelo caminho alternativo previsto (o alerta imediato do serviço),
+que também é deste item.
 
 ---
 
@@ -93,9 +161,9 @@ tarefa sair sem efeito (padrão da `organizational_directory_task`).
 
 ## Gate 2-mínimo (libera `ORCA_PUBLIC_API_ENABLED=1` em produção)
 
-- [ ] 2.1, 2.2 e a parte mínima de 2.3 mescladas em `stage` e implantadas em staging.
+- [~] 2.1, 2.2 e a parte mínima de 2.3 **entregues e verificadas**, aguardando merge em `stage` e implantação em staging.
 - [ ] Área piloto com coordenador definido (pendência de negócio no README do plano).
-- [ ] Coordenador piloto consegue, em staging: ver a fila, receber alerta de `allocation_failed` (2.4 pode ser entregue junto ou logo após; sem ele, o alerta imediato do serviço basta para o gate), atribuir manualmente, devolver à fila.
+- [ ] Coordenador piloto consegue, em staging: ver a fila, receber alerta de `allocation_failed`, atribuir manualmente, devolver à fila. **Bloqueado pelo 2.4**, que não foi entregue: o alerta imediato do serviço, que este critério aceitava como suficiente, também é do 2.4. Ver, atribuir e devolver já têm código.
 - [ ] Runbook: como desligar a API (`ORCA_PUBLIC_API_ENABLED=0`) e o que acontece com operações em voo.
 
 Data: ____ · Quem verificou: ____

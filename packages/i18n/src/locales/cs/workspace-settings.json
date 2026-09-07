@@ -665,6 +665,51 @@
             "not_resynced": "Opětovnou synchronizaci se nepodařilo dokončit."
           }
         },
+        "work": {
+          "tab": "Práce",
+          "inbox": "Doručená pošta",
+          "in_progress": "Probíhá",
+          "empty_inbox": "Nic nečeká. Pracovní položky, které tato oblast přebírá, se zde zobrazují, dokud se jich někdo neujme.",
+          "empty_in_progress": "Nikdo právě nepracuje na ničem pro tuto oblast.",
+          "claim": "Převzít",
+          "assign": "Přiřadit uživateli…",
+          "return_to_queue": "Vrátit do fronty",
+          "overdue": "Po termínu",
+          "unassigned": "Nikdo nepřiřazen",
+          "executor_count": "{count, plural, one {# pracovní položka} few {# pracovní položky} many {# pracovní položky} other {# pracovních položek}}",
+          "age": {
+            "just_now": "Právě teď",
+            "minutes": "{count, plural, one {# minuta} few {# minuty} many {# minuty} other {# minut}}",
+            "hours": "{count, plural, one {# hodina} few {# hodiny} many {# hodiny} other {# hodin}}",
+            "days": "{count, plural, one {# den} few {# dny} many {# dne} other {# dní}}"
+          },
+          "reason": {
+            "new_item": "Nově převzato",
+            "awaiting_coordinator": "Čeká na koordinátora",
+            "awaiting_claim": "Čeká, až si to někdo převezme",
+            "no_eligible_member": "Nikdo v této oblasti to nemůže převzít",
+            "executor_unavailable": "Vykonavatel není k dispozici",
+            "manually_returned": "Vráceno do fronty"
+          },
+          "assign_modal": {
+            "title": "Přiřadit tuto pracovní položku",
+            "search": "Hledat podle jména nebo e-mailu",
+            "no_candidates": "Nikdo v této oblasti zatím nemůže převzít práci. Přidejte prosím nejprve osoby do oblasti.",
+            "assigning": "Přiřazování…",
+            "open_items": "{count, plural, one {# otevřená položka} few {# otevřené položky} many {# otevřené položky} other {# otevřených položek}}"
+          },
+          "toast": {
+            "claimed_title": "Pracovní položka převzata",
+            "claimed": "Nyní patří Vám a opustila doručenou poštu této oblasti.",
+            "not_claimed": "Nepřevzato",
+            "assigned_title": "Pracovní položka přiřazena",
+            "assigned": "Nyní se o ni stará {name}.",
+            "not_assigned": "Nepřiřazeno",
+            "returned_title": "Vráceno do fronty",
+            "returned": "Znovu čeká na někoho.",
+            "not_returned": "Nevráceno"
+          }
+        },
         "errors": {
           "unit_not_found": "Tato oblast už neexistuje.",
           "name_required": "Oblast potřebuje název.",
@@ -688,6 +733,11 @@
           "invalid_routing_transition": "Tato pracovní položka se ze svého stavu do toho přejít nemůže.",
           "directory_workspace_not_found": "Tento pracovní prostor už neexistuje.",
           "directory_token_required": "Před zapnutím provisioningu z adresáře vydejte token SCIM.",
+          "not_unit_coordinator": "Toto může udělat pouze koordinátor této oblasti nebo správce pracovního prostoru.",
+          "coordinator_already_set": "Tato osoba již tuto oblast koordinuje.",
+          "coordinator_not_found": "Koordinátor nenalezen.",
+          "not_the_executor": "Toto může udělat pouze aktuální vykonavatel, koordinátor této oblasti nebo správce pracovního prostoru.",
+          "coordinator_must_be_member": "Koordinátor musí být aktivním členem nebo správcem pracovního prostoru.",
           "public_api_disabled": "Automatizační API je v této instanci vypnuté.",
           "idempotency_key_required": "Tento požadavek vyžaduje hlavičku Idempotency-Key.",
           "idempotency_payload_mismatch": "Tento klíč už byl použit pro jiný požadavek.",

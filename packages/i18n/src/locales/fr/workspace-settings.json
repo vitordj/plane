@@ -665,6 +665,51 @@
             "not_resynced": "La resynchronisation n’a pas pu être effectuée."
           }
         },
+        "work": {
+          "tab": "Travail",
+          "inbox": "Boîte de réception",
+          "in_progress": "En cours",
+          "empty_inbox": "Rien n’est en attente. Les éléments de travail pris en charge par ce domaine apparaissent ici jusqu’à ce que quelqu’un s’en occupe.",
+          "empty_in_progress": "Personne ne travaille sur quoi que ce soit pour ce domaine actuellement.",
+          "claim": "Le prendre",
+          "assign": "Attribuer à…",
+          "return_to_queue": "Remettre dans la file",
+          "overdue": "En retard",
+          "unassigned": "Sans responsable",
+          "executor_count": "{count, plural, one {# élément de travail} many {# élément de travail} other {# éléments de travail}}",
+          "age": {
+            "just_now": "À l’instant",
+            "minutes": "{count, plural, one {# minute} many {# minute} other {# minutes}}",
+            "hours": "{count, plural, one {# heure} many {# heure} other {# heures}}",
+            "days": "{count, plural, one {# jour} many {# jour} other {# jours}}"
+          },
+          "reason": {
+            "new_item": "Nouvellement pris en charge",
+            "awaiting_coordinator": "En attente d’un coordinateur",
+            "awaiting_claim": "En attente que quelqu’un le prenne",
+            "no_eligible_member": "Personne de ce domaine ne peut le prendre",
+            "executor_unavailable": "Son exécutant n’est pas disponible",
+            "manually_returned": "Remis dans la file"
+          },
+          "assign_modal": {
+            "title": "Attribuer cet élément de travail",
+            "search": "Rechercher par nom ou adresse e-mail",
+            "no_candidates": "Personne de ce domaine ne peut encore prendre de travail. Ajoutez d’abord des personnes au domaine.",
+            "assigning": "Attribution en cours…",
+            "open_items": "{count, plural, one {# élément ouvert} many {# élément ouvert} other {# éléments ouverts}}"
+          },
+          "toast": {
+            "claimed_title": "Élément de travail pris",
+            "claimed": "Il est à vous désormais et a quitté la boîte de réception de ce domaine.",
+            "not_claimed": "Non pris",
+            "assigned_title": "Élément de travail attribué",
+            "assigned": "{name} s’en occupe désormais.",
+            "not_assigned": "Non attribué",
+            "returned_title": "Remis dans la file",
+            "returned": "Il attend de nouveau quelqu’un.",
+            "not_returned": "Non remis"
+          }
+        },
         "errors": {
           "unit_not_found": "Cette zone n’existe plus.",
           "name_required": "Une zone doit avoir un nom.",
@@ -688,6 +733,11 @@
           "invalid_routing_transition": "Cet élément de travail ne peut pas passer à cet état depuis son état actuel.",
           "directory_workspace_not_found": "Cet espace de travail n’existe plus.",
           "directory_token_required": "Émettez un jeton SCIM avant d’activer le provisionnement par annuaire.",
+          "not_unit_coordinator": "Seul le coordinateur de cette zone ou un administrateur de l’espace de travail peut faire cela.",
+          "coordinator_already_set": "Cette personne coordonne déjà cette zone.",
+          "coordinator_not_found": "Coordinateur introuvable.",
+          "not_the_executor": "Seule la personne exécutante actuelle, le coordinateur de cette zone ou un administrateur de l’espace de travail peut faire cela.",
+          "coordinator_must_be_member": "Un coordinateur doit être membre actif ou administrateur de l’espace de travail.",
           "public_api_disabled": "L’API d’automatisation est désactivée sur cette instance.",
           "idempotency_key_required": "Cette requête nécessite un en-tête Idempotency-Key.",
           "idempotency_payload_mismatch": "Cette clé a déjà été utilisée pour une autre requête.",

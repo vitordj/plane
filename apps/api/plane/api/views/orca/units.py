@@ -16,8 +16,8 @@ should not depend on which door you came through.
 Who may look differs between the two, and deliberately. Any member of the
 workspace may see that an area exists: it is organizational structure, not
 work. The queue is work — real titles of real items — so it is shown only to
-people who are in the area, plus workspace admins. Coordinators join that list
-in Phase 2, when the role exists.
+people who are in the area, its coordinators, and workspace admins — one rule,
+shared with the internal inbox through ``permissions.organizational_unit``.
 """
 
 # Django imports
@@ -29,10 +29,10 @@ from rest_framework.response import Response
 
 # Module imports
 from plane.api.serializers.orca import queue_row, unit_payload
+from plane.app.permissions.organizational_unit import may_see_queue
 from plane.app.services.orca import ALL_STATES, queue_queryset
 from plane.db.models import (
     OrganizationalUnit,
-    OrganizationalUnitMembership,
     OrganizationalUnitProject,
     RoutingState,
     Workspace,
@@ -41,9 +41,6 @@ from plane.db.models import (
 from plane.utils.orca_error_codes import orca_error, orca_not_found
 
 from .base import OrcaPublicBaseAPIView
-
-# Workspace roles, as elsewhere in the layer.
-ROLE_ADMIN = 20
 
 # What the ``routing_state`` filter accepts beyond a real state.
 QUEUE_STATE_CHOICES = {*RoutingState.values, ALL_STATES}
@@ -125,7 +122,10 @@ class UnitQueueEndpoint(OrcaWorkspaceReadEndpoint):
         if unit is None:
             return orca_not_found("ORG_UNIT_NOT_FOUND")
 
-        if not self._may_see_queue(unit, member):
+        # One definition of "who may read this area's queue", shared with the
+        # internal inbox (item 2.2). Coordinators joined that list in Phase 2,
+        # and a second copy of the rule here would have missed them.
+        if not may_see_queue(request.user, unit):
             return self.forbidden()
 
         routing_state = request.query_params.get("routing_state")
@@ -147,19 +147,6 @@ class UnitQueueEndpoint(OrcaWorkspaceReadEndpoint):
             queryset=queryset,
             on_results=lambda rows: [queue_row(row, now=now) for row in rows],
         )
-
-    def _may_see_queue(self, unit, member):
-        """
-        @description Members of the area see its queue; so do workspace admins,
-        who can already see every item in it through the interface. Everybody
-        else does not — the rows carry the titles of real work.
-        @returns bool.
-        """
-        if member.role == ROLE_ADMIN:
-            return True
-        return OrganizationalUnitMembership.objects.filter(
-            organizational_unit=unit, workspace_member=member, is_active=True
-        ).exists()
 
 
 def _tri_state(value):

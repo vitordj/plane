@@ -441,6 +441,51 @@
             "not_resynced": "Não foi possível concluir a ressincronização."
           }
         },
+        "work": {
+          "tab": "Trabalho",
+          "inbox": "Caixa de entrada",
+          "in_progress": "Em execução",
+          "empty_inbox": "Nada aguardando. Os itens de trabalho que esta área assume aparecem aqui até alguém assumi-los.",
+          "empty_in_progress": "Ninguém está trabalhando em nada para esta área no momento.",
+          "claim": "Assumir",
+          "assign": "Atribuir a…",
+          "return_to_queue": "Devolver à fila",
+          "overdue": "Atrasado",
+          "unassigned": "Sem responsável",
+          "executor_count": "{count, plural, one {# item de trabalho} many {# de itens de trabalho} other {# itens de trabalho}}",
+          "age": {
+            "just_now": "Agora mesmo",
+            "minutes": "{count, plural, one {# minuto} many {# de minutos} other {# minutos}}",
+            "hours": "{count, plural, one {# hora} many {# de horas} other {# horas}}",
+            "days": "{count, plural, one {# dia} many {# de dias} other {# dias}}"
+          },
+          "reason": {
+            "new_item": "Recém-assumido",
+            "awaiting_coordinator": "Aguardando um coordenador",
+            "awaiting_claim": "Aguardando alguém assumir",
+            "no_eligible_member": "Ninguém desta área pode assumir",
+            "executor_unavailable": "O executor está indisponível",
+            "manually_returned": "Devolvido à fila"
+          },
+          "assign_modal": {
+            "title": "Atribuir este item de trabalho",
+            "search": "Buscar por nome ou e-mail",
+            "no_candidates": "Ninguém desta área pode assumir trabalho ainda. Adicione pessoas à área primeiro.",
+            "assigning": "Atribuindo…",
+            "open_items": "{count, plural, one {# item aberto} many {# de itens abertos} other {# itens abertos}}"
+          },
+          "toast": {
+            "claimed_title": "Item de trabalho assumido",
+            "claimed": "Agora é seu, e saiu da caixa de entrada desta área.",
+            "not_claimed": "Não assumido",
+            "assigned_title": "Item de trabalho atribuído",
+            "assigned": "{name} está com ele agora.",
+            "not_assigned": "Não atribuído",
+            "returned_title": "Devolvido à fila",
+            "returned": "Está aguardando alguém novamente.",
+            "not_returned": "Não devolvido"
+          }
+        },
         "errors": {
           "unit_not_found": "Essa área não existe mais.",
           "name_required": "Uma área precisa de um nome.",
@@ -464,6 +509,11 @@
           "invalid_routing_transition": "Este item de trabalho não pode ir para esse estado a partir do atual.",
           "directory_workspace_not_found": "Esse espaço de trabalho não existe mais.",
           "directory_token_required": "Emita um token SCIM antes de ativar o provisionamento por diretório.",
+          "not_unit_coordinator": "Somente o coordenador desta área ou um administrador do workspace pode fazer isso.",
+          "coordinator_already_set": "Essa pessoa já coordena esta área.",
+          "coordinator_not_found": "Coordenador não encontrado.",
+          "not_the_executor": "Somente o executor atual, o coordenador desta área ou um administrador do workspace pode fazer isso.",
+          "coordinator_must_be_member": "Um coordenador precisa ser membro ativo ou administrador do workspace.",
           "public_api_disabled": "A API de automação está desligada nesta instância.",
           "idempotency_key_required": "Esta requisição precisa do cabeçalho Idempotency-Key.",
           "idempotency_payload_mismatch": "Essa chave já foi usada para outra requisição.",

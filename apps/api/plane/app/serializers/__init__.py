@@ -148,11 +148,13 @@ from .project_label import (
     ProjectProjectLabelSerializer,
 )
 from .organizational_unit import (
+    AssignmentDecisionDetailSerializer,
     AssignmentDecisionSerializer,
     AssignmentPolicySerializer,
     IssueRoutingSerializer,
     OrganizationalDirectoryConnectionSerializer,
     OrganizationalDirectoryIdentitySerializer,
+    OrganizationalUnitCoordinatorSerializer,
     OrganizationalUnitSerializer,
     OrganizationalUnitMembershipSerializer,
     OrganizationalUnitMembershipCreateSerializer,

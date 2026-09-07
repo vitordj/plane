@@ -11,10 +11,13 @@ import { ArrowLeft, Pencil } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import type { IOrganizationalUnit } from "@plane/types";
+// hooks
+import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 // components
 import { OrganizationalUnitFormModal } from "./unit-form-modal";
 import { OrganizationalUnitMembersTab } from "./unit-members-tab";
 import { OrganizationalUnitProjectsTab } from "./unit-projects-tab";
+import { OrganizationalUnitWorkTab } from "./unit-work-tab";
 
 type Props = {
   workspaceSlug: string;
@@ -22,19 +25,26 @@ type Props = {
   onBack: () => void;
 };
 
-type TTab = "members" | "projects";
+type TTab = "members" | "projects" | "work";
 
 const OU = "workspace_settings.settings.organizational_units";
 
 export const OrganizationalUnitDetail = observer(function OrganizationalUnitDetail(props: Props) {
   const { workspaceSlug, unit, onBack } = props;
   const { t } = useTranslation();
+  const store = useOrganizationalUnit();
   const [activeTab, setActiveTab] = useState<TTab>("members");
   const [isEditing, setIsEditing] = useState(false);
+
+  // The queue is counted from what the Work tab has actually fetched, so the
+  // badge reads 0 until then rather than inventing a number the tab would
+  // contradict a moment later.
+  const waitingCount = store.getQueueByUnitId(unit.id).waiting.length;
 
   const tabs: { key: TTab; label: string; count: number }[] = [
     { key: "members", label: t(`${OU}.detail.tab_people`), count: unit.member_count },
     { key: "projects", label: t("common.projects"), count: unit.project_count },
+    { key: "work", label: t(`${OU}.work.tab`), count: waitingCount },
   ];
 
   return (
@@ -79,11 +89,9 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
         ))}
       </div>
 
-      {activeTab === "members" ? (
-        <OrganizationalUnitMembersTab workspaceSlug={workspaceSlug} unitId={unit.id} />
-      ) : (
-        <OrganizationalUnitProjectsTab workspaceSlug={workspaceSlug} unitId={unit.id} />
-      )}
+      {activeTab === "work" && <OrganizationalUnitWorkTab workspaceSlug={workspaceSlug} unitId={unit.id} />}
+      {activeTab === "members" && <OrganizationalUnitMembersTab workspaceSlug={workspaceSlug} unitId={unit.id} />}
+      {activeTab === "projects" && <OrganizationalUnitProjectsTab workspaceSlug={workspaceSlug} unitId={unit.id} />}
 
       <OrganizationalUnitFormModal
         isOpen={isEditing}

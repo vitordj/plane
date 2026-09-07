@@ -12,6 +12,7 @@ at once, so v1 keeps it centralized. Unit leads have read access only.
 """
 
 # Django imports
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count, Prefetch, Q
 from django.http import Http404
@@ -54,6 +55,7 @@ from plane.db.models import (
     IssueResponsibilityEvent,
     IssueOrganizationalUnit,
     OrganizationalUnit,
+    OrganizationalUnitAssignmentPolicy,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
     ResponsibilitySource,
@@ -758,6 +760,77 @@ class OrganizationalUnitPolicyEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVi
             },
             status=status.HTTP_200_OK,
         )
+
+    @allow_permission([ROLE.ADMIN], level="WORKSPACE")
+    def put(self, request, slug, unit_id, project_id=None):
+        """
+        @description Write the area's policy, or one project's override of it.
+        Without this the piloto cannot turn on ``self_claim``/``least_loaded``
+        without SQL — the reason M11 keeps this the last endpoint that may not
+        be cut. Admin-only: an area's assignment mode decides who work lands on
+        without anybody claiming it, which is a workspace-wide authorization
+        call, not something a coordinator sets on their own.
+        """
+        unit = OrganizationalUnit.objects.filter(workspace__slug=slug, pk=unit_id).first()
+        if unit is None:
+            return orca_not_found("ORG_UNIT_NOT_FOUND")
+
+        unit_project = None
+        if project_id is not None:
+            unit_project = OrganizationalUnitProject.objects.filter(
+                organizational_unit=unit, project_id=project_id
+            ).first()
+            if unit_project is None:
+                return orca_error("ORG_UNIT_NOT_COVERING_PROJECT")
+
+        default_mode = request.data.get("default_mode")
+        allowed_modes = request.data.get("allowed_modes")
+        if default_mode not in AssignmentMode.values:
+            return orca_error("ORG_INVALID_ASSIGNMENT_MODE")
+        if allowed_modes is not None:
+            if not isinstance(allowed_modes, list) or any(mode not in AssignmentMode.values for mode in allowed_modes):
+                return orca_error("ORG_INVALID_ASSIGNMENT_MODE")
+            if default_mode not in allowed_modes:
+                return orca_error("ORG_INVALID_ASSIGNMENT_MODE")
+
+        policy = OrganizationalUnitAssignmentPolicy.objects.filter(
+            organizational_unit=unit, unit_project=unit_project
+        ).first()
+        if policy is None:
+            policy = OrganizationalUnitAssignmentPolicy(
+                organizational_unit=unit, unit_project=unit_project, workspace_id=unit.workspace_id
+            )
+        policy.default_mode = default_mode
+        policy.allowed_modes = allowed_modes if allowed_modes is not None else [default_mode]
+        if "assignment_sla_seconds" in request.data:
+            policy.assignment_sla_seconds = request.data.get("assignment_sla_seconds")
+        if "max_open_items_per_member" in request.data:
+            policy.max_open_items_per_member = request.data.get("max_open_items_per_member")
+        policy.is_active = True
+
+        try:
+            # created_by/updated_by are excluded because BaseModel.save()
+            # fills them from the request's current user right after this,
+            # via crum — validating them here would reject every write before
+            # save() gets the chance to set them.
+            policy.full_clean(
+                exclude=[
+                    "id",
+                    "organizational_unit",
+                    "unit_project",
+                    "workspace",
+                    "version",
+                    "created_by",
+                    "updated_by",
+                ]
+            )
+        except ValidationError:
+            return orca_error("ORG_INVALID_ASSIGNMENT_MODE")
+
+        # version increments on its own save() override (0 -> 1 on create, +1
+        # on every later write), so nothing here needs to touch it directly.
+        policy.save()
+        return Response(AssignmentPolicySerializer(policy).data, status=status.HTTP_200_OK)
 
 
 class OrganizationalUnitWorkloadEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):

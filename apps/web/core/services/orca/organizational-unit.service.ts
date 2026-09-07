@@ -6,15 +6,20 @@
 
 import { API_BASE_URL } from "@plane/constants";
 import type {
+  IAssignmentPolicyPayload,
+  IAssignmentPolicyResolution,
   IIssueRouting,
   IOrganizationalUnit,
   IOrganizationalUnitAccessChange,
+  IOrganizationalUnitCoordinator,
   IOrganizationalUnitMembership,
   IOrganizationalUnitProject,
   IOrganizationalUnitWorkload,
+  IQueuePage,
   IUserOrganizationalUnit,
   TOrganizationalUnitMemberRole,
   TOrganizationalUnitAssignMode,
+  TRoutingState,
 } from "@plane/types";
 import { APIService } from "@/services/api.service";
 
@@ -278,6 +283,143 @@ export class OrganizationalUnitService extends APIService {
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response;
+      });
+  }
+
+  private issuePath(workspaceSlug: string, projectId: string, issueId: string): string {
+    return `/api/orca/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/organizational-unit`;
+  }
+
+  /**
+   * @description One page of an area's queue. The backend orders overdue
+   * first, so the interface never re-sorts: two sort orders for the same list
+   * is how a coordinator stops trusting either.
+   * @param params `routing_state` (a state or `all`), `overdue`, `project`,
+   * `executor`, plus the native `cursor`/`per_page`.
+   * @returns The paginated envelope, with `viewer` alongside `results`.
+   */
+  async getQueue(
+    workspaceSlug: string,
+    unitId: string,
+    params?: {
+      routing_state?: TRoutingState | "all";
+      overdue?: boolean;
+      project?: string;
+      executor?: string;
+      cursor?: string;
+      per_page?: number;
+    }
+  ): Promise<IQueuePage> {
+    return this.get(`${this.basePath(workspaceSlug)}/${unitId}/queue/`, { params })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /** @description Takes the work item for the caller. */
+  async claimIssue(workspaceSlug: string, projectId: string, issueId: string): Promise<IIssueRouting> {
+    return this.post(`${this.issuePath(workspaceSlug, projectId, issueId)}/claim/`, {})
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description Hands the work item to a named person, as a coordinator.
+   * @param expectedDecisionId The decision the interface was looking at. The
+   * API rejects the call with `ORG_DECISION_STALE` when someone else has
+   * allocated the item since, rather than silently overwriting them.
+   */
+  async reassignIssue(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    executorId: string,
+    options?: { reason?: string; expectedDecisionId?: string | null }
+  ): Promise<IIssueRouting> {
+    return this.post(`${this.issuePath(workspaceSlug, projectId, issueId)}/reassign/`, {
+      executor_id: executorId,
+      ...(options?.reason ? { reason: options.reason } : {}),
+      ...(options?.expectedDecisionId ? { expected_decision_id: options.expectedDecisionId } : {}),
+    })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /** @description Puts an assigned work item back in the area's queue. */
+  async returnIssue(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    options?: { reason?: string; expectedDecisionId?: string | null }
+  ): Promise<IIssueRouting> {
+    return this.post(`${this.issuePath(workspaceSlug, projectId, issueId)}/return/`, {
+      ...(options?.reason ? { reason: options.reason } : {}),
+      ...(options?.expectedDecisionId ? { expected_decision_id: options.expectedDecisionId } : {}),
+    })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async getCoordinators(workspaceSlug: string, unitId: string): Promise<IOrganizationalUnitCoordinator[]> {
+    return this.get(`${this.basePath(workspaceSlug)}/${unitId}/coordinators/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description Makes a workspace member a coordinator of this area. The
+   * server reconciles their project access as part of the same request, so no
+   * separate grant call follows.
+   */
+  async addCoordinator(
+    workspaceSlug: string,
+    unitId: string,
+    workspaceMemberId: string
+  ): Promise<IOrganizationalUnitCoordinator> {
+    return this.post(`${this.basePath(workspaceSlug)}/${unitId}/coordinators/`, {
+      workspace_member_id: workspaceMemberId,
+    })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async removeCoordinator(workspaceSlug: string, unitId: string, coordinatorId: string): Promise<void> {
+    return this.delete(`${this.basePath(workspaceSlug)}/${unitId}/coordinators/${coordinatorId}/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description Sets the assignment policy for an area, or for one of its
+   * projects when `projectId` is given — the per-project policy is what lets
+   * one project self-claim while the rest of the area waits on a coordinator.
+   */
+  async updatePolicy(
+    workspaceSlug: string,
+    unitId: string,
+    data: IAssignmentPolicyPayload,
+    projectId?: string
+  ): Promise<IAssignmentPolicyResolution> {
+    const path = projectId
+      ? `${this.basePath(workspaceSlug)}/${unitId}/projects/${projectId}/policy/`
+      : `${this.basePath(workspaceSlug)}/${unitId}/policy/`;
+    return this.put(path, data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
       });
   }
 }

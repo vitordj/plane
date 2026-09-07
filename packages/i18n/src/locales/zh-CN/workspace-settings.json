@@ -665,6 +665,51 @@
             "not_resynced": "无法完成重新同步。"
           }
         },
+        "work": {
+          "tab": "工作",
+          "inbox": "收件箱",
+          "in_progress": "进行中",
+          "empty_inbox": "没有等待中的内容。此区域承接的工作项会显示在这里，直到有人接手。",
+          "empty_in_progress": "目前没有人在为此区域处理任何工作。",
+          "claim": "接手",
+          "assign": "指派给…",
+          "return_to_queue": "退回队列",
+          "overdue": "已逾期",
+          "unassigned": "无负责人",
+          "executor_count": "{count, plural, one {# 个工作项} other {# 个工作项}}",
+          "age": {
+            "just_now": "刚刚",
+            "minutes": "{count, plural, one {# 分钟} other {# 分钟}}",
+            "hours": "{count, plural, one {# 小时} other {# 小时}}",
+            "days": "{count, plural, one {# 天} other {# 天}}"
+          },
+          "reason": {
+            "new_item": "刚刚承接",
+            "awaiting_coordinator": "等待协调员",
+            "awaiting_claim": "等待有人接手",
+            "no_eligible_member": "此区域中没有人可以接手",
+            "executor_unavailable": "执行人当前不可用",
+            "manually_returned": "已退回队列"
+          },
+          "assign_modal": {
+            "title": "指派此工作项",
+            "search": "按姓名或邮箱搜索",
+            "no_candidates": "此区域中尚无人可以承接工作。请先向该区域添加成员。",
+            "assigning": "正在指派…",
+            "open_items": "{count, plural, one {# 项未完成} other {# 项未完成}}"
+          },
+          "toast": {
+            "claimed_title": "已接手工作项",
+            "claimed": "它现在属于您，并已离开此区域的收件箱。",
+            "not_claimed": "未接手",
+            "assigned_title": "已指派工作项",
+            "assigned": "现在由 {name} 负责。",
+            "not_assigned": "未指派",
+            "returned_title": "已退回队列",
+            "returned": "它再次在等待有人接手。",
+            "not_returned": "未退回"
+          }
+        },
         "errors": {
           "unit_not_found": "该区域已不存在。",
           "name_required": "区域需要一个名称。",
@@ -688,6 +733,11 @@
           "invalid_routing_transition": "此工作项无法从当前状态转到该状态。",
           "directory_workspace_not_found": "该工作区已不存在。",
           "directory_token_required": "请先签发 SCIM 令牌，再开启目录预配。",
+          "not_unit_coordinator": "只有该区域的协调员或工作区管理员才能执行此操作。",
+          "coordinator_already_set": "此人已经在协调该区域。",
+          "coordinator_not_found": "未找到协调员。",
+          "not_the_executor": "只有当前执行者、该区域的协调员或工作区管理员才能执行此操作。",
+          "coordinator_must_be_member": "协调员必须是工作区的有效成员或管理员。",
           "public_api_disabled": "此实例已关闭自动化 API。",
           "idempotency_key_required": "此请求需要 Idempotency-Key 标头。",
           "idempotency_payload_mismatch": "该密钥已用于另一个请求。",

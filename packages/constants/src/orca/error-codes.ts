@@ -45,6 +45,12 @@ export const ORCA_ERROR_CODE_KEYS: Record<number, string> = {
   // directory provisioning
   4914: "workspace_settings.settings.organizational_units.errors.directory_workspace_not_found",
   4915: "workspace_settings.settings.organizational_units.errors.directory_token_required",
+  // unit coordinators
+  4932: "workspace_settings.settings.organizational_units.errors.not_unit_coordinator",
+  4933: "workspace_settings.settings.organizational_units.errors.coordinator_already_set",
+  4934: "workspace_settings.settings.organizational_units.errors.coordinator_not_found",
+  4935: "workspace_settings.settings.organizational_units.errors.not_the_executor",
+  4936: "workspace_settings.settings.organizational_units.errors.coordinator_must_be_member",
   // public automation API
   4922: "workspace_settings.settings.organizational_units.errors.public_api_disabled",
   4923: "workspace_settings.settings.organizational_units.errors.idempotency_key_required",

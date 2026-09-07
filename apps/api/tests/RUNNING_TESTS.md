@@ -59,6 +59,33 @@ docker compose -f docker-compose-test.yml down -v
 
 `-v` removes the ephemeral volumes and the `test_env` network. Because the data directories are tmpfs, no host state survives a teardown — every run starts clean. Run this between unrelated test sessions to free Docker resources.
 
+## What an agent session can run
+
+The agent session that edits this repository has no Docker daemon, but it
+does have PostgreSQL 16, `redis-server` and Python 3.11 binaries — enough to
+run the suite without the compose stack. The recipe is
+`docs/plans/orca-work-management/HANDOFF-PROMPT.md` §Ambiente local (venv
+setup, `initdb` under the `postgres` user, `redis-server --daemonize`). Once
+that environment is up, these commands run directly and produce real,
+executed results rather than a description of what should happen — measured
+in this session on 07/09/2026, against the tip of PR #15 (`31d35e2b`):
+
+| Command                                                                                                                                                                                                | Result                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| `pytest plane/tests/unit/orca -q -m unit -p no:cacheprovider`                                                                                                                                          | 767 passed, 255 deselected, in 1541.04s (25m41s) |
+| `pytest plane/tests/contract/test_orca_public_contract.py -q`                                                                                                                                          | 9 passed in 122.82s                              |
+| `python manage.py makemigrations --check --dry-run`                                                                                                                                                    | exit 0, "No changes detected"                    |
+| `python manage.py migrate` / `migrate db <n-1>` / `migrate`                                                                                                                                            | round-trips cleanly                              |
+| `pnpm check:types --filter=web` (repo root, via turbo — **not** `pnpm --filter web check:types` alone, which fails because `check:types` depends on `^build` and the package is never built by itself) | exit 0 in 92s                                    |
+| `pnpm --filter web check:lint`                                                                                                                                                                         | exit 0                                           |
+| `pnpm --filter @plane/i18n check:sync`                                                                                                                                                                 | exit 0, 2s                                       |
+
+What still needs Docker or a real deployment: the full non-`unit` suite that
+needs MinIO/RabbitMQ, anything reading a `stage` database dump, and staging
+itself. Always redirect output to a file and read the tail (`-q`, then
+`tail -20`) — the constraint AGENTS.md protects is context volume, not
+whether the command runs at all.
+
 ## How it works
 
 | Service      | Image                                      | Purpose                                       |

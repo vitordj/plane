@@ -289,6 +289,7 @@ registrar na seção 4 o motivo e o impacto.
 
 | Data | Mudança |
 | --- | --- |
+| 2026-09-07 | Rev. 7: **doze decisões de mecanismo da execução da Fase 2** (nenhuma decisão F1–F24 tocada), registradas em `docs/plans/orca-work-management/MADRUGADA-2026-09-07.md` §1 como M1–M12. As que mudam este documento: (M2) a migração do coordenador é **`0139`** e a da disponibilidade passa a `0140`, porque `0139` estava livre e Django liga migrações por dependência, não por número; (M3) **a proveniência do coordenador exige referência própria no `OrganizationalUnitGrant`**, não um rótulo — `membership` torna-se anulável, entra a FK `coordinator` e o discriminador `grant_source`, com CHECK de exclusividade (§5.1), porque um coordenador pode não ser membro da área e sem isso "remover o coordenador retira só o que ele ganhou por isso" não seria verdade; (M4) coordenador precisa ser Member ou Admin do workspace, e um Guest é **recusado** com `ORG_COORDINATOR_MUST_BE_MEMBER` em vez de receber acesso degradado pelo cap do workspace; (M6) a fila interna devolve `permissions` por linha e `viewer` no topo, resolvendo a política uma vez por projeto por página — a UI filtra, a API rejeita (§1.2); (M7) códigos 4932–4936; (M10) o alerta de `allocation_failed` sai em `transaction.on_commit` e **captura qualquer exceção**, porque um broker fora do ar não pode derrubar a alocação (a lição do PR #13). Também registrado: (M8) `apps/web` não tem vitest configurado, então o critério de teste de store e de componente do item 2.3 fica aberto como item próprio. |
 | 2026-09-07 | Rev. 6: **uma chave de idempotência deixa de ser lembrada para sempre** (§6.7 não fixava prazo). Os recibos de `AutomationOperation` passam a expirar por `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS`, default **30 dias**, num job diário — a tabela ganha uma linha por mutação aceita, com o corpo inteiro da resposta, e não tinha teto. A janela é deliberadamente muito maior que as dos logs do upstream (14 e 7 dias), e não menor, porque **apagar um recibo desgasta a sua chave**. O que uma chave expirada faz, por operação, foi verificado com testes e não duplica trabalho: a criação é find-or-create no `ExternalWorkItemBinding`, que o job nunca toca, e o early return de `_place` impede a realocação — o efeito observável é só a ausência do header `Idempotent-Replay` e um corpo descrevendo o presente em vez do snapshot original (o status é 201 nos dois casos); a reatribuição exige `If-Match` e recusa a retentativa como stale; a **transferência** é a única que reexecutaria, e é o caso que a janela precisa cobrir. Nenhuma decisão F1–F24 tocada. |
 | 2026-09-05 | Rev. 5: quatro esclarecimentos de mecanismo abertos pela implementação da Fase 1 (nenhuma decisão F1–F24 tocada). (1) **`ORG_DECISION_STALE` responde 412 na API pública e 409 na interna**: a exceção `DecisionStale` entregue no D0.5 carrega 409, a UI já depende disso, e §7.3 especifica 412 — a view pública mapeia o status por código em vez de herdá-lo. (2) **`completion_due_at` é recusado**, não aceito e ignorado, até a Fase 4 criar a `IssueServiceLevel` que o guarda: aceitar e descartar seria uma mentira que o cliente não vê. (3) **Uma chave de idempotência gasta num 4xx continua gasta**: §6.7 grava a falha e o replay a reproduz com o status original, então corrigir o payload exige chave nova — documentado em destaque no guia do cliente. (4) **A autorização de projeto roda antes do recibo**, porque `permission_classes` do DRF corre no `initial()`: uma chamada não autorizada responde 403 sem abrir operação, e portanto não gasta a chave de quem a enviou. |
 | 2026-09-03 | Rev. 1: RFC inicial com 23 dúvidas e 5 fases. |
@@ -328,6 +329,34 @@ Constraints:
 
 A coincidência com `IssueAssignee` não é expressável em CHECK; é invariante de
 serviço (seção 6.1) verificada por teste e por comando de auditoria.
+
+**`IssueOrganizationalUnit`** (estender, migração `0139`, Fase 2)
+
+| Campo | Tipo | Regras |
+| --- | --- | --- |
+| `last_alerted_at` | `DateTimeField(null)` | último alerta de SLA de atribuição enviado; a varredura de 15 min não realerta dentro de 4 h. Entregue na `0139` junto do coordenador, para que o item 2.4 não precise de migração própria |
+
+**`OrganizationalUnitGrant`** (estender, migração `0139`, Fase 2)
+
+O ledger de proveniência nasceu assumindo que toda concessão vem de uma
+membership. Um coordenador **pode não ser membro da área** (F16, §5.2), então
+não há membership para o grant apontar, e um campo de rótulo não resolveria:
+sem uma referência própria, remover a coordenação não saberia o que revogar.
+
+| Campo | Tipo | Regras |
+| --- | --- | --- |
+| `membership` | FK `OrganizationalUnitMembership`, **passa a `null=True`** | preenchida quando `grant_source = membership` |
+| `coordinator` | FK `OrganizationalUnitCoordinator`, `null`, CASCADE | preenchida quando `grant_source = coordinator` |
+| `grant_source` | `CharField(16)`, choices `membership`, `coordinator` | default `membership`, o que preserva as linhas existentes |
+
+Constraints: CHECK de que exatamente uma das duas FKs está preenchida e coerente
+com `grant_source`; única parcial `(coordinator, unit_project) WHERE deleted_at
+IS NULL`, ao lado da que já existe para `(membership, unit_project)`.
+
+O coordenador recebe role **Member (15)** em cada projeto coberto pela área.
+Todo o resto do reconciliador — `baseline_role`, `last_applied_role`,
+`cap_role_to_workspace_role`, detecção de drift — vale sem alteração: o que
+mudou é de onde vem a lista de fontes, não o que se faz com ela.
 
 ### 5.2 Tabelas novas
 
@@ -419,7 +448,7 @@ Constraint: único `(workspace, idempotency_key)` sem condição de
 `created_at` mais antigo que 60 s é considerado abandonado e pode ser
 retomado (seção 6.7).
 
-**`WorkspaceMemberAvailability`** (migração `0139`, Fase 3)
+**`WorkspaceMemberAvailability`** (migração `0140`, Fase 3)
 
 | Campo | Tipo |
 | --- | --- |
@@ -433,7 +462,7 @@ retomado (seção 6.7).
 
 Constraint: `CHECK (unavailable_until IS NULL OR unavailable_until > unavailable_from)`.
 
-**`MembershipAllocationSettings`** (migração `0139`, Fase 3)
+**`MembershipAllocationSettings`** (migração `0140`, Fase 3)
 
 | Campo | Tipo |
 | --- | --- |
@@ -441,7 +470,7 @@ Constraint: `CHECK (unavailable_until IS NULL OR unavailable_until > unavailable
 | `accepts_new_work` | bool, default true |
 | `max_open_items` | int, null |
 
-**`OrganizationalUnitCoordinator`** (migração `0140`, Fase 2)
+**`OrganizationalUnitCoordinator`** (migração `0139`, Fase 2 — entregue)
 
 | Campo | Tipo |
 | --- | --- |
@@ -1006,7 +1035,7 @@ replay após reatribuição humana não altera `primary_executor`; nenhuma rota
 
 | Item | Entrega |
 | --- | --- |
-| 2.1 | Migração `0140`: `OrganizationalUnitCoordinator`; reconciliador garante `ProjectMember` (F17) para coordenadores nos projetos cobertos, com proveniência própria (`OrganizationalUnitGrant` com origem `coordinator`) |
+| 2.1 | Migração `0139`: `OrganizationalUnitCoordinator`; reconciliador garante `ProjectMember` (F17) para coordenadores nos projetos cobertos, com proveniência própria (`OrganizationalUnitGrant` com origem `coordinator`) |
 | 2.2 | Helper de permissão `allow_unit_coordinator`; endpoints `claim`, `reassign`, `return`, `transfer`, `queue`, `decisions`, `policy PUT`, `coordinators` |
 | 2.3 | UI: aba Trabalho em `unit-detail.tsx`; menu de atribuição em `issue-unit-property.tsx`; página "Minha Área"; formulário de política; aba coordenadores |
 | 2.4 | Alertas: notificação nativa (`plane.bgtasks.notification_task`) para coordenadores quando `allocation_failed` ou `assignment_due_at` vencido; tarefa Celery `orca_queue_sla_sweep` a cada 15 min, com flag |
@@ -1025,7 +1054,7 @@ ação.
 
 | Item | Entrega |
 | --- | --- |
-| 3.1 | Migração `0139`: `WorkspaceMemberAvailability`, `MembershipAllocationSettings`; flag `ORCA_AVAILABILITY_ENABLED` |
+| 3.1 | Migração `0140`: `WorkspaceMemberAvailability`, `MembershipAllocationSettings`; flag `ORCA_AVAILABILITY_ENABLED` |
 | 3.2 | `rank_candidates` respeita disponibilidade e `accepts_new_work`; `max_open_items` |
 | 3.3 | Endpoints `availability/me/` e `members/{pk}/allocation/`; UI: formulário "estou indisponível de/até", toggle por área, indicador na fila |
 | 3.4 | Sweep horário `orca_availability_sweep` (6.9), dry-run default, comando manual com `--write` |

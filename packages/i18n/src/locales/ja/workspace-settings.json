@@ -665,6 +665,51 @@
             "not_resynced": "再同期を完了できませんでした。"
           }
         },
+        "work": {
+          "tab": "作業",
+          "inbox": "受信トレイ",
+          "in_progress": "進行中",
+          "empty_inbox": "待機中のものはありません。このエリアが引き受けた作業項目は、誰かが着手するまでここに表示されます。",
+          "empty_in_progress": "現在、このエリアのために作業している人はいません。",
+          "claim": "引き受ける",
+          "assign": "担当者を指定…",
+          "return_to_queue": "キューに戻す",
+          "overdue": "期限超過",
+          "unassigned": "担当者なし",
+          "executor_count": "{count, plural, one {作業項目 #件} other {作業項目 #件}}",
+          "age": {
+            "just_now": "たった今",
+            "minutes": "{count, plural, one {#分} other {#分}}",
+            "hours": "{count, plural, one {#時間} other {#時間}}",
+            "days": "{count, plural, one {#日} other {#日}}"
+          },
+          "reason": {
+            "new_item": "引き受けたばかり",
+            "awaiting_coordinator": "コーディネーターを待っています",
+            "awaiting_claim": "誰かが引き受けるのを待っています",
+            "no_eligible_member": "このエリアには引き受けられる人がいません",
+            "executor_unavailable": "実行者が対応できません",
+            "manually_returned": "キューに戻されました"
+          },
+          "assign_modal": {
+            "title": "この作業項目を割り当てる",
+            "search": "名前またはメールアドレスで検索",
+            "no_candidates": "このエリアにはまだ作業を引き受けられる人がいません。先にエリアにメンバーを追加してください。",
+            "assigning": "割り当てています…",
+            "open_items": "{count, plural, one {未完了 #件} other {未完了 #件}}"
+          },
+          "toast": {
+            "claimed_title": "作業項目を引き受けました",
+            "claimed": "この作業項目はあなたのものになり、このエリアの受信トレイから外れました。",
+            "not_claimed": "引き受けられませんでした",
+            "assigned_title": "作業項目を割り当てました",
+            "assigned": "現在は{name}さんが担当しています。",
+            "not_assigned": "割り当てられませんでした",
+            "returned_title": "キューに戻しました",
+            "returned": "再び担当者を待っています。",
+            "not_returned": "戻せませんでした"
+          }
+        },
         "errors": {
           "unit_not_found": "そのエリアは存在しません。",
           "name_required": "エリアには名前が必要です。",
@@ -688,6 +733,11 @@
           "invalid_routing_transition": "この作業項目は現在の状態からその状態へは移行できません。",
           "directory_workspace_not_found": "そのワークスペースは存在しません。",
           "directory_token_required": "ディレクトリからのプロビジョニングを有効にする前に、SCIM トークンを発行してください。",
+          "not_unit_coordinator": "このエリアのコーディネーターかワークスペース管理者のみ実行できます。",
+          "coordinator_already_set": "この方はすでにこのエリアのコーディネーターです。",
+          "coordinator_not_found": "コーディネーターが見つかりません。",
+          "not_the_executor": "現在の担当者、このエリアのコーディネーター、またはワークスペース管理者のみ実行できます。",
+          "coordinator_must_be_member": "コーディネーターはワークスペースの有効なメンバーまたは管理者である必要があります。",
           "public_api_disabled": "自動化 API はこのインスタンスでは無効です。",
           "idempotency_key_required": "このリクエストには Idempotency-Key ヘッダーが必要です。",
           "idempotency_payload_mismatch": "このキーは別のリクエストですでに使用されています。",
