@@ -177,10 +177,8 @@ def readable_project_ids(user, unit):
     """
     if is_workspace_admin(user, unit.workspace_id):
         return None
-    return set(
-        ProjectMember.objects.filter(member=user, is_active=True, project__workspace_id=unit.workspace_id)
-        .values_list("project_id", flat=True)
-    )
+    memberships = ProjectMember.objects.filter(member=user, is_active=True, project__workspace_id=unit.workspace_id)
+    return set(memberships.values_list("project_id", flat=True))
 
 
 def unit_for_issue(issue_id, *, slug=None, project_id=None):
