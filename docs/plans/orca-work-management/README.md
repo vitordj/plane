@@ -46,139 +46,62 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 21                | `[~]` 18/21 (P0.0–P0.11, P0.14–P0.16, P0.18–P0.20) · P0.12, P0.13 e P0.17 parciais                    | —               |
 | D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · migrações e `check:types` fechados em 07/09 — falta só a auditoria num dump de `stage`  | —               |
 | 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois | —               |
-| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[~]` 2/6 + 2.3 parcial (07/09) · 2.1 e 2.2 `[x]`, 2.3 mínima entregue, **2.4 não entregue**          | —               |
+| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[~]` 3/6 + 2.3 parcial · 2.1, 2.2 e 2.4 `[x]`; 2.3 mínima entregue, falta a completa; 2.5 e 2.6 abertos | —               |
 | 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6                                                                                             | —               |
 | 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                             | —               |
 | 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                             | —               |
+| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[ ]` 0/20 · sem gate próprio; A3 tem prazo, A5 e A6 condicionam a API em produção                    | n/a             |
 
 ## Próximo item recomendado
 
-**Estado em 07/09/2026 — leia isto primeiro, e confie nesta seção mais do que
-na sua memória do que este arquivo dizia ontem.** `stage` está em `f490a2d7`.
+**Estado em 07/09/2026, 15h UTC.** Tudo que a madrugada produziu está mesclado
+em `stage`: PRs #15, #16, #17 e #18. A Fase 2 tem a fila operável, o
+coordenador, a aba Trabalho e os alertas. **O próximo item de código é o
+`R1.A3`**, pela razão que o [R1](./R1-review-findings.md) §Prioridade explica:
+é o único achado cujo custo cresce sozinho, com trinta dias de relógio a partir
+do primeiro deploy que rode o beat.
 
-**Os PRs #12, #13 e #14 estão mesclados** — os três tips são ancestrais de
-`f490a2d7`, verificado por `git merge-base --is-ancestor`. Foram: #12 (1.1,
-1.2, 1.3 e o 1.6 parcial — a fundação da API de automação, sem superfície
-HTTP), #13 (1.4 → 1.8, as seis rotas) e #14 (P0.18, credenciais do Compose sem
-default). Com isso a **Fase 1 está com os 8 itens entregues e em `stage`**, não
-numa branch.
+**Antes de escolher qualquer item, saiba destas quatro coisas.**
 
-Duas armadilhas ao conferir isso no `git log`. O #12 **não tem commit de merge
-próprio**: a branch do #13 foi cortada da ponta do #12, então mesclar o #13
-trouxe os dois e o GitHub marcou o #12 como mesclado sem produzir a linha
-`Merge pull request #12`. E procurar essa linha encontra `3a4c1715`, que é o
-**PR #12 do repositório-pai** (release-please), não este — a numeração colide.
-O teste que vale é `merge-base --is-ancestor`, não o `grep` na mensagem.
+**Primeira: o `stage` tem um job vermelho que não é de código.** Do run que
+seguiu o merge do #15, 17 dos 18 jobs passaram. O que falhou foi
+`Ensure Release Candidate PR`, com
+`GitHub Actions is not permitted to create or approve pull requests`. É a
+configuração `Settings → Actions → General`, ou o `RELEASE_PLEASE_TOKEN`, e o
+P0.13 já previa exatamente este modo de falha como aquilo que só o primeiro
+release revelaria. **Não tente consertar isso no código.** Enquanto não for
+resolvido, todo push em `stage` fecha vermelho, e ler esse vermelho como
+regressão custa uma sessão.
 
-**O PR #15 está aberto** (`claude/pendencias-implementacao-auto-7a2rsp`,
-`31d35e2b`): P0.19 e P0.20. Ele importa mais do que o tamanho sugere. O P0.19
-descobriu que `ORCA_PUBLIC_API_ENABLED` e `ORCA_PUBLIC_API_RATE_LIMIT` eram
-documentadas no README, lidas pelo `settings/common.py` e **nunca
-encaminhadas** pelo `docker-compose-orca.yml`: ligar a API pública na
-plataforma não tinha efeito nenhum, e portanto o **Gate 2-mínimo era
-impossível de cumprir** — o critério "deploy com a flag ligada" não podia
-passar nem em princípio. Só depois do #15 o Gate 2-mínimo é alcançável. O
-P0.20 dá teto ao `AutomationOperation`, que crescia sem expurgo.
+**Segunda: a interface nunca foi aberta.** A aba Trabalho, a caixa de entrada e
+as três ações foram verificadas por tipos, lint, formato e i18n, e por nenhum
+olho humano — não havia ambiente com dados. É a primeira coisa que staging
+deve responder, e é onde bugs de UI vão aparecer.
 
-A flag continua desligada — `ORCA_PUBLIC_API_ENABLED` tem `default=False` em
-`apps/api/plane/settings/common.py:609` e o Compose passa `:-0` — e **ninguém
-a liga fora do Gate 2-mínimo**. O que a Fase 1 entregou atrás dela (as seis
-rotas, o serviço de idempotência do §6.7, `docs/orca-public-api.md`, o cliente
-de referência em `tools/orca-client/` e os testes de contrato sobre HTTP real)
-está no §Histórico, na linha de 06/09.
+**Terceira: o Gate 2-mínimo não depende mais de código.** Fila, coordenador,
+atribuição manual, devolução e alerta estão entregues e testados. O que falta
+é área piloto, coordenador piloto, deploy em staging e uma pessoa exercitando
+o fluxo. Está no arquivo da fase, com os critérios um a um.
 
-**O próximo bloco é a Fase 2** (fila da área e coordenador). O arquivo da
-fase é [`02-queue-and-coordinator.md`](./02-queue-and-coordinator.md); o plano
-de execução da madrugada de 07/09 — decisões M1–M12, contratos entre sessões,
-ordem de merge e linhas de corte — está em
-`docs/plans/orca-work-management/MADRUGADA-2026-09-07.md`, que **vive na
-branch `claude/fork-architecture-review-pmszir`** e não nesta árvore:
+**Quarta: os gates P0, D0 e 1 continuam abertos**, e o que falta em cada um
+está registrado com o comando exato no respectivo arquivo. Nenhum depende de
+escrever código novo: dependem de um dump, de staging, e de duas decisões de
+negócio (P0.12, P0.13, P0.17).
 
-```bash
-git fetch origin claude/fork-architecture-review-pmszir
-git show origin/claude/fork-architecture-review-pmszir:docs/plans/orca-work-management/MADRUGADA-2026-09-07.md
-```
+### Ordem que eu recomendaria
 
-Toda branch nova nasce da **ponta do #15**, não de `stage`, enquanto ele não
-mesclar; é o mesmo arranjo com que o bloco 1.4 → 1.8 nasceu da ponta do #12. O
-item 2.2 já tem a consulta da fila pronta em `app/services/orca/queue.py`.
+1. **`R1.A3`** — o único com relógio.
+2. **Staging**: deploy, e então o Gate 2-mínimo com a área piloto. Isso também
+   fecha a auditoria do Gate D0, que só precisa de um dump.
+3. **`R1.A5` e `R1.A6`** — a condição para `ORCA_PUBLIC_API_ENABLED=1` em
+   produção. Antes deles, ligue só em staging.
+4. **`R1.A2`, `R1.A7`, `R1.A11`** — os três que caem sobre o código da Fase 2 e
+   que a revisão queria ver junto com ela.
+5. **2.3 completa, 2.5 e 2.6** — fechar a Fase 2 inteira.
+6. **Fase 3** (disponibilidade), cuja migração agora é `0140`.
 
-### O que a sessão de agente pode rodar — a versão correta
-
-Isto estava errado neste arquivo, no `HANDOFF-PROMPT.md` e no `AGENTS.md`, e
-o erro tinha consequência: itens ficaram esperando um humano rodar o que a
-sessão sempre pôde rodar. Medido em 07/09 na ponta do #15:
-
-- **Backend:** `pytest` (a suíte Orca inteira, ou um arquivo),
-  `makemigrations --check` e `migrate` de ida e volta. Receita em
-  [`HANDOFF-PROMPT.md`](./HANDOFF-PROMPT.md) §Ambiente local — Backend
-  (venv, PostgreSQL 16, Redis; ≈ 5 min).
-- **Frontend:** `pnpm install --frozen-lockfile` (19 s com store quente),
-  `pnpm check:types --filter=web` (**exit 0 em 61 s** — pelo turbo; a forma
-  `pnpm --filter web check:types` falha por não construir os pacotes do
-  workspace antes, e a falha é o build ausente, não o código),
-  `pnpm --filter web check:lint`, `check:format` e
-  `pnpm --filter @plane/i18n check:sync`, todos em segundos.
-- **O que continua de fato fora:** Docker (não há daemon), deploy,
-  `git push --delete`, e qualquer verificação que precise de um banco **com
-  dados** — que é exatamente o que os Gates P0 e D0 ainda pedem. Um banco
-  montado aqui nasce vazio.
-
-A regra que sobrevive do `AGENTS.md` é sobre **saída**, não execução:
-redirecionar para arquivo e ler o `tail`, nunca despejar a saída no contexto.
-
-### Os defeitos D1–D4 estão fechados
-
-Fechados no PR #9 (05/09/2026), cada um pinado por teste; a lista está em
-[RFC §2.2](../../orca-work-management-rfc.md) e a tabela por invariante em
-[`D0-domain-foundation.md`](./D0-domain-foundation.md) §Testes por invariante.
-**Não são trabalho a fazer.** Uma sessão que os leia como pendência vai
-"corrigir" o que já está corrigido — foi por isso que esta seção foi reescrita.
-
-### O que falta, e de quem é
-
-Nada do que falta em P0, D0 e Fase 1 é código:
-
-- **Gate D0:** o arquivo da fase tem **um** critério aberto —
-  `audit_organizational_routing` sem violações num dump do banco de `stage`
-  ([`D0-domain-foundation.md`](./D0-domain-foundation.md) §Gate D0); os outros
-  cinco estão marcados. O texto que estava aqui e a coluna do quadro listavam
-  outras duas coisas que **não são critérios do gate**: a ida e volta das
-  migrações num banco com dados (útil, mas não escrita ali) e
-  `pnpm --filter web check:types` — que, além de não ser critério, **roda na
-  sessão com exit 0**. Só o dump continua fora de alcance.
-- **Gate 1:** revisão do `docs/orca-public-api.md` por quem não escreveu o
-  código, executando os `curl` contra staging com a flag em `1` **só em
-  staging**; o registro de quem verificou que ela segue `0` em produção; e a
-  medição de p50/p95 em 200 criações sequenciais na mesma área com
-  `least_loaded`. As quatro caixas estão em
-  [`01-public-contract.md`](./01-public-contract.md) §Gate 1 — onde as duas
-  primeiras ("8 itens `[x]`" e "critérios do 1.8 verdes") continuam abertas
-  por escrituração, apesar de o quadro acima contar 8/8; quem fechar o gate
-  reconcilia isso.
-- **P0.12:** verificação completa e refeita; falta o `git push --delete`,
-  barrado para a sessão de agente.
-- **P0.13:** o ensaio do runbook num ambiente real e a decisão do prerelease
-  no Release Please, que só o primeiro PR de release revela.
-- **P0.17:** o texto de implantação foi neutralizado; falta a decisão de
-  negócio sobre qual é o alvo real da 4UM.
-- **Operação, e uma delas já vencida:** o `TRUSTED_PROXIES` obrigatório está
-  em `stage` desde o PR #8, então é **antes do próximo deploy**, não "antes de
-  mesclar" — sem a variável o Compose Orca recusa subir, de propósito. Junto:
-  rotacionar as credenciais que o P0.18 deixou de aceitar com default;
-  invalidar as contas criadas pela versão antiga do `create_users.py`
-  (procedimento em `tools/migration/README.md`); e empurrar o mirror
-  `origin/upstream`, que continua em `1.4.1` — verificado nesta sessão com
-  `git show origin/upstream:package.json` — enquanto o fork já está em
-  `1.5.0-plane.1.4.2`.
-
-A cadeia de proveniência do release está fechada no código (P0.0–P0.3, P0.14,
-P0.15): PR não publica `:stage`, todo commit de `stage` ganha `:sha-<commit>`
-nos seis serviços, e a promoção para produção copia digests daquele commit em
-vez de seguir uma tag mutável. O que falta ali é o ensaio em ambiente real.
-
-O relato item por item de como cada coisa fechou está no §Histórico, que é o
-lugar dele; esta seção diz só onde o trabalho está e para onde vai.
+Só depois disso a Fase 4 faz sentido, e ela ainda depende da pendência externa
+A5 do quadro abaixo.
 
 ## O que a madrugada de 07/09 entregou, e o que não entregou
 
@@ -225,6 +148,7 @@ Sete sessões de agente em paralelo, plano em `MADRUGADA-2026-09-07.md` (branch
 
 | Data       | Evento                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-09-07 | **PRs #15, #16, #17 e #18 mesclados em `stage`.** A Fase 2 fica com 2.1, 2.2 e a parte mínima de 2.3 em `stage`; o 2.4 vem logo atrás em PR própria. Dois registros que a noite deixou e que valem mais que os itens: o job `Ensure Release Candidate PR` falha em todo push para `stage` por configuração do repositório e não por código — é o modo de falha que o P0.13 previa que só o primeiro release revelaria —, e uma sessão criada por `create_trigger` **não herda as fontes** da sessão que a criou, o que fez a sessão de integração subir sem repositório e terminar com status de sucesso sem produzir nada. Os 20 achados da revisão adversarial viraram itens rastreáveis em [`R1-review-findings.md`](./R1-review-findings.md), porque achado em prosa vira folclore. O plano da madrugada entrou no repositório com um epílogo do que de fato aconteceu, já que o RFC §4.2 rev. 7 cita as decisões M1–M12 dele e uma decisão registrada precisa de endereço. |
 | 2026-09-07 | **Madrugada de sete sessões paralelas.** Entregues 2.1, 2.2 e a parte mínima de 2.3, mais o saneamento da documentação, a evidência de gate que não precisa de staging e uma revisão adversarial da `stage` com 20 achados e nenhum S1. O item **2.1 era maior do que o arquivo da fase dizia**: `OrganizationalUnitGrant.membership` era FK obrigatória e um coordenador pode não ser membro da área, então a proveniência exigiu FK própria, `grant_source` e CHECK de exclusividade (RFC §5.1, rev. 7); a migração saiu `0139` e a Fase 3 passou a `0140`. **Duas sessões falharam, por motivos diferentes:** a do item 2.4 foi rejeitada pelo limite de uso de 5 horas ao ser disparada às 06:45 UTC e não executou nada, e a de integração nasceu sem repositório anexado. A integração foi refeita à mão: quatro branches mescladas sem conflito, e na árvore integrada **861 testes Orca passando** (baseline 767, nenhuma queda) em 10m49s, **9 de contrato** em 2m01s, `makemigrations --check` limpo, `0139` aplicada/revertida/reaplicada, `ruff check` limpo, e `check:types`, `check:lint`, `check:format` e `check:sync` do i18n todos exit 0. Também fechado por execução o critério `check:types` do Gate D0, que estava aberto por premissa errada: `pnpm --filter web check:types` isolado falha porque a tarefa depende de `^build`; `pnpm check:types --filter=web`, pelo turbo, passa. |
 | 2026-09-07 | **Saneamento do registro de progresso (S0 do plano da madrugada).** O registro afirmava coisas falsas que faziam uma sessão nova refazer trabalho pronto: o cabeçalho do RFC dizia que nenhuma seção marcada como proposta estava implementada (com a Fase 1 inteira em `stage`) e fixava a base em v1.4.1; o §2.2 dizia que **nenhum** dos defeitos D1–D4 tinha teste, quando os quatro fecharam no PR #9 e cada um está pinado — os testes foram executados nesta sessão para confirmar antes de o texto mudar; este README dizia que o PR #12 estava aberto, quando #12, #13 e #14 estão mesclados e o **#15** é o aberto; e o RFC §13, o `AGENTS.md` e o `HANDOFF-PROMPT.md` diziam que a sessão não roda `pnpm`/`check:types`/migrações, o que era premissa e não fato — `pnpm check:types --filter=web` dá exit 0 em 61 s pelo turbo. Plano da noite em `MADRUGADA-2026-09-07.md`, na branch `claude/fork-architecture-review-pmszir`. |
 | 2026-09-07 | **P0.20**: `AutomationOperation` não tinha expurgo — uma linha por mutação aceita, com o `response_snapshot` inteiro, crescendo sem teto, enquanto os logs de API/webhook/e-mail do upstream têm janela e job diário. Tarefa nova reaproveitando `process_cleanup_task`, janela de 30 dias em `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS`, entrada no `beat_schedule` **e** no `CELERY_IMPORTS` (sem a segunda, o beat manda um nome que o worker nunca registrou e a tarefa falha em silêncio uma vez por dia — o `test_celery_task_registration.py` já dizia isso das outras duas). A decisão de desenho está no RFC §4.2 rev. 6: uma chave deixa de ser lembrada para sempre, e a janela é muito maior que as do upstream justamente porque apagar um recibo desgasta a chave. **Rodado**: 22 passed (11 novos + os 11 do registro), `makemigrations --check` limpo, e ruff `check`/`format` limpos na versão pinada do CI. O teste pegou uma afirmação errada minha, repetida no docstring e na doc do cliente: um replay de criação responde **201**, a resposta gravada, não 200 — o que distingue um replay não é o status. |

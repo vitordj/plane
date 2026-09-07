@@ -22,11 +22,12 @@ Leia, nesta ordem, antes de qualquer alteração:
    fases. Confira qual é o próximo item `[ ]` da fase ativa.
 4. O arquivo da fase do item (ex.: docs/plans/orca-work-management/D0-domain-foundation.md).
 
-Item desta sessão: <FASE.ITEM — ex.: D0.1 — Área precisa cobrir o projeto>
-(Para o bloco 1.4 → 1.8: "Bloco 1.4 → 1.8 de 01-public-contract.md, na ordem
-da tabela 'Ordem, tamanho e o que prova cada passo', na branch
-claude/plano-blocos-1-4-1-8-reo0t9". As decisões B1–B15 já estão tomadas;
-não as reabra sem registrar em RFC §4.2.)
+5. Se o item for um achado R1, leia a seção correspondente de
+   docs/plans/orca-work-management/reviews/2026-09-07-stage-adversarial-review.md
+   antes de tocar no código: o cenário de falha, a evidência de execução e a
+   correção proposta estão lá, e o R1 só carrega o endereço.
+
+Item desta sessão: <FASE.ITEM — ex.: R1.A3 — a retenção reescreve linha append-only>
 
 Regras de execução:
 - Um item = um PR pequeno contra `stage`. Branch a partir de `origin/stage`
@@ -83,6 +84,25 @@ Contexto que você não precisa redescobrir:
   qualquer assignee (D4, test_assignment_service.py::TestRanking).
 - Plane CE não tem custom properties; a única fonte da verdade da área é
   IssueOrganizationalUnit.
+- A Fase 2 está entregue em stage nos itens 2.1, 2.2, 2.4 e na parte mínima do
+  2.3: existe OrganizationalUnitCoordinator (migração 0139), o ledger de grants
+  distingue origem por membership ou por coordenação, há oito rotas em
+  app/views/organizational_queue.py com helpers em
+  app/permissions/organizational_unit.py, a aba Trabalho existe na interface, e
+  os alertas de allocation_failed e de SLA vencido existem em
+  services/orca/alerts.py e bgtasks/organizational_queue_task.py. Não
+  reimplemente nada disso. O que falta da fase é a parte completa do 2.3, o 2.5
+  e o 2.6.
+- Vinte achados da revisão adversarial de 07/09 estão rastreados em
+  R1-review-findings.md e NÃO estão corrigidos. Se o seu item toca reconciliador,
+  fila, idempotência ou permissões de Guest, olhe o R1 antes: é provável que o
+  comportamento estranho que você encontrar já esteja documentado ali, com
+  evidência de execução.
+- O job `Ensure Release Candidate PR` falha em todo push para stage por uma
+  configuração do repositório, não por código (GitHub Actions sem permissão para
+  criar PR). Um stage vermelho nesse job só, com os outros 17 verdes, não é
+  regressão sua.
+- A migração mais recente é 0139_orca_unit_coordinator. A Fase 3 usará 0140.
 ```
 
 ---
@@ -177,17 +197,19 @@ sessão não o executava.
 
 ## Variantes
 
-**Sessão de execução do bloco 1.4 → 1.8:**
+**Sessão de correção de um achado da revisão:**
 
 ```text
-Execute o bloco 1.4 → 1.8 de docs/plans/orca-work-management/01-public-contract.md
-na branch claude/plano-blocos-1-4-1-8-reo0t9 (já cortada da ponta do PR #12).
-Primeiro suba o ambiente local (HANDOFF-PROMPT.md §Ambiente local) e rode a
-suíte Orca como baseline. Depois siga a tabela "Ordem, tamanho e o que prova
-cada passo": um commit por passo, teste executado antes de marcar, ruff limpo
-antes de cada commit. As decisões B1–B15 estão tomadas. Ao fim de cada item,
-atualize o arquivo da fase e o README do plano. Não abra PR; descreva a PR
-proposta no relatório final, e diga o que foi verificado e como.
+Corrija o achado <R1.An> de docs/plans/orca-work-management/R1-review-findings.md.
+Leia primeiro a seção daquele achado em
+docs/plans/orca-work-management/reviews/2026-09-07-stage-adversarial-review.md:
+ela traz o cenário de falha, a evidência de execução e uma correção proposta.
+A correção proposta é uma sugestão, não uma ordem — se você discordar dela,
+diga por quê antes de escrever outra coisa.
+Regra de aceite deste tipo de item: o PR precisa de um teste que falhe sem a
+correção e passe com ela, e o relatório precisa dizer que você viu esse teste
+falhar. Um achado sem teste de regressão volta.
+Marque o item [x] em R1-review-findings.md no mesmo PR.
 ```
 
 **Sessão de revisão (sem implementar):**
