@@ -43,7 +43,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 
 | Fase                       | Arquivo                                                      | Itens             | Estado                                                                                                | Gate fechado em |
 | -------------------------- | ------------------------------------------------------------ | ----------------- | ----------------------------------------------------------------------------------------------------- | --------------- |
-| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 18                | `[~]` 15/18 (P0.0–P0.11, P0.14, P0.15, P0.16) · P0.12, P0.13 e P0.17 parciais                         | —               |
+| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 19                | `[~]` 16/19 (P0.0–P0.11, P0.14, P0.15, P0.16, P0.18) · P0.12, P0.13 e P0.17 parciais                  | —               |
 | D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · suíte verde no CI — faltam migrações, `check:types` e a auditoria num dump              | —               |
 | 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois | —               |
 | 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[ ]` 0/6                                                                                             | —               |
@@ -119,6 +119,17 @@ commits e uma mudança real. PR #11 mesclado em `stage` (`af571341`), com o
 bump para `1.5.0-plane.1.4.2` que fecha a metade de versão do P0.13. Sobra
 uma ponta de procedimento: o mirror `origin/upstream` continua em 1.4.1,
 porque a sessão de agente não empurra naquela branch (comando no item).
+
+**P0.18 é novo, e é código.** Uma releitura da camada organizacional apontou
+que as **credenciais** do `docker-compose-orca.yml` ainda tinham default
+(`${SERVICE_PASSWORD_DATABASE:-plane}` e as outras sete), o que sobe a stack
+com uma senha publicada neste repositório sempre que a plataforma esquece de
+injetar a variável — a mesma degradação silenciosa que o P0.7 tirou do
+`TRUSTED_PROXIES`. As oito passaram à forma obrigatória, o job
+`compose_credentials` impede a volta, e a tabela do README — que documentava
+nomes que o Compose não lê e defaults que não eram os reais — foi corrigida.
+Sobra a metade operacional: conferir se algum ambiente está rodando com as
+credenciais antigas e rotacionar.
 
 **Nenhum dos três itens que restam em P0 é código.** Todos dependem de algo
 fora do repositório:
