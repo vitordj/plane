@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+export * from "./assign-member-modal";
 export * from "./directory-sync-panel";
 export * from "./issue-unit-property";
 export * from "./queue-item-row";
