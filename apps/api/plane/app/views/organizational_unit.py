@@ -281,8 +281,25 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
             organizational_unit__workspace__slug=slug,
             is_active=True,
         ).select_related("workspace_member", "workspace_member__member")
-        serializer = OrganizationalUnitMembershipSerializer(memberships, many=True)
+        serializer = OrganizationalUnitMembershipSerializer(
+            memberships,
+            many=True,
+            show_email=self._may_see_emails(request.user, slug),
+        )
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def _may_see_emails(user, slug) -> bool:
+        """
+        @description Whether this caller gets the ``email`` field, by the same
+        rule the core applies on the workspace member list: Member and above,
+        not Guest (R1.A4). Read here rather than trusted from the decorator,
+        which only says the caller is *some* workspace role.
+        @returns bool.
+        """
+        return WorkspaceMember.objects.filter(
+            workspace__slug=slug, member=user, is_active=True, role__gt=ROLE.GUEST.value
+        ).exists()
 
     @allow_permission([ROLE.ADMIN], level="WORKSPACE")
     def create(self, request, slug, unit_id):

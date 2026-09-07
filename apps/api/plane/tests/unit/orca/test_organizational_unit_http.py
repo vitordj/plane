@@ -840,3 +840,45 @@ class TestUnitPayloadShape:
         assert response.status_code == 200
         assert response.data["member_count"] == 1
         assert response.data["project_count"] == 1
+
+
+@pytest.mark.unit
+class TestWhoSeesAMembersEmail:
+    """
+    R1.A4 — a Guest could collect the company's mailing list by department.
+
+    The core picks between two serializers by role on the workspace member list,
+    and only the one for Member and above carries ``email``. This route carried
+    it unconditionally, so the role Plane creates precisely for people who
+    should not see the organization could walk every area -- the area list is
+    open to Guest too -- and read name, email and role for everyone in it.
+    """
+
+    def test_a_guest_does_not_get_the_email_field(
+        self, guest_client, workspace_with_members, unit, plain_user, add_member
+    ):
+        add_member(unit, plain_user)
+
+        response = guest_client.get(members_url(workspace_with_members.slug, unit.id))
+
+        assert response.status_code == 200
+        assert response.data
+        assert all("email" not in row for row in response.data)
+        # The rest of the row survives: that an area has members is not secret.
+        assert all("display_name" in row for row in response.data)
+
+    def test_a_member_still_gets_it(self, member_client, workspace_with_members, unit, plain_user, add_member):
+        add_member(unit, plain_user)
+
+        response = member_client.get(members_url(workspace_with_members.slug, unit.id))
+
+        assert response.status_code == 200
+        assert all("email" in row for row in response.data)
+
+    def test_an_admin_still_gets_it(self, admin_client, workspace_with_members, unit, plain_user, add_member):
+        add_member(unit, plain_user)
+
+        response = admin_client.get(members_url(workspace_with_members.slug, unit.id))
+
+        assert response.status_code == 200
+        assert response.data[0]["email"] == plain_user.email

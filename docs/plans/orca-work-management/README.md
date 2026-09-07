@@ -50,7 +50,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6                                                                                             | —               |
 | 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                             | —               |
 | 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                             | —               |
-| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[~]` 3/20 · A3, A5 e A6 fechados — os três com prazo ou que travavam a API                                           | n/a             |
+| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[~]` 4/20 · A3, A4, A5 e A6 fechados — os com prazo e os que travavam a API                                          | n/a             |
 
 ## Próximo item recomendado
 

@@ -87,7 +87,26 @@ class OrganizationalUnitSerializer(BaseSerializer):
 
 
 class OrganizationalUnitMembershipSerializer(BaseSerializer):
-    """Membership of a workspace member in a unit, with light member details."""
+    """
+    Membership of a workspace member in a unit, with light member details.
+
+    @description ``show_email`` mirrors what the core already does with the same
+    field. ``WorkSpaceMemberViewSet.list`` picks between two serializers by the
+    caller's role, and only the one for Member and above carries ``email``
+    (``serializers/user.py``); Plane treats a corporate address as something a
+    Guest does not get, and means it. This route ignored that, so a Guest could
+    walk the area list and collect name, email and role for the whole company --
+    a mailing list by department, which is the raw material of a targeted
+    phishing run (review finding R1.A4).
+
+    Popping the field rather than declaring a second serializer keeps one
+    definition of what a membership is; only visibility varies.
+    """
+
+    def __init__(self, *args, show_email=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not show_email:
+            self.fields.pop("email", None)
 
     member_id = serializers.UUIDField(source="workspace_member.member_id", read_only=True)
     display_name = serializers.CharField(source="workspace_member.member.display_name", read_only=True)
