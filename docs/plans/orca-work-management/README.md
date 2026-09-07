@@ -50,15 +50,15 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6                                                                                             | —               |
 | 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                             | —               |
 | 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                             | —               |
-| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[~]` 1/20 · A3 fechado; A5 e A6 condicionam a API em produção                                        | n/a             |
+| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[~]` 2/20 · A3 e A6 fechados; falta o A5 para a API em produção                                                  | n/a             |
 
 ## Próximo item recomendado
 
 **Estado em 07/09/2026, 15h UTC.** Tudo que a madrugada produziu está mesclado
 em `stage`: PRs #15, #16, #17 e #18. A Fase 2 tem a fila operável, o
 coordenador, a aba Trabalho e os alertas. **O `R1.A3` já está fechado**, antes de
-qualquer deploy: era o único achado cujo custo crescia sozinho. O próximo item
-de código é o **`R1.A6`**, seguido do **`R1.A5`** — juntos, a condição para
+qualquer deploy: era o único achado cujo custo crescia sozinho. O **`R1.A6`** também está
+fechado. O próximo item de código é o **`R1.A5`**, o último que condiciona
 `ORCA_PUBLIC_API_ENABLED=1` em produção.
 
 **Antes de escolher qualquer item, saiba destas quatro coisas.**
@@ -93,8 +93,8 @@ negócio (P0.12, P0.13, P0.17).
 1. ~~`R1.A3`~~ — fechado em 07/09.
 2. **Staging**: deploy, e então o Gate 2-mínimo com a área piloto. Isso também
    fecha a auditoria do Gate D0, que só precisa de um dump.
-3. **`R1.A5` e `R1.A6`** — a condição para `ORCA_PUBLIC_API_ENABLED=1` em
-   produção. Antes deles, ligue só em staging.
+3. **`R1.A5`** — o que resta da condição para `ORCA_PUBLIC_API_ENABLED=1` em
+   produção. Antes dele, ligue só em staging.
 4. **`R1.A2`, `R1.A7`, `R1.A11`** — os três que caem sobre o código da Fase 2 e
    que a revisão queria ver junto com ela.
 5. **2.3 completa, 2.5 e 2.6** — fechar a Fase 2 inteira.

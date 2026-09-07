@@ -54,11 +54,20 @@ item in your interface between your first call and your retry, the retry still
 reports the _first_ allocation. That is deliberate: a retry must not read as
 though it changed something. When you want current state, do a `GET`.
 
-**A 4xx spends the key.** A request refused for a bad payload is recorded as a
-failed operation, and retrying that key replays the same failure — including
-its status. Fixing the payload changes the request, and a changed request needs
-a **new key**. Derive a new one (vary `event_id`, or add an attempt counter)
-when you resend a corrected body.
+**A 4xx spends the key. A 500 does not.** The two are different on purpose,
+and the difference is whether repeating could change the answer. A request
+refused for a bad payload, a forbidden mode or an ineligible executor is a
+refusal we chose: it is recorded as a failed operation, and retrying that key
+replays the same failure, status included. Fixing the payload changes the
+request, and a changed request needs a **new key** — derive one by varying
+`event_id` or adding an attempt counter.
+
+An unexpected server error is not a refusal. A deadlock, a dropped connection
+or a crash means the work never happened, so the receipt is released rather
+than recorded, and **your retry with the same key runs the operation**. Retry
+with the same key on `5xx`; get a new key only after a `4xx` you have fixed.
+That is the ordinary rule for idempotent APIs, and it is what this one now
+does.
 
 **A key is remembered for 30 days**, not forever. Receipts older than
 `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS` are expired daily, so a retry
@@ -466,6 +475,7 @@ resolves them**, through `start_operation` → `_existing`
 | The receipt is                   | The retry sends       | What happens                                                                                                                                                                                         |
 | -------------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `succeeded` or `failed`          | the same payload      | Replay: the recorded body and status come back, with `Idempotent-Replay: true`. Nothing runs.                                                                                                        |
+| `abandoned`                      | the same payload      | **Resumed.** A transient failure released the key; the operation runs from the beginning. The row is kept so the attempt and its error code stay on the record.                                       |
 | `in_progress`, older than 60 s   | the same payload      | **Resumed.** `_resume` restarts the sixty-second clock and the operation runs again from the beginning. This is the case a restart leaves behind — every stranded receipt is far past sixty seconds. |
 | `in_progress`, younger than 60 s | the same payload      | `409 ORG_OPERATION_IN_PROGRESS` — a real concurrent call. Back off and retry.                                                                                                                        |
 | anything                         | a _different_ payload | `409 ORG_IDEMPOTENCY_PAYLOAD_MISMATCH`, checked before status (`_existing`). A client that corrects its body needs a new key.                                                                        |

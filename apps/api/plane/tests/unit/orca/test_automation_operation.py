@@ -272,7 +272,7 @@ class TestASoftDeletedReceipt:
 @pytest.mark.unit
 @pytest.mark.django_db
 class TestTheContextManager:
-    def test_it_marks_a_crashed_operation_failed(self, workspace_with_members):
+    def test_it_marks_a_crashed_operation_abandoned(self, workspace_with_members):
         with pytest.raises(RuntimeError):
             with begin_operation(
                 workspace_with_members, None, "key-1", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD
@@ -281,9 +281,12 @@ class TestTheContextManager:
 
         operation = AutomationOperation.objects.get(idempotency_key="key-1")
         # Not left in progress: the next retry gets an answer instead of a
-        # sixty-second wait followed by a silent resume.
-        assert operation.status == AutomationOperationStatus.FAILED
+        # sixty-second wait followed by a silent resume. Abandoned rather than
+        # failed, because a crash is not a refusal (R1.A6) — the retry must run
+        # the work, and a stored response is what would stop it.
+        assert operation.status == AutomationOperationStatus.ABANDONED
         assert operation.error_code == "ORG_INTERNAL_ERROR"
+        assert operation.response_snapshot in (None, {}, "")
 
     def test_the_failure_survives_a_rolled_back_transaction(self, workspace_with_members):
         """
@@ -301,7 +304,7 @@ class TestTheContextManager:
                     raise RuntimeError("rolled back")
 
         operation = AutomationOperation.objects.get(idempotency_key="key-1")
-        assert operation.status == AutomationOperationStatus.FAILED
+        assert operation.status == AutomationOperationStatus.ABANDONED
 
     def test_it_leaves_a_completed_operation_alone(self, workspace_with_members):
         with begin_operation(
@@ -335,6 +338,97 @@ class TestTheContextManager:
 
         operation = AutomationOperation.objects.get(idempotency_key="key-1")
         assert operation.status == AutomationOperationStatus.SUCCEEDED
+
+
+@pytest.mark.unit
+class TestARetryAfterATransientFailure:
+    """
+    R1.A6 — the most expensive defect the review found, for an API whose entire
+    audience is programs that retry.
+
+    An unhandled exception used to mark the receipt ``failed`` with a stored 500.
+    From then on every retry carrying that key was answered with the recorded
+    error and the work was never attempted again — for thirty days, until
+    retention removed the receipt, while the client guide told the caller that
+    changing the key is exactly what not to do. The integration had no move.
+
+    A deliberate refusal still behaves the old way, and must: repeating a
+    forbidden mode cannot change the answer, so replaying it is the correct
+    contract, and RFC §4.2 rev. 5 fixed that on purpose.
+    """
+
+    def test_the_retry_runs_the_work_instead_of_replaying_the_error(self, workspace_with_members):
+        with pytest.raises(RuntimeError):
+            with begin_operation(
+                workspace_with_members, None, "key-1", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD
+            ):
+                raise RuntimeError("deadlock")
+
+        with begin_operation(
+            workspace_with_members, None, "key-1", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD
+        ) as handle:
+            # This is the whole finding: the retry gets a live handle, not a
+            # replay of somebody else's crash.
+            assert handle.replayed is False
+            assert handle.is_open is True
+            handle.complete(response={"ok": True}, http_status=201)
+
+        operation = AutomationOperation.objects.get(idempotency_key="key-1")
+        assert operation.status == AutomationOperationStatus.SUCCEEDED
+        assert AutomationOperation.objects.filter(idempotency_key="key-1").count() == 1
+
+    def test_a_deliberate_refusal_still_replays(self, workspace_with_members):
+        with begin_operation(
+            workspace_with_members, None, "key-1", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD
+        ) as handle:
+            handle.fail(error_code="ORG_UNIT_NOT_COVERING_PROJECT", http_status=400)
+
+        with begin_operation(
+            workspace_with_members, None, "key-1", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD
+        ) as handle:
+            assert handle.replayed is True
+            body, status = handle.replay_response()
+            assert status == 400
+            assert body["error_code"] == "ORG_UNIT_NOT_COVERING_PROJECT"
+
+    def test_the_abandoned_row_is_reused_rather_than_a_second_one_opened(self, workspace_with_members):
+        """
+        The row stays so that the attempt and what broke it remain on the
+        record. A second row would also break the unique constraint.
+        """
+        with pytest.raises(RuntimeError):
+            with begin_operation(
+                workspace_with_members, None, "key-1", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD
+            ):
+                raise RuntimeError("connection dropped")
+        first_id = AutomationOperation.objects.get(idempotency_key="key-1").id
+
+        with begin_operation(
+            workspace_with_members, None, "key-1", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD
+        ) as handle:
+            assert handle.operation.id == first_id
+
+    def test_a_changed_payload_after_a_crash_is_still_a_mismatch(self, workspace_with_members):
+        """
+        Releasing the key does not release the payload rule: the key names one
+        operation, and a caller who changes what it is asking for is a caller
+        bug whether or not the first attempt crashed.
+        """
+        with pytest.raises(RuntimeError):
+            with begin_operation(
+                workspace_with_members, None, "key-1", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD
+            ):
+                raise RuntimeError("deadlock")
+
+        with pytest.raises(IdempotencyPayloadMismatch):
+            with begin_operation(
+                workspace_with_members,
+                None,
+                "key-1",
+                AutomationOperationType.CREATE_WORK_ITEM,
+                {"external": {"source": "espo", "id": "c-2"}, "work_item": {"name": "Different"}},
+            ):
+                pass
 
 
 @pytest.mark.unit

@@ -289,6 +289,7 @@ registrar na seção 4 o motivo e o impacto.
 
 | Data | Mudança |
 | --- | --- |
+| 2026-09-07 | Rev. 8: **uma falha transitória deixa de gastar a chave de idempotência** (achado R1.A6; nenhuma decisão F1–F24 tocada, e o esclarecimento (3) da rev. 5 continua valendo onde valia). A rev. 5 fixou que "uma chave gasta num 4xx continua gasta", e isso está certo para uma recusa que o endpoint escolheu: repetir não muda a resposta. Estava sendo aplicado também ao que o endpoint **não** escolheu — qualquer exceção não tratada virava recibo `failed` com um 500 guardado, e toda retentativa recebia esse 500 sem nunca tentar o trabalho de novo, por 30 dias, enquanto o guia do cliente diz para não trocar a chave. `AutomationOperationStatus` ganha `abandoned`: `begin_operation` marca assim o que estourou, sem gravar resposta, e `_existing` retoma a linha em vez de replicá-la. A regra para o cliente passa a ser a usual de APIs idempotentes: retentar com a mesma chave num `5xx`, chave nova só depois de um `4xx` corrigido. A linha fica, e não é apagada, para que a tentativa e o código do erro continuem no registro. |
 | 2026-09-07 | Rev. 7: **doze decisões de mecanismo da execução da Fase 2** (nenhuma decisão F1–F24 tocada), registradas em `docs/plans/orca-work-management/MADRUGADA-2026-09-07.md` §1 como M1–M12. As que mudam este documento: (M2) a migração do coordenador é **`0139`** e a da disponibilidade passa a `0140`, porque `0139` estava livre e Django liga migrações por dependência, não por número; (M3) **a proveniência do coordenador exige referência própria no `OrganizationalUnitGrant`**, não um rótulo — `membership` torna-se anulável, entra a FK `coordinator` e o discriminador `grant_source`, com CHECK de exclusividade (§5.1), porque um coordenador pode não ser membro da área e sem isso "remover o coordenador retira só o que ele ganhou por isso" não seria verdade; (M4) coordenador precisa ser Member ou Admin do workspace, e um Guest é **recusado** com `ORG_COORDINATOR_MUST_BE_MEMBER` em vez de receber acesso degradado pelo cap do workspace; (M6) a fila interna devolve `permissions` por linha e `viewer` no topo, resolvendo a política uma vez por projeto por página — a UI filtra, a API rejeita (§1.2); (M7) códigos 4932–4936; (M10) o alerta de `allocation_failed` sai em `transaction.on_commit` e **captura qualquer exceção**, porque um broker fora do ar não pode derrubar a alocação (a lição do PR #13). Também registrado: (M8) `apps/web` não tem vitest configurado, então o critério de teste de store e de componente do item 2.3 fica aberto como item próprio. |
 | 2026-09-07 | Rev. 6: **uma chave de idempotência deixa de ser lembrada para sempre** (§6.7 não fixava prazo). Os recibos de `AutomationOperation` passam a expirar por `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS`, default **30 dias**, num job diário — a tabela ganha uma linha por mutação aceita, com o corpo inteiro da resposta, e não tinha teto. A janela é deliberadamente muito maior que as dos logs do upstream (14 e 7 dias), e não menor, porque **apagar um recibo desgasta a sua chave**. O que uma chave expirada faz, por operação, foi verificado com testes e não duplica trabalho: a criação é find-or-create no `ExternalWorkItemBinding`, que o job nunca toca, e o early return de `_place` impede a realocação — o efeito observável é só a ausência do header `Idempotent-Replay` e um corpo descrevendo o presente em vez do snapshot original (o status é 201 nos dois casos); a reatribuição exige `If-Match` e recusa a retentativa como stale; a **transferência** é a única que reexecutaria, e é o caso que a janela precisa cobrir. Nenhuma decisão F1–F24 tocada. |
 | 2026-09-05 | Rev. 5: quatro esclarecimentos de mecanismo abertos pela implementação da Fase 1 (nenhuma decisão F1–F24 tocada). (1) **`ORG_DECISION_STALE` responde 412 na API pública e 409 na interna**: a exceção `DecisionStale` entregue no D0.5 carrega 409, a UI já depende disso, e §7.3 especifica 412 — a view pública mapeia o status por código em vez de herdá-lo. (2) **`completion_due_at` é recusado**, não aceito e ignorado, até a Fase 4 criar a `IssueServiceLevel` que o guarda: aceitar e descartar seria uma mentira que o cliente não vê. (3) **Uma chave de idempotência gasta num 4xx continua gasta**: §6.7 grava a falha e o replay a reproduz com o status original, então corrigir o payload exige chave nova — documentado em destaque no guia do cliente. (4) **A autorização de projeto roda antes do recibo**, porque `permission_classes` do DRF corre no `initial()`: uma chamada não autorizada responde 403 sem abrir operação, e portanto não gasta a chave de quem a enviou. |
@@ -448,7 +449,7 @@ Constraint: único `(workspace, idempotency_key)` sem condição de
 `created_at` mais antigo que 60 s é considerado abandonado e pode ser
 retomado (seção 6.7).
 
-**`WorkspaceMemberAvailability`** (migração `0141`, Fase 3)
+**`WorkspaceMemberAvailability`** (migração `0142`, Fase 3)
 
 | Campo | Tipo |
 | --- | --- |
@@ -462,7 +463,7 @@ retomado (seção 6.7).
 
 Constraint: `CHECK (unavailable_until IS NULL OR unavailable_until > unavailable_from)`.
 
-**`MembershipAllocationSettings`** (migração `0141`, Fase 3)
+**`MembershipAllocationSettings`** (migração `0142`, Fase 3)
 
 | Campo | Tipo |
 | --- | --- |
@@ -1054,7 +1055,7 @@ ação.
 
 | Item | Entrega |
 | --- | --- |
-| 3.1 | Migração `0141`: `WorkspaceMemberAvailability`, `MembershipAllocationSettings`; flag `ORCA_AVAILABILITY_ENABLED` |
+| 3.1 | Migração `0142`: `WorkspaceMemberAvailability`, `MembershipAllocationSettings`; flag `ORCA_AVAILABILITY_ENABLED` |
 | 3.2 | `rank_candidates` respeita disponibilidade e `accepts_new_work`; `max_open_items` |
 | 3.3 | Endpoints `availability/me/` e `members/{pk}/allocation/`; UI: formulário "estou indisponível de/até", toggle por área, indicador na fila |
 | 3.4 | Sweep horário `orca_availability_sweep` (6.9), dry-run default, comando manual com `--write` |

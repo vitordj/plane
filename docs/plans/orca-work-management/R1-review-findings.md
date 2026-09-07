@@ -57,7 +57,7 @@ camada em "escolha manual", e a frase que justifica o M3 deixa de ser verdade.
 - [x] **R1.A3** — A retenção do P0.20 reescreve linha append-only de `AssignmentDecision` pela FK `SET_NULL`. `bgtasks/orca_automation_cleanup_task.py:85`. **Corrigido em 07/09.** A decisão passou a copiar `idempotency_key` e `operation_type` no momento da gravação, em `automation_idempotency_key` e `automation_operation_type` (migração `0140`). A FK continua `SET_NULL` e continua indo a nulo, de propósito, e um teste afirma isso: o ponteiro tem a vida útil do recibo, e perdê-lo passou a ser escolha registrada. O que a purga não alcança mais é a resposta. **A correção que a revisão preferia não foi adotada**, e a razão importa: excluir da limpeza os recibos com decisão viva parte da premissa de que a maioria dos recibos não gera decisão, e é o contrário — toda rota mutante da API pública passa `automation_operation=handle.operation`, então aquilo manteria quase todos para sempre e anularia o P0.20.
 - [ ] **R1.A4** — Guest do workspace lê o e-mail de todos os membros de todas as áreas. `app/serializers/organizational_unit.py:92` e `views:269`.
 - [ ] **R1.A5** — Guest com API key enumera todas as áreas e todos os projetos que elas cobrem. `api/views/orca/units.py:85`. **Condição para a API em produção.**
-- [ ] **R1.A6** — Uma falha transitória queima a `Idempotency-Key` para sempre: toda retentativa replica um 500. `api/views/orca/base.py` e `automation_operation.py:303-311`. **Condição para a API em produção.**
+- [x] **R1.A6** — Uma falha transitória queima a `Idempotency-Key` para sempre: toda retentativa replica um 500. `api/views/orca/base.py` e `automation_operation.py:303-311`. **Corrigido em 07/09**, pela correção (1) que a revisão propôs: `AutomationOperationStatus` ganha `abandoned` (migração `0141`), `begin_operation` marca assim toda exceção não tratada e **não grava resposta**, e `_existing` retoma a linha. Uma recusa deliberada continua replicando, que é o contrato certo para ela. O segundo defeito que a revisão notou junto — o recibo gravar 500 enquanto a view respondeu 400 — some com isso, porque esse caminho deixou de gravar status. Registrado no RFC §4.2 rev. 8 e no guia do cliente.
 
 ## S3 — dez achados
 
@@ -93,4 +93,4 @@ Não existe. Estes itens não formam uma fase e não bloqueiam as Fases 3 a 5 em
 conjunto. O que bloqueia está dito em Prioridade, item a item:
 
 - [x] R1.A3 corrigido antes de trinta dias do primeiro deploy com o beat ativo. Fechado em 07/09, antes de qualquer deploy.
-- [ ] R1.A5 e R1.A6 corrigidos antes de `ORCA_PUBLIC_API_ENABLED=1` em produção.
+- [~] R1.A5 e R1.A6 corrigidos antes de `ORCA_PUBLIC_API_ENABLED=1` em produção. A6 fechado em 07/09; falta o A5.

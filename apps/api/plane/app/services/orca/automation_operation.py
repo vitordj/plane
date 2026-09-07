@@ -161,7 +161,23 @@ def _resume(operation, request_hash, api_token) -> OperationHandle:
     operation.api_token = api_token
     operation.created_at = timezone.now()
     operation.error_code = ""
-    operation.save(update_fields=["request_hash", "api_token", "created_at", "error_code", "updated_at"])
+    # Back to in progress explicitly. Until abandoned rows reached here this was
+    # a no-op, because the only way in was a row already in progress whose
+    # worker never came back. An abandoned row is not in progress, and leaving
+    # it that way would hand the caller a handle that reports itself closed.
+    operation.status = AutomationOperationStatus.IN_PROGRESS
+    operation.completed_at = None
+    operation.save(
+        update_fields=[
+            "request_hash",
+            "api_token",
+            "created_at",
+            "error_code",
+            "status",
+            "completed_at",
+            "updated_at",
+        ]
+    )
     return OperationHandle(operation)
 
 
@@ -175,6 +191,14 @@ def _existing(operation, request_hash, api_token) -> OperationHandle:
 
     if operation.status in (AutomationOperationStatus.SUCCEEDED, AutomationOperationStatus.FAILED):
         return OperationHandle(operation, replayed=True)
+
+    if operation.status == AutomationOperationStatus.ABANDONED:
+        # A transient failure left this behind, so the work never happened. The
+        # contract an integration follows is "retry with the same key", and the
+        # only useful answer to that retry is to run the operation (R1.A6).
+        # Resuming rather than deleting keeps the row, and with it the record
+        # that an attempt was made and what broke it.
+        return _resume(operation, request_hash, api_token)
 
     if timezone.now() - operation.created_at < ABANDONED_AFTER:
         raise OperationInProgress(idempotency_key=operation.idempotency_key)
@@ -274,15 +298,43 @@ def fail_operation(handle, *, error_code, response=None, http_status=400):
     )
 
 
+def abandon_operation(handle, *, error_code) -> None:
+    """
+    @description Release the key after a failure the caller can retry through.
+
+    Deliberately does **not** store a response: a stored response is what a
+    replay reproduces, and reproducing a transient error is exactly the defect
+    this exists to remove. The error code is kept on the row so an operator can
+    still see what broke, and the next call carrying the key runs the work.
+
+    Called outside the caller's transaction, for the same reason
+    ``fail_operation`` is — the interesting case is the one where that
+    transaction rolled back.
+    """
+    operation = handle.operation
+    operation.status = AutomationOperationStatus.ABANDONED
+    operation.error_code = error_code
+    operation.completed_at = timezone.now()
+    with transaction.atomic():
+        operation.save(update_fields=["status", "error_code", "completed_at", "updated_at"])
+
+
 @contextmanager
 def begin_operation(workspace, api_token, key, operation_type, payload):
     """
     ``start_operation`` with a guarantee that the row never stays in progress.
 
     @description An unhandled exception inside the block marks the receipt
-    failed with ``ORG_INTERNAL_ERROR`` and re-raises. Without that, a crash
-    would leave the key wedged for sixty seconds and then hand the next retry a
-    resumed operation — which is recoverable, but tells the caller nothing.
+    **abandoned** and re-raises. Abandoned and not failed, and the distinction is
+    the point (R1.A6): an exception that reached here is by definition not one
+    the endpoint chose to raise, so it is a crash, a deadlock or a dropped
+    connection — a caller repeating the request may well succeed. Recording it
+    as ``failed`` used to hand every retry the same stored 500 without ever
+    attempting the work again, for the thirty days until retention removed the
+    receipt, while the documentation told the caller not to change the key.
+
+    The row stays, rather than being deleted, so that an attempt having been
+    made and what broke it are still on the record; ``_existing`` resumes it.
 
     The failure is written **after** the caller's ``atomic()`` block has
     unwound, which is the whole reason ``start_operation`` and
@@ -302,10 +354,5 @@ def begin_operation(workspace, api_token, key, operation_type, payload):
         yield handle
     except Exception:
         if handle.is_open:
-            fail_operation(
-                handle,
-                error_code="ORG_INTERNAL_ERROR",
-                response={"error_code": "ORG_INTERNAL_ERROR"},
-                http_status=500,
-            )
+            abandon_operation(handle, error_code="ORG_INTERNAL_ERROR")
         raise

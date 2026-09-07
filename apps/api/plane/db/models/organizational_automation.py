@@ -55,11 +55,22 @@ class AutomationOperationStatus(models.TextChoices):
     is how a crash mid-operation becomes visible. Section 6.7 treats one older
     than sixty seconds as abandoned and lets the next caller take it over,
     which is why the state has to be recorded rather than inferred.
+
+    ``failed`` and ``abandoned`` split what used to be one state, and the split
+    is the difference between a caller who cannot succeed by repeating and one
+    who can. ``failed`` is a deliberate refusal the endpoint chose — a forbidden
+    mode, an ineligible executor, a payload the domain rejects. Repeating it
+    changes nothing, so a replay reproduces the recorded answer. ``abandoned``
+    is what a transient failure leaves behind: a deadlock, a dropped connection,
+    an integrity error under concurrency. The work never happened, so the next
+    call carrying that key must run it rather than be handed the old error
+    (review finding R1.A6).
     """
 
     IN_PROGRESS = "in_progress", "In progress"
     SUCCEEDED = "succeeded", "Succeeded"
     FAILED = "failed", "Failed"
+    ABANDONED = "abandoned", "Abandoned"
 
 
 class ExternalWorkItemBinding(BaseModel):
