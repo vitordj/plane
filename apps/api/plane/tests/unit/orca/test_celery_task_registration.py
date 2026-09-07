@@ -21,6 +21,12 @@ The same applies to the directory task: ``plane/celery.py`` schedules it on
 the beat by name, and beat only hands the name to a worker — a worker that
 never imported the module answers the hourly tick with the same unregistered
 task error, silently, every hour.
+
+And to the assignment SLA sweep, which is on a fifteen-minute beat: there the
+same omission is ninety-six silent failures a day, and what goes missing is
+the alert telling an area that work of theirs is sitting past its deadline
+with nobody on it — the one thing that failure mode would otherwise be
+reported by.
 """
 
 import pytest
@@ -37,10 +43,14 @@ DIRECTORY_TASK_MODULE = "plane.bgtasks.organizational_directory_task"
 CLEANUP_TASK_NAME = "plane.bgtasks.orca_automation_cleanup_task.delete_orca_automation_operations"
 CLEANUP_TASK_MODULE = "plane.bgtasks.orca_automation_cleanup_task"
 
+SLA_SWEEP_TASK_NAME = "plane.bgtasks.organizational_queue_task.sweep_assignment_sla"
+SLA_SWEEP_TASK_MODULE = "plane.bgtasks.organizational_queue_task"
+
 TASKS = [
     pytest.param(TASK_MODULE, TASK_NAME, id="reconcile_organizational_access"),
     pytest.param(DIRECTORY_TASK_MODULE, DIRECTORY_TASK_NAME, id="resolve_directory_identities"),
     pytest.param(CLEANUP_TASK_MODULE, CLEANUP_TASK_NAME, id="delete_orca_automation_operations"),
+    pytest.param(SLA_SWEEP_TASK_MODULE, SLA_SWEEP_TASK_NAME, id="sweep_assignment_sla"),
 ]
 
 
@@ -81,6 +91,11 @@ class TestOrganizationalTaskRegistration:
         # the worker, once a day, where nobody is looking.
         assert CLEANUP_TASK_NAME in scheduled
         assert CLEANUP_TASK_NAME in celery_app.tasks
+        # And for the SLA sweep, whose tick is fifteen minutes: a drift here
+        # costs ninety-six missed passes a day, each one an area not being
+        # told that its work is past its assignment deadline.
+        assert SLA_SWEEP_TASK_NAME in scheduled
+        assert SLA_SWEEP_TASK_NAME in celery_app.tasks
 
     def test_the_registered_task_is_the_one_the_dispatcher_queues(self):
         # A name can be registered by a callable other than the one the

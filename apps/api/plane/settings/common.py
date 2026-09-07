@@ -372,6 +372,11 @@ CELERY_IMPORTS = (
     # worker that never imported the module answers it with "Received
     # unregistered task" once a day, silently.
     "plane.bgtasks.orca_automation_cleanup_task",
+    # And for the assignment SLA sweep: the beat entry above fires every
+    # fifteen minutes, and a worker that never imported the module answers each
+    # tick with "Received unregistered task" -- ninety-six silent failures a
+    # day, with the alerts they were meant to send never written.
+    "plane.bgtasks.organizational_queue_task",
 )
 
 FILE_SIZE_LIMIT = int(os.environ.get("FILE_SIZE_LIMIT", 5242880))

@@ -102,6 +102,15 @@ app.conf.beat_schedule = {
         "task": "plane.bgtasks.organizational_directory_task.resolve_directory_identities",
         "schedule": crontab(minute=20),  # Every hour at :20
     },
+    # Orca: notice that an item's assignment deadline passed with nobody on
+    # it, and tell whoever answers for the area. Every fifteen minutes because
+    # this interval is how late an alert can be against the SLA it polices:
+    # hourly would spend a sixth of a short window on the check, and a
+    # minute-level tick would rescan a queue that changes far more slowly.
+    "check-every-fifteen-minutes-to-sweep-orca-assignment-sla": {
+        "task": "plane.bgtasks.organizational_queue_task.sweep_assignment_sla",
+        "schedule": crontab(minute="*/15"),  # Every 15 minutes
+    },
     # Orca: expire the automation API's idempotency receipts. Daily, in the same
     # small hours as the cleanup tasks above, and after the last of them: the
     # table only grows while an integration is calling, so the exact minute
