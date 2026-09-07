@@ -260,3 +260,81 @@ class TestWhatExpiringAKeyCosts:
         assert after.data["operation"]["replay"] is False
         assert after.data["binding"]["created"] is False
         assert after.data["work_item"]["id"] == first.data["work_item"]["id"]
+
+
+@pytest.mark.unit
+class TestProvenanceSurvivesThePurge:
+    """
+    R1.A3 — the purge used to rewrite an append-only row and lose the answer.
+
+    ``AssignmentDecision.automation_operation`` is ``SET_NULL``, so deleting a
+    receipt has Django issue an UPDATE over the decision. That write is invisible
+    to the append-only guard, which lives in ``save()`` and is not called by a
+    queryset update, and it is invisible in the log. Thirty days after a public
+    API call, "which call took this decision?" stopped having an answer, and
+    nothing recorded that it once had one.
+
+    The decision now copies the key and the operation type at write time. The
+    foreign key still goes null, and the first test below says so on purpose:
+    the pointer is a convenience with the receipt's lifetime, and that is a
+    recorded choice rather than an accident.
+    """
+
+    def test_the_key_survives_the_purge_even_though_the_pointer_does_not(self, caller, project, world, settings):
+        settings.ORCA_AUTOMATION_OPERATION_RETENTION_DAYS = 30
+        created = post(caller, project, body())
+        decision = AssignmentDecision.objects.get(id=created.data["decision"]["id"])
+        key = AutomationOperation.all_objects.get().idempotency_key
+        assert decision.automation_operation_id is not None
+        assert decision.automation_idempotency_key == key
+        assert decision.automation_operation_type == AutomationOperationType.CREATE_WORK_ITEM
+
+        AutomationOperation.all_objects.update(created_at=timezone.now() - timedelta(days=31))
+        delete_orca_automation_operations()
+
+        decision.refresh_from_db()
+        # The pointer goes, by design: it cannot outlive the row it points at.
+        assert decision.automation_operation_id is None
+        # The answer stays. This is the whole of the fix.
+        assert decision.automation_idempotency_key == key
+        assert decision.automation_operation_type == AutomationOperationType.CREATE_WORK_ITEM
+
+    def test_a_decision_taken_outside_the_public_api_carries_no_key(self, caller, project, world):
+        """
+        Blank, not null, and blank for the same reason the foreign key is: a
+        decision from the UI, a command or the internal API was not a call.
+        """
+        from plane.app.services.orca import assignment_service
+
+        created = post(caller, project, body(mode="manual"))
+        issue = Issue.objects.get(id=created.data["work_item"]["id"])
+        member = world.memberships.filter(is_active=True).first().workspace_member.member
+
+        assignment_service.claim(issue, member)
+
+        latest = AssignmentDecision.objects.filter(issue=issue).order_by("-created_at").first()
+        assert latest.automation_operation_id is None
+        assert latest.automation_idempotency_key == ""
+        assert latest.automation_operation_type == ""
+
+    def test_every_public_api_decision_is_traceable_after_a_purge(self, caller, project, world, settings):
+        """
+        The failure the finding described, at the scale it described it: after a
+        purge, *every* decision that came from a call can still name the call.
+        """
+        settings.ORCA_AUTOMATION_OPERATION_RETENTION_DAYS = 30
+        keys = [f"key-{n}" for n in range(3)]
+        for n, key in enumerate(keys):
+            response = post(caller, project, body(external_id=f"cliente-{n}"), key=key)
+            assert response.status_code == 201, response.data
+
+        AutomationOperation.all_objects.update(created_at=timezone.now() - timedelta(days=31))
+        delete_orca_automation_operations()
+
+        assert AutomationOperation.all_objects.count() == 0
+        recorded = set(
+            AssignmentDecision.objects.exclude(automation_idempotency_key="").values_list(
+                "automation_idempotency_key", flat=True
+            )
+        )
+        assert recorded == set(keys)

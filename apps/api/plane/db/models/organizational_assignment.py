@@ -260,6 +260,18 @@ class AssignmentDecision(AppendOnlyModel):
         related_name="assignment_decisions",
     )
 
+    # The same answer, in a form that outlives the receipt. The foreign key
+    # above is a convenience pointer with the retention window's lifetime: the
+    # P0.20 purge hard-deletes receipts past ``ORCA_AUTOMATION_OPERATION_
+    # RETENTION_DAYS``, and ``SET_NULL`` then has Django issue an UPDATE over
+    # this row -- a write the append-only guard cannot see, because it lives in
+    # ``save()`` and a queryset update does not call it. Copying the key at
+    # write time is what keeps "which call did this?" answerable afterwards.
+    # Blank for every decision taken from the UI, a command, or the internal
+    # API, exactly like the foreign key.
+    automation_idempotency_key = models.CharField(max_length=255, blank=True, default="")
+    automation_operation_type = models.CharField(max_length=20, blank=True, default="")
+
     trigger = models.CharField(max_length=20, choices=DecisionTrigger.choices)
     requested_mode = models.CharField(max_length=16, choices=RequestedAssignmentMode.choices, null=True, blank=True)
     effective_mode = models.CharField(max_length=16, choices=AssignmentMode.choices)

@@ -469,12 +469,16 @@ def _record(
     @description Write the decision and point the link at it (I5).
     @param automation_operation: The ``AutomationOperation`` that caused this,
         when the change came in over the public API. Answers "which call did
-        this?" without joining through timestamps.
+        this?" without joining through timestamps. Its key and type are copied
+        onto the decision as well, because the receipt is purged after the
+        retention window and the foreign key goes null with it (R1.A3).
     @returns The new decision.
     """
     superseded = link.current_assignment_decision
     decision = AssignmentDecision.objects.create(
         automation_operation=automation_operation,
+        automation_idempotency_key=(automation_operation.idempotency_key if automation_operation else ""),
+        automation_operation_type=(automation_operation.operation_type if automation_operation else ""),
         issue_id=link.issue_id,
         organizational_unit_id=link.organizational_unit_id,
         project_id=link.project_id,
