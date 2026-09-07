@@ -586,10 +586,65 @@ uma integração se apoia.
 
 ## Gate 1
 
-- [ ] 8 itens `[x]`.
-- [ ] Critérios do 1.8 verdes.
-- [ ] `docs/orca-public-api.md` revisada por alguém que não escreveu o código, executando os `curl` contra staging com `ORCA_PUBLIC_API_ENABLED=1` **em staging apenas**.
-- [ ] `ORCA_PUBLIC_API_ENABLED` permanece `0` em produção (registrar aqui quem verificou).
+- [x] 8 itens `[x]`. **Verificado nesta sessão (07/09, SG):** 1.1–1.8 já
+      estão todos marcados `[x]` neste arquivo; nenhum toque nesta sessão, só
+      conferência.
+- [x] Critérios do 1.8 verdes **localmente**. `pytest
+plane/tests/contract/test_orca_public_contract.py -q -p no:cacheprovider`
+      → `9 passed` em `122.82s`, sobre a ponta do PR #15 (`31d35e2b`). O que
+      este arquivo pede além disso — "Verdes no CI" — é o critério de aceite do
+      próprio 1.8, não deste bloco, e continua exigindo o run do PR (não é
+      possível fechar sem CI real).
+- [ ] `docs/orca-public-api.md` revisada por alguém que não escreveu o código, executando os `curl` contra staging com `ORCA_PUBLIC_API_ENABLED=1` **em staging apenas**. Continua exigindo staging; comando pronto no próprio arquivo.
+- [ ] `ORCA_PUBLIC_API_ENABLED` permanece `0` em produção (registrar aqui quem verificou). Decisão/verificação de operação, não de código; ninguém ligou a flag nesta sessão (regra §2.10 do plano da madrugada).
 - [ ] Medição: 200 criações sequenciais na mesma área com `least_loaded` em staging; anotar p50/p95 de latência (RFC §12 risco de lock).
+
+  **Prévia LOCAL desta sessão (07/09, SG) — rotulada como local, não
+  staging; os números não são comparáveis aos de um deploy real** (mesmo
+  contêiner de sessão rodando `runserver`/`live_server`, sem gunicorn, sem
+  réplica de leitura, sem rede real): `n=200`, `p50=1356.0ms`,
+  `p95=1379.9ms`, `min=1344.0ms`, `max=2495.3ms`, `mean=1367.6ms`,
+  `total=273.5s`. Medido com o cliente de referência
+  (`tools/orca-client/`) contra `pytest-django`'s `live_server`, com uma
+  área de 4 membros elegíveis e política `least_loaded` — o mesmo desenho
+  do `world` do `test_orca_public_contract.py`, adaptado para 4 pessoas e
+  200 iterações medindo `time.perf_counter()` por chamada em vez de
+  asserções.
+
+  **Comando pronto para a manhã repetir contra staging**, com
+  `ORCA_PUBLIC_API_ENABLED=1` **em staging apenas** e um token real de uma
+  conta Admin do workspace piloto:
+
+  ```python
+  # python3, com `pip install requests` e tools/orca-client/orca_client.py no path
+  import statistics, sys, time
+  sys.path.insert(0, "tools/orca-client")
+  from orca_client import OrcaClient
+
+  client = OrcaClient("https://<staging-host>", "<api-key>", "<workspace-slug>")
+  samples = []
+  for n in range(200):
+      started = time.perf_counter()
+      result = client.create_work_item(
+          project_id="<project-id-in-the-piloted-area>",
+          source="gate1-latency-staging",
+          external_id=f"gate1-{n}",
+          name=f"Gate 1 latency probe {n}",
+          unit="<unit-slug>",
+          mode="least_loaded",
+          event_id=f"evt-{n}",
+      )
+      samples.append((time.perf_counter() - started) * 1000)
+      assert result.replayed is False
+
+  ordered = sorted(samples)
+  p50 = statistics.median(ordered)
+  p95 = ordered[min(len(ordered) - 1, int(round(0.95 * len(ordered))) - 1)]
+  print(f"n=200 p50={p50:.1f}ms p95={p95:.1f}ms max={ordered[-1]:.1f}ms")
+  ```
+
+  A área precisa de 4+ membros elegíveis antes de rodar (senão
+  `least_loaded` esgota candidatos e o teste vira `ORG_EXECUTOR_NOT_ELIGIBLE`
+  em vez de medir latência de alocação).
 
 Data do gate: \_\_\_\_
