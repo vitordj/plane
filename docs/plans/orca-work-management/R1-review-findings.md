@@ -54,7 +54,7 @@ camada em "escolha manual", e a frase que justifica o M3 deixa de ser verdade.
 
 - [ ] **R1.A1** — Re-POSTar a **mesma** área num item atribuído devolve o item à fila e apaga o executor, respondendo 200. `app/views/organizational_unit.py:583`.
 - [ ] **R1.A2** — Rebaixamento a Guest do workspace é capturado como `baseline_role`; sair da área deixa acesso residual ativo. `app/services/orca/org_unit_reconciler.py:436-448`. **Toca o M3.**
-- [ ] **R1.A3** — A retenção do P0.20 reescreve linha append-only de `AssignmentDecision` pela FK `SET_NULL`. `bgtasks/orca_automation_cleanup_task.py:85`. **Trinta dias de relógio a partir do primeiro deploy.**
+- [x] **R1.A3** — A retenção do P0.20 reescreve linha append-only de `AssignmentDecision` pela FK `SET_NULL`. `bgtasks/orca_automation_cleanup_task.py:85`. **Corrigido em 07/09.** A decisão passou a copiar `idempotency_key` e `operation_type` no momento da gravação, em `automation_idempotency_key` e `automation_operation_type` (migração `0140`). A FK continua `SET_NULL` e continua indo a nulo, de propósito, e um teste afirma isso: o ponteiro tem a vida útil do recibo, e perdê-lo passou a ser escolha registrada. O que a purga não alcança mais é a resposta. **A correção que a revisão preferia não foi adotada**, e a razão importa: excluir da limpeza os recibos com decisão viva parte da premissa de que a maioria dos recibos não gera decisão, e é o contrário — toda rota mutante da API pública passa `automation_operation=handle.operation`, então aquilo manteria quase todos para sempre e anularia o P0.20.
 - [ ] **R1.A4** — Guest do workspace lê o e-mail de todos os membros de todas as áreas. `app/serializers/organizational_unit.py:92` e `views:269`.
 - [ ] **R1.A5** — Guest com API key enumera todas as áreas e todos os projetos que elas cobrem. `api/views/orca/units.py:85`. **Condição para a API em produção.**
 - [ ] **R1.A6** — Uma falha transitória queima a `Idempotency-Key` para sempre: toda retentativa replica um 500. `api/views/orca/base.py` e `automation_operation.py:303-311`. **Condição para a API em produção.**
@@ -92,5 +92,5 @@ camada em "escolha manual", e a frase que justifica o M3 deixa de ser verdade.
 Não existe. Estes itens não formam uma fase e não bloqueiam as Fases 3 a 5 em
 conjunto. O que bloqueia está dito em Prioridade, item a item:
 
-- [ ] R1.A3 corrigido antes de trinta dias do primeiro deploy com o beat ativo.
+- [x] R1.A3 corrigido antes de trinta dias do primeiro deploy com o beat ativo. Fechado em 07/09, antes de qualquer deploy.
 - [ ] R1.A5 e R1.A6 corrigidos antes de `ORCA_PUBLIC_API_ENABLED=1` em produção.

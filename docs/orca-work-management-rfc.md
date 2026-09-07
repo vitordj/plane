@@ -448,7 +448,7 @@ Constraint: único `(workspace, idempotency_key)` sem condição de
 `created_at` mais antigo que 60 s é considerado abandonado e pode ser
 retomado (seção 6.7).
 
-**`WorkspaceMemberAvailability`** (migração `0140`, Fase 3)
+**`WorkspaceMemberAvailability`** (migração `0141`, Fase 3)
 
 | Campo | Tipo |
 | --- | --- |
@@ -462,7 +462,7 @@ retomado (seção 6.7).
 
 Constraint: `CHECK (unavailable_until IS NULL OR unavailable_until > unavailable_from)`.
 
-**`MembershipAllocationSettings`** (migração `0140`, Fase 3)
+**`MembershipAllocationSettings`** (migração `0141`, Fase 3)
 
 | Campo | Tipo |
 | --- | --- |
@@ -1054,7 +1054,7 @@ ação.
 
 | Item | Entrega |
 | --- | --- |
-| 3.1 | Migração `0140`: `WorkspaceMemberAvailability`, `MembershipAllocationSettings`; flag `ORCA_AVAILABILITY_ENABLED` |
+| 3.1 | Migração `0141`: `WorkspaceMemberAvailability`, `MembershipAllocationSettings`; flag `ORCA_AVAILABILITY_ENABLED` |
 | 3.2 | `rank_candidates` respeita disponibilidade e `accepts_new_work`; `max_open_items` |
 | 3.3 | Endpoints `availability/me/` e `members/{pk}/allocation/`; UI: formulário "estou indisponível de/até", toggle por área, indicador na fila |
 | 3.4 | Sweep horário `orca_availability_sweep` (6.9), dry-run default, comando manual com `--write` |

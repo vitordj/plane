@@ -11,7 +11,7 @@ sincronização com Entra/RH (A3), peso por estimativa (A7).
 
 ---
 
-## 3.1 — Migração 0140 e flag `[ ]`
+## 3.1 — Migração 0141 e flag `[ ]`
 
 - Modelos `WorkspaceMemberAvailability` e `MembershipAllocationSettings` (RFC §5.2) em `organizational_unit.py`; CHECK de intervalo.
 - `ORCA_AVAILABILITY_ENABLED` em `settings/common.py` e `.env.example`; exposto em `OrcaConfigEndpoint`.
