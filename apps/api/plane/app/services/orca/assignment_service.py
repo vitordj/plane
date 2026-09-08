@@ -67,6 +67,7 @@ from plane.db.models import (
     StateGroup,
 )
 
+from .alerts import notify_allocation_failed_safely
 from .coverage import unit_covers_project
 from .metrics import record_assignment_outcome, record_decision_superseded, record_no_candidate
 from .errors import (
@@ -572,6 +573,12 @@ def _apply_queued(link, decision, *, state, queue_reason, sla_seconds=None, assi
             "updated_at",
         ]
     )
+    # The area hears at once that nobody could take the item. on_commit so
+    # a notification that fails (broker, DB) cannot roll back the allocation
+    # itself — the item is already waiting, and the SLA sweep is the backup.
+    if state == RoutingState.ALLOCATION_FAILED:
+        link_id = link.id
+        transaction.on_commit(lambda: notify_allocation_failed_safely(link_id))
 
 
 def _locked_link(issue):

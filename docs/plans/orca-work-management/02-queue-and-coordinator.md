@@ -80,6 +80,7 @@ novo fora do tema. Todas as strings no catálogo i18n
 `organizational_units`), em todas as locales, via skill `translate`.
 
 **Parte mínima (antes do Gate 2-mínimo):**
+
 - `unit-detail.tsx`: terceira aba `work` → `unit-work-tab.tsx` com seções "Caixa de entrada" (`queued`, `allocation_failed`) e "Em execução" (agrupado por executor).
 - `queue-list.tsx` + `queue-item-row.tsx`: linha com identificador, título (link para o item), estado nativo, `queue_reason`, idade, atraso na atribuição, executor.
 - Ações por linha, condicionais ao papel devolvido pela API (`can_claim`, `can_assign`, `can_return`): **Assumir**, **Atribuir a…** (`assign-member-modal.tsx` listando candidatos do endpoint de ranking com carga), **Devolver à fila**.
@@ -87,6 +88,7 @@ novo fora do tema. Todas as strings no catálogo i18n
 - `issue-unit-property.tsx`: mostra `routing_state` e executor principal; botão "atribuir" vira menu com as três ações.
 
 **Parte completa:**
+
 - Seção "Atenção": `target_date` vencido, `suspended`, executor indisponível (Fase 3 preenche), sem data.
 - Seção "Decisões": `decision-timeline.tsx`.
 - `policy-form.tsx` (Admin): `default_mode`, `allowed_modes`, `assignment_sla_seconds`, `max_open_items_per_member`, por área e por projeto.
@@ -95,6 +97,7 @@ novo fora do tema. Todas as strings no catálogo i18n
 - Transferir para outra área a partir do item (modal com áreas que cobrem o projeto).
 
 **Aceite.**
+
 - [x] `pnpm --filter web check:lint` e `check:types` limpos (local) — `check:types` roda como `pnpm check:types --filter=web`, pelo turbo; isolado, falha por falta do build dos pacotes.
 - [x] `check:sync` do i18n verde (19 locales, 100%).
 - [ ] Teste de store para fila e ações (vitest) e um teste de componente para `queue-list.tsx`. **Aberto por decisão** (plano da madrugada, M8): `apps/web` não tem vitest configurado — só `vite.config.ts`, e o vitest do monorepo vive em `packages/codemods` e `apps/live`. Montar a configuração dentro do mesmo PR que entrega a aba foi julgado risco maior que o benefício. Item próprio, antes do Gate 2 completo.
@@ -116,7 +119,7 @@ transferência entre áreas a partir do item.
 
 ---
 
-## 2.4 — Alertas e varredura de SLA de atribuição `[ ]` — **não entregue**
+## 2.4 — Alertas e varredura de SLA de atribuição `[x]`
 
 - Tarefa Celery `plane.bgtasks.organizational_queue_task.sweep_assignment_sla` a cada 15 min (registrar em `plane/celery.py` e no `include` de `settings/common.py`, com o mesmo comentário explicativo das tarefas Orca existentes).
 - Para cada item `queued`/`allocation_failed` com `assignment_due_at < now()` sem alerta nas últimas 4 h (guardar `last_alerted_at` em `IssueOrganizationalUnit`, campo novo na mesma fase, migração `0140`), criar notificação nativa (`Notification`) para os coordenadores da área e, se não houver coordenador, para o `lead`.
@@ -126,20 +129,15 @@ transferência entre áreas a partir do item.
 duplica; sem coordenador cai para o lead; `ORCA_ORG_UNITS_ENABLED=0` faz a
 tarefa sair sem efeito (padrão da `organizational_directory_task`).
 
-**Não entregue.** A sessão de agente que carregava este item foi rejeitada pelo
-limite de uso de 5 horas ao ser disparada às 06:45 UTC de 07/09, e não executou
-nenhum passo. Nada deste item existe no código: não há
-`bgtasks/organizational_queue_task.py`, não há `services/orca/alerts.py`, e o
-gancho de alerta imediato **não** está em `_apply_queued`.
-
-O campo `IssueOrganizationalUnit.last_alerted_at`, de que a varredura depende,
-**existe** — entrou na migração `0139` junto com o 2.1, de propósito, para que
-este item não precise de migração própria.
-
-Consequência para o gate: o Gate 2-mínimo pede que o coordenador piloto receba
-alerta de `allocation_failed`. Sem este item, esse critério não tem como
-fechar, nem pelo caminho alternativo previsto (o alerta imediato do serviço),
-que também é deste item.
+**Entregue (08/09).** O campo `last_alerted_at` já existia na `0139`, então
+este item não precisou de migração. Arquivos novos:
+`app/services/orca/alerts.py` (destinatários e a escrita da `Notification`) e
+`bgtasks/organizational_queue_task.py` (a varredura). O gancho imediato mora em
+`_apply_queued`: `transaction.on_commit` + `notify_allocation_failed_safely`,
+que captura qualquer exceção para um broker fora do ar não transformar
+`allocation_failed` em 500. Beat a cada 15 min, `CELERY_IMPORTS` inclui o
+módulo. O alerta imediato **não** grava `last_alerted_at` — essa coluna é o
+cooldown da varredura de SLA, não do "ninguém pôde pegar".
 
 ---
 
@@ -161,12 +159,12 @@ que também é deste item.
 
 ## Gate 2-mínimo (libera `ORCA_PUBLIC_API_ENABLED=1` em produção)
 
-- [~] 2.1, 2.2 e a parte mínima de 2.3 **entregues e verificadas**, aguardando merge em `stage` e implantação em staging.
+- [~] 2.1, 2.2 e a parte mínima de 2.3 **entregues e verificadas**; 2.4 entregue (08/09). Falta implantação em staging e a área piloto.
 - [ ] Área piloto com coordenador definido (pendência de negócio no README do plano).
-- [ ] Coordenador piloto consegue, em staging: ver a fila, receber alerta de `allocation_failed`, atribuir manualmente, devolver à fila. **Bloqueado pelo 2.4**, que não foi entregue: o alerta imediato do serviço, que este critério aceitava como suficiente, também é do 2.4. Ver, atribuir e devolver já têm código.
+- [ ] Coordenador piloto consegue, em staging: ver a fila, receber alerta de `allocation_failed`, atribuir manualmente, devolver à fila. **O código do alerta existe**; o critério continua aberto até alguém exercitar em staging.
 - [ ] Runbook: como desligar a API (`ORCA_PUBLIC_API_ENABLED=0`) e o que acontece com operações em voo.
 
-Data: ____ · Quem verificou: ____
+Data: \_**\_ · Quem verificou: \_\_**
 
 ## Gate 2 completo
 
@@ -174,4 +172,4 @@ Data: ____ · Quem verificou: ____
 - [ ] Teste de 2.6 verde.
 - [ ] Uma semana de uso real da fila pela área piloto sem violação apontada por `audit_organizational_routing` (rodar diariamente em dry-run).
 
-Data do gate: ____
+Data do gate: \_\_\_\_

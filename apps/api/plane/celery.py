@@ -110,6 +110,14 @@ app.conf.beat_schedule = {
         "task": "plane.bgtasks.orca_automation_cleanup_task.delete_orca_automation_operations",
         "schedule": crontab(hour=4, minute=0),  # UTC 04:00
     },
+    # Orca: notice items whose assignment SLA has passed. Fifteen minutes is
+    # the same cadence as the rest of the intra-day schedule; last_alerted_at
+    # (four-hour cooldown) is what stops the same people being told about the
+    # same item on every tick.
+    "check-every-fifteen-minutes-to-sweep-assignment-sla": {
+        "task": "plane.bgtasks.organizational_queue_task.sweep_assignment_sla",
+        "schedule": crontab(minute="*/15"),
+    },
 }
 
 
