@@ -158,7 +158,6 @@ export interface IOrganizationalUnitStore {
   ) => Promise<IOrganizationalUnitCoordinator>;
   removeCoordinator: (workspaceSlug: string, unitId: string, coordinatorId: string) => Promise<void>;
   fetchDecisions: (workspaceSlug: string, unitId: string) => Promise<IAssignmentDecisionDetail[]>;
-  getDecisionsByUnitId: (unitId: string) => IAssignmentDecisionDetail[];
   fetchPolicy: (workspaceSlug: string, unitId: string, projectId?: string) => Promise<IAssignmentPolicyResolution>;
   updatePolicy: (
     workspaceSlug: string,

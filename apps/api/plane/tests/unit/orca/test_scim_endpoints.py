@@ -86,6 +86,7 @@ class TestScimAuthentication:
     ):
         """R1.A16: a 429 is not a successful use of the token."""
         monkeypatch.setattr(SCIMRateThrottle, "allow_request", lambda self, request, view: False)
+        monkeypatch.setattr(SCIMRateThrottle, "wait", lambda self: 1)
 
         response = scim_client.get(scim_users_url(workspace_with_members.slug))
 
