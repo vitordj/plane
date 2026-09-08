@@ -34,10 +34,24 @@ redis-cli -h 127.0.0.1 ping >/dev/null 2>&1 \
 
 # ---------------------------------------------------------------------------
 # RabbitMQ — celery broker; create the plane user + vhost matching apps/api/.env.
+# The broker node takes a while to come up on a cold boot, so poll await_startup
+# in a loop (tolerating the transient "node down" exit 69) instead of a single
+# blocking wait that would abort start.sh on the first boot.
 # ---------------------------------------------------------------------------
 if ! sudo rabbitmqctl -q await_startup --timeout 5 >/dev/null 2>&1; then
-  sudo rabbitmq-server -detached
-  sudo rabbitmqctl await_startup --timeout 120
+  sudo rabbitmq-server -detached || true
+  rmq_ready=0
+  for _ in $(seq 1 40); do
+    if sudo rabbitmqctl -q await_startup --timeout 5 >/dev/null 2>&1; then
+      rmq_ready=1
+      break
+    fi
+    sleep 3
+  done
+  if [ "$rmq_ready" -ne 1 ]; then
+    echo "RabbitMQ did not become ready in time" >&2
+    exit 1
+  fi
 fi
 sudo rabbitmqctl list_users 2>/dev/null | grep -q '^plane' || sudo rabbitmqctl add_user plane plane
 sudo rabbitmqctl set_user_tags plane administrator
