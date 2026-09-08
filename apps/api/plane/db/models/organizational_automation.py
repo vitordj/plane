@@ -140,7 +140,7 @@ class AutomationOperation(BaseModel):
     Attributes:
         api_token (APIToken): Who called. Null once a token is deleted — the
             receipt outlives the credential.
-        idempotency_key (str): The caller's key, unique per workspace.
+        idempotency_key (str): The caller's key, unique per token in a workspace.
         request_hash (str): SHA-256 of the canonical payload, 64 hex chars.
         issue (Issue): The work item the operation ended up touching, if any.
         response_snapshot (dict): The body returned to the caller.
@@ -186,9 +186,13 @@ class AutomationOperation(BaseModel):
             # if soft-deleting a receipt freed the key, a replay arriving after
             # the cleanup would execute the operation a second time, which is
             # the one thing this table exists to prevent.
+            # R1.A12: scoped to the token, not the workspace. Two integrations
+            # in the same workspace must be able to reuse the same key without
+            # one burning the other's namespace. A receipt whose token was
+            # deleted (SET_NULL) no longer occupies a live token's key.
             models.UniqueConstraint(
-                fields=["workspace", "idempotency_key"],
-                name="orca_operation_unique_idempotency_key",
+                fields=["workspace", "api_token", "idempotency_key"],
+                name="orca_operation_unique_token_idempotency_key",
             )
         ]
         indexes = [models.Index(fields=["workspace", "status", "created_at"], name="orca_operation_status_idx")]

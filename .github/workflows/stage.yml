@@ -282,10 +282,19 @@ jobs:
             echo "::error file=$compose::found ${api_services} services on the api image -- the file shape changed and this job stopped checking anything"
             exit 1
           fi
-          for var in ORCA_ORG_UNITS_ENABLED ORCA_ORG_SYNC_MAX_EDGES \
-                     ORCA_PUBLIC_API_ENABLED ORCA_PUBLIC_API_RATE_LIMIT \
-                     ORCA_AUTOMATION_OPERATION_RETENTION_DAYS \
-                     SCIM_RATE_LIMIT SCIM_AUTH_FAILURE_RATE_LIMIT; do
+          # Variables the Python process actually reads from the environment
+          # at import. A name forgotten in Compose is the P0.19 failure: the
+          # flag is set and nothing happens. Deriving the list from the code
+          # (R1.A19) is what stops this job depending on a human remembering
+          # to edit the literal.
+          code_vars=$(grep -ohE 'env_flag\("ORCA_[A-Z0-9_]+"|env_rate\("ORCA_[A-Z0-9_]+"|os\.environ\.get\("ORCA_[A-Z0-9_]+"|_retention_days\("ORCA_[A-Z0-9_]+"' \
+            apps/api/plane/settings/*.py | grep -oE 'ORCA_[A-Z0-9_]+' | sort -u)
+          extra_vars="SCIM_RATE_LIMIT SCIM_AUTH_FAILURE_RATE_LIMIT"
+          if [ -z "$code_vars" ]; then
+            echo "::error::found no ORCA_ env reads in settings -- the parser stopped checking anything"
+            exit 1
+          fi
+          for var in $code_vars $extra_vars; do
             seen=$(printf '%s\n' "$body" | grep -cE "^\s*-\s+\"?${var}=" || true)
             if [ "$seen" -ne "$api_services" ]; then
               echo "::error file=$compose::${var} reaches ${seen} of the ${api_services} services sharing the api image"

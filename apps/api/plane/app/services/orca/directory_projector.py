@@ -32,7 +32,7 @@ Three rules govern every write here:
 from dataclasses import dataclass, field
 
 # Django imports
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 # Module imports
@@ -43,6 +43,7 @@ from plane.db.models import (
     OrganizationalDirectoryGroupMembership,
     OrganizationalDirectoryIdentity,
     OrganizationalUnit,
+    OrganizationalUnitMemberRole,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
     WorkspaceMember,
@@ -64,6 +65,11 @@ class ProjectionResult:
     memberships_created: int = 0
     memberships_reactivated: int = 0
     memberships_deactivated: int = 0
+    # R1.A10: deactivating a lead is not the same as deactivating a member — the
+    # area is left without one, and re-adding that person later can collide
+    # with whoever was named lead in the meantime.
+    leads_deactivated: int = 0
+    leads_demoted: int = 0
     identities_linked: int = 0
     identities_unresolved: int = 0
     unresolved_user_names: list = field(default_factory=list)
@@ -73,6 +79,8 @@ class ProjectionResult:
             "memberships_created": self.memberships_created,
             "memberships_reactivated": self.memberships_reactivated,
             "memberships_deactivated": self.memberships_deactivated,
+            "leads_deactivated": self.leads_deactivated,
+            "leads_demoted": self.leads_demoted,
             "identities_linked": self.identities_linked,
             "identities_unresolved": self.identities_unresolved,
             "unresolved_user_names": self.unresolved_user_names,
@@ -83,6 +91,8 @@ class ProjectionResult:
         self.memberships_created += other.memberships_created
         self.memberships_reactivated += other.memberships_reactivated
         self.memberships_deactivated += other.memberships_deactivated
+        self.leads_deactivated += other.leads_deactivated
+        self.leads_demoted += other.leads_demoted
         self.identities_linked += other.identities_linked
         self.identities_unresolved += other.identities_unresolved
         for user_name in other.unresolved_user_names:
@@ -196,6 +206,21 @@ def directory_withdraws_membership(workspace_id) -> bool:
     return True if connection is None else connection.deprovision_removes_membership
 
 
+def _unit_has_another_active_lead(unit: OrganizationalUnit, membership: OrganizationalUnitMembership) -> bool:
+    """
+    Whether this area already has an active lead who is not ``membership``.
+
+    @description Used when a withdrawn SCIM lead is about to be reactivated
+    (R1.A10). Checking before the write keeps the one-lead constraint from
+    turning a group re-add into a 500 Entra retries forever.
+    """
+    return OrganizationalUnitMembership.objects.filter(
+        organizational_unit=unit,
+        role=OrganizationalUnitMemberRole.LEAD,
+        is_active=True,
+    ).exclude(pk=membership.pk).exists()
+
+
 @transaction.atomic
 def project_unit(unit: OrganizationalUnit, reconcile: bool = True) -> ProjectionResult:
     """
@@ -239,8 +264,25 @@ def project_unit(unit: OrganizationalUnit, reconcile: bool = True) -> Projection
         elif not membership.is_active:
             # Reactivating keeps whatever provenance the row already had: a
             # manual membership that was switched off stays manual.
+            # R1.A10: a SCIM row promoted to lead, then withdrawn, still has
+            # role=lead. Reactivating it while another lead is active would
+            # violate the one-lead constraint and 500 the whole Entra sync.
+            fields = ["is_active", "updated_at"]
+            if membership.role == OrganizationalUnitMemberRole.LEAD and _unit_has_another_active_lead(unit, membership):
+                membership.role = OrganizationalUnitMemberRole.MEMBER
+                fields.append("role")
+                result.leads_demoted += 1
             membership.is_active = True
-            membership.save(update_fields=["is_active", "updated_at"])
+            try:
+                # Nested so a leftover one-lead collision (two inactive leads
+                # racing) demotes instead of rolling the whole projection back
+                # into a 500 Entra will retry forever.
+                with transaction.atomic():
+                    membership.save(update_fields=fields)
+            except IntegrityError:
+                membership.role = OrganizationalUnitMemberRole.MEMBER
+                membership.save(update_fields=["is_active", "role", "updated_at"])
+                result.leads_demoted += 1
             result.memberships_reactivated += 1
             touched_member_ids.add(workspace_member_id)
 
@@ -252,9 +294,12 @@ def project_unit(unit: OrganizationalUnit, reconcile: bool = True) -> Projection
                 continue
             if membership.sync_source != DirectorySyncSource.SCIM or not membership.is_active:
                 continue
+            was_lead = membership.role == OrganizationalUnitMemberRole.LEAD
             membership.is_active = False
             membership.save(update_fields=["is_active", "updated_at"])
             result.memberships_deactivated += 1
+            if was_lead:
+                result.leads_deactivated += 1
             touched_member_ids.add(workspace_member_id)
 
     unresolved = _unresolved_for_unit(unit)

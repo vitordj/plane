@@ -23,6 +23,7 @@ from plane.app.services.orca import (
 from plane.db.models import (
     DirectoryIdentityState,
     DirectorySyncSource,
+    OrganizationalDirectoryGroupMembership,
     OrganizationalUnitMembership,
     ProjectMember,
 )
@@ -203,6 +204,72 @@ class TestProjection:
 
         assert result.memberships_deactivated == 0
         assert OrganizationalUnitMembership.objects.get(organizational_unit=bound_unit).is_active is True
+
+
+@pytest.mark.unit
+class TestADirectoryLeadIsNotASilent500:
+    """
+    R1.A10: a SCIM membership promoted to lead, then withdrawn from the group,
+    must not 500 the projection when Entra puts that person back while someone
+    else is already lead.
+    """
+
+    def test_withdrawing_a_lead_is_counted_apart_from_a_member(
+        self, bound_unit, make_identity, put_in_group, plain_user
+    ):
+        from plane.db.models import OrganizationalUnitMemberRole
+
+        identity = make_identity("plain@plane.so")
+        resolve_identity(identity)
+        put_in_group(bound_unit, identity)
+        project_unit(bound_unit)
+
+        membership = OrganizationalUnitMembership.objects.get(organizational_unit=bound_unit)
+        membership.role = OrganizationalUnitMemberRole.LEAD
+        membership.save(update_fields=["role", "updated_at"])
+
+        OrganizationalDirectoryGroupMembership.objects.filter(
+            organizational_unit=bound_unit, identity=identity
+        ).delete()
+        result = project_unit(bound_unit)
+
+        membership.refresh_from_db()
+        assert membership.is_active is False
+        assert result.memberships_deactivated == 1
+        assert result.leads_deactivated == 1
+
+    def test_re_adding_an_ex_lead_does_not_collide_with_the_current_lead(
+        self, bound_unit, make_identity, put_in_group, add_member, plain_user, second_user
+    ):
+        from plane.db.models import OrganizationalUnitMemberRole
+
+        identity = make_identity("plain@plane.so")
+        resolve_identity(identity)
+        group_row = put_in_group(bound_unit, identity)
+        project_unit(bound_unit)
+
+        membership = OrganizationalUnitMembership.objects.get(organizational_unit=bound_unit)
+        membership.role = OrganizationalUnitMemberRole.LEAD
+        membership.save(update_fields=["role", "updated_at"])
+
+        group_row.delete()
+        project_unit(bound_unit)
+
+        add_member(bound_unit, second_user, role=OrganizationalUnitMemberRole.LEAD)
+
+        put_in_group(bound_unit, identity)
+        result = project_unit(bound_unit)
+
+        membership.refresh_from_db()
+        assert membership.is_active is True
+        assert membership.role == OrganizationalUnitMemberRole.MEMBER
+        assert result.leads_demoted == 1
+        assert (
+            OrganizationalUnitMembership.objects.filter(
+                organizational_unit=bound_unit, role=OrganizationalUnitMemberRole.LEAD, is_active=True
+            ).count()
+            == 1
+        )
 
 
 @pytest.mark.unit

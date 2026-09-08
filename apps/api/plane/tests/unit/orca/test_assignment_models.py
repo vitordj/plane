@@ -167,6 +167,42 @@ class TestTheLogsAreAppendOnly:
         with pytest.raises(ValueError):
             decision.delete()
 
+    def test_deleting_the_work_item_leaves_the_decision_undeleted(self, decision_kwargs):
+        """
+        R1.A14: the append-only log survives the cascade. Soft-deleting the
+        work item used to only keep the row because a ``print()`` swallowed
+        the ValueError; this pins the outcome, not the accident.
+        """
+        from plane.bgtasks.deletion_task import soft_delete_related_objects
+        from plane.db.models import Issue
+
+        decision = AssignmentDecision.objects.create(**decision_kwargs)
+        issue_id = decision.issue_id
+        soft_delete_related_objects("db", "issue", issue_id)
+
+        decision.refresh_from_db()
+        assert decision.deleted_at is None
+        issue = Issue.all_objects.get(pk=issue_id)
+        assert issue.deleted_at is not None
+
+    def test_deleting_the_work_item_leaves_the_decision_undeleted(self, decision_kwargs):
+        """
+        R1.A14: the append-only log survives the cascade. Soft-deleting the
+        work item used to only keep the row because a ``print()`` swallowed
+        the ValueError; this pins the outcome, not the accident.
+        """
+        from plane.bgtasks.deletion_task import soft_delete_related_objects
+        from plane.db.models import Issue
+
+        decision = AssignmentDecision.objects.create(**decision_kwargs)
+        issue_id = decision.issue_id
+        soft_delete_related_objects("db", "issue", issue_id)
+
+        decision.refresh_from_db()
+        assert decision.deleted_at is None
+        issue = Issue.all_objects.get(pk=issue_id)
+        assert issue.deleted_at is not None
+
     def test_a_responsibility_event_cannot_be_edited(self, unit, project, workspace_with_members, make_issue):
         event = IssueResponsibilityEvent.objects.create(
             issue=make_issue(project),

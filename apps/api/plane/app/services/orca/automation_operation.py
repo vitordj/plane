@@ -195,7 +195,8 @@ def start_operation(workspace, api_token, key, operation_type, payload) -> Opera
     constraint rather than by a lock — the loser catches ``IntegrityError``,
     re-reads the winner's row, and takes the ordinary existing-row path.
 
-    @param workspace: The workspace the key is scoped to.
+    @param workspace: The workspace the call is in. The key is unique per
+        token inside it (R1.A12), not across the workspace.
     @param api_token: The credential making the call; may be ``None``.
     @param key: The caller's ``Idempotency-Key``.
     @param operation_type: Member of ``AutomationOperationType``.
@@ -207,13 +208,16 @@ def start_operation(workspace, api_token, key, operation_type, payload) -> Opera
     request_hash = canonical_hash(payload)
 
     # all_objects, not objects. The default manager hides soft-deleted rows,
-    # but the uniqueness constraint on (workspace, idempotency_key) has no
-    # deleted_at condition — deliberately, so a spent key stays spent. Looking
-    # through the filtering manager would make a soft-deleted receipt invisible
-    # here and then hit the constraint on INSERT, and the recovery read below
-    # would raise DoesNotExist instead of replaying the answer the key already
-    # has. The row still owns the key, so it still decides what happens.
-    existing = AutomationOperation.all_objects.filter(workspace=workspace, idempotency_key=key).first()
+    # but the uniqueness constraint on (workspace, api_token, idempotency_key)
+    # has no deleted_at condition — deliberately, so a spent key stays spent
+    # for that token. Looking through the filtering manager would make a
+    # soft-deleted receipt invisible here and then hit the constraint on INSERT,
+    # and the recovery read below would raise DoesNotExist instead of replaying
+    # the answer the key already has. The row still owns the key, so it still
+    # decides what happens. R1.A12: the lookup is per token, not per workspace.
+    existing = AutomationOperation.all_objects.filter(
+        workspace=workspace, api_token=api_token, idempotency_key=key
+    ).first()
     if existing is not None:
         return _existing(existing, request_hash, api_token)
 
@@ -223,7 +227,11 @@ def start_operation(workspace, api_token, key, operation_type, payload) -> Opera
         with transaction.atomic():
             return _open(workspace, api_token, key, operation_type, request_hash)
     except IntegrityError:
-        winner = AutomationOperation.all_objects.get(workspace=workspace, idempotency_key=key)
+        winner = AutomationOperation.all_objects.filter(
+            workspace=workspace, api_token=api_token, idempotency_key=key
+        ).first()
+        if winner is None:
+            raise
         return _existing(winner, request_hash, api_token)
 
 

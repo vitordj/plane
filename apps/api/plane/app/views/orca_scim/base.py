@@ -240,13 +240,6 @@ class SCIMBaseView(APIView):
 
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
-        # The organizational layer's kill switch closes provisioning too: a
-        # SCIM write is a unit membership write, and an operator who turned the
-        # layer off must not find Entra still filling units through this door.
-        # Checked before authentication so the answer is the same 404 the rest
-        # of the layer gives, whatever token the caller holds.
-        if not organizational_units_enabled():
-            raise SCIMError("The organizational layer is disabled on this instance", status.HTTP_404_NOT_FOUND)
         self.workspace = None
         self.connection = None
         if self.requires_authentication:
@@ -259,7 +252,21 @@ class SCIMBaseView(APIView):
                 # budget of a workspace whose slug they merely guessed.
                 self.enforce_throttle(SCIMAuthFailureRateThrottle(), request)
                 raise
+            # R1.A17: the kill switch runs *after* authentication. An anonymous
+            # caller always sees 401, so the 404 cannot tell them whether the
+            # layer is on. Authenticated Entra still gets the same 404 the
+            # rest of the layer gives.
+            if not organizational_units_enabled():
+                raise SCIMError("The organizational layer is disabled on this instance", status.HTTP_404_NOT_FOUND)
             self.enforce_throttle(SCIMRateThrottle(), request)
+            # R1.A16: stamp last-used only after the request is accepted. A 429
+            # must not write 600 UPDATEs a minute on the connection row, and must
+            # not look like successful provisioning in the admin UI.
+            self.connection.token_last_used_at = timezone.now()
+            self.connection.save(update_fields=["token_last_used_at", "updated_at"])
+        elif not organizational_units_enabled():
+            self.enforce_throttle(SCIMAuthFailureRateThrottle(), request)
+            raise SCIMError("The organizational layer is disabled on this instance", status.HTTP_404_NOT_FOUND)
 
     def enforce_throttle(self, throttle, request):
         """
@@ -312,8 +319,6 @@ class SCIMBaseView(APIView):
         if not secrets.compare_digest(connection.token_hash, hash_directory_token(token)):
             raise unauthorized
 
-        connection.token_last_used_at = timezone.now()
-        connection.save(update_fields=["token_last_used_at", "updated_at"])
         return workspace, connection
 
     def record_sync(self, summary: dict):
