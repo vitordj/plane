@@ -122,6 +122,23 @@ class OrganizationalUnitMembershipSerializer(BaseSerializer):
         read_only_fields = ["organizational_unit", "workspace_member", "sync_source", "created_at"]
 
 
+class OrganizationalUnitMembershipLiteSerializer(OrganizationalUnitMembershipSerializer):
+    """
+    Guest-facing membership: the same shape minus email.
+
+    @description Plane's own workspace member list withholds email from Guest
+    (``UserLiteSerializer``). The area roster used to ignore that distinction
+    and hand every Guest a directory of corporate addresses (R1.A4).
+    """
+
+    class Meta(OrganizationalUnitMembershipSerializer.Meta):
+        fields = [field for field in OrganizationalUnitMembershipSerializer.Meta.fields if field != "email"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields.pop("email", None)
+
+
 class OrganizationalUnitProjectSerializer(BaseSerializer):
     """Link between a unit and a project, carrying the inherited project role."""
 

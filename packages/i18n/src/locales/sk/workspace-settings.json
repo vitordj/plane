@@ -738,6 +738,7 @@
           "coordinator_not_found": "Koordinátor nenájdený.",
           "not_the_executor": "Toto môže urobiť iba aktuálny vykonávateľ, koordinátor tejto oblasti alebo správca pracovného priestoru.",
           "coordinator_must_be_member": "Koordinátor musí byť aktívnym členom alebo správcom pracovného priestoru.",
+          "invalid_queue_filter": "Tento filter fronty nie je rozpoznaný.",
           "public_api_disabled": "Automatizačné API je v tejto inštancii vypnuté.",
           "idempotency_key_required": "Táto požiadavka vyžaduje hlavičku Idempotency-Key.",
           "idempotency_payload_mismatch": "Tento kľúč už bol použitý pre inú požiadavku.",

@@ -264,6 +264,20 @@ class TestReadingTheQueue:
         response = insider.get(public_queue_url(workspace_with_members.slug, unit.slug) + "?routing_state=napping")
 
         assert response.status_code == 400
+        assert response.data["error_message"] == "ORG_INVALID_QUEUE_FILTER"
+
+    def test_an_archived_project_does_not_appear_in_the_queue(
+        self, insider, workspace_with_members, unit, project, queued
+    ):
+        """R1.A7: the queue must not show work the reader can no longer open."""
+        queued(name="Secret onboarding item")
+        project.archived_at = timezone.now()
+        project.save(update_fields=["archived_at"])
+
+        response = insider.get(public_queue_url(workspace_with_members.slug, unit.slug) + "?routing_state=all")
+
+        assert response.status_code == 200
+        assert response.data["results"] == []
 
     def test_a_workspace_admin_may_look(self, admin_token_client, workspace_with_members, unit, covered, queued):
         queued(name="Waiting")

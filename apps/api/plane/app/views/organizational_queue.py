@@ -67,6 +67,7 @@ from plane.app.services.orca import (
     WAITING_STATES,
     claim,
     queue_queryset,
+    visible_project_ids_for,
     reassign,
     reconcile_coordinator,
     resolve_policy,
@@ -307,7 +308,7 @@ class OrganizationalUnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
 
         routing_state = request.query_params.get("routing_state")
         if routing_state and routing_state not in QUEUE_STATE_CHOICES:
-            return orca_error("ORG_INVALID_ROUTING_TRANSITION")
+            return orca_error("ORG_INVALID_QUEUE_FILTER")
 
         now = timezone.now()
         queryset = queue_queryset(
@@ -316,6 +317,7 @@ class OrganizationalUnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
             overdue=_tri_state(request.query_params.get("overdue")),
             project_id=request.query_params.get("project"),
             now=now,
+            visible_project_ids=visible_project_ids_for(request.user, unit.workspace),
         ).select_related("issue__state", "issue__project")
 
         executor_id = request.query_params.get("executor")

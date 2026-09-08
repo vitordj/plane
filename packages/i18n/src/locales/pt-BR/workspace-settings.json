@@ -514,6 +514,7 @@
           "coordinator_not_found": "Coordenador não encontrado.",
           "not_the_executor": "Somente o executor atual, o coordenador desta área ou um administrador do workspace pode fazer isso.",
           "coordinator_must_be_member": "Um coordenador precisa ser membro ativo ou administrador do workspace.",
+          "invalid_queue_filter": "Esse filtro da fila não é reconhecido.",
           "public_api_disabled": "A API de automação está desligada nesta instância.",
           "idempotency_key_required": "Esta requisição precisa do cabeçalho Idempotency-Key.",
           "idempotency_payload_mismatch": "Essa chave já foi usada para outra requisição.",

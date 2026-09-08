@@ -31,7 +31,7 @@ from rest_framework.response import Response
 # Module imports
 from plane.api.serializers.orca import queue_row, unit_payload
 from plane.app.permissions.organizational_unit import may_see_queue
-from plane.app.services.orca import ALL_STATES, queue_queryset
+from plane.app.services.orca import ALL_STATES, queue_queryset, visible_project_ids_for
 from plane.db.models import (
     OrganizationalUnit,
     OrganizationalUnitProject,
@@ -145,7 +145,7 @@ class UnitQueueEndpoint(OrcaWorkspaceReadEndpoint):
 
         routing_state = request.query_params.get("routing_state")
         if routing_state and routing_state not in QUEUE_STATE_CHOICES:
-            return orca_error("ORG_INVALID_ROUTING_TRANSITION")
+            return orca_error("ORG_INVALID_QUEUE_FILTER")
 
         overdue = _tri_state(request.query_params.get("overdue"))
         now = timezone.now()
@@ -155,6 +155,7 @@ class UnitQueueEndpoint(OrcaWorkspaceReadEndpoint):
             overdue=overdue,
             project_id=request.query_params.get("project"),
             now=now,
+            visible_project_ids=visible_project_ids_for(request.user, workspace),
         )
 
         return self.paginate(

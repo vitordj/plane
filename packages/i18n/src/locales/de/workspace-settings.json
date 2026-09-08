@@ -738,6 +738,7 @@
           "coordinator_not_found": "Koordinator nicht gefunden.",
           "not_the_executor": "Nur die aktuell ausführende Person, der Koordinator dieses Bereichs oder ein Workspace-Administrator kann das tun.",
           "coordinator_must_be_member": "Ein Koordinator muss aktives Mitglied oder Administrator des Workspace sein.",
+          "invalid_queue_filter": "Dieser Warteschlangenfilter wird nicht erkannt.",
           "public_api_disabled": "Die Automatisierungs-API ist auf dieser Instanz ausgeschaltet.",
           "idempotency_key_required": "Für diese Anfrage wird ein Idempotency-Key-Header benötigt.",
           "idempotency_payload_mismatch": "Dieser Schlüssel wurde bereits für eine andere Anfrage verwendet.",

@@ -223,10 +223,26 @@ class TestAssignmentEngine:
         maria = make_unit_member("maria")
         make_unit_member("ana")
         reconcile_access(workspace.id)
-        assign(make_issue(project, open_state, owner, "Open"), maria)
+        carry(make_issue(project, open_state, owner, "Open"), maria, unit)
         assign(make_issue(project, done_state, owner, "Closed"), maria)
 
         snapshot = {row["display_name"]: row["open_issues"] for row in workload_snapshot(unit)}
 
         assert snapshot[maria.display_name] == 1
         assert sum(snapshot.values()) == 1
+
+    def test_workload_snapshot_counts_the_primary_executor_not_any_assignee(
+        self, workspace, project, unit, open_state, owner, make_unit_member
+    ):
+        """R1.A11: a collaborator on the native assignee list is not load."""
+        maria = make_unit_member("maria")
+        ana = make_unit_member("ana")
+        reconcile_access(workspace.id)
+        issue = make_issue(project, open_state, owner, "Open")
+        carry(issue, maria, unit)
+        assign(issue, ana)
+
+        snapshot = {row["display_name"]: row["open_issues"] for row in workload_snapshot(unit)}
+
+        assert snapshot[maria.display_name] == 1
+        assert snapshot[ana.display_name] == 0

@@ -738,6 +738,7 @@
           "coordinator_not_found": "Koordinator tidak ditemukan.",
           "not_the_executor": "Hanya eksekutor saat ini, koordinator area ini, atau admin ruang kerja yang dapat melakukan ini.",
           "coordinator_must_be_member": "Koordinator harus menjadi anggota aktif atau admin ruang kerja.",
+          "invalid_queue_filter": "Filter antrean itu tidak dikenali.",
           "public_api_disabled": "API otomatisasi dimatikan pada instansi ini.",
           "idempotency_key_required": "Permintaan ini memerlukan header Idempotency-Key.",
           "idempotency_payload_mismatch": "Kunci itu sudah dipakai untuk permintaan lain.",

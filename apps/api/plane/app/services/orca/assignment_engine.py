@@ -33,6 +33,7 @@ from plane.db.models import (
     OrganizationalUnit,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
+    RoutingState,
     StateGroup,
 )
 
@@ -157,7 +158,10 @@ def workload_snapshot(unit: OrganizationalUnit) -> list[dict]:
     Current open-work count per unit member, across the unit's projects.
 
     @description Backs the workload view in the UI and makes the engine's
-    ranking inspectable before anyone relies on it.
+    ranking inspectable before anyone relies on it. Counts the **primary
+    executor** the same way ``rank_candidates`` does (R1.A11 / M5): a
+    collaborator left on an item from an earlier assignment is not the person
+    answerable for it.
     """
     unit_project_ids = list(
         OrganizationalUnitProject.objects.filter(
@@ -180,15 +184,16 @@ def workload_snapshot(unit: OrganizationalUnit) -> list[dict]:
         ]
 
     load = (
-        IssueAssignee.objects.filter(
-            assignee_id__in=[membership.workspace_member.member_id for membership in memberships],
+        IssueOrganizationalUnit.objects.filter(
+            primary_executor_id__in=[membership.workspace_member.member_id for membership in memberships],
             project_id__in=unit_project_ids,
+            routing_state=RoutingState.ASSIGNED,
         )
         .exclude(issue__state__group__in=CLOSED_STATE_GROUPS)
-        .values("assignee_id")
+        .values("primary_executor_id")
         .annotate(open_issues=Count("id", distinct=True))
     )
-    load_by_user = {row["assignee_id"]: row["open_issues"] for row in load}
+    load_by_user = {row["primary_executor_id"]: row["open_issues"] for row in load}
 
     return [
         {

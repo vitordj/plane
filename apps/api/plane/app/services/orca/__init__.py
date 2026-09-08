@@ -72,7 +72,7 @@ from .language import (
     get_default_language,
     normalize_language,
 )
-from .queue import ALL_STATES, WAITING_STATES, queue_queryset
+from .queue import ALL_STATES, WAITING_STATES, queue_queryset, visible_project_ids_for
 from .metrics import (
     record_assignment_outcome,
     record_decision_superseded,
@@ -173,5 +173,6 @@ __all__ = [
     "unit_allocation_lock",
     "unit_covers_project",
     "unresolved_identities",
+    "visible_project_ids_for",
     "workload_snapshot",
 ]

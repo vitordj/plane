@@ -738,6 +738,7 @@
           "coordinator_not_found": "Nie znaleziono koordynatora.",
           "not_the_executor": "Tylko obecny wykonawca, koordynator tego obszaru lub administrator obszaru roboczego może to zrobić.",
           "coordinator_must_be_member": "Koordynator musi być aktywnym członkiem lub administratorem obszaru roboczego.",
+          "invalid_queue_filter": "Ten filtr kolejki nie jest rozpoznawany.",
           "public_api_disabled": "Interfejs API automatyzacji jest wyłączony w tej instancji.",
           "idempotency_key_required": "To żądanie wymaga nagłówka Idempotency-Key.",
           "idempotency_payload_mismatch": "Ten klucz został już użyty do innego żądania.",

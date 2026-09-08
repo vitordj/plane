@@ -20,7 +20,7 @@ from corsheaders.defaults import default_headers
 
 
 # Module imports
-from plane.utils.orca_env import env_flag
+from plane.utils.orca_env import env_flag, env_rate
 from plane.utils.url import is_valid_url
 
 
@@ -615,8 +615,9 @@ ORCA_PUBLIC_API_ENABLED = env_flag("ORCA_PUBLIC_API_ENABLED", default=False)
 # Per-token budget for the automation API. Keyed on the API token rather than
 # the address, because every call from one integration arrives from the same
 # host and an address-keyed limit would let one workspace's automation
-# throttle another's.
-ORCA_PUBLIC_API_RATE_LIMIT = os.environ.get("ORCA_PUBLIC_API_RATE_LIMIT", "300/minute")
+# throttle another's. Validated at boot (R1.A13): a typo such as ``300``
+# used to 500 every request instead of failing the process.
+ORCA_PUBLIC_API_RATE_LIMIT = env_rate("ORCA_PUBLIC_API_RATE_LIMIT", "300/minute")
 
 # Registered here rather than in the REST_FRAMEWORK literal above, which is
 # defined before this block: keeping every Orca setting together is worth more

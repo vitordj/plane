@@ -323,6 +323,11 @@ def _decide(
         if current_role != last_applied:
             return ACTION_SKIP_MANUAL_DRIFT, None
         return ACTION_LOWER, target
+    # target == current_role. Keep last_applied in lockstep when something
+    # outside this layer (the core Guest rewrite is the known case) moved the
+    # live role to the capped target without going through ACTION_LOWER (R1.A2).
+    if last_applied is not None and last_applied != current_role:
+        return ACTION_LOWER, target
     return ACTION_NONE, target
 
 
@@ -519,10 +524,16 @@ def _apply_change(workspace_member, project_id, project_member, state, action, r
             # erased by the elevation and the person is later deactivated
             # outright, which is the opposite of "manual access always wins".
             #
-            # ACTION_LOWER cannot arrive drifted: _decide answers
+            # A promotion above what this layer last wrote is a person choosing
+            # a stronger role; remember it as the baseline. A demotion below
+            # last_applied (the core Guest rewrite is the known case) is not a
+            # choice — do not treat it as one when this layer created the row
+            # (R1.A2). ACTION_LOWER cannot arrive drifted: _decide answers
             # ACTION_SKIP_MANUAL_DRIFT when the current role is not ours.
-            state.baseline_role = project_member.role
-            state.created_by_org_layer = False
+            is_promotion = project_member.role > (state.last_applied_role or 0)
+            if is_promotion or not state.created_by_org_layer:
+                state.baseline_role = project_member.role
+                state.created_by_org_layer = False
         project_member.role = role
         project_member.save()
         state.last_applied_role = role

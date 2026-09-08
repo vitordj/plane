@@ -738,6 +738,7 @@
           "coordinator_not_found": "Coordinador no encontrado.",
           "not_the_executor": "Solo la persona ejecutora actual, el coordinador de esa área o un administrador del espacio de trabajo puede hacer esto.",
           "coordinator_must_be_member": "Un coordinador debe ser miembro activo o administrador del espacio de trabajo.",
+          "invalid_queue_filter": "Ese filtro de la cola no se reconoce.",
           "public_api_disabled": "La API de automatización está desactivada en esta instancia.",
           "idempotency_key_required": "Esta solicitud necesita una cabecera Idempotency-Key.",
           "idempotency_payload_mismatch": "Esa clave ya se usó para otra solicitud.",

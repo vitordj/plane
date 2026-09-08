@@ -738,6 +738,7 @@
           "coordinator_not_found": "找不到協調員。",
           "not_the_executor": "只有目前的執行者、該區域的協調員或工作區管理員才能執行此操作。",
           "coordinator_must_be_member": "協調員必須是工作區的有效成員或管理員。",
+          "invalid_queue_filter": "無法辨識該佇列篩選條件。",
           "public_api_disabled": "此執行個體已關閉自動化 API。",
           "idempotency_key_required": "此請求需要 Idempotency-Key 標頭。",
           "idempotency_payload_mismatch": "該金鑰已用於另一個請求。",

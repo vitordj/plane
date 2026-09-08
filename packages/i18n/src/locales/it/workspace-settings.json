@@ -738,6 +738,7 @@
           "coordinator_not_found": "Coordinatore non trovato.",
           "not_the_executor": "Solo l’esecutore attuale, il coordinatore di quest’area o un amministratore dello spazio di lavoro può farlo.",
           "coordinator_must_be_member": "Un coordinatore deve essere un membro attivo o un amministratore dello spazio di lavoro.",
+          "invalid_queue_filter": "Quel filtro della coda non è riconosciuto.",
           "public_api_disabled": "L’API di automazione è disattivata su questa istanza.",
           "idempotency_key_required": "Questa richiesta richiede un’intestazione Idempotency-Key.",
           "idempotency_payload_mismatch": "Quella chiave è già stata usata per un’altra richiesta.",

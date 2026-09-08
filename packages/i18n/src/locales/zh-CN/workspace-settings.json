@@ -738,6 +738,7 @@
           "coordinator_not_found": "未找到协调员。",
           "not_the_executor": "只有当前执行者、该区域的协调员或工作区管理员才能执行此操作。",
           "coordinator_must_be_member": "协调员必须是工作区的有效成员或管理员。",
+          "invalid_queue_filter": "无法识别该队列筛选条件。",
           "public_api_disabled": "此实例已关闭自动化 API。",
           "idempotency_key_required": "此请求需要 Idempotency-Key 标头。",
           "idempotency_payload_mismatch": "该密钥已用于另一个请求。",

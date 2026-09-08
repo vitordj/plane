@@ -738,6 +738,7 @@
           "coordinator_not_found": "Koordinatör bulunamadı.",
           "not_the_executor": "Bunu yalnızca geçerli sorumlu kişi, bu alanın koordinatörü veya bir çalışma alanı yöneticisi yapabilir.",
           "coordinator_must_be_member": "Bir koordinatör, çalışma alanının etkin bir üyesi veya yöneticisi olmalıdır.",
+          "invalid_queue_filter": "Bu kuyruk filtresi tanınmıyor.",
           "public_api_disabled": "Otomasyon API’si bu örnekte kapalı.",
           "idempotency_key_required": "Bu istek bir Idempotency-Key başlığı gerektiriyor.",
           "idempotency_payload_mismatch": "Bu anahtar daha önce başka bir istek için kullanıldı.",

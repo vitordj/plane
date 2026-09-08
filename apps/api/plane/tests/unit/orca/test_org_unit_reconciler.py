@@ -267,6 +267,53 @@ class TestManualAccessWins:
 
         assert project_member(onboarding, visitor).role == ROLE_GUEST
 
+    def test_a_workspace_guest_rewrite_does_not_become_a_manual_baseline(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        """
+        R1.A2: the core rewrites ProjectMember.role to Guest when the workspace
+        role is lowered. That rewrite must not be recorded as a manual
+        baseline, or leaving the area leaves residual Guest access.
+        """
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding)
+
+        bruno = make_member("bruno")
+        membership = add_member(compliance, bruno)
+        reconcile_membership(membership, force_sync=True)
+        granted = project_member(onboarding, bruno)
+        state = OrganizationalProjectAccessState.objects.get(workspace_member=bruno, project=onboarding)
+        assert granted.role == ROLE_MEMBER
+        assert state.last_applied_role == ROLE_MEMBER
+        assert state.baseline_role is None
+        assert state.created_by_org_layer is True
+
+        bruno.role = ROLE_GUEST
+        bruno.save(update_fields=["role"])
+        ProjectMember.objects.filter(pk=granted.pk).update(role=ROLE_GUEST)
+        reconcile_access(org_workspace.id)
+        granted.refresh_from_db()
+        state.refresh_from_db()
+        assert granted.role == ROLE_GUEST
+        assert state.last_applied_role == ROLE_GUEST
+
+        bruno.role = ROLE_MEMBER
+        bruno.save(update_fields=["role"])
+        reconcile_access(org_workspace.id)
+        granted.refresh_from_db()
+        state.refresh_from_db()
+        assert granted.role == ROLE_MEMBER
+        assert state.last_applied_role == ROLE_MEMBER
+        assert state.created_by_org_layer is True
+        assert state.baseline_role is None
+
+        membership.is_active = False
+        membership.save()
+        reconcile_access(org_workspace.id)
+        granted.refresh_from_db()
+        assert granted.is_active is False
+
 
 @pytest.mark.unit
 class TestReconcilerBehavior:

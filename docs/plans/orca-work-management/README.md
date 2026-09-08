@@ -41,27 +41,30 @@ dois gates fechados. As demais são sequenciais.
 
 Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` descartado (registrar motivo).
 
-| Fase                       | Arquivo                                                      | Itens             | Estado                                                                                                   | Gate fechado em |
-| -------------------------- | ------------------------------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------- | --------------- |
-| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 21                | `[~]` 18/21 (P0.0–P0.11, P0.14–P0.16, P0.18–P0.20) · P0.12, P0.13 e P0.17 parciais                       | —               |
-| D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · migrações e `check:types` fechados em 07/09 — falta só a auditoria num dump de `stage`     | —               |
-| 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois    | —               |
-| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[~]` 4/6 + 2.3 parcial · 2.1, 2.2 e 2.4 `[x]`; 2.3 mínima entregue, falta a completa; 2.5 e 2.6 abertos | —               |
-| 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6                                                                                                | —               |
-| 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                                | —               |
-| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                                | —               |
-| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[~]` 3/20 · R1.A3, A5, A6 `[x]`; A2/A7/A11 ainda abertos sobre a Fase 2                                 | n/a             |
+| Fase                       | Arquivo                                                      | Itens             | Estado                                                                                                      | Gate fechado em |
+| -------------------------- | ------------------------------------------------------------ | ----------------- | ----------------------------------------------------------------------------------------------------------- | --------------- |
+| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 21                | `[~]` 18/21 (P0.0–P0.11, P0.14–P0.16, P0.18–P0.20) · P0.12, P0.13 e P0.17 parciais                          | —               |
+| D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · migrações e `check:types` fechados em 07/09 — falta só a auditoria num dump de `stage`        | —               |
+| 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois       | —               |
+| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[~]` 4/6 + 2.3 parcial · 2.1, 2.2 e 2.4 `[x]`; 2.3 mínima entregue, falta a completa; 2.5 e 2.6 abertos    | —               |
+| 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6                                                                                                   | —               |
+| 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                                   | —               |
+| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                                   | —               |
+| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[~]` 13/20 · S2 completo (A1–A6); A7, A8, A9, A11, A13, A15, A20 `[x]`; restam A10, A12, A14, A16–A19 e T1 | n/a             |
 
 ## Próximo item recomendado
 
-**Estado em 08/09/2026.** O 2.4 (alertas), o R1.A3 (retenção vs append-only),
-o R1.A5 (Guest não enumera projetos secretos) e o R1.A6 (falha transitória
-não queima a chave) estão no código. O HANDOFF de 07/09 dizia que o 2.4 já
-existia — não existia; esta sessão o implementou. A aba Trabalho continua sem
-ter sido aberta por um olho humano num ambiente com dados.
+**Estado em 08/09/2026.** S2 da revisão está fechado (A1–A6). A fila deixa de
+mostrar projeto arquivado (A7), `set_responsibility` trata corrida e re-POST
+idempotente (A8, A1), os locks de transferência e alocação têm a mesma ordem
+(A9), `workload/` conta o executor principal (A11), Guest não lê e-mail nem
+`effective-access`/`workload` (A4, A15), um rate limit malformado falha no
+boot (A13) e um filtro de fila desconhecido tem código próprio (A20). A aba
+Trabalho foi exercitada de ponta a ponta (login, inbox, atribuir, devolver,
+assumir) contra a stack local.
 
-**O próximo item de código é o `R1.A2`**, o rebaixamento a Guest que vira
-`baseline_role` — um dos três que a revisão queria ver junto com a Fase 2.
+**O próximo item de código é a parte completa do `2.3`**, depois os S3/S4
+restantes (A10, A12, A14, A16–A19).
 
 **Antes de escolher qualquer item, saiba destas quatro coisas.**
 
@@ -75,10 +78,10 @@ release revelaria. **Não tente consertar isso no código.** Enquanto não for
 resolvido, todo push em `stage` fecha vermelho, e ler esse vermelho como
 regressão custa uma sessão.
 
-**Segunda: a interface nunca foi aberta.** A aba Trabalho, a caixa de entrada e
-as três ações foram verificadas por tipos, lint, formato e i18n, e por nenhum
-olho humano — não havia ambiente com dados. É a primeira coisa que staging
-deve responder, e é onde bugs de UI vão aparecer.
+**Segunda: a aba Trabalho foi aberta nesta sessão.** Login, inbox com atraso,
+atribuir a um membro, devolver à fila e assumir (depois de o coordenador
+também ser membro da área — I4) foram exercitados contra a stack local.
+O vídeo e os screenshots estão no PR.
 
 **Terceira: o Gate 2-mínimo não depende mais de código.** Fila, coordenador,
 atribuição manual, devolução e alerta estão entregues e testados. O que falta

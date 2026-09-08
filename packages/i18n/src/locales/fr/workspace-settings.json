@@ -738,6 +738,7 @@
           "coordinator_not_found": "Coordinateur introuvable.",
           "not_the_executor": "Seule la personne exécutante actuelle, le coordinateur de cette zone ou un administrateur de l’espace de travail peut faire cela.",
           "coordinator_must_be_member": "Un coordinateur doit être membre actif ou administrateur de l’espace de travail.",
+          "invalid_queue_filter": "Ce filtre de file n'est pas reconnu.",
           "public_api_disabled": "L’API d’automatisation est désactivée sur cette instance.",
           "idempotency_key_required": "Cette requête nécessite un en-tête Idempotency-Key.",
           "idempotency_payload_mismatch": "Cette clé a déjà été utilisée pour une autre requête.",

@@ -193,7 +193,7 @@ export interface IOrganizationalUnitMembership {
   sync_source: TDirectorySyncSource;
   member_id: string;
   display_name: string;
-  email: string;
+  email?: string;
   avatar_url: string;
   /** The person's workspace role, which caps any role a unit can grant. */
   workspace_role: number;

@@ -738,6 +738,7 @@
           "coordinator_not_found": "Không tìm thấy điều phối viên.",
           "not_the_executor": "Chỉ người thực hiện hiện tại, điều phối viên của khu vực này, hoặc quản trị viên không gian làm việc mới có thể làm việc này.",
           "coordinator_must_be_member": "Điều phối viên phải là thành viên đang hoạt động hoặc quản trị viên của không gian làm việc.",
+          "invalid_queue_filter": "Bộ lọc hàng đợi đó không được nhận dạng.",
           "public_api_disabled": "API tự động hóa đang tắt trên phiên bản này.",
           "idempotency_key_required": "Yêu cầu này cần tiêu đề Idempotency-Key.",
           "idempotency_payload_mismatch": "Khóa đó đã được dùng cho một yêu cầu khác.",

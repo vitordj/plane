@@ -738,6 +738,7 @@
           "coordinator_not_found": "Coordonator negăsit.",
           "not_the_executor": "Doar executantul actual, coordonatorul acestei zone sau un administrator al spațiului de lucru poate face asta.",
           "coordinator_must_be_member": "Un coordonator trebuie să fie membru activ sau administrator al spațiului de lucru.",
+          "invalid_queue_filter": "Filtrul de coadă nu este recunoscut.",
           "public_api_disabled": "API-ul de automatizare este dezactivat pe această instanță.",
           "idempotency_key_required": "Această cerere necesită antetul Idempotency-Key.",
           "idempotency_payload_mismatch": "Această cheie a fost deja folosită pentru altă cerere.",

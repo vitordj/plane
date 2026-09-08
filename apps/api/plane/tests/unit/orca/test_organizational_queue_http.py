@@ -568,7 +568,7 @@ class TestQueue:
         )
 
         assert response.status_code == 400
-        assert response.data["error_message"] == "ORG_INVALID_ROUTING_TRANSITION"
+        assert response.data["error_message"] == "ORG_INVALID_QUEUE_FILTER"
 
 
 @pytest.mark.unit

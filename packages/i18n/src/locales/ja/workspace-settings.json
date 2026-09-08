@@ -738,6 +738,7 @@
           "coordinator_not_found": "コーディネーターが見つかりません。",
           "not_the_executor": "現在の担当者、このエリアのコーディネーター、またはワークスペース管理者のみ実行できます。",
           "coordinator_must_be_member": "コーディネーターはワークスペースの有効なメンバーまたは管理者である必要があります。",
+          "invalid_queue_filter": "そのキューのフィルターは認識されません。",
           "public_api_disabled": "自動化 API はこのインスタンスでは無効です。",
           "idempotency_key_required": "このリクエストには Idempotency-Key ヘッダーが必要です。",
           "idempotency_payload_mismatch": "このキーは別のリクエストですでに使用されています。",

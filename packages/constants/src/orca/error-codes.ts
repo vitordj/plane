@@ -51,6 +51,7 @@ export const ORCA_ERROR_CODE_KEYS: Record<number, string> = {
   4934: "workspace_settings.settings.organizational_units.errors.coordinator_not_found",
   4935: "workspace_settings.settings.organizational_units.errors.not_the_executor",
   4936: "workspace_settings.settings.organizational_units.errors.coordinator_must_be_member",
+  4937: "workspace_settings.settings.organizational_units.errors.invalid_queue_filter",
   // public automation API
   4922: "workspace_settings.settings.organizational_units.errors.public_api_disabled",
   4923: "workspace_settings.settings.organizational_units.errors.idempotency_key_required",

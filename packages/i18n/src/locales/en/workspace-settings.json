@@ -514,6 +514,7 @@
           "coordinator_not_found": "Coordinator not found.",
           "not_the_executor": "Only the current executor, this area's coordinator, or a workspace admin can do this.",
           "coordinator_must_be_member": "A coordinator must be an active member or admin of the workspace.",
+          "invalid_queue_filter": "That queue filter is not recognized.",
           "public_api_disabled": "The automation API is turned off on this instance.",
           "idempotency_key_required": "This request needs an Idempotency-Key header.",
           "idempotency_payload_mismatch": "That key was already used for a different request.",

@@ -28,6 +28,7 @@ from plane.app.serializers import (
     AssignmentPolicySerializer,
     IssueRoutingSerializer,
     OrganizationalUnitMembershipCreateSerializer,
+    OrganizationalUnitMembershipLiteSerializer,
     OrganizationalUnitMembershipSerializer,
     OrganizationalUnitProjectSerializer,
     OrganizationalUnitSerializer,
@@ -281,7 +282,17 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
             organizational_unit__workspace__slug=slug,
             is_active=True,
         ).select_related("workspace_member", "workspace_member__member")
-        serializer = OrganizationalUnitMembershipSerializer(memberships, many=True)
+        # Guest of the workspace does not see email, matching the native
+        # workspace member list (R1.A4). The area itself stays readable.
+        workspace_member = WorkspaceMember.objects.filter(
+            workspace__slug=slug, member=request.user, is_active=True
+        ).first()
+        serializer_class = (
+            OrganizationalUnitMembershipLiteSerializer
+            if workspace_member is not None and workspace_member.role == ROLE.GUEST.value
+            else OrganizationalUnitMembershipSerializer
+        )
+        serializer = serializer_class(memberships, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @allow_permission([ROLE.ADMIN], level="WORKSPACE")
@@ -495,7 +506,7 @@ class OrganizationalUnitEffectiveAccessEndpoint(OrganizationalUnitFeatureMixin, 
 
     use_read_replica = True
 
-    @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
+    @allow_permission([ROLE.ADMIN, ROLE.MEMBER], level="WORKSPACE")
     def get(self, request, slug, unit_id):
         unit = OrganizationalUnit.objects.filter(workspace__slug=slug, pk=unit_id).first()
         if unit is None:
@@ -838,7 +849,7 @@ class OrganizationalUnitWorkloadEndpoint(OrganizationalUnitFeatureMixin, BaseAPI
 
     use_read_replica = True
 
-    @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
+    @allow_permission([ROLE.ADMIN, ROLE.MEMBER], level="WORKSPACE")
     def get(self, request, slug, unit_id):
         unit = OrganizationalUnit.objects.filter(workspace__slug=slug, pk=unit_id).first()
         if unit is None:

@@ -52,24 +52,24 @@ camada em "escolha manual", e a frase que justifica o M3 deixa de ser verdade.
 
 ## S2 — seis achados
 
-- [ ] **R1.A1** — Re-POSTar a **mesma** área num item atribuído devolve o item à fila e apaga o executor, respondendo 200. `app/views/organizational_unit.py:583`.
-- [ ] **R1.A2** — Rebaixamento a Guest do workspace é capturado como `baseline_role`; sair da área deixa acesso residual ativo. `app/services/orca/org_unit_reconciler.py:436-448`. **Toca o M3.**
+- [x] **R1.A1** — Re-POSTar a **mesma** área num item atribuído devolve o item à fila e apaga o executor, respondendo 200. `app/views/organizational_unit.py:583`.
+- [x] **R1.A2** — Rebaixamento a Guest do workspace é capturado como `baseline_role`; sair da área deixa acesso residual ativo. `app/services/orca/org_unit_reconciler.py:436-448`. **Toca o M3.**
 - [x] **R1.A3** — A retenção do P0.20 reescreve linha append-only de `AssignmentDecision` pela FK `SET_NULL`. `bgtasks/orca_automation_cleanup_task.py:85`. **Trinta dias de relógio a partir do primeiro deploy.**
-- [ ] **R1.A4** — Guest do workspace lê o e-mail de todos os membros de todas as áreas. `app/serializers/organizational_unit.py:92` e `views:269`.
+- [x] **R1.A4** — Guest do workspace lê o e-mail de todos os membros de todas as áreas. `app/serializers/organizational_unit.py:92` e `views:269`.
 - [x] **R1.A5** — Guest com API key enumera todas as áreas e todos os projetos que elas cobrem. `api/views/orca/units.py:85`. **Condição para a API em produção.**
 - [x] **R1.A6** — Uma falha transitória queima a `Idempotency-Key` para sempre: toda retentativa replica um 500. `api/views/orca/base.py` e `automation_operation.py:303-311`. **Condição para a API em produção.**
 
 ## S3 — dez achados
 
-- [ ] **R1.A7** — A fila mostra título e e-mail de trabalho em projeto cujo acesso o próprio reconciliador retirou. `app/services/orca/queue.py:54`. **Toca o M6.**
-- [ ] **R1.A8** — `set_responsibility` lê-e-cria o vínculo fora de lock: duas chamadas simultâneas dão `IntegrityError`. `assignment_service.py:993-1018`.
-- [ ] **R1.A9** — Inversão de ordem entre o lock consultivo de área e o lock de linha: deadlock possível. `assignment_service.py:628-631` contra `900-954`.
+- [x] **R1.A7** — A fila mostra título e e-mail de trabalho em projeto cujo acesso o próprio reconciliador retirou. `app/services/orca/queue.py:54`. **Toca o M6.**
+- [x] **R1.A8** — `set_responsibility` lê-e-cria o vínculo fora de lock: duas chamadas simultâneas dão `IntegrityError`. `assignment_service.py:993-1018`.
+- [x] **R1.A9** — Inversão de ordem entre o lock consultivo de área e o lock de linha: deadlock possível. `assignment_service.py:628-631` contra `900-954`.
 - [ ] **R1.A10** — Remoção de grupo no Entra desativa o `lead` em silêncio, e re-adicioná-lo dá 500. `app/services/orca/directory_projector.py:248-258`.
-- [ ] **R1.A11** — `workload/` conta qualquer assignee, o ranking conta executor principal, e a Fase 2 lê `workload/`. O defeito D4 sobreviveu fora do serviço. `assignment_engine.py:182-191`. **Toca o M5.**
+- [x] **R1.A11** — `workload/` conta qualquer assignee, o ranking conta executor principal, e a Fase 2 lê `workload/`. O defeito D4 sobreviveu fora do serviço. `assignment_engine.py:182-191`. **Toca o M5.**
 - [ ] **R1.A12** — `Idempotency-Key` é única por workspace e não por token: um token queima o espaço de chaves de outro. `automation_operation.py:216`.
-- [ ] **R1.A13** — `ORCA_PUBLIC_API_RATE_LIMIT` malformado vira 500 por requisição em vez de falha de boot. `throttles/orca_public.py:47`.
+- [x] **R1.A13** — `ORCA_PUBLIC_API_RATE_LIMIT` malformado vira 500 por requisição em vez de falha de boot. `throttles/orca_public.py:47`.
 - [ ] **R1.A14** — O append-only só sobrevive ao cascade de soft-delete por causa de um `print()` e um `continue`. `bgtasks/deletion_task.py:94-96`.
-- [ ] **R1.A15** — `effective-access/` e `workload/` abertos a Guest do workspace. `app/views/organizational_unit.py:496,768`.
+- [x] **R1.A15** — `effective-access/` e `workload/` abertos a Guest do workspace. `app/views/organizational_unit.py:496,768`.
 - [ ] **R1.A16** — `token_last_used_at` é escrito antes do throttle: 600 UPDATEs por minuto numa linha, e o 429 não protege. `orca_scim/base.py:315-316`.
 
 ## S4 — quatro achados
@@ -77,7 +77,7 @@ camada em "escolha manual", e a frase que justifica o M3 deixa de ser verdade.
 - [ ] **R1.A17** — Kill switch do SCIM antes da autenticação: diz a um anônimo se a camada está ligada, e sem throttle. `orca_scim/base.py:248`.
 - [ ] **R1.A18** — O mesmo na API pública, e a rota desligada fica sem medição. `api/views/orca/base.py:48`.
 - [ ] **R1.A19** — A lista do `compose_env_forwarding` é mantida à mão, que é o passo manual que o P0.19 existiu para eliminar. `.github/workflows/stage.yml:285`.
-- [ ] **R1.A20** — `ORG_INVALID_ROUTING_TRANSITION` usado para "filtro de query desconhecido". `api/views/orca/units.py:133`.
+- [x] **R1.A20** — `ORG_INVALID_ROUTING_TRANSITION` usado para "filtro de query desconhecido". `api/views/orca/units.py:133`.
 
 ---
 
@@ -94,3 +94,4 @@ conjunto. O que bloqueia está dito em Prioridade, item a item:
 
 - [x] R1.A3 corrigido antes de trinta dias do primeiro deploy com o beat ativo.
 - [x] R1.A5 e R1.A6 corrigidos antes de `ORCA_PUBLIC_API_ENABLED=1` em produção.
+- [x] R1.A1, A2 e A4 (S2 restante) corrigidos: re-POST da mesma área, Guest rewrite e e-mail.
