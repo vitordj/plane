@@ -50,18 +50,18 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6                                                                                                | —               |
 | 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                                | —               |
 | 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                                | —               |
-| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[~]` 1/20 · R1.A3 `[x]`; A5 e A6 condicionam a API em produção                                          | n/a             |
+| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[~]` 3/20 · R1.A3, A5, A6 `[x]`; A2/A7/A11 ainda abertos sobre a Fase 2                                 | n/a             |
 
 ## Próximo item recomendado
 
-**Estado em 08/09/2026.** O 2.4 (alertas) e o R1.A3 (retenção vs append-only)
-estão no código. O HANDOFF de 07/09 dizia que o 2.4 já existia — não existia;
-esta sessão o implementou. A aba Trabalho continua sem ter sido aberta por um
-olho humano num ambiente com dados.
+**Estado em 08/09/2026.** O 2.4 (alertas), o R1.A3 (retenção vs append-only),
+o R1.A5 (Guest não enumera projetos secretos) e o R1.A6 (falha transitória
+não queima a chave) estão no código. O HANDOFF de 07/09 dizia que o 2.4 já
+existia — não existia; esta sessão o implementou. A aba Trabalho continua sem
+ter sido aberta por um olho humano num ambiente com dados.
 
-**O próximo item de código é o `R1.A6`**, a falha transitória que queima a
-chave de idempotência — condição para `ORCA_PUBLIC_API_ENABLED=1` em
-produção, junto com o `R1.A5`.
+**O próximo item de código é o `R1.A2`**, o rebaixamento a Guest que vira
+`baseline_role` — um dos três que a revisão queria ver junto com a Fase 2.
 
 **Antes de escolher qualquer item, saiba destas quatro coisas.**
 
@@ -92,15 +92,13 @@ negócio (P0.12, P0.13, P0.17).
 
 ### Ordem que eu recomendaria
 
-1. **`R1.A6` e `R1.A5`** — a condição para `ORCA_PUBLIC_API_ENABLED=1` em
-   produção. Antes deles, ligue só em staging. (`R1.A3` fechou em 08/09.)
+1. **`R1.A2`, `R1.A7`, `R1.A11`** — os três que caem sobre o código da Fase 2 e
+   que a revisão queria ver junto com ela. (`R1.A3`, `A5` e `A6` fecharam em 08/09.)
 2. **Staging**: deploy, e então o Gate 2-mínimo com a área piloto. Isso também
    fecha a auditoria do Gate D0, que só precisa de um dump, e é onde a aba
    Trabalho precisa de um olho humano.
-3. **`R1.A2`, `R1.A7`, `R1.A11`** — os três que caem sobre o código da Fase 2 e
-   que a revisão queria ver junto com ela.
-4. **2.3 completa, 2.5 e 2.6** — fechar a Fase 2 inteira.
-5. **Fase 3** (disponibilidade), cuja migração agora é `0140`.
+3. **2.3 completa, 2.5 e 2.6** — fechar a Fase 2 inteira.
+4. **Fase 3** (disponibilidade), cuja migração agora é `0140`.
 
 Só depois disso a Fase 4 faz sentido, e ela ainda depende da pendência externa
 A5 do quadro abaixo.

@@ -56,8 +56,8 @@ camada em "escolha manual", e a frase que justifica o M3 deixa de ser verdade.
 - [ ] **R1.A2** — Rebaixamento a Guest do workspace é capturado como `baseline_role`; sair da área deixa acesso residual ativo. `app/services/orca/org_unit_reconciler.py:436-448`. **Toca o M3.**
 - [x] **R1.A3** — A retenção do P0.20 reescreve linha append-only de `AssignmentDecision` pela FK `SET_NULL`. `bgtasks/orca_automation_cleanup_task.py:85`. **Trinta dias de relógio a partir do primeiro deploy.**
 - [ ] **R1.A4** — Guest do workspace lê o e-mail de todos os membros de todas as áreas. `app/serializers/organizational_unit.py:92` e `views:269`.
-- [ ] **R1.A5** — Guest com API key enumera todas as áreas e todos os projetos que elas cobrem. `api/views/orca/units.py:85`. **Condição para a API em produção.**
-- [ ] **R1.A6** — Uma falha transitória queima a `Idempotency-Key` para sempre: toda retentativa replica um 500. `api/views/orca/base.py` e `automation_operation.py:303-311`. **Condição para a API em produção.**
+- [x] **R1.A5** — Guest com API key enumera todas as áreas e todos os projetos que elas cobrem. `api/views/orca/units.py:85`. **Condição para a API em produção.**
+- [x] **R1.A6** — Uma falha transitória queima a `Idempotency-Key` para sempre: toda retentativa replica um 500. `api/views/orca/base.py` e `automation_operation.py:303-311`. **Condição para a API em produção.**
 
 ## S3 — dez achados
 
@@ -93,4 +93,4 @@ Não existe. Estes itens não formam uma fase e não bloqueiam as Fases 3 a 5 em
 conjunto. O que bloqueia está dito em Prioridade, item a item:
 
 - [x] R1.A3 corrigido antes de trinta dias do primeiro deploy com o beat ativo.
-- [ ] R1.A5 e R1.A6 corrigidos antes de `ORCA_PUBLIC_API_ENABLED=1` em produção.
+- [x] R1.A5 e R1.A6 corrigidos antes de `ORCA_PUBLIC_API_ENABLED=1` em produção.

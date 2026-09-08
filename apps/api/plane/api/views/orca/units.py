@@ -21,6 +21,7 @@ shared with the internal inbox through ``permissions.organizational_unit``.
 """
 
 # Django imports
+from django.db.models import Q
 from django.utils import timezone
 
 # Third party imports
@@ -38,6 +39,7 @@ from plane.db.models import (
     Workspace,
     WorkspaceMember,
 )
+from plane.db.models.project import ROLE
 from plane.utils.orca_error_codes import orca_error, orca_not_found
 
 from .base import OrcaPublicBaseAPIView
@@ -93,6 +95,19 @@ class UnitListEndpoint(OrcaWorkspaceReadEndpoint):
             .select_related("project")
             .order_by("project__identifier")
         )
+        # R1.A5: the native project list already hides secret projects the
+        # caller is not a member of. This map used to dump every covered
+        # project to any workspace member with an API key, Guest included.
+        # Workspace admins still see the whole map; everyone else sees the
+        # projects they can already open, plus workspace-public ones.
+        if member.role != ROLE.ADMIN.value:
+            links = links.filter(
+                Q(
+                    project__project_projectmember__member=request.user,
+                    project__project_projectmember__is_active=True,
+                )
+                | Q(project__network=2)
+            ).distinct()
         by_unit = {}
         for link in links:
             by_unit.setdefault(link.organizational_unit_id, []).append(link)

@@ -272,26 +272,33 @@ class TestASoftDeletedReceipt:
 @pytest.mark.unit
 @pytest.mark.django_db
 class TestTheContextManager:
-    def test_it_marks_a_crashed_operation_failed(self, workspace_with_members):
+    def test_it_releases_a_crashed_operation_so_a_retry_can_run(self, workspace_with_members):
         with pytest.raises(RuntimeError):
             with begin_operation(
                 workspace_with_members, None, "key-1", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD
             ):
                 raise RuntimeError("worker died")
 
-        operation = AutomationOperation.objects.get(idempotency_key="key-1")
-        # Not left in progress: the next retry gets an answer instead of a
-        # sixty-second wait followed by a silent resume.
-        assert operation.status == AutomationOperationStatus.FAILED
-        assert operation.error_code == "ORG_INTERNAL_ERROR"
+        # R1.A6: a blip must not spend the key. The receipt is gone, so the
+        # next caller with the same key is a first call, not a replay of 500.
+        assert not AutomationOperation.all_objects.filter(idempotency_key="key-1").exists()
 
-    def test_the_failure_survives_a_rolled_back_transaction(self, workspace_with_members):
+        with begin_operation(
+            workspace_with_members, None, "key-1", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD
+        ) as handle:
+            assert handle.replayed is False
+            handle.complete(response={"ok": True})
+
+        operation = AutomationOperation.objects.get(idempotency_key="key-1")
+        assert operation.status == AutomationOperationStatus.SUCCEEDED
+
+    def test_the_release_survives_a_rolled_back_transaction(self, workspace_with_members):
         """
         The reason the receipt is written outside the caller's transaction.
 
         The interesting case is precisely the one where the work rolled back:
-        if the failure were written inside that transaction it would roll back
-        with it, and the crash would leave no trace at all.
+        if the release were written inside that transaction it would roll back
+        with it, and the crash would leave the key wedged in progress.
         """
         with pytest.raises(RuntimeError):
             with begin_operation(
@@ -300,8 +307,7 @@ class TestTheContextManager:
                 with transaction.atomic():
                     raise RuntimeError("rolled back")
 
-        operation = AutomationOperation.objects.get(idempotency_key="key-1")
-        assert operation.status == AutomationOperationStatus.FAILED
+        assert not AutomationOperation.all_objects.filter(idempotency_key="key-1").exists()
 
     def test_it_leaves_a_completed_operation_alone(self, workspace_with_members):
         with begin_operation(

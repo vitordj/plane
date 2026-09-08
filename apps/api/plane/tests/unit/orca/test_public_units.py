@@ -128,6 +128,55 @@ class TestListingAreas:
 
         assert response.status_code == 403
 
+    def test_a_guest_does_not_see_secret_projects_they_are_not_in(
+        self, workspace_with_members, unit, guest_user, admin_user, token_client, link_project
+    ):
+        # R1.A5: a Guest with an API key used to receive every covered project,
+        # secret ones included. Native project list already hides those.
+        from plane.db.models import Project
+
+        secret = Project.objects.create(
+            name="Secret Onboarding",
+            identifier="SEC",
+            workspace=workspace_with_members,
+            created_by=admin_user,
+            network=0,
+        )
+        link_project(unit, secret)
+        guest = token_client(guest_user)
+        admin = token_client(admin_user)
+
+        guest_response = guest.get(public_units_url(workspace_with_members.slug))
+        admin_response = admin.get(public_units_url(workspace_with_members.slug))
+
+        assert guest_response.status_code == 200
+        area = next(row for row in guest_response.data["results"] if row["slug"] == "compliance")
+        assert [p["identifier"] for p in area["projects"]] == []
+
+        admin_area = next(row for row in admin_response.data["results"] if row["slug"] == "compliance")
+        assert "SEC" in [p["identifier"] for p in admin_area["projects"]]
+
+    def test_a_guest_sees_a_secret_project_they_belong_to(
+        self, workspace_with_members, unit, guest_user, admin_user, token_client, link_project, grant_manual_access
+    ):
+        from plane.db.models import Project
+
+        secret = Project.objects.create(
+            name="Secret Onboarding",
+            identifier="SEC",
+            workspace=workspace_with_members,
+            created_by=admin_user,
+            network=0,
+        )
+        link_project(unit, secret)
+        grant_manual_access(secret, guest_user)
+        guest = token_client(guest_user)
+
+        response = guest.get(public_units_url(workspace_with_members.slug))
+
+        area = next(row for row in response.data["results"] if row["slug"] == "compliance")
+        assert [p["identifier"] for p in area["projects"]] == ["SEC"]
+
 
 @pytest.mark.unit
 class TestReadingTheQueue:
