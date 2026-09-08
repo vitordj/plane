@@ -41,30 +41,26 @@ dois gates fechados. As demais são sequenciais.
 
 Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` descartado (registrar motivo).
 
-| Fase                       | Arquivo                                                      | Itens             | Estado                                                                                                      | Gate fechado em |
-| -------------------------- | ------------------------------------------------------------ | ----------------- | ----------------------------------------------------------------------------------------------------------- | --------------- |
-| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 21                | `[~]` 18/21 (P0.0–P0.11, P0.14–P0.16, P0.18–P0.20) · P0.12, P0.13 e P0.17 parciais                          | —               |
-| D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · migrações e `check:types` fechados em 07/09 — falta só a auditoria num dump de `stage`        | —               |
-| 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois       | —               |
-| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[~]` 4/6 + 2.3 parcial · 2.1, 2.2 e 2.4 `[x]`; 2.3 mínima entregue, falta a completa; 2.5 e 2.6 abertos    | —               |
-| 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6                                                                                                   | —               |
-| 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                                   | —               |
-| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                                   | —               |
-| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[~]` 13/20 · S2 completo (A1–A6); A7, A8, A9, A11, A13, A15, A20 `[x]`; restam A10, A12, A14, A16–A19 e T1 | n/a             |
+| Fase                       | Arquivo                                                      | Itens             | Estado                                                                                                | Gate fechado em |
+| -------------------------- | ------------------------------------------------------------ | ----------------- | ----------------------------------------------------------------------------------------------------- | --------------- |
+| P0 Segurança da plataforma | [P0-platform-hardening.md](./P0-platform-hardening.md)       | 21                | `[~]` 18/21 (P0.0–P0.11, P0.14–P0.16, P0.18–P0.20) · P0.12, P0.13 e P0.17 parciais                    | —               |
+| D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · migrações e `check:types` fechados em 07/09 — falta só a auditoria num dump de `stage`  | —               |
+| 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois | —               |
+| 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[x]` 6/6 no código · Gate 2-mínimo ainda aberto (staging + piloto)                                   | —               |
+| 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[ ]` 0/6 · migração `0141`                                                                           | —               |
+| 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                             | —               |
+| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                             | —               |
+| R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[x]` 20/20 de código · resta T1 (decisão de negócio)                                                 | n/a             |
 
 ## Próximo item recomendado
 
-**Estado em 08/09/2026.** S2 da revisão está fechado (A1–A6). A fila deixa de
-mostrar projeto arquivado (A7), `set_responsibility` trata corrida e re-POST
-idempotente (A8, A1), os locks de transferência e alocação têm a mesma ordem
-(A9), `workload/` conta o executor principal (A11), Guest não lê e-mail nem
-`effective-access`/`workload` (A4, A15), um rate limit malformado falha no
-boot (A13) e um filtro de fila desconhecido tem código próprio (A20). A aba
-Trabalho foi exercitada de ponta a ponta (login, inbox, atribuir, devolver,
-assumir) contra a stack local.
+**Estado em 08/09/2026.** A Fase 2 está fechada no código (2.1–2.6). Os
+achados de código da revisão (R1.A1–A20) estão corrigidos. A aba Trabalho
+completa (Atenção, decisões, política, coordenadores, Minha Área, transferir)
+foi a entrega desta sessão.
 
-**O próximo item de código é a parte completa do `2.3`**, depois os S3/S4
-restantes (A10, A12, A14, A16–A19).
+**O próximo item de código é a Fase 3 (disponibilidade), migração `0141`.**
+Antes disso, o Gate 2-mínimo só fecha com deploy em staging e a área piloto.
 
 **Antes de escolher qualquer item, saiba destas quatro coisas.**
 
@@ -95,13 +91,12 @@ negócio (P0.12, P0.13, P0.17).
 
 ### Ordem que eu recomendaria
 
-1. **`R1.A2`, `R1.A7`, `R1.A11`** — os três que caem sobre o código da Fase 2 e
-   que a revisão queria ver junto com ela. (`R1.A3`, `A5` e `A6` fecharam em 08/09.)
-2. **Staging**: deploy, e então o Gate 2-mínimo com a área piloto. Isso também
+1. **Staging**: deploy, e então o Gate 2-mínimo com a área piloto. Isso também
    fecha a auditoria do Gate D0, que só precisa de um dump, e é onde a aba
    Trabalho precisa de um olho humano.
-3. **2.3 completa, 2.5 e 2.6** — fechar a Fase 2 inteira.
-4. **Fase 3** (disponibilidade), cuja migração agora é `0140`.
+2. **Fase 3** (disponibilidade), cuja migração agora é `0141`.
+3. **R1.T1** só se a trilha de decisões passar a ser tratada como evidência
+   regulatória — constraint/trigger no PostgreSQL, decisão de negócio.
 
 Só depois disso a Fase 4 faz sentido, e ela ainda depende da pendência externa
 A5 do quadro abaixo.

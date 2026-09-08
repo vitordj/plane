@@ -707,7 +707,32 @@
             "not_assigned": "Atanmadı",
             "returned_title": "Kuyruğa geri gönderildi",
             "returned": "Yeniden birini bekliyor.",
-            "not_returned": "Geri gönderilmedi"
+            "not_returned": "Geri gönderilmedi",
+            "transferred_title": "Başka bir alana taşındı",
+            "transferred": "Artık {name} sorumlu.",
+            "not_transferred": "Taşınmadı"
+          },
+          "attention": "İlgi gerektiriyor",
+          "attention_overdue_date": "Bitiş tarihi geçti",
+          "attention_suspended": "Duraklatıldı",
+          "attention_unavailable": "Yürüten kişi müsait değil",
+          "attention_no_date": "Bitiş tarihi yok",
+          "empty_attention": "Şu anda ilgi gerektiren bir şey yok.",
+          "decisions": "Kararlar",
+          "empty_decisions": "Henüz tahsis kararı yok.",
+          "decision_supersedes": "Önceki bir kararın yerini aldı",
+          "decision_outcome": {
+            "assigned": "Atandı",
+            "queued": "Kuyrukta",
+            "allocation_failed": "Atanamadı",
+            "rejected": "Reddedildi"
+          },
+          "transfer": "Başka bir alana taşı",
+          "transfer_modal": {
+            "title": "Başka bir alana taşı",
+            "search": "Alan ara",
+            "no_units": "Bu projeyi kapsayan başka alan yok.",
+            "transferring": "Taşınıyor…"
           }
         },
         "errors": {
@@ -749,6 +774,55 @@
           "process_projection_disabled": "Süreç izdüşümü bu örnekte kapalı.",
           "completion_manual_only": "Bu iş öğesi yalnızca bir kişi tarafından tamamlanabilir.",
           "internal_error": "Bir şeyler ters gitti. İşlem başarısız olarak kaydedildi."
+        },
+        "coordinators": {
+          "tab": "Koordinatörler",
+          "select_person": "Bir kişi seçin",
+          "no_addable": "Bu alanı koordine edebilecek herkes zaten yapıyor",
+          "add": "Koordinatör ekle",
+          "empty": "Bu alanı henüz kimse koordine etmiyor. Bir koordinatör, alana ait olmadan kuyruğu yönetir.",
+          "remove_aria": "{name} kişisinin bu alanı koordine etmesini durdur",
+          "note": "Koordinatör alanın kuyruğunu yönetir. Alana ait olmak zorunda değildir. Çalışma alanı konukları koordinatör olamaz.",
+          "toast": {
+            "added_title": "Koordinatör eklendi",
+            "added": "Artık bu alanın kuyruğunu yönetebilir.",
+            "not_added": "Eklenmedi",
+            "removed_title": "Koordinatör kaldırıldı",
+            "removed": "{name} artık bu alanı koordine etmiyor.",
+            "not_removed": "Kaldırılmadı"
+          }
+        },
+        "policy": {
+          "tab": "Politika",
+          "heading": "Bu alan işi nasıl atar",
+          "description": "Alan varsayılanı; bir proje bunu geçersiz kılabilir.",
+          "scope_area": "Alan varsayılanı",
+          "scope_project": "{name} için istisna",
+          "default_mode": "Varsayılan mod",
+          "allowed_modes": "İzin verilen modlar",
+          "sla_seconds": "Atama SLA’sı (saniye)",
+          "sla_hint": "Koordinatörler uyarılmadan önce bir öğenin ne kadar atanmadan bekleyebileceği. Süre yoksa boş bırakın.",
+          "max_open": "Kişi başına en fazla açık öğe",
+          "max_open_hint": "Üst sınır yoksa boş bırakın.",
+          "save": "Politikayı kaydet",
+          "mode": {
+            "manual": "Koordinatör atar",
+            "self_claim": "Kişiler işi kendileri alır",
+            "least_loaded": "En az yüklü üye",
+            "explicit": "Adı verilen kişi"
+          },
+          "toast": {
+            "saved_title": "Politika kaydedildi",
+            "saved": "Yeni iş bu kuralları izleyecek.",
+            "not_saved": "Kaydedilmedi"
+          }
+        },
+        "my_areas": {
+          "title": "Alanlarım",
+          "heading": "Alanlarım",
+          "description": "Üyesi olduğunuz alanlar ve her birinde bekleyen iş.",
+          "empty": "Henüz hiçbir alana üye değilsiniz.",
+          "select": "Bir alan seçin"
         }
       }
     },

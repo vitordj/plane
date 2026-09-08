@@ -707,7 +707,32 @@
             "not_assigned": "Neatribuit",
             "returned_title": "Returnat în coadă",
             "returned": "Așteaptă din nou pe cineva.",
-            "not_returned": "Nereturnat"
+            "not_returned": "Nereturnat",
+            "transferred_title": "Mutat în altă zonă",
+            "transferred": "{name} este responsabil acum.",
+            "not_transferred": "Nu a fost mutat"
+          },
+          "attention": "Necesită atenție",
+          "attention_overdue_date": "Termen depășit",
+          "attention_suspended": "Întrerupt",
+          "attention_unavailable": "Executor indisponibil",
+          "attention_no_date": "Fără termen",
+          "empty_attention": "Nimic nu necesită atenție acum.",
+          "decisions": "Decizii",
+          "empty_decisions": "Nu există încă decizii de alocare.",
+          "decision_supersedes": "A înlocuit o decizie anterioară",
+          "decision_outcome": {
+            "assigned": "Atribuit",
+            "queued": "În coadă",
+            "allocation_failed": "Nu s-a putut atribui",
+            "rejected": "Refuzat"
+          },
+          "transfer": "Mută în altă zonă",
+          "transfer_modal": {
+            "title": "Mută în altă zonă",
+            "search": "Caută zone",
+            "no_units": "Nicio altă zonă nu acoperă acest proiect.",
+            "transferring": "Se mută…"
           }
         },
         "errors": {
@@ -749,6 +774,55 @@
           "process_projection_disabled": "Proiecția proceselor este dezactivată pe această instanță.",
           "completion_manual_only": "Această activitate poate fi finalizată doar de o persoană.",
           "internal_error": "Ceva nu a funcționat. Operațiunea a fost înregistrată ca eșuată."
+        },
+        "coordinators": {
+          "tab": "Coordonatori",
+          "select_person": "Selectează o persoană",
+          "no_addable": "Toți cei care pot coordona această zonă o fac deja",
+          "add": "Adaugă coordonator",
+          "empty": "Nimeni nu coordonează încă această zonă. Un coordonator gestionează coada fără a trebui să facă parte din ea.",
+          "remove_aria": "Oprește coordonarea acestei zone de către {name}",
+          "note": "Un coordonator gestionează coada zonei. Nu trebuie să facă parte din ea. Invitații spațiului de lucru nu pot fi coordonatori.",
+          "toast": {
+            "added_title": "Coordonator adăugat",
+            "added": "Poate gestiona acum coada acestei zone.",
+            "not_added": "Nu a fost adăugat",
+            "removed_title": "Coordonator eliminat",
+            "removed": "{name} nu mai coordonează această zonă.",
+            "not_removed": "Nu a fost eliminat"
+          }
+        },
+        "policy": {
+          "tab": "Politică",
+          "heading": "Cum atribuie această zonă munca",
+          "description": "Valoarea implicită a zonei, pe care un proiect o poate înlocui.",
+          "scope_area": "Implicitul zonei",
+          "scope_project": "Excepție pentru {name}",
+          "default_mode": "Mod implicit",
+          "allowed_modes": "Moduri permise",
+          "sla_seconds": "SLA de atribuire (secunde)",
+          "sla_hint": "Cât poate sta un element neatribuit înainte de a alerta coordonatorii. Lasă gol pentru niciun termen.",
+          "max_open": "Maximum de elemente deschise per persoană",
+          "max_open_hint": "Lasă gol pentru nicio limită.",
+          "save": "Salvează politica",
+          "mode": {
+            "manual": "Coordonatorul atribuie",
+            "self_claim": "Oamenii iau munca singuri",
+            "least_loaded": "Membrul cu cea mai mică sarcină",
+            "explicit": "Persoană numită"
+          },
+          "toast": {
+            "saved_title": "Politică salvată",
+            "saved": "Munca nouă va urma aceste reguli.",
+            "not_saved": "Nu a fost salvată"
+          }
+        },
+        "my_areas": {
+          "title": "Zonele mele",
+          "heading": "Zonele mele",
+          "description": "Zonele din care faci parte și munca care așteaptă în fiecare.",
+          "empty": "Nu faci parte încă din nicio zonă.",
+          "select": "Selectează o zonă"
         }
       }
     },

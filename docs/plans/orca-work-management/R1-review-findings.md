@@ -64,19 +64,19 @@ camada em "escolha manual", e a frase que justifica o M3 deixa de ser verdade.
 - [x] **R1.A7** — A fila mostra título e e-mail de trabalho em projeto cujo acesso o próprio reconciliador retirou. `app/services/orca/queue.py:54`. **Toca o M6.**
 - [x] **R1.A8** — `set_responsibility` lê-e-cria o vínculo fora de lock: duas chamadas simultâneas dão `IntegrityError`. `assignment_service.py:993-1018`.
 - [x] **R1.A9** — Inversão de ordem entre o lock consultivo de área e o lock de linha: deadlock possível. `assignment_service.py:628-631` contra `900-954`.
-- [ ] **R1.A10** — Remoção de grupo no Entra desativa o `lead` em silêncio, e re-adicioná-lo dá 500. `app/services/orca/directory_projector.py:248-258`.
+- [x] **R1.A10** — Remoção de grupo no Entra desativa o `lead` em silêncio, e re-adicioná-lo dá 500. `app/services/orca/directory_projector.py:248-258`.
 - [x] **R1.A11** — `workload/` conta qualquer assignee, o ranking conta executor principal, e a Fase 2 lê `workload/`. O defeito D4 sobreviveu fora do serviço. `assignment_engine.py:182-191`. **Toca o M5.**
-- [ ] **R1.A12** — `Idempotency-Key` é única por workspace e não por token: um token queima o espaço de chaves de outro. `automation_operation.py:216`.
+- [x] **R1.A12** — `Idempotency-Key` é única por workspace e não por token: um token queima o espaço de chaves de outro. `automation_operation.py:216`.
 - [x] **R1.A13** — `ORCA_PUBLIC_API_RATE_LIMIT` malformado vira 500 por requisição em vez de falha de boot. `throttles/orca_public.py:47`.
-- [ ] **R1.A14** — O append-only só sobrevive ao cascade de soft-delete por causa de um `print()` e um `continue`. `bgtasks/deletion_task.py:94-96`.
+- [x] **R1.A14** — O append-only só sobrevive ao cascade de soft-delete por causa de um `print()` e um `continue`. `bgtasks/deletion_task.py:94-96`.
 - [x] **R1.A15** — `effective-access/` e `workload/` abertos a Guest do workspace. `app/views/organizational_unit.py:496,768`.
-- [ ] **R1.A16** — `token_last_used_at` é escrito antes do throttle: 600 UPDATEs por minuto numa linha, e o 429 não protege. `orca_scim/base.py:315-316`.
+- [x] **R1.A16** — `token_last_used_at` é escrito antes do throttle: 600 UPDATEs por minuto numa linha, e o 429 não protege. `orca_scim/base.py:315-316`.
 
 ## S4 — quatro achados
 
-- [ ] **R1.A17** — Kill switch do SCIM antes da autenticação: diz a um anônimo se a camada está ligada, e sem throttle. `orca_scim/base.py:248`.
-- [ ] **R1.A18** — O mesmo na API pública, e a rota desligada fica sem medição. `api/views/orca/base.py:48`.
-- [ ] **R1.A19** — A lista do `compose_env_forwarding` é mantida à mão, que é o passo manual que o P0.19 existiu para eliminar. `.github/workflows/stage.yml:285`.
+- [x] **R1.A17** — Kill switch do SCIM antes da autenticação: diz a um anônimo se a camada está ligada, e sem throttle. `orca_scim/base.py:248`.
+- [x] **R1.A18** — O mesmo na API pública, e a rota desligada fica sem medição. `api/views/orca/base.py:48`.
+- [x] **R1.A19** — A lista do `compose_env_forwarding` é mantida à mão, que é o passo manual que o P0.19 existiu para eliminar. `.github/workflows/stage.yml:285`.
 - [x] **R1.A20** — `ORG_INVALID_ROUTING_TRANSITION` usado para "filtro de query desconhecido". `api/views/orca/units.py:133`.
 
 ---

@@ -707,7 +707,32 @@
             "not_assigned": "No asignado",
             "returned_title": "Devuelto a la cola",
             "returned": "Vuelve a esperar a alguien.",
-            "not_returned": "No devuelto"
+            "not_returned": "No devuelto",
+            "transferred_title": "Movido a otra área",
+            "transferred": "{name} es responsable ahora.",
+            "not_transferred": "No se movió"
+          },
+          "attention": "Requiere atención",
+          "attention_overdue_date": "Fecha de entrega vencida",
+          "attention_suspended": "En pausa",
+          "attention_unavailable": "Ejecutor no disponible",
+          "attention_no_date": "Sin fecha de entrega",
+          "empty_attention": "Nada requiere atención ahora.",
+          "decisions": "Decisiones",
+          "empty_decisions": "Aún no hay decisiones de asignación.",
+          "decision_supersedes": "Reemplazó una decisión anterior",
+          "decision_outcome": {
+            "assigned": "Asignado",
+            "queued": "En cola",
+            "allocation_failed": "No se pudo asignar",
+            "rejected": "Rechazado"
+          },
+          "transfer": "Mover a otra área",
+          "transfer_modal": {
+            "title": "Mover a otra área",
+            "search": "Buscar áreas",
+            "no_units": "Ninguna otra área cubre este proyecto.",
+            "transferring": "Moviendo…"
           }
         },
         "errors": {
@@ -749,6 +774,55 @@
           "process_projection_disabled": "La proyección de procesos está desactivada en esta instancia.",
           "completion_manual_only": "Este elemento de trabajo solo puede completarlo una persona.",
           "internal_error": "Algo salió mal. La operación quedó registrada como fallida."
+        },
+        "coordinators": {
+          "tab": "Coordinadores",
+          "select_person": "Selecciona a una persona",
+          "no_addable": "Todos los que pueden coordinar esta área ya lo hacen",
+          "add": "Añadir coordinador",
+          "empty": "Nadie coordina esta área todavía. Un coordinador opera la cola sin tener que pertenecer a ella.",
+          "remove_aria": "Dejar de que {name} coordine esta área",
+          "note": "Un coordinador opera la cola del área. No tiene que pertenecer al área. Los invitados del espacio de trabajo no pueden ser coordinadores.",
+          "toast": {
+            "added_title": "Coordinador añadido",
+            "added": "Ya puede operar la cola de esta área.",
+            "not_added": "No se añadió",
+            "removed_title": "Coordinador eliminado",
+            "removed": "{name} ya no coordina esta área.",
+            "not_removed": "No se eliminó"
+          }
+        },
+        "policy": {
+          "tab": "Política",
+          "heading": "Cómo esta área asigna el trabajo",
+          "description": "El valor predeterminado del área, que un proyecto puede anular.",
+          "scope_area": "Predeterminado del área",
+          "scope_project": "Excepción para {name}",
+          "default_mode": "Modo predeterminado",
+          "allowed_modes": "Modos permitidos",
+          "sla_seconds": "SLA de asignación (segundos)",
+          "sla_hint": "Cuánto puede esperar un elemento sin asignar antes de alertar a los coordinadores. Déjalo vacío para no fijar un plazo.",
+          "max_open": "Máximo de elementos abiertos por persona",
+          "max_open_hint": "Déjalo vacío para no fijar un límite.",
+          "save": "Guardar política",
+          "mode": {
+            "manual": "El coordinador asigna",
+            "self_claim": "Las personas toman el trabajo",
+            "least_loaded": "Miembro con menos carga",
+            "explicit": "Persona nombrada"
+          },
+          "toast": {
+            "saved_title": "Política guardada",
+            "saved": "El trabajo nuevo seguirá estas reglas.",
+            "not_saved": "No se guardó"
+          }
+        },
+        "my_areas": {
+          "title": "Mis áreas",
+          "heading": "Mis áreas",
+          "description": "Áreas a las que perteneces y el trabajo que espera en cada una.",
+          "empty": "Todavía no perteneces a ninguna área.",
+          "select": "Selecciona un área"
         }
       }
     },

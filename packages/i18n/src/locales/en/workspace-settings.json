@@ -483,7 +483,32 @@
             "not_assigned": "Not assigned",
             "returned_title": "Returned to the queue",
             "returned": "It is waiting for somebody again.",
-            "not_returned": "Not returned"
+            "not_returned": "Not returned",
+            "transferred_title": "Moved to another area",
+            "transferred": "{name} is responsible for it now.",
+            "not_transferred": "Not moved"
+          },
+          "attention": "Needs attention",
+          "attention_overdue_date": "Past due date",
+          "attention_suspended": "Paused",
+          "attention_unavailable": "Executor unavailable",
+          "attention_no_date": "No due date",
+          "empty_attention": "Nothing needs attention right now.",
+          "decisions": "Decisions",
+          "empty_decisions": "No allocation decisions yet.",
+          "decision_supersedes": "Replaced an earlier decision",
+          "decision_outcome": {
+            "assigned": "Assigned",
+            "queued": "Queued",
+            "allocation_failed": "Could not assign",
+            "rejected": "Refused"
+          },
+          "transfer": "Move to another area",
+          "transfer_modal": {
+            "title": "Move to another area",
+            "search": "Search areas",
+            "no_units": "No other area covers this project.",
+            "transferring": "Moving…"
           }
         },
         "errors": {
@@ -525,6 +550,55 @@
           "process_projection_disabled": "Process projection is turned off on this instance.",
           "completion_manual_only": "This work item can only be completed by a person.",
           "internal_error": "Something went wrong. The operation was recorded as failed."
+        },
+        "coordinators": {
+          "tab": "Coordinators",
+          "select_person": "Select a person",
+          "no_addable": "Everyone who can coordinate this area already does",
+          "add": "Add coordinator",
+          "empty": "Nobody coordinates this area yet. A coordinator operates its queue without having to belong to it.",
+          "remove_aria": "Stop {name} coordinating this area",
+          "note": "A coordinator operates the area's queue. They do not have to belong to the area. Workspace guests cannot be coordinators.",
+          "toast": {
+            "added_title": "Coordinator added",
+            "added": "They can now operate this area's queue.",
+            "not_added": "Not added",
+            "removed_title": "Coordinator removed",
+            "removed": "{name} no longer coordinates this area.",
+            "not_removed": "Not removed"
+          }
+        },
+        "policy": {
+          "tab": "Policy",
+          "heading": "How this area assigns work",
+          "description": "The area's default, which a project can override.",
+          "scope_area": "Area default",
+          "scope_project": "Override for {name}",
+          "default_mode": "Default mode",
+          "allowed_modes": "Allowed modes",
+          "sla_seconds": "Assignment SLA (seconds)",
+          "sla_hint": "How long an item may sit unassigned before coordinators are alerted. Leave empty for no deadline.",
+          "max_open": "Max open items per person",
+          "max_open_hint": "Leave empty for no cap.",
+          "save": "Save policy",
+          "mode": {
+            "manual": "Coordinator assigns",
+            "self_claim": "People take work themselves",
+            "least_loaded": "Least loaded member",
+            "explicit": "Named person"
+          },
+          "toast": {
+            "saved_title": "Policy saved",
+            "saved": "New work will follow these rules.",
+            "not_saved": "Not saved"
+          }
+        },
+        "my_areas": {
+          "title": "My areas",
+          "heading": "My areas",
+          "description": "Areas you belong to, and the work waiting in each.",
+          "empty": "You do not belong to an area yet.",
+          "select": "Select an area"
         }
       },
       "projects": {

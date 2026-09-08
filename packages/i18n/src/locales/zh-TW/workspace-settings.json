@@ -707,7 +707,32 @@
             "not_assigned": "未指派",
             "returned_title": "已退回佇列",
             "returned": "它再次在等待有人接手。",
-            "not_returned": "未退回"
+            "not_returned": "未退回",
+            "transferred_title": "已移至其他區域",
+            "transferred": "現在由 {name} 負責。",
+            "not_transferred": "未能移動"
+          },
+          "attention": "需要關注",
+          "attention_overdue_date": "已過截止日期",
+          "attention_suspended": "已暫停",
+          "attention_unavailable": "執行人無法使用",
+          "attention_no_date": "沒有截止日期",
+          "empty_attention": "目前沒有需要關注的事項。",
+          "decisions": "決策",
+          "empty_decisions": "尚無分配決策。",
+          "decision_supersedes": "已取代先前的決策",
+          "decision_outcome": {
+            "assigned": "已指派",
+            "queued": "排隊中",
+            "allocation_failed": "無法指派",
+            "rejected": "已拒絕"
+          },
+          "transfer": "移至其他區域",
+          "transfer_modal": {
+            "title": "移至其他區域",
+            "search": "搜尋區域",
+            "no_units": "沒有其他區域涵蓋此專案。",
+            "transferring": "正在移動…"
           }
         },
         "errors": {
@@ -749,6 +774,55 @@
           "process_projection_disabled": "此執行個體已關閉流程投影。",
           "completion_manual_only": "此工作事項只能由人完成。",
           "internal_error": "發生問題。該操作已記錄為失敗。"
+        },
+        "coordinators": {
+          "tab": "協調人",
+          "select_person": "選取人員",
+          "no_addable": "可以協調此區域的人已經都在其中",
+          "add": "新增協調人",
+          "empty": "還沒有人協調此區域。協調人可以操作佇列，不必屬於該區域。",
+          "remove_aria": "停止讓 {name} 協調此區域",
+          "note": "協調人操作區域的佇列。不必屬於該區域。工作區訪客不能擔任協調人。",
+          "toast": {
+            "added_title": "已新增協調人",
+            "added": "現在可以操作此區域的佇列。",
+            "not_added": "未能新增",
+            "removed_title": "已移除協調人",
+            "removed": "{name} 不再協調此區域。",
+            "not_removed": "未能移除"
+          }
+        },
+        "policy": {
+          "tab": "原則",
+          "heading": "此區域如何指派工作",
+          "description": "區域的預設設定，專案可以覆寫。",
+          "scope_area": "區域預設",
+          "scope_project": "{name} 的覆寫",
+          "default_mode": "預設模式",
+          "allowed_modes": "允許的模式",
+          "sla_seconds": "指派 SLA（秒）",
+          "sla_hint": "工作項目無人認領多久後提醒協調人。留空表示沒有時限。",
+          "max_open": "每人最多未完成工作項目",
+          "max_open_hint": "留空表示沒有上限。",
+          "save": "儲存原則",
+          "mode": {
+            "manual": "由協調人指派",
+            "self_claim": "由成員自行領取",
+            "least_loaded": "負載最低的成員",
+            "explicit": "指定人員"
+          },
+          "toast": {
+            "saved_title": "已儲存原則",
+            "saved": "新工作將遵循這些規則。",
+            "not_saved": "未能儲存"
+          }
+        },
+        "my_areas": {
+          "title": "我的區域",
+          "heading": "我的區域",
+          "description": "你所屬的區域，以及每個區域中等待處理的工作。",
+          "empty": "你還不屬於任何區域。",
+          "select": "選取區域"
         }
       }
     },

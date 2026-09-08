@@ -707,7 +707,32 @@
             "not_assigned": "未指派",
             "returned_title": "已退回队列",
             "returned": "它再次在等待有人接手。",
-            "not_returned": "未退回"
+            "not_returned": "未退回",
+            "transferred_title": "已移至其他区域",
+            "transferred": "现在由 {name} 负责。",
+            "not_transferred": "未能移动"
+          },
+          "attention": "需要关注",
+          "attention_overdue_date": "已过截止日期",
+          "attention_suspended": "已暂停",
+          "attention_unavailable": "执行人不可用",
+          "attention_no_date": "没有截止日期",
+          "empty_attention": "目前没有需要关注的事项。",
+          "decisions": "决策",
+          "empty_decisions": "尚无分配决策。",
+          "decision_supersedes": "已取代先前的决策",
+          "decision_outcome": {
+            "assigned": "已分配",
+            "queued": "排队中",
+            "allocation_failed": "无法分配",
+            "rejected": "已拒绝"
+          },
+          "transfer": "移至其他区域",
+          "transfer_modal": {
+            "title": "移至其他区域",
+            "search": "搜索区域",
+            "no_units": "没有其他区域覆盖此项目。",
+            "transferring": "正在移动…"
           }
         },
         "errors": {
@@ -749,6 +774,55 @@
           "process_projection_disabled": "此实例已关闭流程投影。",
           "completion_manual_only": "此工作项只能由人完成。",
           "internal_error": "出现问题。该操作已记录为失败。"
+        },
+        "coordinators": {
+          "tab": "协调人",
+          "select_person": "选择人员",
+          "no_addable": "可以协调此区域的人已经都在其中",
+          "add": "添加协调人",
+          "empty": "还没有人协调此区域。协调人可以操作队列，不必属于该区域。",
+          "remove_aria": "停止让 {name} 协调此区域",
+          "note": "协调人操作区域的队列。不必属于该区域。工作区访客不能担任协调人。",
+          "toast": {
+            "added_title": "已添加协调人",
+            "added": "现在可以操作此区域的队列。",
+            "not_added": "未能添加",
+            "removed_title": "已移除协调人",
+            "removed": "{name} 不再协调此区域。",
+            "not_removed": "未能移除"
+          }
+        },
+        "policy": {
+          "tab": "策略",
+          "heading": "此区域如何分配工作",
+          "description": "区域的默认设置，项目可以覆盖。",
+          "scope_area": "区域默认",
+          "scope_project": "{name} 的覆盖",
+          "default_mode": "默认模式",
+          "allowed_modes": "允许的模式",
+          "sla_seconds": "分配 SLA（秒）",
+          "sla_hint": "工作项无人认领多久后提醒协调人。留空表示没有时限。",
+          "max_open": "每人最多未完成工作项",
+          "max_open_hint": "留空表示没有上限。",
+          "save": "保存策略",
+          "mode": {
+            "manual": "由协调人分配",
+            "self_claim": "由成员自行领取",
+            "least_loaded": "负载最低的成员",
+            "explicit": "指定人员"
+          },
+          "toast": {
+            "saved_title": "已保存策略",
+            "saved": "新工作将遵循这些规则。",
+            "not_saved": "未能保存"
+          }
+        },
+        "my_areas": {
+          "title": "我的区域",
+          "heading": "我的区域",
+          "description": "你所属的区域，以及每个区域中等待处理的工作。",
+          "empty": "你还不属于任何区域。",
+          "select": "选择区域"
         }
       }
     },

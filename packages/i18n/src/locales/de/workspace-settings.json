@@ -707,7 +707,32 @@
             "not_assigned": "Nicht zugewiesen",
             "returned_title": "In die Warteschlange zurückgegeben",
             "returned": "Es wartet wieder auf jemanden.",
-            "not_returned": "Nicht zurückgegeben"
+            "not_returned": "Nicht zurückgegeben",
+            "transferred_title": "In einen anderen Bereich verschoben",
+            "transferred": "{name} ist jetzt dafür zuständig.",
+            "not_transferred": "Nicht verschoben"
+          },
+          "attention": "Handlungsbedarf",
+          "attention_overdue_date": "Fälligkeitsdatum überschritten",
+          "attention_suspended": "Pausiert",
+          "attention_unavailable": "Ausführende Person nicht verfügbar",
+          "attention_no_date": "Kein Fälligkeitsdatum",
+          "empty_attention": "Derzeit nichts, das Aufmerksamkeit braucht.",
+          "decisions": "Entscheidungen",
+          "empty_decisions": "Noch keine Zuweisungsentscheidungen.",
+          "decision_supersedes": "Hat eine frühere Entscheidung ersetzt",
+          "decision_outcome": {
+            "assigned": "Zugewiesen",
+            "queued": "In der Warteschlange",
+            "allocation_failed": "Zuweisung nicht möglich",
+            "rejected": "Abgelehnt"
+          },
+          "transfer": "In einen anderen Bereich verschieben",
+          "transfer_modal": {
+            "title": "In einen anderen Bereich verschieben",
+            "search": "Bereiche durchsuchen",
+            "no_units": "Kein anderer Bereich deckt dieses Projekt ab.",
+            "transferring": "Wird verschoben…"
           }
         },
         "errors": {
@@ -749,6 +774,55 @@
           "process_projection_disabled": "Die Prozessprojektion ist auf dieser Instanz ausgeschaltet.",
           "completion_manual_only": "Dieses Arbeitselement kann nur von einer Person abgeschlossen werden.",
           "internal_error": "Etwas ist schiefgelaufen. Der Vorgang wurde als fehlgeschlagen vermerkt."
+        },
+        "coordinators": {
+          "tab": "Koordinatoren",
+          "select_person": "Person auswählen",
+          "no_addable": "Alle, die diesen Bereich koordinieren können, tun das bereits",
+          "add": "Koordinator hinzufügen",
+          "empty": "Niemand koordiniert diesen Bereich bisher. Ein Koordinator bedient die Warteschlange, ohne dem Bereich anzugehören.",
+          "remove_aria": "{name} nicht mehr als Koordinator dieses Bereichs führen",
+          "note": "Ein Koordinator bedient die Warteschlange des Bereichs. Die Person muss dem Bereich nicht angehören. Gäste des Workspace können keine Koordinatoren sein.",
+          "toast": {
+            "added_title": "Koordinator hinzugefügt",
+            "added": "Diese Person kann jetzt die Warteschlange dieses Bereichs bedienen.",
+            "not_added": "Nicht hinzugefügt",
+            "removed_title": "Koordinator entfernt",
+            "removed": "{name} koordiniert diesen Bereich nicht mehr.",
+            "not_removed": "Nicht entfernt"
+          }
+        },
+        "policy": {
+          "tab": "Richtlinie",
+          "heading": "Wie dieser Bereich Arbeit zuweist",
+          "description": "Die Vorgabe des Bereichs, die ein Projekt überschreiben kann.",
+          "scope_area": "Vorgabe des Bereichs",
+          "scope_project": "Ausnahme für {name}",
+          "default_mode": "Standardmodus",
+          "allowed_modes": "Erlaubte Modi",
+          "sla_seconds": "Zuweisungs-SLA (Sekunden)",
+          "sla_hint": "Wie lange ein Element unzugewiesen bleiben darf, bevor Koordinatoren benachrichtigt werden. Leer lassen für keine Frist.",
+          "max_open": "Max. offene Elemente pro Person",
+          "max_open_hint": "Leer lassen für keine Obergrenze.",
+          "save": "Richtlinie speichern",
+          "mode": {
+            "manual": "Koordinator weist zu",
+            "self_claim": "Personen nehmen Arbeit selbst",
+            "least_loaded": "Mitglied mit der geringsten Last",
+            "explicit": "Benannte Person"
+          },
+          "toast": {
+            "saved_title": "Richtlinie gespeichert",
+            "saved": "Neue Arbeit folgt diesen Regeln.",
+            "not_saved": "Nicht gespeichert"
+          }
+        },
+        "my_areas": {
+          "title": "Meine Bereiche",
+          "heading": "Meine Bereiche",
+          "description": "Bereiche, denen Sie angehören, und die Arbeit, die in jedem wartet.",
+          "empty": "Sie gehören noch keinem Bereich an.",
+          "select": "Bereich auswählen"
         }
       }
     },

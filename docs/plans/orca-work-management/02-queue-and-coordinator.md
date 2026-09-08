@@ -72,7 +72,7 @@ flag desligada respondendo 404, duas claims sequenciais (200 e 409), o
 
 ---
 
-## 2.3 — Interface `[~]` (parte mínima entregue)
+## 2.3 — Interface `[x]`
 
 Padrão: reutilizar componentes de `@plane/ui` e `@plane/propel`; nenhum CSS
 novo fora do tema. Todas as strings no catálogo i18n
@@ -113,9 +113,17 @@ Verificado na sessão, na árvore integrada: `pnpm check:types --filter=web`,
 `pnpm --filter web check:lint`, `pnpm --filter web check:format` e
 `pnpm --filter @plane/i18n check:sync` — todos exit 0.
 
-**Falta para a parte completa:** seção "Atenção", `decision-timeline.tsx`,
-`policy-form.tsx`, `coordinators-tab.tsx`, a página "Minha Área" e a
-transferência entre áreas a partir do item.
+O que faltava para a parte completa (entregue abaixo): seção "Atenção",
+`decision-timeline.tsx`, `policy-form.tsx`, `coordinators-tab.tsx`, a
+página "Minha Área" e a transferência entre áreas a partir do item.
+
+**Parte completa entregue (08/09).** Seção Atenção (data vencida, pausado,
+executor indisponível, sem data em execução); `decision-timeline.tsx`;
+`policy-form.tsx` (Admin, âmbito área ou projeto); `coordinators-tab.tsx`
+(Admin; Guest do workspace não é candidato); rota
+`:workspaceSlug/my-areas` com entrada na sidebar quando o usuário tem ao
+menos uma área; transferir a partir da fila e da propriedade do item, só
+para áreas que cobrem o projeto.
 
 ---
 
@@ -141,25 +149,38 @@ cooldown da varredura de SLA, não do "ninguém pôde pegar".
 
 ---
 
-## 2.5 — i18n completo e documentação `[ ]`
+## 2.5 — i18n completo e documentação `[x]`
 
 - Todas as strings novas em todas as locales; revisar plurais com CLDR (skill `translate`).
 - `docs/organizational-units.md`: seções "Fila da área", "Coordenador", "Minha Área".
 - `docs/orca-public-api.md`: nota de que a API está liberada em produção a partir deste gate.
 
+**Entregue (08/09).** As 19 locales de `workspace-settings.json` têm as chaves
+novas (`work.attention*`, `decisions`, `transfer*`, `coordinators`, `policy`,
+`my_areas`). As seções de documentação estão no guia das áreas e no guia da
+API pública. O Gate 2-mínimo **continua aberto** até staging e a área
+piloto: o código e o runbook existem; ligar `ORCA_PUBLIC_API_ENABLED=1` em
+produção ainda é o critério de negócio/ops do gate, não um facto.
+
 ---
 
-## 2.6 — Testes de fechamento `[ ]`
+## 2.6 — Testes de fechamento `[x]`
 
 - Teste de integração: coordenador esvazia uma fila de 30 itens só pelos endpoints da aba; ao final, `ProjectMember` idêntico ao início (comparar `values_list` antes/depois).
 - Matriz de permissões negativa completa (2.2).
 - Cada ação da aba gera exatamente uma `AssignmentDecision`.
 
+**Entregue (08/09).** `TestClosingAFullInbox` em
+`test_organizational_queue_http.py`: 30 `reassign/` pela mesma rota da aba,
+`ProjectMember.values_list` idêntico, 30 `AssignmentDecision` novas. A
+matriz negativa do 2.2 já existia nesse ficheiro e em
+`test_orca_unit_permissions.py`.
+
 ---
 
 ## Gate 2-mínimo (libera `ORCA_PUBLIC_API_ENABLED=1` em produção)
 
-- [~] 2.1, 2.2 e a parte mínima de 2.3 **entregues e verificadas**; 2.4 entregue (08/09). Falta implantação em staging e a área piloto.
+- [~] 2.1–2.4 e a parte completa de 2.3 **entregues**; 2.5 e 2.6 entregues (08/09). Falta implantação em staging e a área piloto.
 - [ ] Área piloto com coordenador definido (pendência de negócio no README do plano).
 - [ ] Coordenador piloto consegue, em staging: ver a fila, receber alerta de `allocation_failed`, atribuir manualmente, devolver à fila. **O código do alerta existe**; o critério continua aberto até alguém exercitar em staging.
 - [ ] Runbook: como desligar a API (`ORCA_PUBLIC_API_ENABLED=0`) e o que acontece com operações em voo.
@@ -168,8 +189,8 @@ Data: \_**\_ · Quem verificou: \_\_**
 
 ## Gate 2 completo
 
-- [ ] 6 itens `[x]`.
-- [ ] Teste de 2.6 verde.
+- [x] 6 itens `[x]` no código. O gate completo continua aberto: falta uma semana de uso real pela área piloto.
+- [x] Teste de 2.6 verde (coordenador esvazia 30 itens; `ProjectMember` intacto).
 - [ ] Uma semana de uso real da fila pela área piloto sem violação apontada por `audit_organizational_routing` (rodar diariamente em dry-run).
 
 Data do gate: \_\_\_\_

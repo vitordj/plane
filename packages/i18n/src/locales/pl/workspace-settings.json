@@ -707,7 +707,32 @@
             "not_assigned": "Nie przypisano",
             "returned_title": "Zwrócony do kolejki",
             "returned": "Ponownie oczekuje na kogoś.",
-            "not_returned": "Nie zwrócono"
+            "not_returned": "Nie zwrócono",
+            "transferred_title": "Przeniesiono do innego obszaru",
+            "transferred": "{name} jest teraz za to odpowiedzialny.",
+            "not_transferred": "Nie przeniesiono"
+          },
+          "attention": "Wymaga uwagi",
+          "attention_overdue_date": "Po terminie",
+          "attention_suspended": "Wstrzymane",
+          "attention_unavailable": "Wykonawca niedostępny",
+          "attention_no_date": "Brak terminu",
+          "empty_attention": "Nic teraz nie wymaga uwagi.",
+          "decisions": "Decyzje",
+          "empty_decisions": "Nie ma jeszcze decyzji o przydziale.",
+          "decision_supersedes": "Zastąpiło wcześniejszą decyzję",
+          "decision_outcome": {
+            "assigned": "Przydzielono",
+            "queued": "W kolejce",
+            "allocation_failed": "Nie udało się przydzielić",
+            "rejected": "Odrzucono"
+          },
+          "transfer": "Przenieś do innego obszaru",
+          "transfer_modal": {
+            "title": "Przenieś do innego obszaru",
+            "search": "Szukaj obszarów",
+            "no_units": "Żaden inny obszar nie obejmuje tego projektu.",
+            "transferring": "Przenoszenie…"
           }
         },
         "errors": {
@@ -749,6 +774,55 @@
           "process_projection_disabled": "Projekcja procesów jest wyłączona w tej instancji.",
           "completion_manual_only": "Ten element pracy może zakończyć tylko osoba.",
           "internal_error": "Coś poszło nie tak. Operacja została zapisana jako nieudana."
+        },
+        "coordinators": {
+          "tab": "Koordynatorzy",
+          "select_person": "Wybierz osobę",
+          "no_addable": "Wszyscy, którzy mogą koordynować ten obszar, już to robią",
+          "add": "Dodaj koordynatora",
+          "empty": "Nikt jeszcze nie koordynuje tego obszaru. Koordynator obsługuje kolejkę, nie musząc do niego należeć.",
+          "remove_aria": "Przestań, by {name} koordynował ten obszar",
+          "note": "Koordynator obsługuje kolejkę obszaru. Nie musi do niego należeć. Goście przestrzeni roboczej nie mogą być koordynatorami.",
+          "toast": {
+            "added_title": "Dodano koordynatora",
+            "added": "Może teraz obsługiwać kolejkę tego obszaru.",
+            "not_added": "Nie dodano",
+            "removed_title": "Usunięto koordynatora",
+            "removed": "{name} już nie koordynuje tego obszaru.",
+            "not_removed": "Nie usunięto"
+          }
+        },
+        "policy": {
+          "tab": "Polityka",
+          "heading": "Jak ten obszar przydziela pracę",
+          "description": "Domyślne ustawienie obszaru, które projekt może nadpisać.",
+          "scope_area": "Domyślne obszaru",
+          "scope_project": "Wyjątek dla {name}",
+          "default_mode": "Tryb domyślny",
+          "allowed_modes": "Dozwolone tryby",
+          "sla_seconds": "SLA przydziału (sekundy)",
+          "sla_hint": "Jak długo element może czekać bez osoby, zanim koordynatorzy dostaną alert. Zostaw puste, jeśli nie chcesz terminu.",
+          "max_open": "Maks. otwartych elementów na osobę",
+          "max_open_hint": "Zostaw puste, jeśli nie chcesz limitu.",
+          "save": "Zapisz politykę",
+          "mode": {
+            "manual": "Koordynator przydziela",
+            "self_claim": "Osoby biorą pracę same",
+            "least_loaded": "Członek z najmniejszym obciążeniem",
+            "explicit": "Wskazana osoba"
+          },
+          "toast": {
+            "saved_title": "Zapisano politykę",
+            "saved": "Nowa praca będzie stosować te zasady.",
+            "not_saved": "Nie zapisano"
+          }
+        },
+        "my_areas": {
+          "title": "Moje obszary",
+          "heading": "Moje obszary",
+          "description": "Obszary, do których należysz, i praca czekająca w każdym z nich.",
+          "empty": "Nie należysz jeszcze do żadnego obszaru.",
+          "select": "Wybierz obszar"
         }
       }
     },

@@ -483,7 +483,32 @@
             "not_assigned": "Não atribuído",
             "returned_title": "Devolvido à fila",
             "returned": "Está aguardando alguém novamente.",
-            "not_returned": "Não devolvido"
+            "not_returned": "Não devolvido",
+            "transferred_title": "Movido para outra área",
+            "transferred": "{name} é responsável por ele agora.",
+            "not_transferred": "Não movido"
+          },
+          "attention": "Atenção",
+          "attention_overdue_date": "Data de entrega vencida",
+          "attention_suspended": "Pausado",
+          "attention_unavailable": "Executor indisponível",
+          "attention_no_date": "Sem data de entrega",
+          "empty_attention": "Nada precisa de atenção no momento.",
+          "decisions": "Decisões",
+          "empty_decisions": "Ainda não há decisões de alocação.",
+          "decision_supersedes": "Substituiu uma decisão anterior",
+          "decision_outcome": {
+            "assigned": "Atribuído",
+            "queued": "Na fila",
+            "allocation_failed": "Não foi possível atribuir",
+            "rejected": "Recusado"
+          },
+          "transfer": "Mover para outra área",
+          "transfer_modal": {
+            "title": "Mover para outra área",
+            "search": "Buscar áreas",
+            "no_units": "Nenhuma outra área cobre este projeto.",
+            "transferring": "Movendo…"
           }
         },
         "errors": {
@@ -525,6 +550,55 @@
           "process_projection_disabled": "A projeção de processos está desligada nesta instância.",
           "completion_manual_only": "Este item de trabalho só pode ser concluído por uma pessoa.",
           "internal_error": "Algo deu errado. A operação foi registrada como falha."
+        },
+        "coordinators": {
+          "tab": "Coordenadores",
+          "select_person": "Selecione uma pessoa",
+          "no_addable": "Todos que podem coordenar esta área já o fazem",
+          "add": "Adicionar coordenador",
+          "empty": "Ninguém coordena esta área ainda. Um coordenador opera a fila sem precisar pertencer a ela.",
+          "remove_aria": "Parar de {name} coordenar esta área",
+          "note": "Um coordenador opera a fila da área. Não precisa pertencer à área. Convidados do workspace não podem ser coordenadores.",
+          "toast": {
+            "added_title": "Coordenador adicionado",
+            "added": "Agora pode operar a fila desta área.",
+            "not_added": "Não adicionado",
+            "removed_title": "Coordenador removido",
+            "removed": "{name} não coordena mais esta área.",
+            "not_removed": "Não removido"
+          }
+        },
+        "policy": {
+          "tab": "Política",
+          "heading": "Como esta área atribui trabalho",
+          "description": "O padrão da área, que um projeto pode substituir.",
+          "scope_area": "Padrão da área",
+          "scope_project": "Exceção para {name}",
+          "default_mode": "Modo padrão",
+          "allowed_modes": "Modos permitidos",
+          "sla_seconds": "SLA de atribuição (segundos)",
+          "sla_hint": "Quanto um item pode ficar sem responsável antes de alertar os coordenadores. Deixe vazio para não haver prazo.",
+          "max_open": "Máximo de itens abertos por pessoa",
+          "max_open_hint": "Deixe vazio para não haver limite.",
+          "save": "Salvar política",
+          "mode": {
+            "manual": "O coordenador atribui",
+            "self_claim": "As pessoas assumem o trabalho",
+            "least_loaded": "Membro com menos carga",
+            "explicit": "Pessoa nomeada"
+          },
+          "toast": {
+            "saved_title": "Política salva",
+            "saved": "O trabalho novo seguirá estas regras.",
+            "not_saved": "Não salva"
+          }
+        },
+        "my_areas": {
+          "title": "Minhas áreas",
+          "heading": "Minhas áreas",
+          "description": "Áreas às quais você pertence e o trabalho aguardando em cada uma.",
+          "empty": "Você ainda não pertence a nenhuma área.",
+          "select": "Selecione uma área"
         }
       },
       "projects": {

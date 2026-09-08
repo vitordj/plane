@@ -90,19 +90,21 @@ Contexto que você não precisa redescobrir:
   app/views/organizational_queue.py com helpers em
   app/permissions/organizational_unit.py, a aba Trabalho existe na interface, e
   os alertas de allocation_failed e de SLA vencido existem em
-  services/orca/alerts.py e bgtasks/organizational_queue_task.py. Não
-  reimplemente nada disso. O que falta da fase é a parte completa do 2.3, o 2.5
-  e o 2.6.
-- Vinte achados da revisão adversarial de 07/09 estão rastreados em
-  R1-review-findings.md e NÃO estão corrigidos. Se o seu item toca reconciliador,
-  fila, idempotência ou permissões de Guest, olhe o R1 antes: é provável que o
-  comportamento estranho que você encontrar já esteja documentado ali, com
-  evidência de execução.
+  services/orca/alerts.py e bgtasks/organizational_queue_task.py. A parte
+  completa do 2.3 (Atenção, decisões, política, coordenadores, Minha Área,
+  transferir), o 2.5 (i18n e docs) e o 2.6 (coordenador esvazia 30 itens)
+  estão entregues. Não reimplemente nada disso.
+- Os achados de código da revisão adversarial de 07/09 (R1.A1–A20) estão
+  corrigidos. Resta só R1.T1, que é decisão de negócio (trilha regulatória),
+  não código. Se o seu item toca reconciliador, fila, idempotência ou
+  permissões de Guest, olhe o R1 antes: o comportamento que você encontrar já
+  pode ser o conserto, não o defeito original.
 - O job `Ensure Release Candidate PR` falha em todo push para stage por uma
   configuração do repositório, não por código (GitHub Actions sem permissão para
   criar PR). Um stage vermelho nesse job só, com os outros 17 verdes, não é
   regressão sua.
-- A migração mais recente é 0139_orca_unit_coordinator. A Fase 3 usará 0140.
+- A migração mais recente é 0140_orca_idempotency_scoped_to_token. A Fase 3
+  usará 0141.
 ```
 
 ---
@@ -166,7 +168,6 @@ com `--create-db`. PostgreSQL aqui é 16 e no CI é 15.7; nada até agora
 dependeu disso, mas é o primeiro lugar a olhar se divergirem. O ambiente
 morre com o contêiner — a receita é o que fica.
 
-
 ### Frontend — tipos, lint, formato e i18n
 
 Medido nesta sessão (07/09/2026) na ponta do PR #15, `31d35e2b`, num contêiner
@@ -193,7 +194,6 @@ Como sempre: `> /tmp/x.log 2>&1` e `tail`. O `check:types` é o único que passa
 de um minuto, e é o que mais vale rodar: o README do plano listou por dias o
 `check:types` entre o que faltava para o Gate D0, porque se acreditava que a
 sessão não o executava.
-
 
 ## Variantes
 

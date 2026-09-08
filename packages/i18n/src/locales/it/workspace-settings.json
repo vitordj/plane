@@ -707,7 +707,32 @@
             "not_assigned": "Non assegnato",
             "returned_title": "Rimesso in coda",
             "returned": "È di nuovo in attesa di qualcuno.",
-            "not_returned": "Non rimesso in coda"
+            "not_returned": "Non rimesso in coda",
+            "transferred_title": "Spostato in un’altra area",
+            "transferred": "{name} ne è ora responsabile.",
+            "not_transferred": "Non spostato"
+          },
+          "attention": "Richiede attenzione",
+          "attention_overdue_date": "Data di scadenza superata",
+          "attention_suspended": "In pausa",
+          "attention_unavailable": "Esecutore non disponibile",
+          "attention_no_date": "Nessuna data di scadenza",
+          "empty_attention": "Al momento nulla richiede attenzione.",
+          "decisions": "Decisioni",
+          "empty_decisions": "Nessuna decisione di assegnazione ancora.",
+          "decision_supersedes": "Ha sostituito una decisione precedente",
+          "decision_outcome": {
+            "assigned": "Assegnato",
+            "queued": "In coda",
+            "allocation_failed": "Impossibile assegnare",
+            "rejected": "Rifiutato"
+          },
+          "transfer": "Sposta in un’altra area",
+          "transfer_modal": {
+            "title": "Sposta in un’altra area",
+            "search": "Cerca aree",
+            "no_units": "Nessun’altra area copre questo progetto.",
+            "transferring": "Spostamento…"
           }
         },
         "errors": {
@@ -749,6 +774,55 @@
           "process_projection_disabled": "La proiezione dei processi è disattivata su questa istanza.",
           "completion_manual_only": "Questo elemento di lavoro può essere completato solo da una persona.",
           "internal_error": "Qualcosa è andato storto. L’operazione è stata registrata come fallita."
+        },
+        "coordinators": {
+          "tab": "Coordinatori",
+          "select_person": "Seleziona una persona",
+          "no_addable": "Chi può coordinare quest’area lo fa già",
+          "add": "Aggiungi coordinatore",
+          "empty": "Nessuno coordina ancora quest’area. Un coordinatore gestisce la coda senza doverne far parte.",
+          "remove_aria": "Smetti di far coordinare quest’area a {name}",
+          "note": "Un coordinatore gestisce la coda dell’area. Non deve farne parte. Gli ospiti dello spazio di lavoro non possono essere coordinatori.",
+          "toast": {
+            "added_title": "Coordinatore aggiunto",
+            "added": "Ora può gestire la coda di quest’area.",
+            "not_added": "Non aggiunto",
+            "removed_title": "Coordinatore rimosso",
+            "removed": "{name} non coordina più quest’area.",
+            "not_removed": "Non rimosso"
+          }
+        },
+        "policy": {
+          "tab": "Politica",
+          "heading": "Come quest’area assegna il lavoro",
+          "description": "Il valore predefinito dell’area, che un progetto può sostituire.",
+          "scope_area": "Predefinito dell’area",
+          "scope_project": "Eccezione per {name}",
+          "default_mode": "Modalità predefinita",
+          "allowed_modes": "Modalità consentite",
+          "sla_seconds": "SLA di assegnazione (secondi)",
+          "sla_hint": "Quanto un elemento può restare non assegnato prima di avvisare i coordinatori. Lascia vuoto per nessun termine.",
+          "max_open": "Massimo di elementi aperti per persona",
+          "max_open_hint": "Lascia vuoto per nessun tetto.",
+          "save": "Salva policy",
+          "mode": {
+            "manual": "Il coordinatore assegna",
+            "self_claim": "Le persone prendono il lavoro",
+            "least_loaded": "Membro con meno carico",
+            "explicit": "Persona nominata"
+          },
+          "toast": {
+            "saved_title": "Policy salvata",
+            "saved": "Il nuovo lavoro seguirà queste regole.",
+            "not_saved": "Non salvata"
+          }
+        },
+        "my_areas": {
+          "title": "Le mie aree",
+          "heading": "Le mie aree",
+          "description": "Aree a cui appartieni e il lavoro in attesa in ciascuna.",
+          "empty": "Non appartieni ancora a nessuna area.",
+          "select": "Seleziona un’area"
         }
       }
     },
