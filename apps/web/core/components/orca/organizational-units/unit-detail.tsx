@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { ArrowLeft, Pencil } from "lucide-react";
 // plane imports
@@ -43,19 +43,24 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
 
   const isAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE, workspaceSlug);
 
+  useEffect(() => {
+    store.fetchCoordinators(workspaceSlug, unit.id).catch(() => undefined);
+  }, [workspaceSlug, unit.id, store]);
+
   // The queue is counted from what the Work tab has actually fetched, so the
   // badge reads 0 until then rather than inventing a number the tab would
   // contradict a moment later.
   const waitingCount = store.getQueueByUnitId(unit.id).waiting.length;
+  const coordinatorCount = store.getCoordinatorsByUnitId(unit.id).filter((coordinator) => coordinator.is_active).length;
 
-  const tabs: { key: TTab; label: string; count: number }[] = [
+  const tabs: { key: TTab; label: string; count?: number }[] = [
     { key: "members", label: t(`${OU}.detail.tab_people`), count: unit.member_count },
     { key: "projects", label: t("common.projects"), count: unit.project_count },
     { key: "work", label: t(`${OU}.work.tab`), count: waitingCount },
     ...(isAdmin
       ? [
-          { key: "coordinators" as const, label: t(`${OU}.coordinators.tab`), count: 0 },
-          { key: "policy" as const, label: t(`${OU}.policy.tab`), count: 0 },
+          { key: "coordinators" as const, label: t(`${OU}.coordinators.tab`), count: coordinatorCount },
+          { key: "policy" as const, label: t(`${OU}.policy.tab`) },
         ]
       : []),
   ];
@@ -97,7 +102,7 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
             onClick={() => setActiveTab(tab.key)}
           >
             {tab.label}
-            <span className="text-xs text-custom-text-400 ml-1.5">{tab.count}</span>
+            {tab.count != null && <span className="text-xs text-custom-text-400 ml-1.5">{tab.count}</span>}
           </button>
         ))}
       </div>
