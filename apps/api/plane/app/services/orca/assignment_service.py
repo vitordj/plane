@@ -1049,12 +1049,7 @@ def set_responsibility(
     # re-run allocation. The public API already does this in ``_place``; without
     # it here a ``manual`` policy would queue an assigned item and wipe the
     # executor (R1.A1). A freshly created link still has to run the policy.
-    if (
-        not created_link
-        and existing is not None
-        and requested_mode is None
-        and explicit_executor is None
-    ):
+    if not created_link and existing is not None and requested_mode is None and explicit_executor is None:
         decision = existing.current_assignment_decision
         outcome = decision.outcome if decision is not None else DecisionOutcome.QUEUED
         return AllocationResult(existing, decision, outcome, existing.primary_executor_id)

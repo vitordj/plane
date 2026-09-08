@@ -214,11 +214,15 @@ def _unit_has_another_active_lead(unit: OrganizationalUnit, membership: Organiza
     (R1.A10). Checking before the write keeps the one-lead constraint from
     turning a group re-add into a 500 Entra retries forever.
     """
-    return OrganizationalUnitMembership.objects.filter(
-        organizational_unit=unit,
-        role=OrganizationalUnitMemberRole.LEAD,
-        is_active=True,
-    ).exclude(pk=membership.pk).exists()
+    return (
+        OrganizationalUnitMembership.objects.filter(
+            organizational_unit=unit,
+            role=OrganizationalUnitMemberRole.LEAD,
+            is_active=True,
+        )
+        .exclude(pk=membership.pk)
+        .exists()
+    )
 
 
 @transaction.atomic
