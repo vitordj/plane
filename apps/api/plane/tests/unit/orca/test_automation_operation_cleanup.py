@@ -162,6 +162,35 @@ class TestTheWindow:
         assert AutomationOperation.all_objects.filter(pk__in=[o.pk for o in keep]).count() == len(keep)
         assert not AutomationOperation.all_objects.filter(pk__in=[o.pk for o in drop]).exists()
 
+    def test_a_receipt_named_by_a_decision_survives_the_window(
+        self, workspace_with_members, project, unit, make_issue, settings
+    ):
+        """R1.A3: deleting the receipt would SET NULL the append-only decision."""
+        settings.ORCA_AUTOMATION_OPERATION_RETENTION_DAYS = 30
+        named = receipt(workspace_with_members, key="named", age_days=31)
+        orphan = receipt(workspace_with_members, key="orphan", age_days=31)
+        decision = AssignmentDecision.objects.create(
+            issue=make_issue(project),
+            organizational_unit=unit,
+            project=project,
+            workspace=workspace_with_members,
+            automation_operation=named,
+            trigger="public_api",
+            effective_mode="manual",
+            policy_source="fallback",
+            algorithm_version="lb-1",
+            outcome="queued",
+            candidates_snapshot=[],
+        )
+
+        delete_orca_automation_operations()
+
+        named.refresh_from_db()
+        decision.refresh_from_db()
+        assert AutomationOperation.all_objects.filter(pk=named.pk).exists()
+        assert decision.automation_operation_id == named.id
+        assert not AutomationOperation.all_objects.filter(pk=orphan.pk).exists()
+
 
 @pytest.mark.unit
 class TestWhatExpiringAKeyCosts:
@@ -183,11 +212,14 @@ class TestWhatExpiringAKeyCosts:
         assert ExternalWorkItemBinding.objects.filter(
             workspace=project.workspace, external_source="espo-onboarding", external_id="cliente-1"
         ).exists()
-        assert not AutomationOperation.all_objects.exists()
+        # R1.A3: a successful create named a decision, so the receipt stays and
+        # the decision still points at it. The binding surviving is the older
+        # guarantee; the FK surviving is the new one.
+        operation = AutomationOperation.all_objects.get()
+        decision = AssignmentDecision.objects.get(issue_id=created.data["work_item"]["id"])
+        assert decision.automation_operation_id == operation.id
 
-    def test_the_same_call_after_expiry_finds_the_item_instead_of_duplicating_it(
-        self, caller, project, world, settings
-    ):
+    def test_a_successful_create_keeps_its_key_past_the_window(self, caller, project, world, settings):
         settings.ORCA_AUTOMATION_OPERATION_RETENTION_DAYS = 30
         first = post(caller, project, body())
         issue_id = first.data["work_item"]["id"]
@@ -196,15 +228,16 @@ class TestWhatExpiringAKeyCosts:
 
         again = post(caller, project, body())
 
-        # A fresh operation, because the key is genuinely unspent -- but
-        # find-or-create on the binding means it resolves to the same work item.
+        # The receipt is still there (R1.A3), so the key is still spent and
+        # this is a replay of the original snapshot, not a second create.
         assert again.status_code == 201, again.data
+        assert again["Idempotent-Replay"] == "true"
         assert again.data["work_item"]["id"] == issue_id
-        assert again.data["binding"]["created"] is False
         assert Issue.objects.filter(project=project).count() == 1
         assert ExternalWorkItemBinding.objects.filter(workspace=project.workspace).count() == 1
+        assert AutomationOperation.all_objects.count() == 1
 
-    def test_the_allocation_is_not_re_run_after_expiry(self, caller, project, world, settings):
+    def test_the_allocation_is_not_re_run_after_the_window(self, caller, project, world, settings):
         settings.ORCA_AUTOMATION_OPERATION_RETENTION_DAYS = 30
         first = post(caller, project, body(mode="least_loaded"))
         issue_id = first.data["work_item"]["id"]
@@ -215,8 +248,7 @@ class TestWhatExpiringAKeyCosts:
 
         again = post(caller, project, body(mode="least_loaded"))
 
-        # `_place` returns early when the area asking already owns the item, so
-        # an expired key cannot re-rank the work and hand it to somebody else.
+        # The receipt survived, so this is a replay and cannot re-rank.
         assert again.data["decision"]["id"] == decision_id
         assert AssignmentDecision.objects.filter(issue_id=issue_id).count() == 1
         assert (
@@ -242,21 +274,17 @@ class TestWhatExpiringAKeyCosts:
         assert replay.data["work_item"]["id"] == first.data["work_item"]["id"]
         assert AutomationOperation.all_objects.count() == 1
 
-    def test_expiry_changes_the_answer_but_not_the_work(self, caller, project, world, settings):
-        """What a caller can actually observe once its key has been expired."""
+    def test_an_unreferenced_key_is_still_unspent_after_expiry(self, caller, project, world, settings):
+        """Unreferenced receipts still expire; that path is how a key becomes unspent."""
         settings.ORCA_AUTOMATION_OPERATION_RETENTION_DAYS = 30
-        first = post(caller, project, body())
-        AutomationOperation.all_objects.update(created_at=timezone.now() - timedelta(days=31))
+        orphan = receipt(project.workspace, key="orphan-key", age_days=31)
+
         delete_orca_automation_operations()
 
-        after = post(caller, project, body())
+        assert not AutomationOperation.all_objects.filter(pk=orphan.pk).exists()
+        after = post(caller, project, body(external_id="other-1"), key="orphan-key")
 
-        # Same status as the replay would have given, so a client keying on the
-        # status sees nothing. What changes is that this is a new operation
-        # reporting the present, not the frozen original: no replay header, the
-        # binding reported as found rather than created.
-        assert after.status_code == 201
+        assert after.status_code == 201, after.data
         assert after.get("Idempotent-Replay") is None
         assert after.data["operation"]["replay"] is False
-        assert after.data["binding"]["created"] is False
-        assert after.data["work_item"]["id"] == first.data["work_item"]["id"]
+        assert AutomationOperation.all_objects.filter(idempotency_key="orphan-key").exists()
