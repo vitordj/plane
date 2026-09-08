@@ -5,10 +5,14 @@
  */
 
 export * from "./assign-member-modal";
+export * from "./coordinators-tab";
+export * from "./decision-timeline";
 export * from "./directory-sync-panel";
 export * from "./issue-unit-property";
+export * from "./policy-form";
 export * from "./queue-item-row";
 export * from "./queue-list";
+export * from "./transfer-unit-modal";
 export * from "./unit-detail";
 export * from "./unit-form-modal";
 export * from "./unit-list";

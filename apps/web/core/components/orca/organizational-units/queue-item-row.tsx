@@ -27,6 +27,8 @@ type Props = {
    * modal serves the whole list instead of one per line.
    */
   onAssign: (row: IQueueRow) => void;
+  /** Opens the "move to another area" picker. Same ownership as onAssign. */
+  onTransfer?: (row: IQueueRow) => void;
 };
 
 const OU = "workspace_settings.settings.organizational_units";
@@ -54,7 +56,7 @@ function ageLabel(seconds: number): { key: string; count: number } {
  * whatever the row shows (RFC §1.2) — so the row can afford to trust them.
  */
 export const QueueItemRow = observer(function QueueItemRow(props: Props) {
-  const { workspaceSlug, unitId, row, onAssign } = props;
+  const { workspaceSlug, unitId, row, onAssign, onTransfer } = props;
   const store = useOrganizationalUnit();
   const { t } = useTranslation();
 
@@ -176,6 +178,11 @@ export const QueueItemRow = observer(function QueueItemRow(props: Props) {
             disabled={pendingAction !== null}
           >
             {t(`${OU}.work.return_to_queue`)}
+          </Button>
+        )}
+        {onTransfer && (
+          <Button variant="ghost" size="sm" onClick={() => onTransfer(row)} disabled={pendingAction !== null}>
+            {t(`${OU}.work.transfer`)}
           </Button>
         )}
       </div>

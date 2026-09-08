@@ -8,16 +8,20 @@ import { useState } from "react";
 import { observer } from "mobx-react";
 import { ArrowLeft, Pencil } from "lucide-react";
 // plane imports
+import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import type { IOrganizationalUnit } from "@plane/types";
 // hooks
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
+import { useUserPermissions } from "@/hooks/store/user";
 // components
 import { OrganizationalUnitFormModal } from "./unit-form-modal";
 import { OrganizationalUnitMembersTab } from "./unit-members-tab";
 import { OrganizationalUnitProjectsTab } from "./unit-projects-tab";
 import { OrganizationalUnitWorkTab } from "./unit-work-tab";
+import { OrganizationalUnitCoordinatorsTab } from "./coordinators-tab";
+import { OrganizationalUnitPolicyForm } from "./policy-form";
 
 type Props = {
   workspaceSlug: string;
@@ -25,7 +29,7 @@ type Props = {
   onBack: () => void;
 };
 
-type TTab = "members" | "projects" | "work";
+type TTab = "members" | "projects" | "work" | "coordinators" | "policy";
 
 const OU = "workspace_settings.settings.organizational_units";
 
@@ -33,8 +37,11 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
   const { workspaceSlug, unit, onBack } = props;
   const { t } = useTranslation();
   const store = useOrganizationalUnit();
+  const { allowPermissions } = useUserPermissions();
   const [activeTab, setActiveTab] = useState<TTab>("members");
   const [isEditing, setIsEditing] = useState(false);
+
+  const isAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE, workspaceSlug);
 
   // The queue is counted from what the Work tab has actually fetched, so the
   // badge reads 0 until then rather than inventing a number the tab would
@@ -45,6 +52,12 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
     { key: "members", label: t(`${OU}.detail.tab_people`), count: unit.member_count },
     { key: "projects", label: t("common.projects"), count: unit.project_count },
     { key: "work", label: t(`${OU}.work.tab`), count: waitingCount },
+    ...(isAdmin
+      ? [
+          { key: "coordinators" as const, label: t(`${OU}.coordinators.tab`), count: 0 },
+          { key: "policy" as const, label: t(`${OU}.policy.tab`), count: 0 },
+        ]
+      : []),
   ];
 
   return (
@@ -92,6 +105,10 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
       {activeTab === "work" && <OrganizationalUnitWorkTab workspaceSlug={workspaceSlug} unitId={unit.id} />}
       {activeTab === "members" && <OrganizationalUnitMembersTab workspaceSlug={workspaceSlug} unitId={unit.id} />}
       {activeTab === "projects" && <OrganizationalUnitProjectsTab workspaceSlug={workspaceSlug} unitId={unit.id} />}
+      {activeTab === "coordinators" && (
+        <OrganizationalUnitCoordinatorsTab workspaceSlug={workspaceSlug} unitId={unit.id} />
+      )}
+      {activeTab === "policy" && <OrganizationalUnitPolicyForm workspaceSlug={workspaceSlug} unitId={unit.id} />}
 
       <OrganizationalUnitFormModal
         isOpen={isEditing}

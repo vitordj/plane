@@ -54,6 +54,16 @@ export interface IAssignmentDecision {
   created_at: string;
 }
 
+/**
+ * A decision as the area's log reads it: which item it was about, and one
+ * level into what it replaced. ``supersedes`` is the plain decision, not
+ * this shape, so the chain stops after one hop.
+ */
+export interface IAssignmentDecisionDetail extends Omit<IAssignmentDecision, "supersedes"> {
+  issue: { id: string; sequence_id: number; name: string; project_id: string };
+  supersedes: IAssignmentDecision | null;
+}
+
 /** The routing state of one work item under its responsible area. */
 export interface IIssueRouting {
   id: string;
@@ -259,6 +269,8 @@ export interface IDirectorySyncSummary {
   memberships_created?: number;
   memberships_reactivated?: number;
   memberships_deactivated?: number;
+  leads_deactivated?: number;
+  leads_demoted?: number;
   identities_linked?: number;
   identities_unresolved?: number;
   unresolved_user_names?: string[];

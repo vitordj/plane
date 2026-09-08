@@ -18,6 +18,7 @@ import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 import { useUser, useUserPermissions } from "@/hooks/store/user";
 // components
 import { AssignMemberModal } from "./assign-member-modal";
+import { TransferUnitModal } from "./transfer-unit-modal";
 
 type Props = {
   workspaceSlug: string;
@@ -57,6 +58,7 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
   const [isAssigning, setIsAssigning] = useState(false);
   const [pendingAction, setPendingAction] = useState<"claim" | "return" | null>(null);
   const [isPickingPerson, setIsPickingPerson] = useState(false);
+  const [isTransferring, setIsTransferring] = useState(false);
 
   useEffect(() => {
     store.fetchUnits(workspaceSlug);
@@ -271,6 +273,11 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
               {t(`${OU}.work.return_to_queue`)}
             </CustomMenu.MenuItem>
           )}
+          {canChoosePerson && (
+            <CustomMenu.MenuItem onClick={() => setIsTransferring(true)}>
+              {t(`${OU}.work.transfer`)}
+            </CustomMenu.MenuItem>
+          )}
         </CustomMenu>
       )}
 
@@ -287,6 +294,21 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
             onAssigned?.();
           }}
           onClose={() => setIsPickingPerson(false)}
+        />
+      )}
+      {selectedUnitId && (
+        <TransferUnitModal
+          isOpen={isTransferring}
+          workspaceSlug={workspaceSlug}
+          unitId={selectedUnitId}
+          projectId={projectId}
+          onTransferred={async (destinationId) => {
+            const nextRouting = await store.transferIssueRouting(workspaceSlug, projectId, issueId, destinationId);
+            setRouting(nextRouting);
+            setSelectedUnitId(destinationId);
+            onAssigned?.();
+          }}
+          onClose={() => setIsTransferring(false)}
         />
       )}
     </div>
