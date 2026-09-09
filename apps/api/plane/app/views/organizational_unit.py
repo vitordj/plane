@@ -37,6 +37,7 @@ from plane.app.services.orca import (
     MODE_APPEND,
     MODE_FILL_EMPTY,
     OrcaDomainError,
+    availability_enabled,
     orca_public_api_enabled,
     organizational_units_enabled,
     plan_access,
@@ -147,6 +148,10 @@ class OrcaConfigEndpoint(BaseAPIView):
                 # that told everyone to go and call it would be wrong on every
                 # instance that has not opened it.
                 "public_api_enabled": orca_public_api_enabled(),
+                # Independent of the automation API: leave and opt-out are a
+                # people concern. Default off, so ranking stays as it is until
+                # an operator turns Phase 3 on (item 3.1).
+                "availability_enabled": availability_enabled(),
             },
             status=status.HTTP_200_OK,
         )

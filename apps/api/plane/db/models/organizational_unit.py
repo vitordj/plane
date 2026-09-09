@@ -6,7 +6,7 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
+from django.db.models import F, Q
 
 # Module imports
 from .base import BaseModel
@@ -67,6 +67,28 @@ class GrantSource(models.TextChoices):
 
     MEMBERSHIP = "membership", "Membership"
     COORDINATOR = "coordinator", "Coordinator"
+
+
+class AvailabilityReason(models.TextChoices):
+    """Why a person is not receiving new work (RFC §5.2)."""
+
+    VACATION = "vacation", "Vacation"
+    LEAVE = "leave", "Leave"
+    OTHER = "other", "Other"
+
+
+class AvailabilitySource(models.TextChoices):
+    """
+    Where an unavailability window came from.
+
+    @description v1 only writes ``manual``. ``hr`` and ``directory`` are
+    reserved so a later sync (open question A3) does not need a migration just
+    to name the origin.
+    """
+
+    MANUAL = "manual", "Manual"
+    HR = "hr", "HR"
+    DIRECTORY = "directory", "Directory"
 
 
 class DirectorySyncSource(models.TextChoices):
@@ -705,3 +727,120 @@ class IssueOrganizationalUnit(BaseModel):
 
     def __str__(self):
         return f"{self.issue_id} -> {self.organizational_unit_id}"
+
+
+class WorkspaceMemberAvailability(BaseModel):
+    """
+    A window during which a workspace member is not available for new work.
+
+    @description Half-open ``[unavailable_from, unavailable_until)``. A null
+    ``unavailable_until`` is unbounded: they stay unavailable from ``from``
+    onwards until a later window (or a delete) says otherwise. Overlapping
+    windows are allowed — any one covering ``now`` is enough. The ranking
+    (item 3.2) reads this through ``is_available``; this table does not
+    itself reassign anyone.
+
+    Attributes:
+        workspace_member (WorkspaceMember): The person.
+        workspace (Workspace): Denormalized from the member for cheap querying.
+        unavailable_from (datetime): Inclusive start of the window.
+        unavailable_until (datetime): Exclusive end; null means open-ended.
+        reason (str): ``vacation``, ``leave``, or ``other``.
+        source (str): ``manual`` in v1; ``hr`` / ``directory`` reserved.
+        external_id (str): The originating system's key, when ``source`` is
+            not ``manual``. Blank for windows a person typed themselves.
+    """
+
+    workspace_member = models.ForeignKey(
+        "db.WorkspaceMember",
+        on_delete=models.CASCADE,
+        related_name="orca_availability_windows",
+    )
+    workspace = models.ForeignKey(
+        "db.Workspace",
+        on_delete=models.CASCADE,
+        related_name="orca_availability_windows",
+    )
+    unavailable_from = models.DateTimeField()
+    unavailable_until = models.DateTimeField(null=True, blank=True)
+    reason = models.CharField(
+        max_length=16,
+        choices=AvailabilityReason.choices,
+        default=AvailabilityReason.OTHER,
+    )
+    source = models.CharField(
+        max_length=16,
+        choices=AvailabilitySource.choices,
+        default=AvailabilitySource.MANUAL,
+    )
+    external_id = models.CharField(max_length=255, blank=True, default="")
+
+    class Meta:
+        constraints = [
+            # RFC §5.2: a closed window has to run forwards. Open-ended
+            # (until IS NULL) is the "indefinite leave" case and is allowed.
+            models.CheckConstraint(
+                condition=Q(unavailable_until__isnull=True) | Q(unavailable_until__gt=F("unavailable_from")),
+                name="orca_availability_until_after_from",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["workspace_member", "unavailable_from"],
+                name="orca_avail_member_from_idx",
+            ),
+        ]
+        verbose_name = "Workspace Member Availability"
+        verbose_name_plural = "Workspace Member Availabilities"
+        db_table = "orca_workspace_member_availability"
+        ordering = ("-unavailable_from",)
+
+    def save(self, *args, **kwargs):
+        # The CHECK below is the real guard; this is the same rule in a form
+        # the API can turn into a 400 instead of an IntegrityError.
+        if self.unavailable_until is not None and self.unavailable_until <= self.unavailable_from:
+            raise ValidationError("unavailable_until must be after unavailable_from")
+        member_workspace_id = self.workspace_member.workspace_id
+        if self.workspace_id and self.workspace_id != member_workspace_id:
+            raise ValidationError("Availability window and workspace member belong to different workspaces")
+        self.workspace_id = member_workspace_id
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.workspace_member_id}: {self.unavailable_from} -> {self.unavailable_until}"
+
+
+class MembershipAllocationSettings(BaseModel):
+    """
+    Per-membership knobs for whether, and how much, new work this person takes.
+
+    @description ``accepts_new_work`` is the "I am not taking more from this
+    area" toggle. ``max_open_items`` is an optional personal cap, tighter than
+    the area's ``policy.max_open_items_per_member`` when both are set. Missing
+    row means the defaults: they accept work, no personal cap. OneToOne on
+    the membership so two settings rows cannot disagree about the same person
+    in the same area.
+
+    Attributes:
+        membership (OrganizationalUnitMembership): The membership these knobs
+            apply to.
+        accepts_new_work (bool): False opts this membership out of ranking.
+        max_open_items (int): Personal cap on open items; null means none.
+    """
+
+    membership = models.OneToOneField(
+        OrganizationalUnitMembership,
+        on_delete=models.CASCADE,
+        related_name="allocation_settings",
+    )
+    accepts_new_work = models.BooleanField(default=True)
+    max_open_items = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Membership Allocation Settings"
+        verbose_name_plural = "Membership Allocation Settings"
+        db_table = "orca_membership_allocation_settings"
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.membership_id}: accepts={self.accepts_new_work} cap={self.max_open_items}"

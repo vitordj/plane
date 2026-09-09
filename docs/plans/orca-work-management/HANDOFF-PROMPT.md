@@ -103,8 +103,8 @@ Contexto que você não precisa redescobrir:
   configuração do repositório, não por código (GitHub Actions sem permissão para
   criar PR). Um stage vermelho nesse job só, com os outros 17 verdes, não é
   regressão sua.
-- A migração mais recente é 0140_orca_idempotency_scoped_to_token. A Fase 3
-  usará 0141.
+- A migração mais recente é 0141_orca_availability. O próximo item de código
+  é o 3.2 (ranking). A Fase 4 usará 0142.
 ```
 
 ---

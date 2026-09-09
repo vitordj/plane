@@ -612,6 +612,13 @@ ORCA_ORG_SYNC_MAX_EDGES = int(os.environ.get("ORCA_ORG_SYNC_MAX_EDGES", 100))
 # *disabled*. A second switch spelled the old way would reintroduce it.
 ORCA_PUBLIC_API_ENABLED = env_flag("ORCA_PUBLIC_API_ENABLED", default=False)
 
+# Leave, vacation, and "I am not taking more from this area". Default off so
+# the tables can exist (item 3.1) without changing who rank_candidates picks
+# until an operator turns Phase 3 on. Same strict parser as the two switches
+# above. The helpers in services/orca/availability.py return the permissive
+# answer while this is off, which is what makes the default safe.
+ORCA_AVAILABILITY_ENABLED = env_flag("ORCA_AVAILABILITY_ENABLED", default=False)
+
 # Per-token budget for the automation API. Keyed on the API token rather than
 # the address, because every call from one integration arrives from the same
 # host and an address-keyed limit would let one workspace's automation

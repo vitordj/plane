@@ -11,7 +11,7 @@ sincronização com Entra/RH (A3), peso por estimativa (A7).
 
 ---
 
-## 3.1 — Migração 0141 e flag `[ ]`
+## 3.1 — Migração 0141 e flag `[x]`
 
 - Modelos `WorkspaceMemberAvailability` e `MembershipAllocationSettings` (RFC §5.2) em `organizational_unit.py`; CHECK de intervalo.
 - `ORCA_AVAILABILITY_ENABLED` em `settings/common.py` e `.env.example`; exposto em `OrcaConfigEndpoint`.
@@ -20,6 +20,15 @@ sincronização com Entra/RH (A3), peso por estimativa (A7).
 **Testes:** intervalos abertos/fechados; `until` null; sobreposição de dois
 intervalos; flag desligada → helpers respondem sempre disponível (para não
 alterar o ranking se a fase for desligada).
+
+**Entregue (09/09).** Migração `0141_orca_availability`, dependendo de `0140`.
+Janela half-open `[unavailable_from, unavailable_until)`; `until` null é
+aberto; sobreposição permitida (qualquer janela que cubra `at` basta). A
+flag nasce **off** e usa o parser estrito do P0.14; com ela desligada os
+helpers devolvem sempre disponível / aceita trabalho, então o ranking do
+item 3.2 não muda até um operador ligar a fase. Encaminhada nos quatro
+serviços da imagem da api (`docker-compose-orca.yml`) e na tabela do README,
+senão o P0.19 se repetiria. A Fase 4 passou a `0142`/`0143`.
 
 ---
 
