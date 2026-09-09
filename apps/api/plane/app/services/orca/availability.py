@@ -70,9 +70,7 @@ def allocation_settings_for(membership_ids) -> dict:
     ids = list(membership_ids)
     if not ids:
         return {}
-    return {
-        row.membership_id: row for row in MembershipAllocationSettings.objects.filter(membership_id__in=ids)
-    }
+    return {row.membership_id: row for row in MembershipAllocationSettings.objects.filter(membership_id__in=ids)}
 
 
 def is_available(workspace_member, at=None) -> bool:
