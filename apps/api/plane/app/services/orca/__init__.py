@@ -35,7 +35,12 @@ from .automation_operation import (
     fail_operation,
     start_operation,
 )
-from .availability import accepts_new_work, is_available
+from .availability import (
+    accepts_new_work,
+    allocation_settings_for,
+    is_available,
+    unavailable_workspace_member_ids,
+)
 from .coverage import unit_covers_project
 from .errors import (
     AlreadyClaimed,
@@ -132,6 +137,7 @@ __all__ = [
     "WorkItemHasNoUnit",
     "WorkItemNotFound",
     "accepts_new_work",
+    "allocation_settings_for",
     "allocate",
     "assign_from_unit",
     "audit_routing",
@@ -146,6 +152,7 @@ __all__ = [
     "fail_operation",
     "get_default_language",
     "is_available",
+    "unavailable_workspace_member_ids",
     "match_workspace_member",
     "normalize_language",
     "orca_public_api_enabled",

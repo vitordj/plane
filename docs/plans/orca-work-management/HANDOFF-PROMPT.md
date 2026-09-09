@@ -104,7 +104,9 @@ Contexto que você não precisa redescobrir:
   criar PR). Um stage vermelho nesse job só, com os outros 17 verdes, não é
   regressão sua.
 - A migração mais recente é 0141_orca_availability. O próximo item de código
-  é o 3.2 (ranking). A Fase 4 usará 0142.
+  é o 3.3 (endpoints e UI de disponibilidade). A Fase 4 usará 0142. O ranking
+  já é `lb-2` (item 3.2): com `ORCA_AVAILABILITY_ENABLED` desligada, quem é
+  escolhido não muda.
 ```
 
 ---

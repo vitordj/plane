@@ -32,7 +32,7 @@ senão o P0.19 se repetiria. A Fase 4 passou a `0142`/`0143`.
 
 ---
 
-## 3.2 — Ranking respeita disponibilidade e limites `[ ]`
+## 3.2 — Ranking respeita disponibilidade e limites `[x]`
 
 - `rank_candidates` (D0.5) exclui indisponíveis (`excluded_reason="unavailable"`), `accepts_new_work=false` (`"opted_out"`), acima de `MembershipAllocationSettings.max_open_items` (`"member_limit"`) e acima de `policy.max_open_items_per_member` (`"policy_limit"`).
 - `algorithm_version` passa a `"lb-2"` (o snapshot registra qual versão decidiu).
@@ -40,6 +40,14 @@ senão o P0.19 se repetiria. A Fase 4 passou a `0142`/`0143`.
 **Testes:** cada exclusão aparece no `candidates_snapshot`; item existente de
 pessoa indisponível continua contando na carga dos outros? Não: a carga é
 por executor; a pessoa indisponível simplesmente sai do ranking.
+
+**Entregue (09/09).** `ALGORITHM_VERSION = "lb-2"`. Com a flag desligada os
+filtros novos são no-ops (as lookups em `availability.py` devolvem vazio),
+então quem `rank_candidates` escolhe não muda até um operador ligar a fase;
+a decisão mesmo assim grava `lb-2`. O teto da política, que no `lb-1` saía
+como `at_max_open_items`, passa a `policy_limit`. Carga continua por
+executor principal: itens de quem está de férias não migram para a carga
+de outra pessoa.
 
 ---
 
