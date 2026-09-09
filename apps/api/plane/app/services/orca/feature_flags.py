@@ -48,3 +48,21 @@ def orca_public_api_enabled() -> bool:
     @returns: ``True`` when the public automation API may answer.
     """
     return bool(organizational_units_enabled() and getattr(settings, "ORCA_PUBLIC_API_ENABLED", False))
+
+
+def availability_enabled() -> bool:
+    """
+    Whether leave, opt-out and personal caps affect who gets new work.
+
+    @description Default off. The tables can exist (and the UI of item 3.3
+    can write them) while ranking still ignores them: ``is_available`` and
+    ``accepts_new_work`` return the permissive answer until an operator
+    turns this on. Independent of the public-API switch — people going on
+    leave is a UI concern, not an automation one.
+
+    Read at call time, for the same reason as the other two.
+
+    @returns: ``True`` when availability windows and allocation settings
+        may change ranking and the sweep.
+    """
+    return bool(getattr(settings, "ORCA_AVAILABILITY_ENABLED", False))

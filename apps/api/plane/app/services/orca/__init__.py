@@ -35,6 +35,7 @@ from .automation_operation import (
     fail_operation,
     start_operation,
 )
+from .availability import accepts_new_work, is_available
 from .coverage import unit_covers_project
 from .errors import (
     AlreadyClaimed,
@@ -64,7 +65,7 @@ from .directory_projector import (
     resolve_identity,
     unresolved_identities,
 )
-from .feature_flags import orca_public_api_enabled, organizational_units_enabled
+from .feature_flags import availability_enabled, orca_public_api_enabled, organizational_units_enabled
 from .language import (
     DEFAULT_LANGUAGE_KEY,
     FALLBACK_LANGUAGE,
@@ -130,9 +131,11 @@ __all__ = [
     "WAITING_STATES",
     "WorkItemHasNoUnit",
     "WorkItemNotFound",
+    "accepts_new_work",
     "allocate",
     "assign_from_unit",
     "audit_routing",
+    "availability_enabled",
     "begin_operation",
     "candidates_for",
     "canonical_hash",
@@ -142,6 +145,7 @@ __all__ = [
     "dispatch_reconciliation",
     "fail_operation",
     "get_default_language",
+    "is_available",
     "match_workspace_member",
     "normalize_language",
     "orca_public_api_enabled",

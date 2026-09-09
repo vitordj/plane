@@ -45,7 +45,11 @@ export class OrganizationalUnitService extends APIService {
    * able to ask whether the layer exists in order to hide it, which it could
    * not do through an endpoint the same switch makes invisible.
    */
-  async getOrcaConfig(workspaceSlug: string): Promise<{ organizational_units_enabled: boolean }> {
+  async getOrcaConfig(workspaceSlug: string): Promise<{
+    organizational_units_enabled: boolean;
+    public_api_enabled?: boolean;
+    availability_enabled?: boolean;
+  }> {
     return this.get(`/api/orca/workspaces/${workspaceSlug}/config/`)
       .then((response) => response?.data)
       .catch((error) => {

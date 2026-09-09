@@ -19,7 +19,7 @@ F20, F21, F22, Apêndice B.
 
 ---
 
-## 4.2 — Migrações 0141/0142 e flag `[ ]`
+## 4.2 — Migrações 0142/0143 e flag `[ ]`
 
 - `IssueServiceLevel`, `ProcessInstanceReference`, `ProcessInstanceItem` (RFC §5.2) em `organizational_process.py`; exportar.
 - `ORCA_PROCESS_PROJECTION_ENABLED` em settings e `.env.example`.
@@ -47,6 +47,7 @@ reflete estado nativo alterado pela UI.
 
 Repositório próprio (sugestão: `orca-orchestrator`), fora deste monorepo,
 conforme FORK.md §1.B. Escopo mínimo:
+
 - Templates YAML versionados: `name`, `version`, `steps[] {key, title, unit, project, assignment, completion_mode, assignment_sla, completion_sla, depends_on[]}`.
 - Consumidor de eventos (webhook do EspoCRM ou fila) com armazenamento de `event_id` processados.
 - Cliente da API pública (pode partir de `tools/orca-client/orca_client.py`), `Idempotency-Key = f"{source}:{instance}:{step}:{event_id}"`.
@@ -87,4 +88,4 @@ contrato que ele deve passar contra staging.
 - [ ] Um processo real (onboarding piloto) executado de ponta a ponta em staging pelo orquestrador, com `template_version` registrado em cada item.
 - [ ] Desligar e religar o orquestrador durante uma instância não deixou item duplicado nem sem área (`audit_organizational_routing` limpo).
 
-Data do gate: ____
+Data do gate: \_\_\_\_

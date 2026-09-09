@@ -61,10 +61,13 @@ from .project import (
 )
 from .project_custom_settings import ProjectCustomSettings
 from .organizational_unit import (
+    AvailabilityReason,
+    AvailabilitySource,
     DirectoryIdentityState,
     DirectorySyncSource,
     GrantSource,
     IssueOrganizationalUnit,
+    MembershipAllocationSettings,
     OrganizationalProjectAccessState,
     OrganizationalUnit,
     OrganizationalUnitCoordinator,
@@ -74,6 +77,7 @@ from .organizational_unit import (
     OrganizationalUnitProject,
     QueueReason,
     RoutingState,
+    WorkspaceMemberAvailability,
 )
 from .organizational_assignment import (
     AssignmentDecision,
