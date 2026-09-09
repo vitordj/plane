@@ -6,6 +6,9 @@
 
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import type {
+  IAssignmentDecisionDetail,
+  IAssignmentPolicyPayload,
+  IAssignmentPolicyResolution,
   IIssueRouting,
   IOrganizationalUnit,
   IOrganizationalUnitAccessChange,
@@ -30,6 +33,7 @@ import type { CoreRootStore } from "../root.store";
 export interface IUnitQueue {
   waiting: IQueueRow[];
   inProgress: IQueueRow[];
+  suspended: IQueueRow[];
   viewer: IQueueViewer;
   loader: boolean;
 }
@@ -42,6 +46,8 @@ export interface IOrganizationalUnitStore {
   workloadMap: Record<string, IOrganizationalUnitWorkload[]>;
   queueByUnit: Record<string, IUnitQueue>;
   coordinatorMap: Record<string, IOrganizationalUnitCoordinator[]>;
+  decisionMap: Record<string, IAssignmentDecisionDetail[]>;
+  policyMap: Record<string, IAssignmentPolicyResolution>;
   myUnits: IUserOrganizationalUnit[] | null;
   loader: boolean;
   /** `null` until the config endpoint answers; see `isEnabled`. */
@@ -56,6 +62,7 @@ export interface IOrganizationalUnitStore {
   getWorkloadByUnitId: (unitId: string) => IOrganizationalUnitWorkload[];
   getQueueByUnitId: (unitId: string) => IUnitQueue;
   getCoordinatorsByUnitId: (unitId: string) => IOrganizationalUnitCoordinator[];
+  getDecisionsByUnitId: (unitId: string) => IAssignmentDecisionDetail[];
   // actions
   fetchConfig: (workspaceSlug: string) => Promise<boolean>;
   fetchUnits: (workspaceSlug: string) => Promise<IOrganizationalUnit[]>;
@@ -133,11 +140,37 @@ export interface IOrganizationalUnitStore {
     issueId: string,
     options?: { reason?: string; expectedDecisionId?: string | null }
   ) => Promise<IIssueRouting>;
+  transferIssueRouting: (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    destinationUnitId: string
+  ) => Promise<IIssueRouting>;
   fetchQueue: (workspaceSlug: string, unitId: string) => Promise<IUnitQueue>;
   claim: (workspaceSlug: string, unitId: string, row: IQueueRow) => Promise<IIssueRouting>;
   assign: (workspaceSlug: string, unitId: string, row: IQueueRow, executorId: string) => Promise<IIssueRouting>;
   returnToQueue: (workspaceSlug: string, unitId: string, row: IQueueRow) => Promise<IIssueRouting>;
   fetchCoordinators: (workspaceSlug: string, unitId: string) => Promise<IOrganizationalUnitCoordinator[]>;
+  addCoordinator: (
+    workspaceSlug: string,
+    unitId: string,
+    workspaceMemberId: string
+  ) => Promise<IOrganizationalUnitCoordinator>;
+  removeCoordinator: (workspaceSlug: string, unitId: string, coordinatorId: string) => Promise<void>;
+  fetchDecisions: (workspaceSlug: string, unitId: string) => Promise<IAssignmentDecisionDetail[]>;
+  fetchPolicy: (workspaceSlug: string, unitId: string, projectId?: string) => Promise<IAssignmentPolicyResolution>;
+  updatePolicy: (
+    workspaceSlug: string,
+    unitId: string,
+    data: IAssignmentPolicyPayload,
+    projectId?: string
+  ) => Promise<IAssignmentPolicyResolution>;
+  transfer: (
+    workspaceSlug: string,
+    unitId: string,
+    row: IQueueRow,
+    destinationUnitId: string
+  ) => Promise<IIssueRouting>;
 }
 
 /**
@@ -148,6 +181,7 @@ export interface IOrganizationalUnitStore {
 const EMPTY_QUEUE: IUnitQueue = Object.freeze({
   waiting: [],
   inProgress: [],
+  suspended: [],
   viewer: { is_admin: false, is_coordinator: false, is_member: false },
   loader: false,
 });
@@ -165,6 +199,8 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
   workloadMap: Record<string, IOrganizationalUnitWorkload[]> = {};
   queueByUnit: Record<string, IUnitQueue> = {};
   coordinatorMap: Record<string, IOrganizationalUnitCoordinator[]> = {};
+  decisionMap: Record<string, IAssignmentDecisionDetail[]> = {};
+  policyMap: Record<string, IAssignmentPolicyResolution> = {};
   myUnits: IUserOrganizationalUnit[] | null = null;
   loader = false;
   featureEnabled: boolean | null = null;
@@ -180,6 +216,8 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       workloadMap: observable,
       queueByUnit: observable,
       coordinatorMap: observable,
+      decisionMap: observable,
+      policyMap: observable,
       myUnits: observable,
       loader: observable.ref,
       featureEnabled: observable.ref,
@@ -205,11 +243,18 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       claimIssueRouting: action,
       reassignIssueRouting: action,
       returnIssueRouting: action,
+      transferIssueRouting: action,
       fetchQueue: action,
       claim: action,
       assign: action,
       returnToQueue: action,
       fetchCoordinators: action,
+      addCoordinator: action,
+      removeCoordinator: action,
+      fetchDecisions: action,
+      fetchPolicy: action,
+      updatePolicy: action,
+      transfer: action,
     });
 
     this.rootStore = _rootStore;
@@ -268,6 +313,8 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
 
   getCoordinatorsByUnitId = (unitId: string) => this.coordinatorMap[unitId] ?? [];
 
+  getDecisionsByUnitId = (unitId: string) => this.decisionMap[unitId] ?? [];
+
   fetchUnits = async (workspaceSlug: string) => {
     this.loader = true;
     try {
@@ -313,6 +360,8 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       delete this.workloadMap[unitId];
       delete this.queueByUnit[unitId];
       delete this.coordinatorMap[unitId];
+      delete this.decisionMap[unitId];
+      delete this.policyMap[unitId];
     });
   };
 
@@ -452,6 +501,9 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
     options?: { reason?: string; expectedDecisionId?: string | null }
   ) => this.service.returnIssue(workspaceSlug, projectId, issueId, options);
 
+  transferIssueRouting = (workspaceSlug: string, projectId: string, issueId: string, destinationUnitId: string) =>
+    this.service.transferIssue(workspaceSlug, projectId, issueId, destinationUnitId);
+
   /**
    * @description The two lists the Work tab shows, in two requests: what is
    * waiting on somebody (the endpoint's default) and what somebody is already
@@ -468,13 +520,15 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       this.queueByUnit[unitId] = { ...this.getQueueByUnitId(unitId), loader: true };
     });
     try {
-      const [waitingPage, inProgressPage] = await Promise.all([
+      const [waitingPage, inProgressPage, suspendedPage] = await Promise.all([
         this.service.getQueue(workspaceSlug, unitId),
         this.service.getQueue(workspaceSlug, unitId, { routing_state: "assigned" }),
+        this.service.getQueue(workspaceSlug, unitId, { routing_state: "suspended" }),
       ]);
       const queue: IUnitQueue = {
         waiting: waitingPage.results ?? [],
         inProgress: inProgressPage.results ?? [],
+        suspended: suspendedPage.results ?? [],
         // Both pages carry the same viewer; the waiting one is the page the
         // tab is built around, so it wins if they ever disagree.
         viewer: waitingPage.viewer ?? inProgressPage.viewer ?? EMPTY_QUEUE.viewer,
@@ -545,6 +599,7 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
         ...queue,
         waiting: goesToInProgress ? withoutRow(queue.waiting) : [row, ...withoutRow(queue.waiting)],
         inProgress: goesToInProgress ? [row, ...withoutRow(queue.inProgress)] : withoutRow(queue.inProgress),
+        suspended: withoutRow(queue.suspended),
       };
     });
   };
@@ -583,5 +638,65 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       this.coordinatorMap[unitId] = response;
     });
     return response;
+  };
+
+  addCoordinator = async (workspaceSlug: string, unitId: string, workspaceMemberId: string) => {
+    const response = await this.service.addCoordinator(workspaceSlug, unitId, workspaceMemberId);
+    await this.fetchCoordinators(workspaceSlug, unitId);
+    return response;
+  };
+
+  removeCoordinator = async (workspaceSlug: string, unitId: string, coordinatorId: string) => {
+    await this.service.removeCoordinator(workspaceSlug, unitId, coordinatorId);
+    await this.fetchCoordinators(workspaceSlug, unitId);
+  };
+
+  fetchDecisions = async (workspaceSlug: string, unitId: string) => {
+    const response = await this.service.getDecisions(workspaceSlug, unitId);
+    const rows = response.results ?? [];
+    runInAction(() => {
+      this.decisionMap[unitId] = rows;
+    });
+    return rows;
+  };
+
+  /**
+   * @description Policy key: the area default, or one project's override of it.
+   */
+  private policyKey = (unitId: string, projectId?: string) => (projectId ? `${unitId}:${projectId}` : unitId);
+
+  fetchPolicy = async (workspaceSlug: string, unitId: string, projectId?: string) => {
+    const response = await this.service.getPolicy(workspaceSlug, unitId, projectId);
+    runInAction(() => {
+      this.policyMap[this.policyKey(unitId, projectId)] = response;
+    });
+    return response;
+  };
+
+  updatePolicy = async (workspaceSlug: string, unitId: string, data: IAssignmentPolicyPayload, projectId?: string) => {
+    await this.service.updatePolicy(workspaceSlug, unitId, data, projectId);
+    // PUT returns the stored row; GET returns the resolution the form reads.
+    return this.fetchPolicy(workspaceSlug, unitId, projectId);
+  };
+
+  /**
+   * @description Moves the item to another area and drops it from this
+   * area's queue. The destination's own fetch is what fills its inbox — writing
+   * into a queue this store has never loaded would plant a row nothing else
+   * populated.
+   */
+  transfer = async (workspaceSlug: string, unitId: string, row: IQueueRow, destinationUnitId: string) => {
+    const routing = await this.service.transferIssue(workspaceSlug, row.project.id, row.issue_id, destinationUnitId);
+    const queue = this.getQueueByUnitId(unitId);
+    const withoutRow = (rows: IQueueRow[]) => rows.filter((entry) => entry.issue_id !== row.issue_id);
+    runInAction(() => {
+      this.queueByUnit[unitId] = {
+        ...queue,
+        waiting: withoutRow(queue.waiting),
+        inProgress: withoutRow(queue.inProgress),
+        suspended: withoutRow(queue.suspended),
+      };
+    });
+    return routing;
   };
 }

@@ -37,20 +37,20 @@ cada dúvida conceitual do debate para a decisão tomada.
 
 ### Glossário
 
-| Termo | Significado neste documento |
-| --- | --- |
-| **Área** (`OrganizationalUnit`) | Unidade organizacional que responde institucionalmente por trabalho. Já existe. |
-| **Responsabilidade** | Vínculo item ↔ área em `IssueOrganizationalUnit`. Uma área ativa por item. Já existe. |
-| **Executor principal** | A pessoa accountable pela execução do item. Proposta: referência lateral que deve coincidir com um `IssueAssignee` nativo. |
-| **Colaborador** | Qualquer outro `IssueAssignee` do item. |
-| **Fila** | Conjunto de itens de uma área com `routing_state = queued`. É uma consulta, não uma tabela. |
-| **Política de alocação** | Regra que decide o que acontece com um item quando ele recebe uma área: `manual`, `self_claim`, `least_loaded`. |
-| **Decisão de alocação** | Registro append-only de cada escolha (automática ou humana) de executor. |
-| **Operação de automação** | Requisição idempotente de um cliente externo, identificada por chave própria. |
-| **Binding externo** | Vínculo item ↔ objeto de um sistema externo (`external_source` + `external_id`). |
-| **Coordenador** | Pessoa que opera a fila de uma área. Papel novo, distinto de `lead`. |
-| **Orquestrador** | Serviço sidecar (fora do Plane) que instancia processos e chama a API pública. |
-| **Instância de processo** | Uma execução concreta de um template (ex.: onboarding do cliente 123). Projeção mínima dentro do Orca. |
+| Termo                           | Significado neste documento                                                                                                |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Área** (`OrganizationalUnit`) | Unidade organizacional que responde institucionalmente por trabalho. Já existe.                                            |
+| **Responsabilidade**            | Vínculo item ↔ área em `IssueOrganizationalUnit`. Uma área ativa por item. Já existe.                                      |
+| **Executor principal**          | A pessoa accountable pela execução do item. Proposta: referência lateral que deve coincidir com um `IssueAssignee` nativo. |
+| **Colaborador**                 | Qualquer outro `IssueAssignee` do item.                                                                                    |
+| **Fila**                        | Conjunto de itens de uma área com `routing_state = queued`. É uma consulta, não uma tabela.                                |
+| **Política de alocação**        | Regra que decide o que acontece com um item quando ele recebe uma área: `manual`, `self_claim`, `least_loaded`.            |
+| **Decisão de alocação**         | Registro append-only de cada escolha (automática ou humana) de executor.                                                   |
+| **Operação de automação**       | Requisição idempotente de um cliente externo, identificada por chave própria.                                              |
+| **Binding externo**             | Vínculo item ↔ objeto de um sistema externo (`external_source` + `external_id`).                                           |
+| **Coordenador**                 | Pessoa que opera a fila de uma área. Papel novo, distinto de `lead`.                                                       |
+| **Orquestrador**                | Serviço sidecar (fora do Plane) que instancia processos e chama a API pública.                                             |
+| **Instância de processo**       | Uma execução concreta de um template (ex.: onboarding do cliente 123). Projeção mínima dentro do Orca.                     |
 
 ---
 
@@ -112,27 +112,27 @@ Consequências diretas:
 
 ### 2.1 O que existe
 
-| Capacidade | Estado | Onde |
-| --- | --- | --- |
-| Área responsável persistente por work item, uma por item | Sim | `IssueOrganizationalUnit` em `apps/api/plane/db/models/organizational_unit.py` |
-| Área liga pessoas a projetos e materializa `ProjectMember` | Sim | `apps/api/plane/app/services/orca/org_unit_reconciler.py` |
-| Acesso manual preservado, papel herdado como piso | Sim | idem; documentado em `organizational-units.md` |
-| Alocar ao integrante menos carregado | Sim | `apps/api/plane/app/services/orca/assignment_service.py` (`lb-1`, lock por área, decisão registrada); disparo manual; `fill_empty`/`append` deprecados em favor de `assignment_mode` |
-| Papel `lead` na área | Só rótulo | `OrganizationalUnitMemberRole`; nenhuma permissão decorre disso |
-| "Minhas áreas" e carga por integrante | Sim | `UserOrganizationalUnitsEndpoint`, `OrganizationalUnitWorkloadEndpoint` em `apps/api/plane/app/views/organizational_unit.py` |
-| Tela da área | Só membros e projetos | `apps/web/core/components/orca/organizational-units/unit-detail.tsx` |
-| Rotas Orca por API key | Sim | `/api/v1/orca/` (`apps/api/plane/api/urls/orca.py`, views em `api/views/orca/`), atrás de `ORCA_PUBLIC_API_ENABLED`, desligada até o Gate 2-mínimo. O `docker-compose-orca.yml` só passou a **encaminhar** a flag no P0.19 (linhas 108-109 e as dos outros três serviços); antes disso, ligá-la na plataforma não tinha efeito nenhum |
-| Códigos de erro Orca traduzíveis | Sim | `apps/api/plane/utils/orca_error_codes.py` + `packages/constants/src/orca/error-codes.ts` + catálogo i18n |
-| Kill switch | Sim | `OrganizationalUnitFeatureMixin` |
-| Rate limit dedicado | SCIM e API pública | `apps/api/plane/throttles/scim.py`, `throttles/orca_public.py` (por token) |
-| Disponibilidade, férias, capacidade | Não | — |
-| Estado de fila | Sim | `IssueOrganizationalUnit.routing_state`/`queue_reason`/`queued_at`/`assignment_due_at`; máquina de estados em §6.2 |
-| Executor principal | Sim | `IssueOrganizationalUnit.primary_executor`; auditado por `audit_organizational_routing` |
-| Reatribuição quando alguém sai | Parcial | `audit_organizational_routing --write` devolve à fila quem perdeu elegibilidade; automático no evento é Fase 3 |
-| Política automática na criação | Sim | `POST /api/v1/orca/.../work-items/` cria o item, marca a área e aplica a política numa operação idempotente (Fase 1, itens 1.4-1.5) |
-| Chave externa e recibo idempotente da automação | Sim | `ExternalWorkItemBinding` e `AutomationOperation` em `apps/api/plane/db/models/organizational_automation.py` (migração `0138_orca_automation_binding`); serviço do §6.7 em `apps/api/plane/app/services/orca/automation_operation.py` (Fase 1, item 1.3) |
-| Expurgo dos recibos de automação | Sim | `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS`, 30 dias, em `apps/api/plane/settings/common.py`; job diário `delete_orca_automation_operations` em `apps/api/plane/bgtasks/orca_automation_cleanup_task.py`, agendado em `apps/api/plane/celery.py` (P0.20) |
-| Dashboard da área / executivo | Não | — |
+| Capacidade                                                 | Estado                | Onde                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Área responsável persistente por work item, uma por item   | Sim                   | `IssueOrganizationalUnit` em `apps/api/plane/db/models/organizational_unit.py`                                                                                                                                                                                                                                                        |
+| Área liga pessoas a projetos e materializa `ProjectMember` | Sim                   | `apps/api/plane/app/services/orca/org_unit_reconciler.py`                                                                                                                                                                                                                                                                             |
+| Acesso manual preservado, papel herdado como piso          | Sim                   | idem; documentado em `organizational-units.md`                                                                                                                                                                                                                                                                                        |
+| Alocar ao integrante menos carregado                       | Sim                   | `apps/api/plane/app/services/orca/assignment_service.py` (`lb-1`, lock por área, decisão registrada); disparo manual; `fill_empty`/`append` deprecados em favor de `assignment_mode`                                                                                                                                                  |
+| Papel `lead` na área                                       | Só rótulo             | `OrganizationalUnitMemberRole`; nenhuma permissão decorre disso                                                                                                                                                                                                                                                                       |
+| "Minhas áreas" e carga por integrante                      | Sim                   | `UserOrganizationalUnitsEndpoint`, `OrganizationalUnitWorkloadEndpoint` em `apps/api/plane/app/views/organizational_unit.py`                                                                                                                                                                                                          |
+| Tela da área                                               | Só membros e projetos | `apps/web/core/components/orca/organizational-units/unit-detail.tsx`                                                                                                                                                                                                                                                                  |
+| Rotas Orca por API key                                     | Sim                   | `/api/v1/orca/` (`apps/api/plane/api/urls/orca.py`, views em `api/views/orca/`), atrás de `ORCA_PUBLIC_API_ENABLED`, desligada até o Gate 2-mínimo. O `docker-compose-orca.yml` só passou a **encaminhar** a flag no P0.19 (linhas 108-109 e as dos outros três serviços); antes disso, ligá-la na plataforma não tinha efeito nenhum |
+| Códigos de erro Orca traduzíveis                           | Sim                   | `apps/api/plane/utils/orca_error_codes.py` + `packages/constants/src/orca/error-codes.ts` + catálogo i18n                                                                                                                                                                                                                             |
+| Kill switch                                                | Sim                   | `OrganizationalUnitFeatureMixin`                                                                                                                                                                                                                                                                                                      |
+| Rate limit dedicado                                        | SCIM e API pública    | `apps/api/plane/throttles/scim.py`, `throttles/orca_public.py` (por token)                                                                                                                                                                                                                                                            |
+| Disponibilidade, férias, capacidade                        | Não                   | —                                                                                                                                                                                                                                                                                                                                     |
+| Estado de fila                                             | Sim                   | `IssueOrganizationalUnit.routing_state`/`queue_reason`/`queued_at`/`assignment_due_at`; máquina de estados em §6.2                                                                                                                                                                                                                    |
+| Executor principal                                         | Sim                   | `IssueOrganizationalUnit.primary_executor`; auditado por `audit_organizational_routing`                                                                                                                                                                                                                                               |
+| Reatribuição quando alguém sai                             | Parcial               | `audit_organizational_routing --write` devolve à fila quem perdeu elegibilidade; automático no evento é Fase 3                                                                                                                                                                                                                        |
+| Política automática na criação                             | Sim                   | `POST /api/v1/orca/.../work-items/` cria o item, marca a área e aplica a política numa operação idempotente (Fase 1, itens 1.4-1.5)                                                                                                                                                                                                   |
+| Chave externa e recibo idempotente da automação            | Sim                   | `ExternalWorkItemBinding` e `AutomationOperation` em `apps/api/plane/db/models/organizational_automation.py` (migração `0138_orca_automation_binding`); serviço do §6.7 em `apps/api/plane/app/services/orca/automation_operation.py` (Fase 1, item 1.3)                                                                              |
+| Expurgo dos recibos de automação                           | Sim                   | `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS`, 30 dias, em `apps/api/plane/settings/common.py`; job diário `delete_orca_automation_operations` em `apps/api/plane/bgtasks/orca_automation_cleanup_task.py`, agendado em `apps/api/plane/celery.py` (P0.20)                                                                               |
+| Dashboard da área / executivo                              | Não                   | —                                                                                                                                                                                                                                                                                                                                     |
 
 ### 2.2 Defeitos que fecharam na Fase D0
 
@@ -158,7 +158,7 @@ fazia: quem for ler um destes caminhos precisa saber por que ele tem a forma
 que tem. Os identificadores D1 a D4 continuam sendo os nomes usados na fase
 D0. **Nenhum destes quatro é trabalho a fazer.**
 
-**D1 — Área sem cobertura do projeto.** *Fechado no D0.1 (`d3e7702b`).*
+**D1 — Área sem cobertura do projeto.** _Fechado no D0.1 (`d3e7702b`)._
 `IssueOrganizationalUnitEndpoint.post` só conferia `workspace_id`, sem exigir
 um `OrganizationalUnitProject` ativo ligando área e projeto; a UI
 (`issue-unit-property.tsx`) filtrava apenas por `is_active`; e o engine
@@ -171,8 +171,8 @@ existe para isso: `TestTheCoverageRule::test_an_unlinked_project_is_not_covered`
 (l.94) e `TestTheEngineFindsNobody::test_an_uncovered_project_has_no_candidates`
 (l.162).
 
-**D2 — Herança implícita de assignees na API pública.** *Fechado no D0.2
-(`cc1ef703`).* `apps/api/plane/api/serializers/issue.py` copiava os assignees
+**D2 — Herança implícita de assignees na API pública.** _Fechado no D0.2
+(`cc1ef703`)._ `apps/api/plane/api/serializers/issue.py` copiava os assignees
 do último item criado pela mesma pessoa no projeto quando `assignees` vinha
 vazio ou omitido, o que tornava o resultado dependente de histórico invisível
 e conflitava com a fila. O `create` dos dois serializers voltou à regra do
@@ -184,7 +184,7 @@ pinadas em `test_issue_serializer_orca_features.py`:
 `TestPublicApiDefaultAssignee::test_nothing_is_inherited_from_the_previous_work_item`
 (l.241).
 
-**D3 — Ranking e gravação sem lock.** *Fechado no D0.5 (`b6000021`).*
+**D3 — Ranking e gravação sem lock.** _Fechado no D0.5 (`b6000021`)._
 `assign_from_unit` calculava o ranking e só depois fazia
 `IssueAssignee.objects.create`, sem `select_for_update` nem lock por área, de
 modo que N criações simultâneas podiam escolher a mesma pessoa. O
@@ -197,7 +197,7 @@ pessoas, tudo ao mesmo tempo, resultado `[5, 5, 5, 5]`) e
 atribuição e nove recusas).
 
 **D4 — Carga é "total da pessoa nos projetos da área", não declarada.**
-*Fechado no D0.5 (`b6000021`).* O engine contava todo `IssueAssignee` aberto
+_Fechado no D0.5 (`b6000021`)._ O engine contava todo `IssueAssignee` aberto
 nos projetos da área, inclusive itens de outras áreas ou pessoais, e não
 distinguia principal de colaborador. A carga é hoje o que a §6.4 fixa —
 itens abertos em que a pessoa é **executor principal** —, pinada em
@@ -241,32 +241,32 @@ recorte por cobertura, que é onde D1 e D4 se encontram, está em
 Estas decisões saíram do debate e valem para a implementação. Reabrir exige
 registrar na seção 4 o motivo e o impacto.
 
-| # | Decisão |
-| --- | --- |
-| F1 | **Uma área accountable por item.** Duas áreas com entrega própria são dois itens ligados por `blocked_by`/`blocking`. Outra área "consultada" não é responsabilidade. |
-| F2 | **Fila é estado.** `IssueOrganizationalUnit` ganha `routing_state` e `queue_reason`. Executor vazio é válido apenas com `routing_state = queued` ou `allocation_failed`. |
-| F3 | **Políticas v1:** `manual`, `self_claim`, `least_loaded`. Não existe política `queue` nem `specific_member`. Atribuição a pessoa específica é `assignment.mode = explicit`. |
-| F4 | **Política mora em área↔projeto, com fallback na área, com fallback `manual`.** A requisição pode solicitar uma política, mas só entre as permitidas pelo vínculo área↔projeto. Fora disso, rejeita. Sem política nenhuma, o default é `manual` e qualquer modo pode ser solicitado (§6.3). |
-| F5 | **Executor principal existe na camada lateral** e deve coincidir com um `IssueAssignee` ativo do mesmo item. Nunca coluna em `Issue`. |
-| F6 | **Carga v1 é contagem simples de itens abertos como executor principal**, ordenando por total no workspace, depois na área, depois última atribuição automática, depois id estável. Não configurável na v1. |
-| F7 | **Encaminhamento entre áreas troca a área ativa no mesmo item e grava evento append-only** em `IssueResponsibilityEvent`. Nova entrega é novo item. |
-| F8 | **`AssignmentDecision` é append-only e versionada.** Reversão é nova decisão com `supersedes`. |
-| F9 | **Idempotência em duas camadas:** `ExternalWorkItemBinding` (objeto externo ↔ item, único por workspace) e `AutomationOperation` (chave de idempotência + hash do payload). `external_source`/`external_id` nativos continuam preenchidos para compatibilidade, mas não são o mecanismo. |
-| F10 | **Operação composta é uma transação:** criar/localizar item, binding, área, política, decisão, executor principal. Efeitos assíncronos só após commit (`transaction.on_commit`). |
-| F11 | **Replay retorna o mesmo resultado** sem recalcular `least_loaded` nem desfazer reatribuição humana posterior. Mesma chave com payload diferente responde 409. |
-| F12 | **Contrato da Fase 1 é REST.** Compose é ferramenta de definição/sincronização, não motor de instâncias. Não bloqueia a Fase 1. |
-| F13 | **O contrato não sobrecarrega `assignees`.** Um objeto `assignment` explícito (`default` / `explicit`) decide. `assignees` da API nativa continua funcionando fora do namespace Orca. |
-| F14 | **Disponibilidade em dois níveis, ambos simples na v1:** `WorkspaceMemberAvailability` (intervalos globais) e `MembershipAllocationSettings.accepts_new_work` (por área). Fonte manual; campo `source` já preparado para `hr`/`directory`. |
-| F15 | **Saída ou indisponibilidade do executor devolve o item à fila** com `queue_reason = executor_unavailable` e alerta o coordenador. Não redistribui automaticamente na v1. |
-| F16 | **Papel `coordinator` separado de `lead`.** Vários por área, delegável. `lead` continua institucional e único. Políticas, memberships e cobertura continuam com Workspace Admin. |
-| F17 | **Coordenador não tem acesso lateral.** Se a área cobre um projeto, o reconciliador garante `ProjectMember` para os coordenadores. Sem exceção ao modelo de acesso do Plane. |
-| F18 | **Dashboard executivo v1 só para Workspace Admin.** Capability `executive_viewer` é evolução posterior, e drill-down sempre respeita acesso nativo. |
-| F19 | **Templates de processo ficam fora do Plane** (orquestrador sidecar em Git). Dentro do Orca existe só a projeção `ProcessInstanceReference` + `ProcessInstanceItem`. |
-| F20 | **Identidade canônica da instância é `ProcessInstanceReference`.** Módulo, label, ciclo e item pai são projeções visuais opcionais. |
-| F21 | **Fechamento automático é por etapa:** `automatic`, `automatic_with_review`, `manual`, decidido no template. Toda conclusão automática registra origem, evento, timestamp, evidência e versão da regra. |
-| F22 | **SLA é lateral e auditado** em `IssueServiceLevel`. `target_date` nativo é projeção visual. Editar `target_date` não altera o SLA. |
-| F23 | **Observabilidade operacional desde D0; dashboard de gestão na Fase 5.** |
-| F24 | **A API pública não é habilitada em produção antes de existir fila mínima utilizável** (Fase 2 parcial: fila, alerta sem candidato, atribuição manual, devolução à fila). |
+| #   | Decisão                                                                                                                                                                                                                                                                                     |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F1  | **Uma área accountable por item.** Duas áreas com entrega própria são dois itens ligados por `blocked_by`/`blocking`. Outra área "consultada" não é responsabilidade.                                                                                                                       |
+| F2  | **Fila é estado.** `IssueOrganizationalUnit` ganha `routing_state` e `queue_reason`. Executor vazio é válido apenas com `routing_state = queued` ou `allocation_failed`.                                                                                                                    |
+| F3  | **Políticas v1:** `manual`, `self_claim`, `least_loaded`. Não existe política `queue` nem `specific_member`. Atribuição a pessoa específica é `assignment.mode = explicit`.                                                                                                                 |
+| F4  | **Política mora em área↔projeto, com fallback na área, com fallback `manual`.** A requisição pode solicitar uma política, mas só entre as permitidas pelo vínculo área↔projeto. Fora disso, rejeita. Sem política nenhuma, o default é `manual` e qualquer modo pode ser solicitado (§6.3). |
+| F5  | **Executor principal existe na camada lateral** e deve coincidir com um `IssueAssignee` ativo do mesmo item. Nunca coluna em `Issue`.                                                                                                                                                       |
+| F6  | **Carga v1 é contagem simples de itens abertos como executor principal**, ordenando por total no workspace, depois na área, depois última atribuição automática, depois id estável. Não configurável na v1.                                                                                 |
+| F7  | **Encaminhamento entre áreas troca a área ativa no mesmo item e grava evento append-only** em `IssueResponsibilityEvent`. Nova entrega é novo item.                                                                                                                                         |
+| F8  | **`AssignmentDecision` é append-only e versionada.** Reversão é nova decisão com `supersedes`.                                                                                                                                                                                              |
+| F9  | **Idempotência em duas camadas:** `ExternalWorkItemBinding` (objeto externo ↔ item, único por workspace) e `AutomationOperation` (chave de idempotência + hash do payload). `external_source`/`external_id` nativos continuam preenchidos para compatibilidade, mas não são o mecanismo.    |
+| F10 | **Operação composta é uma transação:** criar/localizar item, binding, área, política, decisão, executor principal. Efeitos assíncronos só após commit (`transaction.on_commit`).                                                                                                            |
+| F11 | **Replay retorna o mesmo resultado** sem recalcular `least_loaded` nem desfazer reatribuição humana posterior. Mesma chave com payload diferente responde 409.                                                                                                                              |
+| F12 | **Contrato da Fase 1 é REST.** Compose é ferramenta de definição/sincronização, não motor de instâncias. Não bloqueia a Fase 1.                                                                                                                                                             |
+| F13 | **O contrato não sobrecarrega `assignees`.** Um objeto `assignment` explícito (`default` / `explicit`) decide. `assignees` da API nativa continua funcionando fora do namespace Orca.                                                                                                       |
+| F14 | **Disponibilidade em dois níveis, ambos simples na v1:** `WorkspaceMemberAvailability` (intervalos globais) e `MembershipAllocationSettings.accepts_new_work` (por área). Fonte manual; campo `source` já preparado para `hr`/`directory`.                                                  |
+| F15 | **Saída ou indisponibilidade do executor devolve o item à fila** com `queue_reason = executor_unavailable` e alerta o coordenador. Não redistribui automaticamente na v1.                                                                                                                   |
+| F16 | **Papel `coordinator` separado de `lead`.** Vários por área, delegável. `lead` continua institucional e único. Políticas, memberships e cobertura continuam com Workspace Admin.                                                                                                            |
+| F17 | **Coordenador não tem acesso lateral.** Se a área cobre um projeto, o reconciliador garante `ProjectMember` para os coordenadores. Sem exceção ao modelo de acesso do Plane.                                                                                                                |
+| F18 | **Dashboard executivo v1 só para Workspace Admin.** Capability `executive_viewer` é evolução posterior, e drill-down sempre respeita acesso nativo.                                                                                                                                         |
+| F19 | **Templates de processo ficam fora do Plane** (orquestrador sidecar em Git). Dentro do Orca existe só a projeção `ProcessInstanceReference` + `ProcessInstanceItem`.                                                                                                                        |
+| F20 | **Identidade canônica da instância é `ProcessInstanceReference`.** Módulo, label, ciclo e item pai são projeções visuais opcionais.                                                                                                                                                         |
+| F21 | **Fechamento automático é por etapa:** `automatic`, `automatic_with_review`, `manual`, decidido no template. Toda conclusão automática registra origem, evento, timestamp, evidência e versão da regra.                                                                                     |
+| F22 | **SLA é lateral e auditado** em `IssueServiceLevel`. `target_date` nativo é projeção visual. Editar `target_date` não altera o SLA.                                                                                                                                                         |
+| F23 | **Observabilidade operacional desde D0; dashboard de gestão na Fase 5.**                                                                                                                                                                                                                    |
+| F24 | **A API pública não é habilitada em produção antes de existir fila mínima utilizável** (Fase 2 parcial: fila, alerta sem candidato, atribuição manual, devolução à fila).                                                                                                                   |
 
 ---
 
@@ -274,28 +274,30 @@ registrar na seção 4 o motivo e o impacto.
 
 ### 4.1 Abertas (não bloqueiam Fase 1)
 
-| # | Questão | Fase em que precisa fechar |
-| --- | --- | --- |
-| A1 | Habilidades/especialidades por membership | Fase 3, só se `least_loaded` se mostrar insuficiente |
-| A2 | `round_robin` | Fase 3, só com evidência |
-| A3 | Sincronizar férias com Entra/RH | Fase 3, exige política organizacional e tenant |
-| A4 | Capability `executive_viewer` | Pós-Fase 5 |
-| A5 | Verificar comportamento real do Plane Compose em re-push | Antes da Fase 4 |
-| A6 | Módulo por instância quando a instância atravessa projetos | Fase 4 |
-| A7 | Peso de carga por estimativa, prioridade e SLA | Pós-Fase 3 |
-| A8 | Tabela `IssueSupportingUnit` para áreas consultadas | Só com demanda real |
+| #   | Questão                                                    | Fase em que precisa fechar                           |
+| --- | ---------------------------------------------------------- | ---------------------------------------------------- |
+| A1  | Habilidades/especialidades por membership                  | Fase 3, só se `least_loaded` se mostrar insuficiente |
+| A2  | `round_robin`                                              | Fase 3, só com evidência                             |
+| A3  | Sincronizar férias com Entra/RH                            | Fase 3, exige política organizacional e tenant       |
+| A4  | Capability `executive_viewer`                              | Pós-Fase 5                                           |
+| A5  | Verificar comportamento real do Plane Compose em re-push   | Antes da Fase 4                                      |
+| A6  | Módulo por instância quando a instância atravessa projetos | Fase 4                                               |
+| A7  | Peso de carga por estimativa, prioridade e SLA             | Pós-Fase 3                                           |
+| A8  | Tabela `IssueSupportingUnit` para áreas consultadas        | Só com demanda real                                  |
 
 ### 4.2 Changelog
 
-| Data | Mudança |
-| --- | --- |
+| Data       | Mudança                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-08 | Rev. 9: **a `Idempotency-Key` passa a ser única por token, não por workspace** (R1.A12), migração `0140_orca_idempotency_scoped_to_token`. A Fase 3 (disponibilidade) passa a `0141`: Django liga migrações por dependência, e este follow-up da revisão chegou antes dela. Nenhuma decisão F1–F24 tocada.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| 2026-09-08 | Rev. 8: **a retenção dos recibos não apaga um `AutomationOperation` que uma `AssignmentDecision` ainda nomeia** (R1.A3). A FK é `SET_NULL`, e o hard delete do P0.20 reescrevia a linha append-only em silêncio. Unreferenced receipts — a maioria — continuam sendo coletados; a chave de uma criação bem-sucedida permanece gasta pelo prazo em que a decisão existir. Nenhuma decisão F1–F24 tocada.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | 2026-09-07 | Rev. 7: **doze decisões de mecanismo da execução da Fase 2** (nenhuma decisão F1–F24 tocada), registradas em `docs/plans/orca-work-management/MADRUGADA-2026-09-07.md` §1 como M1–M12. As que mudam este documento: (M2) a migração do coordenador é **`0139`** e a da disponibilidade passa a `0140`, porque `0139` estava livre e Django liga migrações por dependência, não por número; (M3) **a proveniência do coordenador exige referência própria no `OrganizationalUnitGrant`**, não um rótulo — `membership` torna-se anulável, entra a FK `coordinator` e o discriminador `grant_source`, com CHECK de exclusividade (§5.1), porque um coordenador pode não ser membro da área e sem isso "remover o coordenador retira só o que ele ganhou por isso" não seria verdade; (M4) coordenador precisa ser Member ou Admin do workspace, e um Guest é **recusado** com `ORG_COORDINATOR_MUST_BE_MEMBER` em vez de receber acesso degradado pelo cap do workspace; (M6) a fila interna devolve `permissions` por linha e `viewer` no topo, resolvendo a política uma vez por projeto por página — a UI filtra, a API rejeita (§1.2); (M7) códigos 4932–4936; (M10) o alerta de `allocation_failed` sai em `transaction.on_commit` e **captura qualquer exceção**, porque um broker fora do ar não pode derrubar a alocação (a lição do PR #13). Também registrado: (M8) `apps/web` não tem vitest configurado, então o critério de teste de store e de componente do item 2.3 fica aberto como item próprio. |
-| 2026-09-07 | Rev. 6: **uma chave de idempotência deixa de ser lembrada para sempre** (§6.7 não fixava prazo). Os recibos de `AutomationOperation` passam a expirar por `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS`, default **30 dias**, num job diário — a tabela ganha uma linha por mutação aceita, com o corpo inteiro da resposta, e não tinha teto. A janela é deliberadamente muito maior que as dos logs do upstream (14 e 7 dias), e não menor, porque **apagar um recibo desgasta a sua chave**. O que uma chave expirada faz, por operação, foi verificado com testes e não duplica trabalho: a criação é find-or-create no `ExternalWorkItemBinding`, que o job nunca toca, e o early return de `_place` impede a realocação — o efeito observável é só a ausência do header `Idempotent-Replay` e um corpo descrevendo o presente em vez do snapshot original (o status é 201 nos dois casos); a reatribuição exige `If-Match` e recusa a retentativa como stale; a **transferência** é a única que reexecutaria, e é o caso que a janela precisa cobrir. Nenhuma decisão F1–F24 tocada. |
-| 2026-09-05 | Rev. 5: quatro esclarecimentos de mecanismo abertos pela implementação da Fase 1 (nenhuma decisão F1–F24 tocada). (1) **`ORG_DECISION_STALE` responde 412 na API pública e 409 na interna**: a exceção `DecisionStale` entregue no D0.5 carrega 409, a UI já depende disso, e §7.3 especifica 412 — a view pública mapeia o status por código em vez de herdá-lo. (2) **`completion_due_at` é recusado**, não aceito e ignorado, até a Fase 4 criar a `IssueServiceLevel` que o guarda: aceitar e descartar seria uma mentira que o cliente não vê. (3) **Uma chave de idempotência gasta num 4xx continua gasta**: §6.7 grava a falha e o replay a reproduz com o status original, então corrigir o payload exige chave nova — documentado em destaque no guia do cliente. (4) **A autorização de projeto roda antes do recibo**, porque `permission_classes` do DRF corre no `initial()`: uma chamada não autorizada responde 403 sem abrir operação, e portanto não gasta a chave de quem a enviou. |
-| 2026-09-03 | Rev. 1: RFC inicial com 23 dúvidas e 5 fases. |
-| 2026-09-03 | Rev. 2: 24 decisões fechadas (F1–F24); fila vira estado; executor principal; binding + operação; `AssignmentDecision` append-only; Fase 0 dividida em P0 e D0; Compose retirado dos bloqueios; contrato REST detalhado. |
-| 2026-09-05 | Rev. 4: refinamento de mecanismo em P0.2/P0.3 (nenhuma decisão F1–F24 tocada). A promoção por SHA exige que **todos** os seis serviços tenham `:sha-<commit>`; como o CI só reconstrói serviços cujo path mudou, o commit passa a retaguear por digest (`imagetools create`) os serviços não reconstruídos, e `build-push` roda em todo push para `stage`. A promoção copia manifesto por digest em vez de `pull`/`tag`/`push`, preservando manifestos multi-arch. |
-| 2026-09-04 | Rev. 3: revisão externa do commit `3a4c769` verificada. Compose volta aos bloqueios pelo namespace errado (P0.0, corrigido); parser estrito do kill switch, guard em `reconcile_access` e paridade de variáveis no Compose (P0.14, corrigido); novos itens P0.15 (commit no runtime), P0.16 (MinIO/PostgreSQL), D0.11 (arquivamento reconcilia), D0.12 (roster SCIM sem soft-deleted). Nenhuma decisão F1–F24 reaberta. |
+| 2026-09-07 | Rev. 6: **uma chave de idempotência deixa de ser lembrada para sempre** (§6.7 não fixava prazo). Os recibos de `AutomationOperation` passam a expirar por `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS`, default **30 dias**, num job diário — a tabela ganha uma linha por mutação aceita, com o corpo inteiro da resposta, e não tinha teto. A janela é deliberadamente muito maior que as dos logs do upstream (14 e 7 dias), e não menor, porque **apagar um recibo desgasta a sua chave**. O que uma chave expirada faz, por operação, foi verificado com testes e não duplica trabalho: a criação é find-or-create no `ExternalWorkItemBinding`, que o job nunca toca, e o early return de `_place` impede a realocação — o efeito observável é só a ausência do header `Idempotent-Replay` e um corpo descrevendo o presente em vez do snapshot original (o status é 201 nos dois casos); a reatribuição exige `If-Match` e recusa a retentativa como stale; a **transferência** é a única que reexecutaria, e é o caso que a janela precisa cobrir. Nenhuma decisão F1–F24 tocada.                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 2026-09-05 | Rev. 5: quatro esclarecimentos de mecanismo abertos pela implementação da Fase 1 (nenhuma decisão F1–F24 tocada). (1) **`ORG_DECISION_STALE` responde 412 na API pública e 409 na interna**: a exceção `DecisionStale` entregue no D0.5 carrega 409, a UI já depende disso, e §7.3 especifica 412 — a view pública mapeia o status por código em vez de herdá-lo. (2) **`completion_due_at` é recusado**, não aceito e ignorado, até a Fase 4 criar a `IssueServiceLevel` que o guarda: aceitar e descartar seria uma mentira que o cliente não vê. (3) **Uma chave de idempotência gasta num 4xx continua gasta**: §6.7 grava a falha e o replay a reproduz com o status original, então corrigir o payload exige chave nova — documentado em destaque no guia do cliente. (4) **A autorização de projeto roda antes do recibo**, porque `permission_classes` do DRF corre no `initial()`: uma chamada não autorizada responde 403 sem abrir operação, e portanto não gasta a chave de quem a enviou.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 2026-09-03 | Rev. 1: RFC inicial com 23 dúvidas e 5 fases.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 2026-09-03 | Rev. 2: 24 decisões fechadas (F1–F24); fila vira estado; executor principal; binding + operação; `AssignmentDecision` append-only; Fase 0 dividida em P0 e D0; Compose retirado dos bloqueios; contrato REST detalhado.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 2026-09-05 | Rev. 4: refinamento de mecanismo em P0.2/P0.3 (nenhuma decisão F1–F24 tocada). A promoção por SHA exige que **todos** os seis serviços tenham `:sha-<commit>`; como o CI só reconstrói serviços cujo path mudou, o commit passa a retaguear por digest (`imagetools create`) os serviços não reconstruídos, e `build-push` roda em todo push para `stage`. A promoção copia manifesto por digest em vez de `pull`/`tag`/`push`, preservando manifestos multi-arch.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 2026-09-04 | Rev. 3: revisão externa do commit `3a4c769` verificada. Compose volta aos bloqueios pelo namespace errado (P0.0, corrigido); parser estrito do kill switch, guard em `reconcile_access` e paridade de variáveis no Compose (P0.14, corrigido); novos itens P0.15 (commit no runtime), P0.16 (MinIO/PostgreSQL), D0.11 (arquivamento reconcilia), D0.12 (roster SCIM sem soft-deleted). Nenhuma decisão F1–F24 reaberta.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 ---
 
@@ -311,14 +313,14 @@ numeradas a partir de `0135`, cada uma com dependência explícita na anterior.
 
 **`IssueOrganizationalUnit`** (estender, migração `0135`)
 
-| Campo | Tipo | Regras |
-| --- | --- | --- |
-| `routing_state` | `CharField(16)`, choices `queued`, `assigned`, `allocation_failed`, `suspended` | default `queued` para linhas novas; migração de dados: linhas existentes com `IssueAssignee` ativo viram `assigned`, demais `queued` com `queue_reason = new_item` |
-| `queue_reason` | `CharField(32)`, choices `new_item`, `awaiting_coordinator`, `awaiting_claim`, `no_eligible_member`, `executor_unavailable`, `manually_returned`, blank | obrigatório quando `routing_state in (queued, allocation_failed)`; vazio quando `assigned` |
-| `queued_at` | `DateTimeField(null)` | setado ao entrar em `queued`/`allocation_failed`; limpo ao sair |
-| `assignment_due_at` | `DateTimeField(null)` | SLA de atribuição efetivo (seção 6.6) |
-| `primary_executor` | `FK(User, null, on_delete=SET_NULL)` | obrigatório quando `routing_state = assigned`; deve existir `IssueAssignee(issue, assignee=primary_executor, deleted_at=null)` |
-| `current_assignment_decision` | `FK(AssignmentDecision, null, SET_NULL)` | última decisão vigente |
+| Campo                         | Tipo                                                                                                                                                    | Regras                                                                                                                                                             |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `routing_state`               | `CharField(16)`, choices `queued`, `assigned`, `allocation_failed`, `suspended`                                                                         | default `queued` para linhas novas; migração de dados: linhas existentes com `IssueAssignee` ativo viram `assigned`, demais `queued` com `queue_reason = new_item` |
+| `queue_reason`                | `CharField(32)`, choices `new_item`, `awaiting_coordinator`, `awaiting_claim`, `no_eligible_member`, `executor_unavailable`, `manually_returned`, blank | obrigatório quando `routing_state in (queued, allocation_failed)`; vazio quando `assigned`                                                                         |
+| `queued_at`                   | `DateTimeField(null)`                                                                                                                                   | setado ao entrar em `queued`/`allocation_failed`; limpo ao sair                                                                                                    |
+| `assignment_due_at`           | `DateTimeField(null)`                                                                                                                                   | SLA de atribuição efetivo (seção 6.6)                                                                                                                              |
+| `primary_executor`            | `FK(User, null, on_delete=SET_NULL)`                                                                                                                    | obrigatório quando `routing_state = assigned`; deve existir `IssueAssignee(issue, assignee=primary_executor, deleted_at=null)`                                     |
+| `current_assignment_decision` | `FK(AssignmentDecision, null, SET_NULL)`                                                                                                                | última decisão vigente                                                                                                                                             |
 
 Constraints:
 
@@ -332,8 +334,8 @@ serviço (seção 6.1) verificada por teste e por comando de auditoria.
 
 **`IssueOrganizationalUnit`** (estender, migração `0139`, Fase 2)
 
-| Campo | Tipo | Regras |
-| --- | --- | --- |
+| Campo             | Tipo                  | Regras                                                                                                                                                                                     |
+| ----------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `last_alerted_at` | `DateTimeField(null)` | último alerta de SLA de atribuição enviado; a varredura de 15 min não realerta dentro de 4 h. Entregue na `0139` junto do coordenador, para que o item 2.4 não precise de migração própria |
 
 **`OrganizationalUnitGrant`** (estender, migração `0139`, Fase 2)
@@ -343,11 +345,11 @@ membership. Um coordenador **pode não ser membro da área** (F16, §5.2), entã
 não há membership para o grant apontar, e um campo de rótulo não resolveria:
 sem uma referência própria, remover a coordenação não saberia o que revogar.
 
-| Campo | Tipo | Regras |
-| --- | --- | --- |
-| `membership` | FK `OrganizationalUnitMembership`, **passa a `null=True`** | preenchida quando `grant_source = membership` |
-| `coordinator` | FK `OrganizationalUnitCoordinator`, `null`, CASCADE | preenchida quando `grant_source = coordinator` |
-| `grant_source` | `CharField(16)`, choices `membership`, `coordinator` | default `membership`, o que preserva as linhas existentes |
+| Campo          | Tipo                                                       | Regras                                                    |
+| -------------- | ---------------------------------------------------------- | --------------------------------------------------------- |
+| `membership`   | FK `OrganizationalUnitMembership`, **passa a `null=True`** | preenchida quando `grant_source = membership`             |
+| `coordinator`  | FK `OrganizationalUnitCoordinator`, `null`, CASCADE        | preenchida quando `grant_source = coordinator`            |
+| `grant_source` | `CharField(16)`, choices `membership`, `coordinator`       | default `membership`, o que preserva as linhas existentes |
 
 Constraints: CHECK de que exatamente uma das duas FKs está preenchida e coerente
 com `grant_source`; única parcial `(coordinator, unit_project) WHERE deleted_at
@@ -362,16 +364,16 @@ mudou é de onde vem a lista de fontes, não o que se faz com ela.
 
 **`OrganizationalUnitAssignmentPolicy`** (migração `0136`)
 
-| Campo | Tipo | Regras |
-| --- | --- | --- |
-| `organizational_unit` | FK | obrigatório |
-| `unit_project` | FK `OrganizationalUnitProject`, null | null = política padrão da área; não null = política daquele projeto |
-| `default_mode` | choices `manual`, `self_claim`, `least_loaded` | default `manual` |
-| `allowed_modes` | `JSONField` lista de modos | deve conter `default_mode`; default `["manual"]` |
-| `assignment_sla_seconds` | `PositiveIntegerField(null)` | SLA de atribuição padrão |
-| `max_open_items_per_member` | `PositiveIntegerField(null)` | limite rígido para `least_loaded` |
-| `is_active` | bool | |
-| `version` | `PositiveIntegerField`, default 1 | incrementa em cada save; congelado em `AssignmentDecision.policy_version` |
+| Campo                       | Tipo                                           | Regras                                                                    |
+| --------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------- |
+| `organizational_unit`       | FK                                             | obrigatório                                                               |
+| `unit_project`              | FK `OrganizationalUnitProject`, null           | null = política padrão da área; não null = política daquele projeto       |
+| `default_mode`              | choices `manual`, `self_claim`, `least_loaded` | default `manual`                                                          |
+| `allowed_modes`             | `JSONField` lista de modos                     | deve conter `default_mode`; default `["manual"]`                          |
+| `assignment_sla_seconds`    | `PositiveIntegerField(null)`                   | SLA de atribuição padrão                                                  |
+| `max_open_items_per_member` | `PositiveIntegerField(null)`                   | limite rígido para `least_loaded`                                         |
+| `is_active`                 | bool                                           |                                                                           |
+| `version`                   | `PositiveIntegerField`, default 1              | incrementa em cada save; congelado em `AssignmentDecision.policy_version` |
 
 Constraints: único `(organizational_unit, unit_project)` com `deleted_at IS
 NULL` (Postgres trata NULL como distinto; usar duas constraints parciais:
@@ -380,47 +382,47 @@ uma para `unit_project IS NULL`, outra para `unit_project IS NOT NULL`).
 
 **`AssignmentDecision`** (migração `0137`) — append-only
 
-| Campo | Tipo |
-| --- | --- |
-| `issue`, `organizational_unit`, `project`, `workspace` | FKs |
-| `automation_operation` | FK `AutomationOperation`, null |
-| `trigger` | choices `public_api`, `internal_api`, `ui_claim`, `ui_coordinator`, `reassign`, `availability`, `return_to_queue`, `command` |
-| `requested_mode` | choices `default`, `explicit`, `manual`, `self_claim`, `least_loaded`, null |
-| `effective_mode` | choices `manual`, `self_claim`, `least_loaded`, `explicit` |
-| `policy_source` | choices `request`, `unit_project`, `unit`, `fallback` |
-| `policy` | FK `OrganizationalUnitAssignmentPolicy`, null |
-| `policy_version` | int, null |
-| `algorithm_version` | `CharField(16)`; v1 = `"lb-1"` |
-| `outcome` | choices `assigned`, `queued`, `allocation_failed`, `rejected` |
-| `candidates_snapshot` | `JSONField`: lista de `{user_id, total_open, unit_open, last_auto_at, excluded_reason?}`; sem dados pessoais além do id |
-| `chosen_assignee` | FK User, null |
-| `previous_primary_executor` | FK User, null |
-| `decided_by` | FK User, null (null = sistema) |
-| `supersedes` | FK self, null |
-| `reason` | `TextField`, blank |
+| Campo                                                  | Tipo                                                                                                                         |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `issue`, `organizational_unit`, `project`, `workspace` | FKs                                                                                                                          |
+| `automation_operation`                                 | FK `AutomationOperation`, null                                                                                               |
+| `trigger`                                              | choices `public_api`, `internal_api`, `ui_claim`, `ui_coordinator`, `reassign`, `availability`, `return_to_queue`, `command` |
+| `requested_mode`                                       | choices `default`, `explicit`, `manual`, `self_claim`, `least_loaded`, null                                                  |
+| `effective_mode`                                       | choices `manual`, `self_claim`, `least_loaded`, `explicit`                                                                   |
+| `policy_source`                                        | choices `request`, `unit_project`, `unit`, `fallback`                                                                        |
+| `policy`                                               | FK `OrganizationalUnitAssignmentPolicy`, null                                                                                |
+| `policy_version`                                       | int, null                                                                                                                    |
+| `algorithm_version`                                    | `CharField(16)`; v1 = `"lb-1"`                                                                                               |
+| `outcome`                                              | choices `assigned`, `queued`, `allocation_failed`, `rejected`                                                                |
+| `candidates_snapshot`                                  | `JSONField`: lista de `{user_id, total_open, unit_open, last_auto_at, excluded_reason?}`; sem dados pessoais além do id      |
+| `chosen_assignee`                                      | FK User, null                                                                                                                |
+| `previous_primary_executor`                            | FK User, null                                                                                                                |
+| `decided_by`                                           | FK User, null (null = sistema)                                                                                               |
+| `supersedes`                                           | FK self, null                                                                                                                |
+| `reason`                                               | `TextField`, blank                                                                                                           |
 
 Sem `updated_at` semântico: a linha nunca muda depois de criada. Índices
 `(issue, created_at)` e `(organizational_unit, created_at)`.
 
 **`IssueResponsibilityEvent`** (migração `0137`) — append-only
 
-| Campo | Tipo |
-| --- | --- |
-| `issue`, `workspace` | FKs |
-| `from_unit` | FK `OrganizationalUnit`, null (null = primeira atribuição de área) |
-| `to_unit` | FK `OrganizationalUnit`, null (null = remoção) |
-| `actor` | FK User, null |
-| `source` | choices `public_api`, `internal_api`, `ui`, `command` |
-| `reason` | `TextField`, blank |
+| Campo                | Tipo                                                               |
+| -------------------- | ------------------------------------------------------------------ |
+| `issue`, `workspace` | FKs                                                                |
+| `from_unit`          | FK `OrganizationalUnit`, null (null = primeira atribuição de área) |
+| `to_unit`            | FK `OrganizationalUnit`, null (null = remoção)                     |
+| `actor`              | FK User, null                                                      |
+| `source`             | choices `public_api`, `internal_api`, `ui`, `command`              |
+| `reason`             | `TextField`, blank                                                 |
 
 **`ExternalWorkItemBinding`** (migração `0138`)
 
-| Campo | Tipo |
-| --- | --- |
-| `workspace` | FK |
+| Campo             | Tipo             |
+| ----------------- | ---------------- |
+| `workspace`       | FK               |
 | `external_source` | `CharField(255)` |
-| `external_id` | `CharField(255)` |
-| `issue` | FK `Issue` |
+| `external_id`     | `CharField(255)` |
+| `issue`           | FK `Issue`       |
 
 Constraints: único `(workspace, external_source, external_id)` com
 `deleted_at IS NULL`; único `(issue)` com `deleted_at IS NULL` (um item tem
@@ -430,52 +432,52 @@ API v1 continue funcionando.
 
 **`AutomationOperation`** (migração `0138`)
 
-| Campo | Tipo |
-| --- | --- |
-| `workspace` | FK |
-| `api_token` | FK `APIToken`, null (quem chamou) |
-| `idempotency_key` | `CharField(255)` |
-| `request_hash` | `CharField(64)` SHA-256 do payload canônico (JSON com chaves ordenadas, sem campos voláteis) |
-| `operation_type` | choices `create_work_item`, `reassign`, `transfer_unit`, `complete` |
-| `status` | choices `in_progress`, `succeeded`, `failed` |
-| `issue` | FK, null |
-| `response_snapshot` | `JSONField` (a resposta devolvida ao cliente) |
-| `error_code` | `CharField(64)`, blank |
-| `completed_at` | datetime, null |
+| Campo               | Tipo                                                                                         |
+| ------------------- | -------------------------------------------------------------------------------------------- |
+| `workspace`         | FK                                                                                           |
+| `api_token`         | FK `APIToken`, null (quem chamou)                                                            |
+| `idempotency_key`   | `CharField(255)`                                                                             |
+| `request_hash`      | `CharField(64)` SHA-256 do payload canônico (JSON com chaves ordenadas, sem campos voláteis) |
+| `operation_type`    | choices `create_work_item`, `reassign`, `transfer_unit`, `complete`                          |
+| `status`            | choices `in_progress`, `succeeded`, `failed`                                                 |
+| `issue`             | FK, null                                                                                     |
+| `response_snapshot` | `JSONField` (a resposta devolvida ao cliente)                                                |
+| `error_code`        | `CharField(64)`, blank                                                                       |
+| `completed_at`      | datetime, null                                                                               |
 
-Constraint: único `(workspace, idempotency_key)` sem condição de
+Constraint: único `(workspace, api_token, idempotency_key)` sem condição de
 `deleted_at` (operações não são soft-deleted). `status = in_progress` com
 `created_at` mais antigo que 60 s é considerado abandonado e pode ser
 retomado (seção 6.7).
 
-**`WorkspaceMemberAvailability`** (migração `0140`, Fase 3)
+**`WorkspaceMemberAvailability`** (migração `0141`, Fase 3)
 
-| Campo | Tipo |
-| --- | --- |
-| `workspace_member` | FK `WorkspaceMember` |
-| `workspace` | FK |
-| `unavailable_from`, `unavailable_until` | datetimes; `until` null = indefinido |
-| `reason` | choices `vacation`, `leave`, `other` |
-| `source` | choices `manual`, `hr`, `directory`; v1 só `manual` |
-| `external_id` | `CharField`, blank |
-| `created_by` | já vem do `BaseModel` |
+| Campo                                   | Tipo                                                |
+| --------------------------------------- | --------------------------------------------------- |
+| `workspace_member`                      | FK `WorkspaceMember`                                |
+| `workspace`                             | FK                                                  |
+| `unavailable_from`, `unavailable_until` | datetimes; `until` null = indefinido                |
+| `reason`                                | choices `vacation`, `leave`, `other`                |
+| `source`                                | choices `manual`, `hr`, `directory`; v1 só `manual` |
+| `external_id`                           | `CharField`, blank                                  |
+| `created_by`                            | já vem do `BaseModel`                               |
 
 Constraint: `CHECK (unavailable_until IS NULL OR unavailable_until > unavailable_from)`.
 
-**`MembershipAllocationSettings`** (migração `0140`, Fase 3)
+**`MembershipAllocationSettings`** (migração `0141`, Fase 3)
 
-| Campo | Tipo |
-| --- | --- |
-| `membership` | OneToOne `OrganizationalUnitMembership` |
-| `accepts_new_work` | bool, default true |
-| `max_open_items` | int, null |
+| Campo              | Tipo                                    |
+| ------------------ | --------------------------------------- |
+| `membership`       | OneToOne `OrganizationalUnitMembership` |
+| `accepts_new_work` | bool, default true                      |
+| `max_open_items`   | int, null                               |
 
 **`OrganizationalUnitCoordinator`** (migração `0139`, Fase 2 — entregue)
 
-| Campo | Tipo |
-| --- | --- |
-| `organizational_unit`, `workspace_member`, `workspace` | FKs |
-| `is_active` | bool |
+| Campo                                                  | Tipo |
+| ------------------------------------------------------ | ---- |
+| `organizational_unit`, `workspace_member`, `workspace` | FKs  |
+| `is_active`                                            | bool |
 
 Único `(organizational_unit, workspace_member)` com `deleted_at IS NULL`.
 Alternativa descartada: adicionar `coordinator` a
@@ -484,14 +486,14 @@ executor da área e porque o SCIM escreve o `role` da membership.
 
 **`IssueServiceLevel`** (migração `0141`, Fase 4)
 
-| Campo | Tipo |
-| --- | --- |
-| `issue` | OneToOne |
-| `assignment_due_at`, `completion_due_at` | datetimes, null |
-| `original_assignment_due_at`, `original_completion_due_at` | datetimes, null; nunca alterados |
-| `source` | choices `unit_project`, `unit`, `process`, `manual` |
-| `source_version` | `CharField`, blank |
-| `changed_by`, `change_reason` | FK null, texto |
+| Campo                                                      | Tipo                                                |
+| ---------------------------------------------------------- | --------------------------------------------------- |
+| `issue`                                                    | OneToOne                                            |
+| `assignment_due_at`, `completion_due_at`                   | datetimes, null                                     |
+| `original_assignment_due_at`, `original_completion_due_at` | datetimes, null; nunca alterados                    |
+| `source`                                                   | choices `unit_project`, `unit`, `process`, `manual` |
+| `source_version`                                           | `CharField`, blank                                  |
+| `changed_by`, `change_reason`                              | FK null, texto                                      |
 
 **`ProcessInstanceReference`** e **`ProcessInstanceItem`** (migração `0142`, Fase 4)
 
@@ -538,18 +540,18 @@ OrganizationalUnit ──< OrganizationalUnitMembership ──1 MembershipAlloca
 
 Cada uma tem teste positivo e negativo (seção 10).
 
-| # | Invariante | Onde se aplica |
-| --- | --- | --- |
-| I1 | Uma área ativa por item. | constraint existente |
-| I2 | A área de um item deve estar ativa e ter `OrganizationalUnitProject` ativo com o projeto do item. | `POST organizational-unit`, API pública, encaminhamento |
-| I3 | `routing_state = assigned` ⇔ `primary_executor` não nulo ⇔ existe `IssueAssignee` ativo para ele. | serviço; comando de auditoria |
-| I4 | `primary_executor` é membro ativo da área e `ProjectMember` ativo do projeto no momento da decisão. | serviço |
-| I5 | Toda mudança de `primary_executor` ou de `routing_state` gera uma `AssignmentDecision`. | serviço |
-| I6 | Toda mudança de `organizational_unit` gera um `IssueResponsibilityEvent`. | serviço |
-| I7 | Uma política solicitada fora de `allowed_modes` é rejeitada, nunca degradada. | resolução |
-| I8 | Um binding externo aponta para exatamente um item, e um item tem no máximo um binding. | constraint |
-| I9 | Uma `idempotency_key` reexecutada com hash diferente responde 409. | serviço |
-| I10 | Nenhuma escrita em `ProjectMember` fora dos reconciliadores existentes. | revisão de código |
+| #   | Invariante                                                                                          | Onde se aplica                                          |
+| --- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| I1  | Uma área ativa por item.                                                                            | constraint existente                                    |
+| I2  | A área de um item deve estar ativa e ter `OrganizationalUnitProject` ativo com o projeto do item.   | `POST organizational-unit`, API pública, encaminhamento |
+| I3  | `routing_state = assigned` ⇔ `primary_executor` não nulo ⇔ existe `IssueAssignee` ativo para ele.   | serviço; comando de auditoria                           |
+| I4  | `primary_executor` é membro ativo da área e `ProjectMember` ativo do projeto no momento da decisão. | serviço                                                 |
+| I5  | Toda mudança de `primary_executor` ou de `routing_state` gera uma `AssignmentDecision`.             | serviço                                                 |
+| I6  | Toda mudança de `organizational_unit` gera um `IssueResponsibilityEvent`.                           | serviço                                                 |
+| I7  | Uma política solicitada fora de `allowed_modes` é rejeitada, nunca degradada.                       | resolução                                               |
+| I8  | Um binding externo aponta para exatamente um item, e um item tem no máximo um binding.              | constraint                                              |
+| I9  | Uma `idempotency_key` reexecutada com hash diferente responde 409.                                  | serviço                                                 |
+| I10 | Nenhuma escrita em `ProjectMember` fora dos reconciliadores existentes.                             | revisão de código                                       |
 
 ### 6.2 Máquina de estados de `routing_state`
 
@@ -574,16 +576,16 @@ Cada uma tem teste positivo e negativo (seção 10).
 
 Transições e quem pode acioná-las:
 
-| De | Para | Gatilho | Quem |
-| --- | --- | --- | --- |
-| — | `queued` | item recebe área com política `manual` (`awaiting_coordinator`) ou `self_claim` (`awaiting_claim`) | API pública, UI, sistema |
-| — | `assigned` | política `least_loaded` encontra candidato; ou `assignment.mode = explicit` | idem |
-| — | `allocation_failed` | `least_loaded` sem candidato (`no_eligible_member`) | sistema |
-| `queued`/`allocation_failed` | `assigned` | claim (self), atribuir (coordenador), reexecutar alocação | membro elegível, coordenador |
-| `assigned` | `queued` | devolver à fila (`manually_returned`); executor indisponível/desativado (`executor_unavailable`) | coordenador, executor, sistema (Fase 3) |
-| `assigned` | `assigned` | reatribuir (nova decisão com `supersedes`) | coordenador |
-| qualquer | `suspended` | coordenador suspende (item bloqueado externamente) | coordenador |
-| `suspended` | `queued` | retomar | coordenador |
+| De                           | Para                | Gatilho                                                                                            | Quem                                    |
+| ---------------------------- | ------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| —                            | `queued`            | item recebe área com política `manual` (`awaiting_coordinator`) ou `self_claim` (`awaiting_claim`) | API pública, UI, sistema                |
+| —                            | `assigned`          | política `least_loaded` encontra candidato; ou `assignment.mode = explicit`                        | idem                                    |
+| —                            | `allocation_failed` | `least_loaded` sem candidato (`no_eligible_member`)                                                | sistema                                 |
+| `queued`/`allocation_failed` | `assigned`          | claim (self), atribuir (coordenador), reexecutar alocação                                          | membro elegível, coordenador            |
+| `assigned`                   | `queued`            | devolver à fila (`manually_returned`); executor indisponível/desativado (`executor_unavailable`)   | coordenador, executor, sistema (Fase 3) |
+| `assigned`                   | `assigned`          | reatribuir (nova decisão com `supersedes`)                                                         | coordenador                             |
+| qualquer                     | `suspended`         | coordenador suspende (item bloqueado externamente)                                                 | coordenador                             |
+| `suspended`                  | `queued`            | retomar                                                                                            | coordenador                             |
 
 Remover a área do item (`DELETE`) apaga a linha lateral, gera
 `IssueResponsibilityEvent(to_unit=null)` e **não** remove `IssueAssignee`:
@@ -744,7 +746,7 @@ Orca): para cada `primary_executor` que ficou indisponível ou cuja membership
   desse usuário no workspace/projeto, como no resto da API v1. Criar item com
   área exige papel Member ou Admin no projeto.
 - Header `Idempotency-Key` obrigatório em toda mutação. Ausência: `400
-  ORG_IDEMPOTENCY_KEY_REQUIRED`.
+ORG_IDEMPOTENCY_KEY_REQUIRED`.
 - Throttle próprio `orca_public` (novo arquivo
   `apps/api/plane/throttles/orca_public.py`, scope por token), configurável
   por `ORCA_PUBLIC_API_RATE_LIMIT`, default `300/minute`.
@@ -760,7 +762,8 @@ Orca): para cada `primary_executor` que ficou indisponível ou cuja membership
 **`GET /api/v1/orca/workspaces/{slug}/units/`**
 Lista áreas ativas: `id`, `slug`, `name`, `projects: [{project_id,
 identifier, default_role, policy: {default_mode, allowed_modes}}]`. Paginado
-como a API v1.
+como a API v1. Quem não é Admin do workspace só vê, em `projects`, os projetos
+de que é membro ativo (R1.A5).
 
 **`GET /api/v1/orca/workspaces/{slug}/units/{unit_slug}/queue/`**
 Fila da área: filtros `routing_state`, `overdue=true`, `project`. Retorna
@@ -806,7 +809,7 @@ Operação composta. Corpo:
 - `{"mode": "manual" | "self_claim" | "least_loaded"}` — solicitada, sujeita a
   `allowed_modes`;
 - `{"mode": "explicit", "primary_executor": "user-uuid", "collaborators":
-  ["user-uuid"]}` — atribuição direta, valida I4 para o principal e
+["user-uuid"]}` — atribuição direta, valida I4 para o principal e
   `ProjectMember` ativo para colaboradores.
 
 `process` é opcional e só aceito com `ORCA_PROCESS_PROJECTION_ENABLED=1`
@@ -841,8 +844,12 @@ Resposta `201` (ou `200` em replay):
     "assignment_due_at": "2026-09-03T15:00:00Z"
   },
   "decision": {
-    "id": "...", "requested_mode": "default", "effective_mode": "least_loaded",
-    "policy_source": "unit_project", "policy_version": 3, "algorithm_version": "lb-1",
+    "id": "...",
+    "requested_mode": "default",
+    "effective_mode": "least_loaded",
+    "policy_source": "unit_project",
+    "policy_version": 3,
+    "algorithm_version": "lb-1",
     "outcome": "assigned"
   },
   "operation": { "idempotency_key": "...", "replay": false }
@@ -874,20 +881,20 @@ estado atual.
 
 ### 7.3 Códigos de erro novos
 
-| Código | HTTP | Quando |
-| --- | --- | --- |
-| `ORG_UNIT_NOT_COVERING_PROJECT` | 400 | I2 |
-| `ORG_ASSIGNMENT_MODE_NOT_ALLOWED` | 400 | I7 |
-| `ORG_EXECUTOR_NOT_ELIGIBLE` | 400 | I4 em `explicit` ou reassign |
-| `ORG_WORK_ITEM_ALREADY_CLAIMED` | 409 | claim perdido |
-| `ORG_DECISION_STALE` | 412 | `If-Match` divergente |
-| `ORG_IDEMPOTENCY_KEY_REQUIRED` | 400 | header ausente |
-| `ORG_IDEMPOTENCY_PAYLOAD_MISMATCH` | 409 | I9 |
-| `ORG_OPERATION_IN_PROGRESS` | 409 | seção 6.7 |
-| `ORG_EXTERNAL_BINDING_CONFLICT` | 409 | I8 |
-| `ORG_PROCESS_PROJECTION_DISABLED` | 400 | bloco `process` sem flag |
-| `ORG_COMPLETION_MANUAL_ONLY` | 409 | completar item manual via API |
-| `ORG_PUBLIC_API_DISABLED` | 404 | via mixin (mesmo comportamento do kill switch) |
+| Código                             | HTTP | Quando                                         |
+| ---------------------------------- | ---- | ---------------------------------------------- |
+| `ORG_UNIT_NOT_COVERING_PROJECT`    | 400  | I2                                             |
+| `ORG_ASSIGNMENT_MODE_NOT_ALLOWED`  | 400  | I7                                             |
+| `ORG_EXECUTOR_NOT_ELIGIBLE`        | 400  | I4 em `explicit` ou reassign                   |
+| `ORG_WORK_ITEM_ALREADY_CLAIMED`    | 409  | claim perdido                                  |
+| `ORG_DECISION_STALE`               | 412  | `If-Match` divergente                          |
+| `ORG_IDEMPOTENCY_KEY_REQUIRED`     | 400  | header ausente                                 |
+| `ORG_IDEMPOTENCY_PAYLOAD_MISMATCH` | 409  | I9                                             |
+| `ORG_OPERATION_IN_PROGRESS`        | 409  | seção 6.7                                      |
+| `ORG_EXTERNAL_BINDING_CONFLICT`    | 409  | I8                                             |
+| `ORG_PROCESS_PROJECTION_DISABLED`  | 400  | bloco `process` sem flag                       |
+| `ORG_COMPLETION_MANUAL_ONLY`       | 409  | completar item manual via API                  |
+| `ORG_PUBLIC_API_DISABLED`          | 404  | via mixin (mesmo comportamento do kill switch) |
 
 ---
 
@@ -899,22 +906,22 @@ Todos em `apps/api/plane/app/views/organizational_unit.py` (ou um novo
 `organizational_queue.py` importado em `views/__init__.py`) e registrados em
 `apps/api/plane/app/urls/orca.py`.
 
-| Rota | Método | Permissão | Fase |
-| --- | --- | --- | --- |
-| `.../issues/{issue_id}/organizational-unit/` | POST | Admin/Member do projeto; passa a validar I2 e a resolver política; grava evento | D0 |
-| `.../issues/{issue_id}/organizational-unit-assign/` | POST | Admin/Member; passa a usar `lb-1` com lock; grava decisão | D0 |
-| `.../issues/{issue_id}/organizational-unit/claim/` | POST | membro elegível da área (I4) | 2 |
-| `.../issues/{issue_id}/organizational-unit/reassign/` | POST | coordenador da área ou Admin do workspace | 2 |
-| `.../issues/{issue_id}/organizational-unit/return/` | POST | coordenador, ou o próprio executor | 2 |
-| `.../issues/{issue_id}/organizational-unit/transfer/` | POST | coordenador da área de origem ou Admin | 2 |
-| `.../organizational-units/{unit_id}/queue/` | GET | membro da área, coordenador, Admin | 2 |
-| `.../organizational-units/{unit_id}/decisions/` | GET | coordenador, Admin | 2 |
-| `.../organizational-units/{unit_id}/policy/` | GET/PUT | GET: membro; PUT: Admin | D0 (GET), 2 (PUT) |
-| `.../organizational-units/{unit_id}/projects/{pk}/policy/` | GET/PUT | idem | D0/2 |
-| `.../organizational-units/{unit_id}/coordinators/` | GET/POST/DELETE | Admin | 2 |
-| `.../availability/me/` | GET/POST/DELETE | o próprio | 3 |
-| `.../organizational-units/{unit_id}/members/{pk}/allocation/` | PUT | coordenador, Admin | 3 |
-| `.../organizational-units/{unit_id}/executive/` | GET | Workspace Admin | 5 |
+| Rota                                                          | Método          | Permissão                                                                       | Fase              |
+| ------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------- | ----------------- |
+| `.../issues/{issue_id}/organizational-unit/`                  | POST            | Admin/Member do projeto; passa a validar I2 e a resolver política; grava evento | D0                |
+| `.../issues/{issue_id}/organizational-unit-assign/`           | POST            | Admin/Member; passa a usar `lb-1` com lock; grava decisão                       | D0                |
+| `.../issues/{issue_id}/organizational-unit/claim/`            | POST            | membro elegível da área (I4)                                                    | 2                 |
+| `.../issues/{issue_id}/organizational-unit/reassign/`         | POST            | coordenador da área ou Admin do workspace                                       | 2                 |
+| `.../issues/{issue_id}/organizational-unit/return/`           | POST            | coordenador, ou o próprio executor                                              | 2                 |
+| `.../issues/{issue_id}/organizational-unit/transfer/`         | POST            | coordenador da área de origem ou Admin                                          | 2                 |
+| `.../organizational-units/{unit_id}/queue/`                   | GET             | membro da área, coordenador, Admin                                              | 2                 |
+| `.../organizational-units/{unit_id}/decisions/`               | GET             | coordenador, Admin                                                              | 2                 |
+| `.../organizational-units/{unit_id}/policy/`                  | GET/PUT         | GET: membro; PUT: Admin                                                         | D0 (GET), 2 (PUT) |
+| `.../organizational-units/{unit_id}/projects/{pk}/policy/`    | GET/PUT         | idem                                                                            | D0/2              |
+| `.../organizational-units/{unit_id}/coordinators/`            | GET/POST/DELETE | Admin                                                                           | 2                 |
+| `.../availability/me/`                                        | GET/POST/DELETE | o próprio                                                                       | 3                 |
+| `.../organizational-units/{unit_id}/members/{pk}/allocation/` | PUT             | coordenador, Admin                                                              | 3                 |
+| `.../organizational-units/{unit_id}/executive/`               | GET             | Workspace Admin                                                                 | 5                 |
 
 Permissão "coordenador da área": novo helper
 `is_unit_coordinator(user, unit)` em `apps/api/plane/app/permissions/` usado
@@ -947,7 +954,7 @@ por um decorator `allow_unit_coordinator`, no espírito de `allow_permission`.
   sidebar do workspace (`apps/web/core/components/sidebar/`), visível só
   quando o usuário tem ao menos uma área.
 - **i18n:** todas as strings novas no catálogo (`packages/i18n/src/locales/
-  */workspace-settings.json`, namespace `organizational_units`), em todos os
+*/workspace-settings.json`, namespace `organizational_units`), em todos os
   locais, seguindo o skill `translate`. O `check:sync` do CI falha se um
   locale ficar para trás.
 - **Códigos de erro:** cada código novo entra em
@@ -963,25 +970,25 @@ paralelo. As demais são sequenciais.
 
 ### Fase P0 — Segurança da plataforma
 
-| Item | Entrega | Arquivos |
-| --- | --- | --- |
-| P0.0 | `docker-compose-orca.yml` puxa de `${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}`; job `compose_provenance` falha se o default divergir do namespace que `stage.yml` publica. **Entregue 04/09.** | `docker-compose-orca.yml`, `stage.yml`, `README.md`, `.env.example` |
-| P0.1 | `build-push` não publica em `pull_request`: `push: ${{ github.event_name != 'pull_request' }}`; em PR usa tag `pr-<n>-<sha>` só para build (sem push) | `.github/workflows/stage.yml` |
-| P0.2 | Em push para `stage`, publicar `sha-<commit>` além de `:stage`; gravar os seis digests em artefato `image-digests.json` e como output do job | `stage.yml` |
-| P0.3 | `prod.yml` promove por `sha-<commit>` do merge de `stage` em `prod` (ou pelos digests do artefato), nunca por `:stage` | `.github/workflows/prod.yml` |
-| P0.4 | Job `promote-rc` falha se não encontrar nem criar a PR; valida status HTTP; sem `\|\| true` nos passos críticos | `stage.yml` |
-| P0.5 | `pnpm install --frozen-lockfile` no CI; `permissions:` global reduzido a `contents: read`, escrita só nos jobs que precisam | `stage.yml`, `prod.yml` |
-| P0.6 | `create_users.py`: sem senha fixa; `set_unusable_password()` + `is_password_autoset=True`; README orienta primeiro acesso por Entra ou magic link; invalidar contas já criadas com a senha antiga | `tools/migration/create_users.py`, `tools/migration/README.md` |
-| P0.7 | `TRUSTED_PROXIES` sem default `0.0.0.0/0`: Caddyfile usa `{$TRUSTED_PROXIES}` sem fallback; `docker-compose-orca.yml` e README exigem a faixa do Coolify | `apps/proxy/Caddyfile.ce`, `docker-compose-orca.yml`, `.env.example`, `README.md` |
-| P0.8 | Job `api_tests` roda também `plane/tests/unit` (exceto `orca/`, já coberto) com lista explícita de exclusões justificadas em `apps/api/tests/RUNNING_TESTS.md` | `stage.yml`, `apps/api/tests/RUNNING_TESTS.md` |
-| P0.9 | Job `ruff check` + `ruff format --check` em `apps/api` (migrações já excluídas no `pyproject.toml`); corrigir os findings existentes nos arquivos do fork | `stage.yml`, arquivos apontados por `ruff` |
-| P0.10 | Entra: validar `iss`, `aud`, `exp`, `nbf`, `nonce` e assinatura via JWKS com cache, usando biblioteca mantida; timeouts explícitos nas chamadas ao token endpoint e ao Graph | `apps/api/plane/authentication/provider/oauth/entra.py`, `adapter/oauth.py` |
-| P0.11 | Sync com Plane CE 1.4.2 via branch `sync/upstream-merge-<data>` | fluxo do FORK.md §Phase 5 |
-| P0.12 | Apagar os três branches remotos obsoletos | remoto |
-| P0.13 | Alinhar `package.json`, manifest do Release Please e template de RC para `1.5.0`; documentar o fluxo real de duas etapas (merge em `prod` + commit `chore(prod): release`) | `package.json`, `.release-please-manifest.json`, `.github/PULL_REQUEST_TEMPLATE/release_candidate.md`, `FORK.md` |
-| P0.14 | Kill switch com parser estrito (`1/true/yes/on`, `0/false/no/off`, outro valor falha no boot); `reconcile_access` recusa quando desligado; Compose encaminha `ORCA_*` e `SCIM_*` a api, worker, beat e migrator. **Entregue 04/09.** | `plane/utils/orca_env.py`, `settings/common.py`, `org_unit_reconciler.py`, `docker-compose-orca.yml` |
-| P0.15 | Runtime expõe commit e versão (`GET /api/orca/build-info/`, build-arg `GIT_SHA`) | `stage.yml`, Dockerfiles, `views/orca_build_info.py` |
-| P0.16 | Fixar `minio/minio` em tag imutável; alinhar PostgreSQL do CI (16) com o do Compose (15.7) ou documentar a matriz | `docker-compose-orca.yml`, `stage.yml`, `RUNNING_TESTS.md` |
+| Item  | Entrega                                                                                                                                                                                                                              | Arquivos                                                                                                         |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| P0.0  | `docker-compose-orca.yml` puxa de `${ORCA_IMAGE_REPOSITORY:-ghcr.io/vitordj/plane}`; job `compose_provenance` falha se o default divergir do namespace que `stage.yml` publica. **Entregue 04/09.**                                  | `docker-compose-orca.yml`, `stage.yml`, `README.md`, `.env.example`                                              |
+| P0.1  | `build-push` não publica em `pull_request`: `push: ${{ github.event_name != 'pull_request' }}`; em PR usa tag `pr-<n>-<sha>` só para build (sem push)                                                                                | `.github/workflows/stage.yml`                                                                                    |
+| P0.2  | Em push para `stage`, publicar `sha-<commit>` além de `:stage`; gravar os seis digests em artefato `image-digests.json` e como output do job                                                                                         | `stage.yml`                                                                                                      |
+| P0.3  | `prod.yml` promove por `sha-<commit>` do merge de `stage` em `prod` (ou pelos digests do artefato), nunca por `:stage`                                                                                                               | `.github/workflows/prod.yml`                                                                                     |
+| P0.4  | Job `promote-rc` falha se não encontrar nem criar a PR; valida status HTTP; sem `\|\| true` nos passos críticos                                                                                                                      | `stage.yml`                                                                                                      |
+| P0.5  | `pnpm install --frozen-lockfile` no CI; `permissions:` global reduzido a `contents: read`, escrita só nos jobs que precisam                                                                                                          | `stage.yml`, `prod.yml`                                                                                          |
+| P0.6  | `create_users.py`: sem senha fixa; `set_unusable_password()` + `is_password_autoset=True`; README orienta primeiro acesso por Entra ou magic link; invalidar contas já criadas com a senha antiga                                    | `tools/migration/create_users.py`, `tools/migration/README.md`                                                   |
+| P0.7  | `TRUSTED_PROXIES` sem default `0.0.0.0/0`: Caddyfile usa `{$TRUSTED_PROXIES}` sem fallback; `docker-compose-orca.yml` e README exigem a faixa do Coolify                                                                             | `apps/proxy/Caddyfile.ce`, `docker-compose-orca.yml`, `.env.example`, `README.md`                                |
+| P0.8  | Job `api_tests` roda também `plane/tests/unit` (exceto `orca/`, já coberto) com lista explícita de exclusões justificadas em `apps/api/tests/RUNNING_TESTS.md`                                                                       | `stage.yml`, `apps/api/tests/RUNNING_TESTS.md`                                                                   |
+| P0.9  | Job `ruff check` + `ruff format --check` em `apps/api` (migrações já excluídas no `pyproject.toml`); corrigir os findings existentes nos arquivos do fork                                                                            | `stage.yml`, arquivos apontados por `ruff`                                                                       |
+| P0.10 | Entra: validar `iss`, `aud`, `exp`, `nbf`, `nonce` e assinatura via JWKS com cache, usando biblioteca mantida; timeouts explícitos nas chamadas ao token endpoint e ao Graph                                                         | `apps/api/plane/authentication/provider/oauth/entra.py`, `adapter/oauth.py`                                      |
+| P0.11 | Sync com Plane CE 1.4.2 via branch `sync/upstream-merge-<data>`                                                                                                                                                                      | fluxo do FORK.md §Phase 5                                                                                        |
+| P0.12 | Apagar os três branches remotos obsoletos                                                                                                                                                                                            | remoto                                                                                                           |
+| P0.13 | Alinhar `package.json`, manifest do Release Please e template de RC para `1.5.0`; documentar o fluxo real de duas etapas (merge em `prod` + commit `chore(prod): release`)                                                           | `package.json`, `.release-please-manifest.json`, `.github/PULL_REQUEST_TEMPLATE/release_candidate.md`, `FORK.md` |
+| P0.14 | Kill switch com parser estrito (`1/true/yes/on`, `0/false/no/off`, outro valor falha no boot); `reconcile_access` recusa quando desligado; Compose encaminha `ORCA_*` e `SCIM_*` a api, worker, beat e migrator. **Entregue 04/09.** | `plane/utils/orca_env.py`, `settings/common.py`, `org_unit_reconciler.py`, `docker-compose-orca.yml`             |
+| P0.15 | Runtime expõe commit e versão (`GET /api/orca/build-info/`, build-arg `GIT_SHA`)                                                                                                                                                     | `stage.yml`, Dockerfiles, `views/orca_build_info.py`                                                             |
+| P0.16 | Fixar `minio/minio` em tag imutável; alinhar PostgreSQL do CI (16) com o do Compose (15.7) ou documentar a matriz                                                                                                                    | `docker-compose-orca.yml`, `stage.yml`, `RUNNING_TESTS.md`                                                       |
 
 **Gate P0:** CI verde com suíte upstream e ruff; um ensaio completo de RC
 (criação da PR, promoção por digest, deploy em stage, rollback para os seis
@@ -989,20 +996,20 @@ digests anteriores) documentado em `docs/release-runbook.md`.
 
 ### Fase D0 — Fundação do domínio
 
-| Item | Entrega | Arquivos |
-| --- | --- | --- |
-| D0.1 | **D1:** validar I2 em `IssueOrganizationalUnitEndpoint.post`; UI lista só áreas que cobrem o projeto; engine deixa de acrescentar o projeto | `views/organizational_unit.py`, `issue-unit-property.tsx`, `assignment_engine.py`, novo código `ORG_UNIT_NOT_COVERING_PROJECT` |
-| D0.2 | **D2:** fallback "último assignee do criador" sai da API pública; volta o comportamento upstream (`default_assignee`); se a UI quiser manter, fica atrás de `ProjectCustomSettings.remember_last_assignees` (default off) | `apps/api/plane/api/serializers/issue.py`, `apps/api/plane/db/models/project_custom_settings.py`, teste em `test_issue_serializer_orca_features.py` |
-| D0.3 | Migração `0135`: `routing_state`, `queue_reason`, `queued_at`, `assignment_due_at`, `primary_executor`, `current_assignment_decision` + data migration + CHECKs + índices | `db/models/organizational_unit.py`, `db/migrations/0135_*.py` |
-| D0.4 | Migração `0136`: `OrganizationalUnitAssignmentPolicy`; migração `0137`: `AssignmentDecision`, `IssueResponsibilityEvent` | `db/models/organizational_unit.py` (ou novo `organizational_assignment.py` exportado em `db/models/__init__.py`), migrações |
-| D0.5 | Serviço `assignment_service.py` com `resolve_policy`, `rank_candidates` (`lb-1`), `allocate`, `claim`, `reassign`, `return_to_queue`, `transfer_unit`, todos com lock (6.5) e decisão (I5) | `apps/api/plane/app/services/orca/assignment_service.py`; `assignment_engine.py` passa a delegar e é marcado como legado |
-| D0.6 | Endpoints internos existentes passam a usar o serviço; `organizational-unit-assign` grava decisão; GET de política | `views/organizational_unit.py`, `urls/orca.py` |
-| D0.7 | Comando `audit_organizational_routing` (dry-run default) que lista violações de I3/I4 e, com `--write`, devolve à fila o que estiver inconsistente | `apps/api/plane/db/management/commands/audit_organizational_routing.py` |
-| D0.8 | Contadores (logger estruturado + métricas quando houver backend): `orca.assignment.outcome{mode,outcome}`, `orca.queue.no_candidate`, `orca.decision.superseded`, `orca.idempotency.conflict` | `assignment_service.py` |
-| D0.9 | Testes: matriz da seção 10 para D0 | `apps/api/plane/tests/unit/orca/test_assignment_service.py`, `test_routing_state.py`, `test_assignment_concurrency.py` |
-| D0.10 | Docs: atualizar `organizational-units.md` (§Assignment) e este documento | `docs/` |
-| D0.11 | Arquivar/desarquivar projeto dispara `dispatch_reconciliation` para aquele projeto; reconciliação com alvo explícito aceita projeto arquivado para desativar o herdado | `views/project/base.py`, `org_unit_reconciler.py` |
-| D0.12 | `members_of` do SCIM filtra memberships soft-deleted; teste de contrato do `GET /Groups/{id}` | `views/orca_scim/groups.py`, `test_scim_endpoints.py` |
+| Item  | Entrega                                                                                                                                                                                                                   | Arquivos                                                                                                                                            |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D0.1  | **D1:** validar I2 em `IssueOrganizationalUnitEndpoint.post`; UI lista só áreas que cobrem o projeto; engine deixa de acrescentar o projeto                                                                               | `views/organizational_unit.py`, `issue-unit-property.tsx`, `assignment_engine.py`, novo código `ORG_UNIT_NOT_COVERING_PROJECT`                      |
+| D0.2  | **D2:** fallback "último assignee do criador" sai da API pública; volta o comportamento upstream (`default_assignee`); se a UI quiser manter, fica atrás de `ProjectCustomSettings.remember_last_assignees` (default off) | `apps/api/plane/api/serializers/issue.py`, `apps/api/plane/db/models/project_custom_settings.py`, teste em `test_issue_serializer_orca_features.py` |
+| D0.3  | Migração `0135`: `routing_state`, `queue_reason`, `queued_at`, `assignment_due_at`, `primary_executor`, `current_assignment_decision` + data migration + CHECKs + índices                                                 | `db/models/organizational_unit.py`, `db/migrations/0135_*.py`                                                                                       |
+| D0.4  | Migração `0136`: `OrganizationalUnitAssignmentPolicy`; migração `0137`: `AssignmentDecision`, `IssueResponsibilityEvent`                                                                                                  | `db/models/organizational_unit.py` (ou novo `organizational_assignment.py` exportado em `db/models/__init__.py`), migrações                         |
+| D0.5  | Serviço `assignment_service.py` com `resolve_policy`, `rank_candidates` (`lb-1`), `allocate`, `claim`, `reassign`, `return_to_queue`, `transfer_unit`, todos com lock (6.5) e decisão (I5)                                | `apps/api/plane/app/services/orca/assignment_service.py`; `assignment_engine.py` passa a delegar e é marcado como legado                            |
+| D0.6  | Endpoints internos existentes passam a usar o serviço; `organizational-unit-assign` grava decisão; GET de política                                                                                                        | `views/organizational_unit.py`, `urls/orca.py`                                                                                                      |
+| D0.7  | Comando `audit_organizational_routing` (dry-run default) que lista violações de I3/I4 e, com `--write`, devolve à fila o que estiver inconsistente                                                                        | `apps/api/plane/db/management/commands/audit_organizational_routing.py`                                                                             |
+| D0.8  | Contadores (logger estruturado + métricas quando houver backend): `orca.assignment.outcome{mode,outcome}`, `orca.queue.no_candidate`, `orca.decision.superseded`, `orca.idempotency.conflict`                             | `assignment_service.py`                                                                                                                             |
+| D0.9  | Testes: matriz da seção 10 para D0                                                                                                                                                                                        | `apps/api/plane/tests/unit/orca/test_assignment_service.py`, `test_routing_state.py`, `test_assignment_concurrency.py`                              |
+| D0.10 | Docs: atualizar `organizational-units.md` (§Assignment) e este documento                                                                                                                                                  | `docs/`                                                                                                                                             |
+| D0.11 | Arquivar/desarquivar projeto dispara `dispatch_reconciliation` para aquele projeto; reconciliação com alvo explícito aceita projeto arquivado para desativar o herdado                                                    | `views/project/base.py`, `org_unit_reconciler.py`                                                                                                   |
+| D0.12 | `members_of` do SCIM filtra memberships soft-deleted; teste de contrato do `GET /Groups/{id}`                                                                                                                             | `views/orca_scim/groups.py`, `test_scim_endpoints.py`                                                                                               |
 
 **Gate D0:** todas as invariantes I1–I7 com teste positivo e negativo; teste
 de concorrência (20 alocações simultâneas na mesma área distribuem
@@ -1012,16 +1019,16 @@ comando de auditoria sem violações num banco com os dados de `stage`;
 
 ### Fase 1 — Contrato público de automação
 
-| Item | Entrega |
-| --- | --- |
-| 1.1 | Migração `0138`: `ExternalWorkItemBinding`, `AutomationOperation` |
-| 1.2 | `OrcaPublicApiFeatureMixin`, flag `ORCA_PUBLIC_API_ENABLED` em `settings/common.py` e `.env.example`; throttle `orca_public` |
-| 1.3 | Serviço `automation_operation.py`: parse do header, hash canônico, `get_or_create`, retomada de abandonadas, snapshot |
-| 1.4 | `POST work-items/` composto (7.2), `GET by-external`, `GET units/`, `GET queue/` |
-| 1.5 | `reassign/` e `transfer/` públicos com `If-Match` |
-| 1.6 | Códigos de erro novos nos três lugares |
-| 1.7 | `docs/orca-public-api.md` com exemplos `curl` e um cliente Python de referência em `tools/orca-client/` (script, não pacote) usado nos testes de contrato |
-| 1.8 | Testes: idempotência, binding, transação, permissões por token, throttle, flag desligada = 404 |
+| Item | Entrega                                                                                                                                                   |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.1  | Migração `0138`: `ExternalWorkItemBinding`, `AutomationOperation`                                                                                         |
+| 1.2  | `OrcaPublicApiFeatureMixin`, flag `ORCA_PUBLIC_API_ENABLED` em `settings/common.py` e `.env.example`; throttle `orca_public`                              |
+| 1.3  | Serviço `automation_operation.py`: parse do header, hash canônico, `get_or_create`, retomada de abandonadas, snapshot                                     |
+| 1.4  | `POST work-items/` composto (7.2), `GET by-external`, `GET units/`, `GET queue/`                                                                          |
+| 1.5  | `reassign/` e `transfer/` públicos com `If-Match`                                                                                                         |
+| 1.6  | Códigos de erro novos nos três lugares                                                                                                                    |
+| 1.7  | `docs/orca-public-api.md` com exemplos `curl` e um cliente Python de referência em `tools/orca-client/` (script, não pacote) usado nos testes de contrato |
+| 1.8  | Testes: idempotência, binding, transação, permissões por token, throttle, flag desligada = 404                                                            |
 
 **Gate 1:** o cliente de referência cria 50 itens duas vezes com as mesmas
 chaves e o estado final é idêntico (contagem de `Issue`,
@@ -1033,14 +1040,14 @@ replay após reatribuição humana não altera `primary_executor`; nenhuma rota
 
 ### Fase 2 — Fila da área e coordenador
 
-| Item | Entrega |
-| --- | --- |
-| 2.1 | Migração `0139`: `OrganizationalUnitCoordinator`; reconciliador garante `ProjectMember` (F17) para coordenadores nos projetos cobertos, com proveniência própria (`OrganizationalUnitGrant` com origem `coordinator`) |
-| 2.2 | Helper de permissão `allow_unit_coordinator`; endpoints `claim`, `reassign`, `return`, `transfer`, `queue`, `decisions`, `policy PUT`, `coordinators` |
-| 2.3 | UI: aba Trabalho em `unit-detail.tsx`; menu de atribuição em `issue-unit-property.tsx`; página "Minha Área"; formulário de política; aba coordenadores |
-| 2.4 | Alertas: notificação nativa (`plane.bgtasks.notification_task`) para coordenadores quando `allocation_failed` ou `assignment_due_at` vencido; tarefa Celery `orca_queue_sla_sweep` a cada 15 min, com flag |
-| 2.5 | i18n completo; `check:sync` verde |
-| 2.6 | Testes de permissão negativos (Guest, Member de outro projeto, coordenador de outra área, lead sem coordenação) |
+| Item | Entrega                                                                                                                                                                                                               |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.1  | Migração `0139`: `OrganizationalUnitCoordinator`; reconciliador garante `ProjectMember` (F17) para coordenadores nos projetos cobertos, com proveniência própria (`OrganizationalUnitGrant` com origem `coordinator`) |
+| 2.2  | Helper de permissão `allow_unit_coordinator`; endpoints `claim`, `reassign`, `return`, `transfer`, `queue`, `decisions`, `policy PUT`, `coordinators`                                                                 |
+| 2.3  | UI: aba Trabalho em `unit-detail.tsx`; menu de atribuição em `issue-unit-property.tsx`; página "Minha Área"; formulário de política; aba coordenadores                                                                |
+| 2.4  | Alertas: notificação nativa (`plane.bgtasks.notification_task`) para coordenadores quando `allocation_failed` ou `assignment_due_at` vencido; tarefa Celery `orca_queue_sla_sweep` a cada 15 min, com flag            |
+| 2.5  | i18n completo; `check:sync` verde                                                                                                                                                                                     |
+| 2.6  | Testes de permissão negativos (Guest, Member de outro projeto, coordenador de outra área, lead sem coordenação)                                                                                                       |
 
 **Gate 2-mínimo (libera `ORCA_PUBLIC_API_ENABLED` em produção):** fila
 visível, alerta de `no_eligible_member`, atribuição manual pelo coordenador,
@@ -1052,14 +1059,14 @@ ação.
 
 ### Fase 3 — Disponibilidade e distribuição
 
-| Item | Entrega |
-| --- | --- |
-| 3.1 | Migração `0140`: `WorkspaceMemberAvailability`, `MembershipAllocationSettings`; flag `ORCA_AVAILABILITY_ENABLED` |
-| 3.2 | `rank_candidates` respeita disponibilidade e `accepts_new_work`; `max_open_items` |
-| 3.3 | Endpoints `availability/me/` e `members/{pk}/allocation/`; UI: formulário "estou indisponível de/até", toggle por área, indicador na fila |
-| 3.4 | Sweep horário `orca_availability_sweep` (6.9), dry-run default, comando manual com `--write` |
-| 3.5 | Sugestão de próximo candidato para itens devolvidos (só sugestão; confirmação humana) |
-| 3.6 | Testes: férias começam/terminam, saída da área, desativação de `WorkspaceMember`, retorno; sweep idempotente |
+| Item | Entrega                                                                                                                                   |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.1  | Migração `0141`: `WorkspaceMemberAvailability`, `MembershipAllocationSettings`; flag `ORCA_AVAILABILITY_ENABLED`                          |
+| 3.2  | `rank_candidates` respeita disponibilidade e `accepts_new_work`; `max_open_items`                                                         |
+| 3.3  | Endpoints `availability/me/` e `members/{pk}/allocation/`; UI: formulário "estou indisponível de/até", toggle por área, indicador na fila |
+| 3.4  | Sweep horário `orca_availability_sweep` (6.9), dry-run default, comando manual com `--write`                                              |
+| 3.5  | Sugestão de próximo candidato para itens devolvidos (só sugestão; confirmação humana)                                                     |
+| 3.6  | Testes: férias começam/terminam, saída da área, desativação de `WorkspaceMember`, retorno; sweep idempotente                              |
 
 **Gate 3:** cenários acima verdes; nenhuma reatribuição sem
 `AssignmentDecision(trigger=availability)`; sweep em dry-run num banco
@@ -1067,15 +1074,15 @@ realista sem falsos positivos.
 
 ### Fase 4 — Processos automáticos
 
-| Item | Entrega |
-| --- | --- |
-| 4.1 | Confirmar A5 (Compose). Decidir se Compose gera só schema (estados, labels) ou fica fora |
-| 4.2 | Migrações `0141`/`0142`: `IssueServiceLevel`, `ProcessInstanceReference`, `ProcessInstanceItem`; flag `ORCA_PROCESS_PROJECTION_ENABLED` |
-| 4.3 | Bloco `process` no `POST work-items/`; endpoint `complete/`; `GET .../process-instances/{source}/{id}/` com progresso |
-| 4.4 | Orquestrador sidecar em repositório próprio (`orca-orchestrator`): templates YAML versionados, consumidor de eventos (EspoCRM ou outro), cliente da API pública, reprocessamento seguro por `idempotency_key = f"{source}:{instance}:{step}:{event_id}"` |
-| 4.5 | Webhooks nativos do Plane como retorno para o orquestrador (item mudou de estado); `WEBHOOK_ALLOWED_HOSTS` já existe no fork |
-| 4.6 | UI: agrupamento visual por instância na fila; projeção opcional em módulo quando a instância está num só projeto (A6) |
-| 4.7 | Runbook: desligar o orquestrador não deixa estado inconsistente; retomar instância pela metade |
+| Item | Entrega                                                                                                                                                                                                                                                  |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.1  | Confirmar A5 (Compose). Decidir se Compose gera só schema (estados, labels) ou fica fora                                                                                                                                                                 |
+| 4.2  | Migrações `0141`/`0142`: `IssueServiceLevel`, `ProcessInstanceReference`, `ProcessInstanceItem`; flag `ORCA_PROCESS_PROJECTION_ENABLED`                                                                                                                  |
+| 4.3  | Bloco `process` no `POST work-items/`; endpoint `complete/`; `GET .../process-instances/{source}/{id}/` com progresso                                                                                                                                    |
+| 4.4  | Orquestrador sidecar em repositório próprio (`orca-orchestrator`): templates YAML versionados, consumidor de eventos (EspoCRM ou outro), cliente da API pública, reprocessamento seguro por `idempotency_key = f"{source}:{instance}:{step}:{event_id}"` |
+| 4.5  | Webhooks nativos do Plane como retorno para o orquestrador (item mudou de estado); `WEBHOOK_ALLOWED_HOSTS` já existe no fork                                                                                                                             |
+| 4.6  | UI: agrupamento visual por instância na fila; projeção opcional em módulo quando a instância está num só projeto (A6)                                                                                                                                    |
+| 4.7  | Runbook: desligar o orquestrador não deixa estado inconsistente; retomar instância pela metade                                                                                                                                                           |
 
 **Gate 4:** reprocessar o mesmo evento não duplica nada; falha no meio de uma
 instância é retomável; desligar o orquestrador e religar converge; cada
@@ -1083,12 +1090,12 @@ instância registra `template_version`.
 
 ### Fase 5 — Visão executiva
 
-| Item | Entrega |
-| --- | --- |
-| 5.1 | Endpoint `executive/` (Workspace Admin) com agregados por área e por processo: backlog, sem executor, atrasados na atribuição, `target_date` vencido, aging (p50/p90 de `queued_at`), throughput semanal, cycle time, concentração (top 3 executores por área) |
-| 5.2 | Consultas materializadas por tarefa noturna se o volume exigir; senão, consultas diretas com índices da seção 5 |
-| 5.3 | UI: página executiva com drill-down até o item, respeitando acesso nativo (item de projeto sem acesso aparece agregado, não listado) |
-| 5.4 | Testes com dataset fixo: cada número tem consulta reproduzível |
+| Item | Entrega                                                                                                                                                                                                                                                        |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.1  | Endpoint `executive/` (Workspace Admin) com agregados por área e por processo: backlog, sem executor, atrasados na atribuição, `target_date` vencido, aging (p50/p90 de `queued_at`), throughput semanal, cycle time, concentração (top 3 executores por área) |
+| 5.2  | Consultas materializadas por tarefa noturna se o volume exigir; senão, consultas diretas com índices da seção 5                                                                                                                                                |
+| 5.3  | UI: página executiva com drill-down até o item, respeitando acesso nativo (item de projeto sem acesso aparece agregado, não listado)                                                                                                                           |
+| 5.4  | Testes com dataset fixo: cada número tem consulta reproduzível                                                                                                                                                                                                 |
 
 **Gate 5:** cada indicador tem teste com valor esperado; nenhuma rota
 executiva expõe item de projeto ao qual o leitor não pertence.
@@ -1104,22 +1111,22 @@ Local: `apps/api/plane/tests/unit/orca/`. Reaproveitar fixtures de
 `pytest.mark.django_db(transaction=True)` com `threading` e conexões
 separadas; documentar em `apps/api/tests/TESTING_GUIDE.md`.
 
-| Área | Casos mínimos |
-| --- | --- |
-| I2 cobertura | área cobre → 200; área não cobre → 400; área inativa → 400; vínculo área↔projeto removido depois → auditoria aponta |
-| Resolução de política | sem política → `manual`/`fallback`, com qualquer modo solicitável; só área → área; área+projeto → projeto; solicitada permitida; solicitada proibida → 400; `explicit` ignora política |
-| Ranking `lb-1` | menos carregado vence; empate total → menos na área; empate → nunca alocado antes de já alocado; empate → menor id; colaborador não conta; item concluído não conta; bot excluído; Guest excluído; `max_open_items` exclui |
-| Estados | cada transição da tabela 6.2 (positivo) e cada transição ausente (negativo, 409); CHECKs do banco |
-| Decisões | toda transição cria decisão; reversão tem `supersedes`; `candidates_snapshot` sem PII além de id; append-only (update falha em teste de modelo) |
-| Concorrência | 20 alocações simultâneas na mesma área com 4 membros → distribuição 5/5/5/5; 10 claims → 1 vencedor; alocação e claim simultâneos no mesmo item → um só executor |
-| Idempotência | replay idêntico → mesmo snapshot, sem nova decisão; hash diferente → 409; duas simultâneas → um item; abandonada retomada; binding duplicado → 409; replay após reatribuição humana não altera executor |
-| Transação | falha na etapa 4 (política proibida) não deixa `Issue` nem binding; `on_commit` não dispara em rollback |
-| Permissões | matriz papel × endpoint para: Admin ws, Member do projeto, Member de outro projeto, Guest, coordenador da área, coordenador de outra área, lead sem coordenação, API key de usuário Guest |
-| Kill switches | cada flag desligada → 404 nas rotas correspondentes; UI esconde |
-| Encaminhamento | mesma área → no-op sem evento; área que não cobre → 400; executor não membro da nova área → volta à fila |
-| Disponibilidade | intervalos abertos/fechados; `accepts_new_work=false` exclui só naquela área; sweep devolve e registra; sweep repetido não duplica |
-| API pública | header ausente → 400; token de usuário Guest → 403; throttle → 429; flag desligada → 404; `assignees` nativo ignorado no namespace Orca |
-| Frontend | testes de store para fila e decisões (vitest, padrão existente em `packages/`); pelo menos um teste de componente para `queue-list.tsx` |
+| Área                  | Casos mínimos                                                                                                                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I2 cobertura          | área cobre → 200; área não cobre → 400; área inativa → 400; vínculo área↔projeto removido depois → auditoria aponta                                                                                                        |
+| Resolução de política | sem política → `manual`/`fallback`, com qualquer modo solicitável; só área → área; área+projeto → projeto; solicitada permitida; solicitada proibida → 400; `explicit` ignora política                                     |
+| Ranking `lb-1`        | menos carregado vence; empate total → menos na área; empate → nunca alocado antes de já alocado; empate → menor id; colaborador não conta; item concluído não conta; bot excluído; Guest excluído; `max_open_items` exclui |
+| Estados               | cada transição da tabela 6.2 (positivo) e cada transição ausente (negativo, 409); CHECKs do banco                                                                                                                          |
+| Decisões              | toda transição cria decisão; reversão tem `supersedes`; `candidates_snapshot` sem PII além de id; append-only (update falha em teste de modelo)                                                                            |
+| Concorrência          | 20 alocações simultâneas na mesma área com 4 membros → distribuição 5/5/5/5; 10 claims → 1 vencedor; alocação e claim simultâneos no mesmo item → um só executor                                                           |
+| Idempotência          | replay idêntico → mesmo snapshot, sem nova decisão; hash diferente → 409; duas simultâneas → um item; abandonada retomada; binding duplicado → 409; replay após reatribuição humana não altera executor                    |
+| Transação             | falha na etapa 4 (política proibida) não deixa `Issue` nem binding; `on_commit` não dispara em rollback                                                                                                                    |
+| Permissões            | matriz papel × endpoint para: Admin ws, Member do projeto, Member de outro projeto, Guest, coordenador da área, coordenador de outra área, lead sem coordenação, API key de usuário Guest                                  |
+| Kill switches         | cada flag desligada → 404 nas rotas correspondentes; UI esconde                                                                                                                                                            |
+| Encaminhamento        | mesma área → no-op sem evento; área que não cobre → 400; executor não membro da nova área → volta à fila                                                                                                                   |
+| Disponibilidade       | intervalos abertos/fechados; `accepts_new_work=false` exclui só naquela área; sweep devolve e registra; sweep repetido não duplica                                                                                         |
+| API pública           | header ausente → 400; token de usuário Guest → 403; throttle → 429; flag desligada → 404; `assignees` nativo ignorado no namespace Orca                                                                                    |
+| Frontend              | testes de store para fila e decisões (vitest, padrão existente em `packages/`); pelo menos um teste de componente para `queue-list.tsx`                                                                                    |
 
 ---
 
@@ -1128,15 +1135,15 @@ separadas; documentar em `apps/api/tests/TESTING_GUIDE.md`.
 Desde D0, via logger estruturado (`plane.utils.logging` ou o padrão já usado
 pelos reconciliadores) e, quando existir backend de métricas, contadores:
 
-| Nome | Labels | Uso |
-| --- | --- | --- |
-| `orca.assignment.outcome` | `mode`, `outcome`, `trigger` | taxa de `allocation_failed` |
-| `orca.queue.age_seconds` | `unit` | idade da fila (gauge no sweep) |
-| `orca.queue.overdue` | `unit` | itens com `assignment_due_at` vencido |
-| `orca.decision.superseded` | `unit`, `previous_mode` | quantas escolhas automáticas foram revertidas |
-| `orca.idempotency.conflict` | `type` (`payload_mismatch`, `in_progress`, `binding`) | clientes com bug |
-| `orca.public_api.latency_ms` | `endpoint` | p50/p95 |
-| `orca.availability.returned` | `unit`, `reason` | itens devolvidos por indisponibilidade |
+| Nome                         | Labels                                                | Uso                                           |
+| ---------------------------- | ----------------------------------------------------- | --------------------------------------------- |
+| `orca.assignment.outcome`    | `mode`, `outcome`, `trigger`                          | taxa de `allocation_failed`                   |
+| `orca.queue.age_seconds`     | `unit`                                                | idade da fila (gauge no sweep)                |
+| `orca.queue.overdue`         | `unit`                                                | itens com `assignment_due_at` vencido         |
+| `orca.decision.superseded`   | `unit`, `previous_mode`                               | quantas escolhas automáticas foram revertidas |
+| `orca.idempotency.conflict`  | `type` (`payload_mismatch`, `in_progress`, `binding`) | clientes com bug                              |
+| `orca.public_api.latency_ms` | `endpoint`                                            | p50/p95                                       |
+| `orca.availability.returned` | `unit`, `reason`                                      | itens devolvidos por indisponibilidade        |
 
 Toda entrada de log carrega `workspace_id`, `unit_id`, `issue_id`,
 `decision_id`, `operation_id` quando existirem. Nunca e-mail ou nome.
@@ -1145,16 +1152,16 @@ Toda entrada de log carrega `workspace_id`, `unit_id`, `issue_id`,
 
 ## 12. Riscos e mitigação
 
-| Risco | Mitigação |
-| --- | --- |
-| Alocação automática criando trabalho que ninguém vê | F24: API pública desligada em produção até o Gate 2-mínimo |
-| Migração `0135` em tabela com dados | data migration idempotente; ensaiar contra cópia do banco de `stage` antes da RC |
-| Lock por área virando gargalo em lote grande | lote de 500 itens serializado por área leva segundos, não minutos; medir no Gate 1 com 200 criações; se necessário, lock por área+projeto |
+| Risco                                                       | Mitigação                                                                                                                                                                                                                              |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Alocação automática criando trabalho que ninguém vê         | F24: API pública desligada em produção até o Gate 2-mínimo                                                                                                                                                                             |
+| Migração `0135` em tabela com dados                         | data migration idempotente; ensaiar contra cópia do banco de `stage` antes da RC                                                                                                                                                       |
+| Lock por área virando gargalo em lote grande                | lote de 500 itens serializado por área leva segundos, não minutos; medir no Gate 1 com 200 criações; se necessário, lock por área+projeto                                                                                              |
 | Duas fontes de "quem executa" (nativo × lateral) divergirem | I3 + comando de auditoria + teste que remove `IssueAssignee` nativamente e verifica que a fila reflete (hook `post_delete` em `IssueAssignee` que devolve à fila com `executor_unavailable`, registrado em `services/orca/signals.py`) |
-| Coordenador ganhando acesso indevido | F17: acesso só via `ProjectMember` reconciliado; teste compara tabela antes/depois de cada ação |
-| Compose se revelar diferente do assumido | F12 isola: nada da Fase 1 depende do Compose |
-| Upstream mudar `IssueAssignee` ou API v1 | tudo lateral; serializer público Orca é próprio; sync trimestral com upstream |
-| Replay reescrever escolha humana | F11 + teste explícito |
+| Coordenador ganhando acesso indevido                        | F17: acesso só via `ProjectMember` reconciliado; teste compara tabela antes/depois de cada ação                                                                                                                                        |
+| Compose se revelar diferente do assumido                    | F12 isola: nada da Fase 1 depende do Compose                                                                                                                                                                                           |
+| Upstream mudar `IssueAssignee` ou API v1                    | tudo lateral; serializer público Orca é próprio; sync trimestral com upstream                                                                                                                                                          |
+| Replay reescrever escolha humana                            | F11 + teste explícito                                                                                                                                                                                                                  |
 
 ### O que não fazer
 
@@ -1195,7 +1202,7 @@ Toda entrada de log carrega `workspace_id`, `unit_id`, `issue_id`,
   listagem de `apps/api/plane/db/migrations/` é a fonte);
   nunca editar migrações já mescladas; nunca apagar.
 - **Testes backend:** `docker compose -f docker-compose-test.yml run --rm
-  api-tests pytest plane/tests/unit/orca/ -q`; ver
+api-tests pytest plane/tests/unit/orca/ -q`; ver
   `apps/api/tests/RUNNING_TESTS.md`. Sem daemon Docker, a sessão sobe
   PostgreSQL e Redis por conta própria (`HANDOFF-PROMPT.md` §Ambiente local)
   e roda a mesma suíte.
@@ -1224,31 +1231,31 @@ Toda entrada de log carrega `workspace_id`, `unit_id`, `issue_id`,
 
 ## Apêndice A — Dúvidas do debate e decisão correspondente
 
-| Dúvida | Decisão |
-| --- | --- |
-| 1. Uma área por item? | F1 |
-| 2. Encaminhamento | F7 |
-| 3. Executor vazio | F2; SLA de atribuição em 6.6 |
-| 4. Claim | `self_claim` (F3) com lock (6.5) |
-| 5. Executor principal | F5 |
-| 6. Onde mora a política | F4 |
-| 7. Quais políticas | F3 |
-| 8. Carga | F6 |
-| 9. Habilidades | A1 |
-| 10. Reversão registrada | F8 |
-| 11. Disponibilidade pessoa × membership | F14 |
-| 12. Fonte de férias | F14 (manual; A3) |
-| 13. Saída de pessoa | F15 |
-| 14. Lead × coordenador | F16 |
-| 15. Coordenador sem acesso | F17 |
-| 16. CEO | F18 |
-| 17. Compose | F12; A5 |
-| 18. Template dentro/fora | F19 |
-| 19. Agrupamento | F20; A6 |
-| 20. Atomicidade | F9, F10, F11 |
-| 21. Fechamento automático | F21 |
-| 22. Dashboard por último | F23 |
-| 23. SLA | F22 |
+| Dúvida                                  | Decisão                          |
+| --------------------------------------- | -------------------------------- |
+| 1. Uma área por item?                   | F1                               |
+| 2. Encaminhamento                       | F7                               |
+| 3. Executor vazio                       | F2; SLA de atribuição em 6.6     |
+| 4. Claim                                | `self_claim` (F3) com lock (6.5) |
+| 5. Executor principal                   | F5                               |
+| 6. Onde mora a política                 | F4                               |
+| 7. Quais políticas                      | F3                               |
+| 8. Carga                                | F6                               |
+| 9. Habilidades                          | A1                               |
+| 10. Reversão registrada                 | F8                               |
+| 11. Disponibilidade pessoa × membership | F14                              |
+| 12. Fonte de férias                     | F14 (manual; A3)                 |
+| 13. Saída de pessoa                     | F15                              |
+| 14. Lead × coordenador                  | F16                              |
+| 15. Coordenador sem acesso              | F17                              |
+| 16. CEO                                 | F18                              |
+| 17. Compose                             | F12; A5                          |
+| 18. Template dentro/fora                | F19                              |
+| 19. Agrupamento                         | F20; A6                          |
+| 20. Atomicidade                         | F9, F10, F11                     |
+| 21. Fechamento automático               | F21                              |
+| 22. Dashboard por último                | F23                              |
+| 23. SLA                                 | F22                              |
 
 ## Apêndice B — Exemplo de fluxo completo (onboarding)
 

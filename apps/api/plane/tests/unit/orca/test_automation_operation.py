@@ -185,6 +185,31 @@ class TestThePayloadMismatch:
 
 @pytest.mark.unit
 @pytest.mark.django_db
+class TestKeysArePerToken:
+    """R1.A12: one token must not burn another token's Idempotency-Key space."""
+
+    def test_two_tokens_can_reuse_the_same_key(self, workspace_with_members, admin_user, plain_user):
+        from plane.db.models import APIToken
+
+        token_a = APIToken.objects.create(user=admin_user, workspace=workspace_with_members, label="a")
+        token_b = APIToken.objects.create(user=plain_user, workspace=workspace_with_members, label="b")
+
+        first = begin(workspace_with_members, token=token_a)
+        first.complete(response={"from": "a"})
+        # A different payload under the same key would be a mismatch if the
+        # key were still unique per workspace. Per token it is a first call.
+        second = begin(workspace_with_members, token=token_b, payload={"other": True})
+        assert second.replayed is False
+        second.complete(response={"from": "b"})
+
+        body_a, _ = begin(workspace_with_members, token=token_a).replay_response()
+        body_b, _ = begin(workspace_with_members, token=token_b, payload={"other": True}).replay_response()
+        assert body_a == {"from": "a"}
+        assert body_b == {"from": "b"}
+
+
+@pytest.mark.unit
+@pytest.mark.django_db
 class TestTheOperationStillRunning:
     def test_a_recent_in_progress_call_is_refused(self, workspace_with_members):
         begin(workspace_with_members)
@@ -272,26 +297,33 @@ class TestASoftDeletedReceipt:
 @pytest.mark.unit
 @pytest.mark.django_db
 class TestTheContextManager:
-    def test_it_marks_a_crashed_operation_failed(self, workspace_with_members):
+    def test_it_releases_a_crashed_operation_so_a_retry_can_run(self, workspace_with_members):
         with pytest.raises(RuntimeError):
             with begin_operation(
                 workspace_with_members, None, "key-1", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD
             ):
                 raise RuntimeError("worker died")
 
-        operation = AutomationOperation.objects.get(idempotency_key="key-1")
-        # Not left in progress: the next retry gets an answer instead of a
-        # sixty-second wait followed by a silent resume.
-        assert operation.status == AutomationOperationStatus.FAILED
-        assert operation.error_code == "ORG_INTERNAL_ERROR"
+        # R1.A6: a blip must not spend the key. The receipt is gone, so the
+        # next caller with the same key is a first call, not a replay of 500.
+        assert not AutomationOperation.all_objects.filter(idempotency_key="key-1").exists()
 
-    def test_the_failure_survives_a_rolled_back_transaction(self, workspace_with_members):
+        with begin_operation(
+            workspace_with_members, None, "key-1", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD
+        ) as handle:
+            assert handle.replayed is False
+            handle.complete(response={"ok": True})
+
+        operation = AutomationOperation.objects.get(idempotency_key="key-1")
+        assert operation.status == AutomationOperationStatus.SUCCEEDED
+
+    def test_the_release_survives_a_rolled_back_transaction(self, workspace_with_members):
         """
         The reason the receipt is written outside the caller's transaction.
 
         The interesting case is precisely the one where the work rolled back:
-        if the failure were written inside that transaction it would roll back
-        with it, and the crash would leave no trace at all.
+        if the release were written inside that transaction it would roll back
+        with it, and the crash would leave the key wedged in progress.
         """
         with pytest.raises(RuntimeError):
             with begin_operation(
@@ -300,8 +332,7 @@ class TestTheContextManager:
                 with transaction.atomic():
                     raise RuntimeError("rolled back")
 
-        operation = AutomationOperation.objects.get(idempotency_key="key-1")
-        assert operation.status == AutomationOperationStatus.FAILED
+        assert not AutomationOperation.all_objects.filter(idempotency_key="key-1").exists()
 
     def test_it_leaves_a_completed_operation_alone(self, workspace_with_members):
         with begin_operation(
@@ -352,14 +383,17 @@ def test_two_simultaneous_first_calls_open_one_receipt(transactional_db):
 
     from django.db import connection
 
-    from plane.db.models import User, Workspace
+    from plane.db.models import APIToken, User, Workspace
 
     owner = User.objects.create(email="race@example.com", username="race", first_name="Race")
     workspace = Workspace.objects.create(name="Race", slug="race-ws", owner=owner)
+    # R1.A12: uniqueness is per token. Two NULL tokens would not collide, so
+    # the race the constraint settles has to share a real credential.
+    token = APIToken.objects.create(user=owner, workspace=workspace, label="race")
 
     def attempt(_):
         try:
-            handle = start_operation(workspace, None, "same-key", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD)
+            handle = start_operation(workspace, token, "same-key", AutomationOperationType.CREATE_WORK_ITEM, PAYLOAD)
             return "replay" if handle.replayed else "opened"
         except OperationInProgress:
             return "in_progress"

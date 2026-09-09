@@ -707,7 +707,32 @@
             "not_assigned": "Nepriradené",
             "returned_title": "Vrátené do frontu",
             "returned": "Znovu čaká na niekoho.",
-            "not_returned": "Nevrátené"
+            "not_returned": "Nevrátené",
+            "transferred_title": "Presunuté do inej oblasti",
+            "transferred": "{name} je za to teraz zodpovedný.",
+            "not_transferred": "Nepresunuté"
+          },
+          "attention": "Vyžaduje pozornosť",
+          "attention_overdue_date": "Po termíne",
+          "attention_suspended": "Pozastavené",
+          "attention_unavailable": "Vykonávateľ nedostupný",
+          "attention_no_date": "Bez termínu",
+          "empty_attention": "Momentálne nič nevyžaduje pozornosť.",
+          "decisions": "Rozhodnutia",
+          "empty_decisions": "Zatiaľ žiadne rozhodnutia o pridelení.",
+          "decision_supersedes": "Nahradilo predchádzajúce rozhodnutie",
+          "decision_outcome": {
+            "assigned": "Pridelené",
+            "queued": "V poradí",
+            "allocation_failed": "Nepodarilo sa prideliť",
+            "rejected": "Odmietnuté"
+          },
+          "transfer": "Presunúť do inej oblasti",
+          "transfer_modal": {
+            "title": "Presunúť do inej oblasti",
+            "search": "Hľadať oblasti",
+            "no_units": "Žiadna iná oblasť nepokrýva tento projekt.",
+            "transferring": "Presúva sa…"
           }
         },
         "errors": {
@@ -738,6 +763,7 @@
           "coordinator_not_found": "Koordinátor nenájdený.",
           "not_the_executor": "Toto môže urobiť iba aktuálny vykonávateľ, koordinátor tejto oblasti alebo správca pracovného priestoru.",
           "coordinator_must_be_member": "Koordinátor musí byť aktívnym členom alebo správcom pracovného priestoru.",
+          "invalid_queue_filter": "Tento filter fronty nie je rozpoznaný.",
           "public_api_disabled": "Automatizačné API je v tejto inštancii vypnuté.",
           "idempotency_key_required": "Táto požiadavka vyžaduje hlavičku Idempotency-Key.",
           "idempotency_payload_mismatch": "Tento kľúč už bol použitý pre inú požiadavku.",
@@ -748,6 +774,55 @@
           "process_projection_disabled": "Projekcia procesov je v tejto inštancii vypnutá.",
           "completion_manual_only": "Túto pracovnú položku môže dokončiť len človek.",
           "internal_error": "Niečo sa pokazilo. Operácia bola zaznamenaná ako neúspešná."
+        },
+        "coordinators": {
+          "tab": "Koordinátori",
+          "select_person": "Vybrať osobu",
+          "no_addable": "Každý, kto môže koordinovať túto oblasť, to už robí",
+          "add": "Pridať koordinátora",
+          "empty": "Túto oblasť zatiaľ nikto nekoordinuje. Koordinátor spravuje frontu, aj keď do oblasti nepatrí.",
+          "remove_aria": "Zastaviť koordináciu tejto oblasti osobou {name}",
+          "note": "Koordinátor spravuje frontu oblasti. Nemusí do nej patriť. Hostia pracovného priestoru nemôžu byť koordinátormi.",
+          "toast": {
+            "added_title": "Koordinátor pridaný",
+            "added": "Teraz môže spravovať frontu tejto oblasti.",
+            "not_added": "Nepridané",
+            "removed_title": "Koordinátor odstránený",
+            "removed": "{name} už túto oblasť nekoordinuje.",
+            "not_removed": "Neodstránené"
+          }
+        },
+        "policy": {
+          "tab": "Politika",
+          "heading": "Ako táto oblasť prideľuje prácu",
+          "description": "Predvolená hodnota oblasti, ktorú môže projekt nahradiť.",
+          "scope_area": "Predvolené oblasti",
+          "scope_project": "Výnimka pre {name}",
+          "default_mode": "Predvolený režim",
+          "allowed_modes": "Povolené režimy",
+          "sla_seconds": "SLA pridelenia (sekundy)",
+          "sla_hint": "Ako dlho môže položka čakať nepridelená, kým sa upozornia koordinátori. Nechajte prázdne, ak bez termínu.",
+          "max_open": "Maximum otvorených položiek na osobu",
+          "max_open_hint": "Nechajte prázdne, ak bez stropu.",
+          "save": "Uložiť politiku",
+          "mode": {
+            "manual": "Koordinátor prideľuje",
+            "self_claim": "Ľudia si prácu berú sami",
+            "least_loaded": "Člen s najmenšou záťažou",
+            "explicit": "Menovaná osoba"
+          },
+          "toast": {
+            "saved_title": "Politika uložená",
+            "saved": "Nová práca bude dodržiavať tieto pravidlá.",
+            "not_saved": "Neuložené"
+          }
+        },
+        "my_areas": {
+          "title": "Moje oblasti",
+          "heading": "Moje oblasti",
+          "description": "Oblasti, do ktorých patríte, a práca, ktorá v každej čaká.",
+          "empty": "Zatiaľ nepatríte do žiadnej oblasti.",
+          "select": "Vyberte oblasť"
         }
       }
     },

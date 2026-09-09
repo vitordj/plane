@@ -221,6 +221,21 @@ class TestOrganizationalUnitMembers:
         assert response.data[0]["role"] == "lead"
         assert response.data[0]["email"] == "plain@plane.so"
 
+    def test_a_guest_does_not_see_member_emails(
+        self, guest_client, admin_client, workspace_with_members, unit, add_member, plain_user
+    ):
+        """R1.A4: Guest of the workspace reads the roster, not the addresses."""
+        add_member(unit, plain_user)
+
+        admin_response = admin_client.get(members_url(workspace_with_members.slug, unit.id))
+        guest_response = guest_client.get(members_url(workspace_with_members.slug, unit.id))
+
+        assert admin_response.status_code == 200
+        assert "email" in admin_response.data[0]
+        assert guest_response.status_code == 200
+        assert "email" not in guest_response.data[0]
+        assert guest_response.data[0]["display_name"] == "plain"
+
     def test_non_admin_cannot_add_members(
         self, member_client, workspace_with_members, unit, workspace_member_of, second_user
     ):
@@ -703,14 +718,22 @@ class TestEffectiveAccessAndWorkload:
         second_user,
         make_issue,
     ):
-        from plane.db.models import IssueAssignee
+        from plane.db.models import IssueAssignee, IssueOrganizationalUnit, RoutingState
 
         link_project(unit, project)
         add_member(unit, plain_user)
         add_member(unit, second_user)
         issue = make_issue(project)
+        IssueOrganizationalUnit.objects.create(
+            issue=issue,
+            organizational_unit=unit,
+            project=project,
+            workspace=workspace_with_members,
+            routing_state=RoutingState.ASSIGNED,
+            primary_executor=plain_user,
+        )
         IssueAssignee.objects.create(
-            issue=issue, assignee=plain_user, project=project, workspace=workspace_with_members
+            issue=issue, assignee=second_user, project=project, workspace=workspace_with_members
         )
 
         response = admin_client.get(workload_url(workspace_with_members.slug, unit.id))
@@ -734,6 +757,11 @@ class TestEffectiveAccessAndWorkload:
         admin_client.get(workload_url(workspace_with_members.slug, unit.id))
 
         assert not ProjectMember.objects.filter(project=project, member=plain_user).exists()
+
+    def test_a_guest_cannot_read_effective_access_or_workload(self, guest_client, workspace_with_members, unit):
+        """R1.A15: provenance and load are not a Guest's business."""
+        assert guest_client.get(effective_access_url(workspace_with_members.slug, unit.id)).status_code == 403
+        assert guest_client.get(workload_url(workspace_with_members.slug, unit.id)).status_code == 403
 
 
 @pytest.mark.unit

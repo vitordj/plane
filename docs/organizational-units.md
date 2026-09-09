@@ -187,12 +187,12 @@ keep strictly apart: an API key is refused on `/api/orca/`, and a browser
 session is refused on `/api/v1/orca/`. That separation is asserted by the
 contract suite, not just intended.
 
-| Method | Path (under `/api/v1/orca/workspaces/<slug>/`) |
-| ------ | ---------------------------------------------- |
-| `GET`  | `units/` |
-| `GET`  | `units/<unit_slug>/queue/` |
-| `GET`  | `work-items/by-external/<source>/<id>/` |
-| `POST` | `projects/<project_id>/work-items/` |
+| Method | Path (under `/api/v1/orca/workspaces/<slug>/`)          |
+| ------ | ------------------------------------------------------- |
+| `GET`  | `units/`                                                |
+| `GET`  | `units/<unit_slug>/queue/`                              |
+| `GET`  | `work-items/by-external/<source>/<id>/`                 |
+| `POST` | `projects/<project_id>/work-items/`                     |
 | `POST` | `projects/<project_id>/work-items/<issue_id>/reassign/` |
 | `POST` | `projects/<project_id>/work-items/<issue_id>/transfer/` |
 
@@ -218,13 +218,13 @@ Plane requires an assignee to be a person who is an active project member, so
 a unit being responsible is not the same as the work being handed out. The
 layer keeps both facts, side by side:
 
-| Field                | Meaning                                                                              |
-| -------------------- | ------------------------------------------------------------------------------------ |
-| `organizational_unit`| The unit answerable for the item.                                                    |
-| `routing_state`      | `queued`, `assigned`, `allocation_failed` or `suspended`.                            |
-| `queue_reason`       | Why it is waiting: awaiting a coordinator, awaiting a claim, nobody eligible, …      |
-| `primary_executor`   | The person answerable for it. Set only while `assigned`, enforced by a `CHECK`.      |
-| `assignment_due_at`  | When the assignment SLA runs out, if the policy sets one.                            |
+| Field                 | Meaning                                                                         |
+| --------------------- | ------------------------------------------------------------------------------- |
+| `organizational_unit` | The unit answerable for the item.                                               |
+| `routing_state`       | `queued`, `assigned`, `allocation_failed` or `suspended`.                       |
+| `queue_reason`        | Why it is waiting: awaiting a coordinator, awaiting a claim, nobody eligible, … |
+| `primary_executor`    | The person answerable for it. Set only while `assigned`, enforced by a `CHECK`. |
+| `assignment_due_at`   | When the assignment SLA runs out, if the policy sets one.                       |
 
 The primary executor is always also a plain `IssueAssignee`, so the item looks
 normal everywhere in Plane. The reverse does not hold: other assignees are
@@ -232,14 +232,14 @@ collaborators, and they do not count toward anybody's load.
 
 ### Policies
 
-**What happens when a unit is made responsible** is the unit's *assignment
-policy*:
+**What happens when a unit is made responsible** is the unit's _assignment
+policy_:
 
-| Mode           | Effect                                                           |
-| -------------- | ---------------------------------------------------------------- |
-| `manual`       | A coordinator will decide, so the item waits.                    |
-| `self_claim`   | It waits for someone in the unit to take it.                     |
-| `least_loaded` | It is handed to the least loaded eligible member on the spot.    |
+| Mode           | Effect                                                        |
+| -------------- | ------------------------------------------------------------- |
+| `manual`       | A coordinator will decide, so the item waits.                 |
+| `self_claim`   | It waits for someone in the unit to take it.                  |
+| `least_loaded` | It is handed to the least loaded eligible member on the spot. |
 
 A policy can be set for the unit or for one of its projects, and the
 project's wins. A unit with no policy defaults to `manual` — nothing is handed
@@ -313,12 +313,51 @@ What a unit _grants_ — its projects and their inherited roles — stays a Plan
 decision that no SCIM call can reach. Setup, endpoints and troubleshooting are
 in [entra-directory-sync.md](./entra-directory-sync.md).
 
+## The area's queue
+
+Work an area is responsible for sits in that area's queue until somebody is
+on it. The Work tab on the area (`Workspace settings → Areas → Work`) is the
+human surface: an inbox of items waiting (`queued` and `allocation_failed`),
+work already assigned grouped by executor, and a "Needs attention" section
+for due dates that have passed, paused items, an unavailable executor, and
+in-progress items with no due date.
+
+A coordinator — or a workspace admin — can take an item, assign it to a
+named person, return it to the queue, or move it to another area that covers
+the same project. A member of the area can take an item when the policy
+allows `self_claim`. The row's action buttons are a courtesy; the API
+refuses what the person may not do (RFC §1.2). Each action writes exactly
+one `AssignmentDecision`. The allocation log is coordinator-only.
+
+Alerts: an immediate native `Notification` when allocation fails, and a
+15-minute sweep for items past their assignment SLA. The public automation
+API is the machine surface of the same queue; see
+[orca-public-api.md](./orca-public-api.md).
+
+## Coordinators
+
+A coordinator operates an area's queue. They do not have to belong to the
+area (RFC §5.2). Workspace guests cannot be coordinators. Adding or removing
+one is a workspace-admin action; the reconciler grants them Member access to
+the area's projects with provenance `coordinator`, and removing them
+withdraws only that grant.
+
+The assignment policy (default mode, allowed modes, assignment SLA, max
+open items) is also admin-only, with an optional per-project override.
+
+## My areas
+
+Anyone who belongs to at least one area sees **My areas** in the workspace
+sidebar (`/:workspaceSlug/my-areas`). It lists those areas and mounts the
+same Work tab for the selected one, so a member does not have to go through
+workspace settings to pick up work.
+
 ## Settings
 
-| Setting                   | Default | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Setting                   | Default | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ORCA_ORG_UNITS_ENABLED`  | `1`     | Kill switch. Accepts `1/true/yes/on` and `0/false/no/off` (any other value refuses to start). Set to `0` and every `/api/orca/` organizational-unit route answers 404 — the directory connection endpoints and the SCIM provisioning endpoints included — both management commands refuse to run, the hourly directory pass and any queued reconciliation task return without writing, and the UI hides the layer. The switch is read where the write would happen, so a task already on the queue when it is flipped does not land afterwards. Existing inherited `ProjectMember` rows are left exactly as they are — the switch stops the layer acting, it does not withdraw access it already granted. Re-enable and reconcile to resume. |
-| `ORCA_ORG_SYNC_MAX_EDGES` | `100`   | Fan-out threshold for inline vs. Celery reconciliation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `ORCA_ORG_SYNC_MAX_EDGES` | `100`   | Fan-out threshold for inline vs. Celery reconciliation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 
 Directory provisioning is configured per workspace, not per instance — a
 workspace admin issues the SCIM token from **Workspace settings → Areas**.

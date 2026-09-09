@@ -707,7 +707,32 @@
             "not_assigned": "Tidak ditugaskan",
             "returned_title": "Dikembalikan ke antrean",
             "returned": "Item ini menunggu seseorang lagi.",
-            "not_returned": "Tidak dikembalikan"
+            "not_returned": "Tidak dikembalikan",
+            "transferred_title": "Dipindahkan ke area lain",
+            "transferred": "{name} kini bertanggung jawab atasnya.",
+            "not_transferred": "Tidak dipindahkan"
+          },
+          "attention": "Perlu perhatian",
+          "attention_overdue_date": "Lewat tanggal jatuh tempo",
+          "attention_suspended": "Dijeda",
+          "attention_unavailable": "Pelaksana tidak tersedia",
+          "attention_no_date": "Tanpa tanggal jatuh tempo",
+          "empty_attention": "Tidak ada yang perlu diperhatikan saat ini.",
+          "decisions": "Keputusan",
+          "empty_decisions": "Belum ada keputusan alokasi.",
+          "decision_supersedes": "Menggantikan keputusan sebelumnya",
+          "decision_outcome": {
+            "assigned": "Ditugaskan",
+            "queued": "Dalam antrean",
+            "allocation_failed": "Tidak dapat menugaskan",
+            "rejected": "Ditolak"
+          },
+          "transfer": "Pindahkan ke area lain",
+          "transfer_modal": {
+            "title": "Pindahkan ke area lain",
+            "search": "Cari area",
+            "no_units": "Tidak ada area lain yang mencakup proyek ini.",
+            "transferring": "Memindahkan…"
           }
         },
         "errors": {
@@ -738,6 +763,7 @@
           "coordinator_not_found": "Koordinator tidak ditemukan.",
           "not_the_executor": "Hanya eksekutor saat ini, koordinator area ini, atau admin ruang kerja yang dapat melakukan ini.",
           "coordinator_must_be_member": "Koordinator harus menjadi anggota aktif atau admin ruang kerja.",
+          "invalid_queue_filter": "Filter antrean itu tidak dikenali.",
           "public_api_disabled": "API otomatisasi dimatikan pada instansi ini.",
           "idempotency_key_required": "Permintaan ini memerlukan header Idempotency-Key.",
           "idempotency_payload_mismatch": "Kunci itu sudah dipakai untuk permintaan lain.",
@@ -748,6 +774,55 @@
           "process_projection_disabled": "Proyeksi proses dimatikan pada instansi ini.",
           "completion_manual_only": "Item kerja ini hanya dapat diselesaikan oleh orang.",
           "internal_error": "Terjadi kesalahan. Operasi dicatat sebagai gagal."
+        },
+        "coordinators": {
+          "tab": "Koordinator",
+          "select_person": "Pilih seseorang",
+          "no_addable": "Semua yang dapat mengoordinasikan area ini sudah melakukannya",
+          "add": "Tambah koordinator",
+          "empty": "Belum ada yang mengoordinasikan area ini. Koordinator mengelola antrean tanpa harus menjadi anggotanya.",
+          "remove_aria": "Hentikan {name} mengoordinasikan area ini",
+          "note": "Koordinator mengelola antrean area. Mereka tidak harus menjadi anggota area. Tamu ruang kerja tidak dapat menjadi koordinator.",
+          "toast": {
+            "added_title": "Koordinator ditambahkan",
+            "added": "Mereka kini dapat mengelola antrean area ini.",
+            "not_added": "Tidak ditambahkan",
+            "removed_title": "Koordinator dihapus",
+            "removed": "{name} tidak lagi mengoordinasikan area ini.",
+            "not_removed": "Tidak dihapus"
+          }
+        },
+        "policy": {
+          "tab": "Kebijakan",
+          "heading": "Bagaimana area ini menugaskan pekerjaan",
+          "description": "Nilai default area, yang dapat ditimpa oleh sebuah proyek.",
+          "scope_area": "Default area",
+          "scope_project": "Pengecualian untuk {name}",
+          "default_mode": "Mode default",
+          "allowed_modes": "Mode yang diizinkan",
+          "sla_seconds": "SLA penugasan (detik)",
+          "sla_hint": "Berapa lama sebuah item boleh menunggu tanpa penugasan sebelum koordinator diingatkan. Biarkan kosong jika tanpa tenggat.",
+          "max_open": "Maksimum item terbuka per orang",
+          "max_open_hint": "Biarkan kosong jika tanpa batas.",
+          "save": "Simpan kebijakan",
+          "mode": {
+            "manual": "Koordinator menugaskan",
+            "self_claim": "Orang mengambil pekerjaan sendiri",
+            "least_loaded": "Anggota dengan beban paling sedikit",
+            "explicit": "Orang yang disebutkan"
+          },
+          "toast": {
+            "saved_title": "Kebijakan disimpan",
+            "saved": "Pekerjaan baru akan mengikuti aturan ini.",
+            "not_saved": "Tidak disimpan"
+          }
+        },
+        "my_areas": {
+          "title": "Area saya",
+          "heading": "Area saya",
+          "description": "Area tempat Anda menjadi anggota, dan pekerjaan yang menunggu di masing-masing.",
+          "empty": "Anda belum menjadi anggota area mana pun.",
+          "select": "Pilih area"
         }
       }
     },

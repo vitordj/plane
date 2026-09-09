@@ -8,6 +8,7 @@ import { API_BASE_URL } from "@plane/constants";
 import type {
   IAssignmentPolicyPayload,
   IAssignmentPolicyResolution,
+  IAssignmentDecisionDetail,
   IIssueRouting,
   IOrganizationalUnit,
   IOrganizationalUnitAccessChange,
@@ -17,6 +18,7 @@ import type {
   IOrganizationalUnitWorkload,
   IQueuePage,
   IUserOrganizationalUnit,
+  TPaginatedResponse,
   TOrganizationalUnitMemberRole,
   TOrganizationalUnitAssignMode,
   TRoutingState,
@@ -396,6 +398,60 @@ export class OrganizationalUnitService extends APIService {
 
   async removeCoordinator(workspaceSlug: string, unitId: string, coordinatorId: string): Promise<void> {
     return this.delete(`${this.basePath(workspaceSlug)}/${unitId}/coordinators/${coordinatorId}/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description The area's allocation log, newest first. Coordinator-only:
+   * it names who was and was not chosen. ``supersedes`` is expanded one level.
+   */
+  async getDecisions(
+    workspaceSlug: string,
+    unitId: string,
+    params?: { issue?: string; cursor?: string; per_page?: number }
+  ): Promise<TPaginatedResponse<IAssignmentDecisionDetail[]>> {
+    return this.get(`${this.basePath(workspaceSlug)}/${unitId}/decisions/`, { params })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description Moves responsibility to another area. Gated by coordination
+   * of the *origin* area: moving work away is that area's call, not the
+   * destination's.
+   */
+  async transferIssue(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    unitId: string,
+    options?: { reason?: string }
+  ): Promise<IIssueRouting> {
+    return this.post(`${this.issuePath(workspaceSlug, projectId, issueId)}/transfer/`, {
+      unit_id: unitId,
+      ...(options?.reason ? { reason: options.reason } : {}),
+    })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description The assignment policy in force, resolved for one project
+   * when ``projectId`` is given. Without this a form cannot tell whether the
+   * area even allows self-claim.
+   */
+  async getPolicy(workspaceSlug: string, unitId: string, projectId?: string): Promise<IAssignmentPolicyResolution> {
+    const path = projectId
+      ? `${this.basePath(workspaceSlug)}/${unitId}/projects/${projectId}/policy/`
+      : `${this.basePath(workspaceSlug)}/${unitId}/policy/`;
+    return this.get(path)
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;

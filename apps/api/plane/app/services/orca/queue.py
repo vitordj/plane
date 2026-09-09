@@ -22,7 +22,8 @@ from django.db.models import BooleanField, Case, Q, Value, When
 from django.utils import timezone
 
 # Module imports
-from plane.db.models import IssueOrganizationalUnit, RoutingState
+from plane.app.permissions.base import ROLE
+from plane.db.models import IssueOrganizationalUnit, ProjectMember, RoutingState, WorkspaceMember
 
 # What "the queue" means when the caller does not say: work this area owns that
 # nobody is on. ``allocation_failed`` belongs here rather than in an error
@@ -34,7 +35,27 @@ WAITING_STATES = (RoutingState.QUEUED, RoutingState.ALLOCATION_FAILED)
 ALL_STATES = "all"
 
 
-def queue_queryset(unit, *, routing_state=None, overdue=None, project_id=None, now=None):
+def visible_project_ids_for(user, workspace):
+    """
+    @description Projects this person can actually open. Workspace Admin is
+    unrestricted (``None``); everyone else is the projects they hold an
+    active ``ProjectMember`` for. Used by both queue surfaces so a row of
+    work never appears for a project the reader cannot open (R1.A7).
+    @returns ``None`` for unrestricted, or a list of project ids (possibly empty).
+    """
+    member = WorkspaceMember.objects.filter(workspace=workspace, member=user, is_active=True).first()
+    if member is None:
+        return []
+    if member.role == ROLE.ADMIN.value:
+        return None
+    return list(
+        ProjectMember.objects.filter(member=user, workspace=workspace, is_active=True).values_list(
+            "project_id", flat=True
+        )
+    )
+
+
+def queue_queryset(unit, *, routing_state=None, overdue=None, project_id=None, now=None, visible_project_ids=None):
     """
     @description The area's queue, filtered and ordered (RFC §7.2, §8.1).
     @param unit: The ``OrganizationalUnit`` whose work to list.
@@ -46,12 +67,18 @@ def queue_queryset(unit, *, routing_state=None, overdue=None, project_id=None, n
     @param now: The instant "overdue" is judged against. Passed in so every row
         of one page is judged against the same moment — a page evaluated
         row-by-row against ``now()`` can order two items by microseconds.
+    @param visible_project_ids: Restrict to projects the reader can open.
+        ``None`` means unrestricted (workspace Admin); an empty list yields
+        no rows. Archived projects are always excluded: the reconciler has
+        already withdrawn access to them (R1.A7).
     @returns A queryset of ``IssueOrganizationalUnit``, annotated with
         ``assignment_overdue`` and ordered overdue-first, oldest-first.
     """
     now = now or timezone.now()
 
-    queryset = IssueOrganizationalUnit.objects.filter(organizational_unit=unit)
+    queryset = IssueOrganizationalUnit.objects.filter(organizational_unit=unit, project__archived_at__isnull=True)
+    if visible_project_ids is not None:
+        queryset = queryset.filter(project_id__in=visible_project_ids)
     if routing_state == ALL_STATES:
         pass
     elif routing_state:

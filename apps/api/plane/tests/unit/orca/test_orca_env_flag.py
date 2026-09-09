@@ -16,7 +16,7 @@ boot, which is the only safe answer for a switch that gates writes to
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from plane.utils.orca_env import FALSE_VALUES, TRUE_VALUES, env_flag, parse_env_flag
+from plane.utils.orca_env import FALSE_VALUES, TRUE_VALUES, env_flag, env_rate, parse_env_flag, parse_env_rate
 
 
 @pytest.mark.unit
@@ -54,3 +54,25 @@ class TestParseEnvFlag:
         assert env_flag("ORCA_TEST_FLAG", default=True) is False
         monkeypatch.delenv("ORCA_TEST_FLAG")
         assert env_flag("ORCA_TEST_FLAG", default=True) is True
+
+
+@pytest.mark.unit
+class TestParseEnvRate:
+    def test_the_default_spelling_is_accepted(self):
+        assert parse_env_rate("ORCA_PUBLIC_API_RATE_LIMIT", None, "300/minute") == "300/minute"
+
+    def test_a_valid_override_is_lowercased(self):
+        assert parse_env_rate("ORCA_PUBLIC_API_RATE_LIMIT", " 60/Hour ", "300/minute") == "60/hour"
+
+    @pytest.mark.parametrize("raw", ["300", "300/", "/minute", "abc/minute", "300/week", "300 per minute"])
+    def test_a_malformed_rate_fails_at_boot(self, raw):
+        """R1.A13: a typo must not 500 every request."""
+        with pytest.raises(ImproperlyConfigured) as excinfo:
+            parse_env_rate("ORCA_PUBLIC_API_RATE_LIMIT", raw, default="300/minute")
+        assert "ORCA_PUBLIC_API_RATE_LIMIT" in str(excinfo.value)
+
+    def test_env_rate_reads_the_process_environment(self, monkeypatch):
+        monkeypatch.setenv("ORCA_TEST_RATE", "10/second")
+        assert env_rate("ORCA_TEST_RATE", "300/minute") == "10/second"
+        monkeypatch.delenv("ORCA_TEST_RATE")
+        assert env_rate("ORCA_TEST_RATE", "300/minute") == "300/minute"

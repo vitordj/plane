@@ -91,7 +91,7 @@ export const AssignMemberModal = observer(function AssignMemberModal(props: Prop
       .map((membership) => ({
         userId: membership.member_id,
         displayName: membership.display_name,
-        email: membership.email,
+        email: membership.email ?? "",
         avatarUrl: membership.avatar_url,
         openIssues: loadByWorkspaceMember.get(membership.workspace_member) ?? 0,
       }))

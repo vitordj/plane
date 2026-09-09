@@ -44,7 +44,7 @@ from datetime import datetime, timedelta
 from typing import Iterable, Optional
 
 # Django imports
-from django.db import connection, transaction
+from django.db import IntegrityError, connection, transaction
 from django.utils import timezone
 
 # Module imports
@@ -67,6 +67,7 @@ from plane.db.models import (
     StateGroup,
 )
 
+from .alerts import notify_allocation_failed_safely
 from .coverage import unit_covers_project
 from .metrics import record_assignment_outcome, record_decision_superseded, record_no_candidate
 from .errors import (
@@ -572,6 +573,12 @@ def _apply_queued(link, decision, *, state, queue_reason, sla_seconds=None, assi
             "updated_at",
         ]
     )
+    # The area hears at once that nobody could take the item. on_commit so
+    # a notification that fails (broker, DB) cannot roll back the allocation
+    # itself — the item is already waiting, and the SLA sweep is the backup.
+    if state == RoutingState.ALLOCATION_FAILED:
+        link_id = link.id
+        transaction.on_commit(lambda: notify_allocation_failed_safely(link_id))
 
 
 def _locked_link(issue):
@@ -898,6 +905,10 @@ def transfer_unit(
         raise UnitNotCoveringProject(unit_id=str(to_unit.id), project_id=str(issue.project_id))
 
     with transaction.atomic():
+        # Advisory lock of the destination first, then the row. ``allocate``
+        # takes the same pair in that order; reversing it here is a deadlock
+        # with a concurrent allocate of the same area (R1.A9).
+        unit_allocation_lock(to_unit.id)
         link = _locked_link(issue)
         from_unit = link.organizational_unit
         if from_unit.id == to_unit.id:
@@ -991,6 +1002,29 @@ def set_responsibility(
         raise UnitNotCoveringProject(unit_id=str(unit.id), project_id=str(issue.project_id))
 
     existing = IssueOrganizationalUnit.objects.filter(issue=issue).first()
+    created_link = False
+    if existing is None:
+        with transaction.atomic():
+            try:
+                existing = IssueOrganizationalUnit.objects.create(
+                    issue=issue, organizational_unit=unit, project_id=issue.project_id, workspace_id=issue.workspace_id
+                )
+                IssueResponsibilityEvent.objects.create(
+                    issue_id=existing.issue_id,
+                    workspace_id=existing.workspace_id,
+                    from_unit=None,
+                    to_unit=unit,
+                    actor=actor,
+                    source=source,
+                    reason=reason or "",
+                )
+                created_link = True
+            except IntegrityError:
+                # A concurrent first-mark won the unique constraint (R1.A8).
+                existing = IssueOrganizationalUnit.objects.filter(issue=issue).first()
+                if existing is None:
+                    raise
+
     if existing is not None and existing.organizational_unit_id != unit.id:
         transfer = transfer_unit(
             issue,
@@ -1011,20 +1045,14 @@ def set_responsibility(
             link, link.current_assignment_decision, DecisionOutcome.ASSIGNED, link.primary_executor_id
         )
 
-    if existing is None:
-        with transaction.atomic():
-            link = IssueOrganizationalUnit.objects.create(
-                issue=issue, organizational_unit=unit, project_id=issue.project_id, workspace_id=issue.workspace_id
-            )
-            IssueResponsibilityEvent.objects.create(
-                issue_id=link.issue_id,
-                workspace_id=link.workspace_id,
-                from_unit=None,
-                to_unit=unit,
-                actor=actor,
-                source=source,
-                reason=reason or "",
-            )
+    # Re-POSTing the same area without an explicit mode or executor must not
+    # re-run allocation. The public API already does this in ``_place``; without
+    # it here a ``manual`` policy would queue an assigned item and wipe the
+    # executor (R1.A1). A freshly created link still has to run the policy.
+    if not created_link and existing is not None and requested_mode is None and explicit_executor is None:
+        decision = existing.current_assignment_decision
+        outcome = decision.outcome if decision is not None else DecisionOutcome.QUEUED
+        return AllocationResult(existing, decision, outcome, existing.primary_executor_id)
 
     return allocate(
         issue,

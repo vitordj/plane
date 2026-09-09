@@ -121,33 +121,53 @@ class TestTheExternalBinding:
         assert binding.workspace_id == workspace_with_members.id
 
 
+def _token(user, workspace, label="t"):
+    from plane.db.models import APIToken
+
+    return APIToken.objects.create(user=user, workspace=workspace, label=label)
+
+
 @pytest.mark.unit
 @pytest.mark.django_db
 class TestTheAutomationOperation:
-    def test_one_idempotency_key_per_workspace(self, workspace_with_members):
-        make_operation(workspace_with_members, "key-1")
+    def test_one_idempotency_key_per_token(self, workspace_with_members, admin_user):
+        """R1.A12: uniqueness is (workspace, token, key), not (workspace, key)."""
+        token = _token(admin_user, workspace_with_members)
+        make_operation(workspace_with_members, "key-1", api_token=token)
         with pytest.raises(IntegrityError), transaction.atomic():
-            make_operation(workspace_with_members, "key-1")
+            make_operation(workspace_with_members, "key-1", api_token=token)
+
+    def test_the_same_key_on_another_token_is_a_different_operation(
+        self, workspace_with_members, admin_user, plain_user
+    ):
+        """Two integrations in one workspace must be able to reuse a key."""
+        token_a = _token(admin_user, workspace_with_members, "a")
+        token_b = _token(plain_user, workspace_with_members, "b")
+        make_operation(workspace_with_members, "key-1", api_token=token_a)
+        make_operation(workspace_with_members, "key-1", api_token=token_b)
+        assert AutomationOperation.objects.filter(idempotency_key="key-1").count() == 2
 
     def test_the_same_key_in_another_workspace_is_a_different_operation(self, workspace_with_members, other_workspace):
         make_operation(workspace_with_members, "key-1")
         make_operation(other_workspace, "key-1")
         assert AutomationOperation.objects.count() == 2
 
-    def test_a_soft_deleted_operation_does_not_free_the_key(self, workspace_with_members):
+    def test_a_soft_deleted_operation_does_not_free_the_key(self, workspace_with_members, admin_user):
         """
         The one Orca uniqueness rule with no ``deleted_at`` condition.
 
         A spent key has to stay spent: if retiring the receipt freed it, a
         retry arriving after a cleanup would execute the operation a second
-        time, which is exactly what the table exists to prevent.
+        time, which is exactly what the table exists to prevent. Scoped to
+        the token (R1.A12): another token can still use the same key.
         """
-        operation = make_operation(workspace_with_members, "key-1")
+        token = _token(admin_user, workspace_with_members)
+        operation = make_operation(workspace_with_members, "key-1", api_token=token)
         operation.deleted_at = timezone.now()
         operation.save(update_fields=["deleted_at"])
 
         with pytest.raises(IntegrityError), transaction.atomic():
-            make_operation(workspace_with_members, "key-1")
+            make_operation(workspace_with_members, "key-1", api_token=token)
 
     def test_it_starts_in_progress(self, workspace_with_members):
         assert make_operation(workspace_with_members).status == AutomationOperationStatus.IN_PROGRESS

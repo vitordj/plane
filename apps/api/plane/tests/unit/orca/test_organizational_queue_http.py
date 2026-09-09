@@ -568,7 +568,7 @@ class TestQueue:
         )
 
         assert response.status_code == 400
-        assert response.data["error_message"] == "ORG_INVALID_ROUTING_TRANSITION"
+        assert response.data["error_message"] == "ORG_INVALID_QUEUE_FILTER"
 
 
 @pytest.mark.unit
@@ -806,3 +806,51 @@ class TestPolicyPut:
         response = member_client.put(unit_policy_url(workspace_with_members.slug, unit.id), {"default_mode": "manual"})
 
         assert response.status_code == 403
+
+
+@pytest.mark.unit
+class TestClosingAFullInbox:
+    """
+    Item 2.6: a coordinator empties a thirty-item inbox through the same
+    endpoints the Work tab uses. ``ProjectMember`` is identical afterwards,
+    and each action writes exactly one ``AssignmentDecision``.
+    """
+
+    def test_a_coordinator_empties_thirty_items_without_touching_project_member(
+        self,
+        admin_client,
+        workspace_with_members,
+        project,
+        unit,
+        eligible_member,
+        add_coordinator,
+        admin_user,
+        make_issue,
+    ):
+        add_coordinator(unit, admin_user)
+        links = [
+            IssueOrganizationalUnit.objects.create(
+                issue=make_issue(project),
+                organizational_unit=unit,
+                project=project,
+                workspace=project.workspace,
+            )
+            for _ in range(30)
+        ]
+        before = list(ProjectMember.objects.values_list("project_id", "member_id", "role", "is_active").order_by("id"))
+        before_decisions = AssignmentDecision.objects.count()
+
+        for link in links:
+            response = admin_client.post(
+                issue_reassign_url(workspace_with_members.slug, project.id, link.issue_id),
+                {"executor_id": str(eligible_member.id)},
+            )
+            assert response.status_code == 200, response.data
+            assert decision_count(link.issue) == 1
+
+        after = list(ProjectMember.objects.values_list("project_id", "member_id", "role", "is_active").order_by("id"))
+        assert before == after
+        assert AssignmentDecision.objects.count() == before_decisions + 30
+        assert not IssueOrganizationalUnit.objects.filter(
+            organizational_unit=unit, routing_state=RoutingState.QUEUED
+        ).exists()

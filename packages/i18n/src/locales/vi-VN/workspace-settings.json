@@ -707,7 +707,32 @@
             "not_assigned": "Chưa giao",
             "returned_title": "Đã trả lại hàng đợi",
             "returned": "Nó lại đang chờ người nhận.",
-            "not_returned": "Chưa trả lại"
+            "not_returned": "Chưa trả lại",
+            "transferred_title": "Đã chuyển sang khu vực khác",
+            "transferred": "{name} chịu trách nhiệm về mục này.",
+            "not_transferred": "Không chuyển"
+          },
+          "attention": "Cần chú ý",
+          "attention_overdue_date": "Quá hạn",
+          "attention_suspended": "Tạm dừng",
+          "attention_unavailable": "Người thực hiện không sẵn sàng",
+          "attention_no_date": "Không có hạn",
+          "empty_attention": "Hiện không có gì cần chú ý.",
+          "decisions": "Quyết định",
+          "empty_decisions": "Chưa có quyết định phân công.",
+          "decision_supersedes": "Đã thay thế một quyết định trước đó",
+          "decision_outcome": {
+            "assigned": "Đã phân công",
+            "queued": "Trong hàng đợi",
+            "allocation_failed": "Không thể phân công",
+            "rejected": "Từ chối"
+          },
+          "transfer": "Chuyển sang khu vực khác",
+          "transfer_modal": {
+            "title": "Chuyển sang khu vực khác",
+            "search": "Tìm khu vực",
+            "no_units": "Không có khu vực nào khác bao phủ dự án này.",
+            "transferring": "Đang chuyển…"
           }
         },
         "errors": {
@@ -738,6 +763,7 @@
           "coordinator_not_found": "Không tìm thấy điều phối viên.",
           "not_the_executor": "Chỉ người thực hiện hiện tại, điều phối viên của khu vực này, hoặc quản trị viên không gian làm việc mới có thể làm việc này.",
           "coordinator_must_be_member": "Điều phối viên phải là thành viên đang hoạt động hoặc quản trị viên của không gian làm việc.",
+          "invalid_queue_filter": "Bộ lọc hàng đợi đó không được nhận dạng.",
           "public_api_disabled": "API tự động hóa đang tắt trên phiên bản này.",
           "idempotency_key_required": "Yêu cầu này cần tiêu đề Idempotency-Key.",
           "idempotency_payload_mismatch": "Khóa đó đã được dùng cho một yêu cầu khác.",
@@ -748,6 +774,55 @@
           "process_projection_disabled": "Phép chiếu quy trình đang tắt trên phiên bản này.",
           "completion_manual_only": "Mục công việc này chỉ có thể do một người hoàn tất.",
           "internal_error": "Đã xảy ra lỗi. Thao tác được ghi nhận là thất bại."
+        },
+        "coordinators": {
+          "tab": "Điều phối viên",
+          "select_person": "Chọn một người",
+          "no_addable": "Mọi người có thể điều phối khu vực này đều đã làm vậy",
+          "add": "Thêm điều phối viên",
+          "empty": "Khu vực này chưa có người điều phối. Điều phối viên vận hành hàng đợi mà không cần thuộc khu vực.",
+          "remove_aria": "Ngừng để {name} điều phối khu vực này",
+          "note": "Điều phối viên vận hành hàng đợi của khu vực. Họ không cần thuộc khu vực. Khách của không gian làm việc không thể làm điều phối viên.",
+          "toast": {
+            "added_title": "Đã thêm điều phối viên",
+            "added": "Họ có thể vận hành hàng đợi của khu vực này.",
+            "not_added": "Không thêm được",
+            "removed_title": "Đã gỡ điều phối viên",
+            "removed": "{name} không còn điều phối khu vực này.",
+            "not_removed": "Không gỡ được"
+          }
+        },
+        "policy": {
+          "tab": "Chính sách",
+          "heading": "Khu vực này phân công công việc như thế nào",
+          "description": "Giá trị mặc định của khu vực, dự án có thể ghi đè.",
+          "scope_area": "Mặc định của khu vực",
+          "scope_project": "Ngoại lệ cho {name}",
+          "default_mode": "Chế độ mặc định",
+          "allowed_modes": "Các chế độ được phép",
+          "sla_seconds": "SLA phân công (giây)",
+          "sla_hint": "Một mục có thể chờ chưa được phân công bao lâu trước khi cảnh báo điều phối viên. Để trống nếu không có hạn.",
+          "max_open": "Số mục đang mở tối đa mỗi người",
+          "max_open_hint": "Để trống nếu không giới hạn.",
+          "save": "Lưu chính sách",
+          "mode": {
+            "manual": "Điều phối viên phân công",
+            "self_claim": "Mọi người tự nhận việc",
+            "least_loaded": "Thành viên ít việc nhất",
+            "explicit": "Người được chỉ định"
+          },
+          "toast": {
+            "saved_title": "Đã lưu chính sách",
+            "saved": "Công việc mới sẽ theo các quy tắc này.",
+            "not_saved": "Không lưu được"
+          }
+        },
+        "my_areas": {
+          "title": "Khu vực của tôi",
+          "heading": "Khu vực của tôi",
+          "description": "Các khu vực bạn thuộc về và công việc đang chờ ở mỗi khu vực.",
+          "empty": "Bạn chưa thuộc khu vực nào.",
+          "select": "Chọn một khu vực"
         }
       }
     },

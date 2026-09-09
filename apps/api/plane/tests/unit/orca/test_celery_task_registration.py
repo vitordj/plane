@@ -37,10 +37,14 @@ DIRECTORY_TASK_MODULE = "plane.bgtasks.organizational_directory_task"
 CLEANUP_TASK_NAME = "plane.bgtasks.orca_automation_cleanup_task.delete_orca_automation_operations"
 CLEANUP_TASK_MODULE = "plane.bgtasks.orca_automation_cleanup_task"
 
+QUEUE_TASK_NAME = "plane.bgtasks.organizational_queue_task.sweep_assignment_sla"
+QUEUE_TASK_MODULE = "plane.bgtasks.organizational_queue_task"
+
 TASKS = [
     pytest.param(TASK_MODULE, TASK_NAME, id="reconcile_organizational_access"),
     pytest.param(DIRECTORY_TASK_MODULE, DIRECTORY_TASK_NAME, id="resolve_directory_identities"),
     pytest.param(CLEANUP_TASK_MODULE, CLEANUP_TASK_NAME, id="delete_orca_automation_operations"),
+    pytest.param(QUEUE_TASK_MODULE, QUEUE_TASK_NAME, id="sweep_assignment_sla"),
 ]
 
 
@@ -81,6 +85,8 @@ class TestOrganizationalTaskRegistration:
         # the worker, once a day, where nobody is looking.
         assert CLEANUP_TASK_NAME in scheduled
         assert CLEANUP_TASK_NAME in celery_app.tasks
+        assert QUEUE_TASK_NAME in scheduled
+        assert QUEUE_TASK_NAME in celery_app.tasks
 
     def test_the_registered_task_is_the_one_the_dispatcher_queues(self):
         # A name can be registered by a callable other than the one the

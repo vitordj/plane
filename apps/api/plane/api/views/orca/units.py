@@ -21,6 +21,7 @@ shared with the internal inbox through ``permissions.organizational_unit``.
 """
 
 # Django imports
+from django.db.models import Q
 from django.utils import timezone
 
 # Third party imports
@@ -30,7 +31,7 @@ from rest_framework.response import Response
 # Module imports
 from plane.api.serializers.orca import queue_row, unit_payload
 from plane.app.permissions.organizational_unit import may_see_queue
-from plane.app.services.orca import ALL_STATES, queue_queryset
+from plane.app.services.orca import ALL_STATES, queue_queryset, visible_project_ids_for
 from plane.db.models import (
     OrganizationalUnit,
     OrganizationalUnitProject,
@@ -38,6 +39,7 @@ from plane.db.models import (
     Workspace,
     WorkspaceMember,
 )
+from plane.db.models.project import ROLE
 from plane.utils.orca_error_codes import orca_error, orca_not_found
 
 from .base import OrcaPublicBaseAPIView
@@ -93,6 +95,19 @@ class UnitListEndpoint(OrcaWorkspaceReadEndpoint):
             .select_related("project")
             .order_by("project__identifier")
         )
+        # R1.A5: the native project list already hides secret projects the
+        # caller is not a member of. This map used to dump every covered
+        # project to any workspace member with an API key, Guest included.
+        # Workspace admins still see the whole map; everyone else sees the
+        # projects they can already open, plus workspace-public ones.
+        if member.role != ROLE.ADMIN.value:
+            links = links.filter(
+                Q(
+                    project__project_projectmember__member=request.user,
+                    project__project_projectmember__is_active=True,
+                )
+                | Q(project__network=2)
+            ).distinct()
         by_unit = {}
         for link in links:
             by_unit.setdefault(link.organizational_unit_id, []).append(link)
@@ -130,7 +145,7 @@ class UnitQueueEndpoint(OrcaWorkspaceReadEndpoint):
 
         routing_state = request.query_params.get("routing_state")
         if routing_state and routing_state not in QUEUE_STATE_CHOICES:
-            return orca_error("ORG_INVALID_ROUTING_TRANSITION")
+            return orca_error("ORG_INVALID_QUEUE_FILTER")
 
         overdue = _tri_state(request.query_params.get("overdue"))
         now = timezone.now()
@@ -140,6 +155,7 @@ class UnitQueueEndpoint(OrcaWorkspaceReadEndpoint):
             overdue=overdue,
             project_id=request.query_params.get("project"),
             now=now,
+            visible_project_ids=visible_project_ids_for(request.user, workspace),
         )
 
         return self.paginate(

@@ -212,6 +212,30 @@ class TestRetrying:
         assert ExternalWorkItemBinding.objects.count() == 1
         assert AutomationOperation.objects.count() == 1
 
+    def test_a_transient_crash_does_not_burn_the_key(self, caller, project, world):
+        """R1.A6: a blip must not spend the key; the retry has to execute."""
+        from plane.app.services.orca.assignment_service import set_responsibility as real_place
+
+        calls = {"n": 0}
+
+        def fail_once(*args, **kwargs):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise RuntimeError("connection reset")
+            return real_place(*args, **kwargs)
+
+        with mock.patch("plane.api.views.orca.work_items.set_responsibility", side_effect=fail_once):
+            first = post(caller, project, body())
+            assert first.status_code == 500
+            assert not AutomationOperation.all_objects.filter(idempotency_key="key-1").exists()
+            second = post(caller, project, body())
+
+        assert second.status_code == 201, second.data
+        assert second.get("Idempotent-Replay") is None
+        assert Issue.objects.filter(project=project).count() == 1
+        assert AutomationOperation.objects.filter(idempotency_key="key-1").count() == 1
+        assert calls["n"] == 2
+
     def test_a_replay_answers_the_original_not_the_present(
         self, caller, project, world, workspace_with_members, plain_user, second_user
     ):

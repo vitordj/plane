@@ -63,3 +63,42 @@ def env_flag(name: str, default: bool) -> bool:
     @returns: The parsed boolean.
     """
     return parse_env_flag(name, os.environ.get(name), default)
+
+
+RATE_PERIODS = frozenset({"second", "minute", "hour", "day"})
+
+
+def parse_env_rate(name: str, raw_value, default: str) -> str:
+    """
+    Interpret one DRF-style rate (``300/minute``).
+
+    @description A typo such as ``300`` used to pass settings import and then
+    500 every public-API request inside ``SimpleRateThrottle.parse_rate``
+    (R1.A13). Fail at boot the same way ``parse_env_flag`` does.
+    @param name: Variable name, used only in the error message.
+    @param raw_value: The value as read from the environment (``None`` if unset).
+    @param default: Value to use when the variable is unset or blank.
+    @returns: The validated rate string, lowercased.
+    @raises ImproperlyConfigured: When the value is not ``<n>/(second|minute|hour|day)``.
+    """
+    if raw_value is None or str(raw_value).strip() == "":
+        value = default
+    else:
+        value = str(raw_value).strip().lower()
+    parts = value.split("/")
+    if len(parts) != 2 or not parts[0].isdigit() or parts[1] not in RATE_PERIODS:
+        raise ImproperlyConfigured(
+            f"{name}={raw_value!r} is not a rate. Use '<number>/(second|minute|hour|day)', e.g. '300/minute'."
+        )
+    return value
+
+
+def env_rate(name: str, default: str) -> str:
+    """
+    Read a DRF throttle rate from ``os.environ`` with :func:`parse_env_rate`.
+
+    @param name: Environment variable name.
+    @param default: Value when the variable is unset or blank.
+    @returns: The validated rate string.
+    """
+    return parse_env_rate(name, os.environ.get(name), default)

@@ -46,6 +46,12 @@ class OrcaPublicApiFeatureMixin:
     """
 
     def initial(self, request, *args, **kwargs):
+        # R1.A18: authentication and throttles run first. An anonymous caller
+        # is 401'd by ``APIKeyAuthentication``; a caller with a token then
+        # learns ``ORG_PUBLIC_API_DISABLED`` as a coded 404. Raising before
+        # ``super().initial()`` skipped the budget entirely and told anyone
+        # on the internet whether the switch was on.
+        result = super().initial(request, *args, **kwargs)
         if not orca_public_api_enabled():
             raise NotFound(
                 {
@@ -54,7 +60,7 @@ class OrcaPublicApiFeatureMixin:
                     "error_message": "ORG_PUBLIC_API_DISABLED",
                 }
             )
-        return super().initial(request, *args, **kwargs)
+        return result
 
 
 class OrcaPublicBaseAPIView(OrcaPublicApiFeatureMixin, BaseAPIView):

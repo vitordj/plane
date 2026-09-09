@@ -195,7 +195,8 @@ def start_operation(workspace, api_token, key, operation_type, payload) -> Opera
     constraint rather than by a lock — the loser catches ``IntegrityError``,
     re-reads the winner's row, and takes the ordinary existing-row path.
 
-    @param workspace: The workspace the key is scoped to.
+    @param workspace: The workspace the call is in. The key is unique per
+        token inside it (R1.A12), not across the workspace.
     @param api_token: The credential making the call; may be ``None``.
     @param key: The caller's ``Idempotency-Key``.
     @param operation_type: Member of ``AutomationOperationType``.
@@ -207,13 +208,16 @@ def start_operation(workspace, api_token, key, operation_type, payload) -> Opera
     request_hash = canonical_hash(payload)
 
     # all_objects, not objects. The default manager hides soft-deleted rows,
-    # but the uniqueness constraint on (workspace, idempotency_key) has no
-    # deleted_at condition — deliberately, so a spent key stays spent. Looking
-    # through the filtering manager would make a soft-deleted receipt invisible
-    # here and then hit the constraint on INSERT, and the recovery read below
-    # would raise DoesNotExist instead of replaying the answer the key already
-    # has. The row still owns the key, so it still decides what happens.
-    existing = AutomationOperation.all_objects.filter(workspace=workspace, idempotency_key=key).first()
+    # but the uniqueness constraint on (workspace, api_token, idempotency_key)
+    # has no deleted_at condition — deliberately, so a spent key stays spent
+    # for that token. Looking through the filtering manager would make a
+    # soft-deleted receipt invisible here and then hit the constraint on INSERT,
+    # and the recovery read below would raise DoesNotExist instead of replaying
+    # the answer the key already has. The row still owns the key, so it still
+    # decides what happens. R1.A12: the lookup is per token, not per workspace.
+    existing = AutomationOperation.all_objects.filter(
+        workspace=workspace, api_token=api_token, idempotency_key=key
+    ).first()
     if existing is not None:
         return _existing(existing, request_hash, api_token)
 
@@ -223,7 +227,11 @@ def start_operation(workspace, api_token, key, operation_type, payload) -> Opera
         with transaction.atomic():
             return _open(workspace, api_token, key, operation_type, request_hash)
     except IntegrityError:
-        winner = AutomationOperation.all_objects.get(workspace=workspace, idempotency_key=key)
+        winner = AutomationOperation.all_objects.filter(
+            workspace=workspace, api_token=api_token, idempotency_key=key
+        ).first()
+        if winner is None:
+            raise
         return _existing(winner, request_hash, api_token)
 
 
@@ -274,26 +282,37 @@ def fail_operation(handle, *, error_code, response=None, http_status=400):
     )
 
 
+def release_operation(handle):
+    """
+    Forget an in-progress receipt so a retry can execute (R1.A6).
+
+    @description Hard delete, not a soft delete: the uniqueness constraint on
+    ``(workspace, idempotency_key)`` has no ``deleted_at`` condition, so a
+    hidden row would still own the key. The work that opened this receipt
+    rolled back; keeping a ``FAILED``/500 would spend the key for thirty days
+    on a blip, which is the opposite of what an integration that retries does.
+    """
+    AutomationOperation.all_objects.filter(pk=handle.operation.pk).delete()
+
+
 @contextmanager
 def begin_operation(workspace, api_token, key, operation_type, payload):
     """
     ``start_operation`` with a guarantee that the row never stays in progress.
 
-    @description An unhandled exception inside the block marks the receipt
-    failed with ``ORG_INTERNAL_ERROR`` and re-raises. Without that, a crash
-    would leave the key wedged for sixty seconds and then hand the next retry a
-    resumed operation — which is recoverable, but tells the caller nothing.
+    @description An unhandled exception inside the block **releases** the
+    receipt rather than recording ``ORG_INTERNAL_ERROR``. A transient failure
+    (``IntegrityError``, a deadlock, a dropped connection) must not spend the
+    key for thirty days: integrations retry with the same key, which is the
+    contract, and a recorded 500 would make every retry reproduce the blip
+    (R1.A6). Domain and validation refusals are recorded by the endpoint via
+    ``handle.fail`` before they leave the block, so they never reach this
+    ``except``.
 
-    The failure is written **after** the caller's ``atomic()`` block has
+    The release is written **after** the caller's ``atomic()`` block has
     unwound, which is the whole reason ``start_operation`` and
     ``complete_operation`` open transactions of their own: a write made inside
-    a transaction that is rolling back does not survive it, and this is the
-    case where surviving matters most.
-
-    Domain errors raised deliberately by the endpoint — a forbidden mode, an
-    ineligible executor — are *not* recorded here. The endpoint knows the code
-    and the status those deserve and calls ``handle.fail`` itself; catching
-    them here would flatten every one of them into a generic internal error.
+    a transaction that is rolling back does not survive it.
 
     @yields An ``OperationHandle``.
     """
@@ -302,10 +321,5 @@ def begin_operation(workspace, api_token, key, operation_type, payload):
         yield handle
     except Exception:
         if handle.is_open:
-            fail_operation(
-                handle,
-                error_code="ORG_INTERNAL_ERROR",
-                response={"error_code": "ORG_INTERNAL_ERROR"},
-                http_status=500,
-            )
+            release_operation(handle)
         raise

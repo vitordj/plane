@@ -707,7 +707,32 @@
             "not_assigned": "할당하지 못했습니다",
             "returned_title": "대기열로 반환했습니다",
             "returned": "다시 담당자를 기다리고 있습니다.",
-            "not_returned": "반환하지 못했습니다"
+            "not_returned": "반환하지 못했습니다",
+            "transferred_title": "다른 영역으로 이동했습니다",
+            "transferred": "이제 {name}이(가) 담당합니다.",
+            "not_transferred": "이동하지 못했습니다"
+          },
+          "attention": "주의 필요",
+          "attention_overdue_date": "기한 지남",
+          "attention_suspended": "일시 중지됨",
+          "attention_unavailable": "수행자 부재",
+          "attention_no_date": "기한 없음",
+          "empty_attention": "지금은 주의가 필요한 항목이 없습니다.",
+          "decisions": "결정",
+          "empty_decisions": "아직 할당 결정이 없습니다.",
+          "decision_supersedes": "이전 결정을 대체했습니다",
+          "decision_outcome": {
+            "assigned": "할당됨",
+            "queued": "대기 중",
+            "allocation_failed": "할당할 수 없음",
+            "rejected": "거부됨"
+          },
+          "transfer": "다른 영역으로 이동",
+          "transfer_modal": {
+            "title": "다른 영역으로 이동",
+            "search": "영역 검색",
+            "no_units": "이 프로젝트를 다루는 다른 영역이 없습니다.",
+            "transferring": "이동 중…"
           }
         },
         "errors": {
@@ -738,6 +763,7 @@
           "coordinator_not_found": "코디네이터를 찾을 수 없습니다.",
           "not_the_executor": "현재 담당자, 이 영역의 코디네이터, 또는 워크스페이스 관리자만 이 작업을 할 수 있습니다.",
           "coordinator_must_be_member": "코디네이터는 워크스페이스의 활성 멤버이거나 관리자여야 합니다.",
+          "invalid_queue_filter": "해당 대기열 필터를 인식할 수 없습니다.",
           "public_api_disabled": "이 인스턴스에서는 자동화 API가 꺼져 있습니다.",
           "idempotency_key_required": "이 요청에는 Idempotency-Key 헤더가 필요합니다.",
           "idempotency_payload_mismatch": "이 키는 이미 다른 요청에 사용되었습니다.",
@@ -748,6 +774,55 @@
           "process_projection_disabled": "이 인스턴스에서는 프로세스 투영이 꺼져 있습니다.",
           "completion_manual_only": "이 작업 항목은 사람만 완료할 수 있습니다.",
           "internal_error": "문제가 발생했습니다. 이 작업은 실패로 기록되었습니다."
+        },
+        "coordinators": {
+          "tab": "코디네이터",
+          "select_person": "사람 선택",
+          "no_addable": "이 영역을 코디할 수 있는 사람은 이미 모두 등록되어 있습니다",
+          "add": "코디네이터 추가",
+          "empty": "아직 이 영역을 코디하는 사람이 없습니다. 코디네이터는 영역에 속하지 않아도 대기열을 운영할 수 있습니다.",
+          "remove_aria": "{name}의 이 영역 코디를 중지",
+          "note": "코디네이터는 영역의 대기열을 운영합니다. 영역에 속하지 않아도 됩니다. 워크스페이스 게스트는 코디네이터가 될 수 없습니다.",
+          "toast": {
+            "added_title": "코디네이터를 추가했습니다",
+            "added": "이제 이 영역의 대기열을 운영할 수 있습니다.",
+            "not_added": "추가하지 못했습니다",
+            "removed_title": "코디네이터를 제거했습니다",
+            "removed": "{name}은(는) 더 이상 이 영역을 코디하지 않습니다.",
+            "not_removed": "제거하지 못했습니다"
+          }
+        },
+        "policy": {
+          "tab": "정책",
+          "heading": "이 영역이 작업을 할당하는 방식",
+          "description": "영역의 기본값이며 프로젝트가 재정의할 수 있습니다.",
+          "scope_area": "영역 기본값",
+          "scope_project": "{name} 재정의",
+          "default_mode": "기본 모드",
+          "allowed_modes": "허용된 모드",
+          "sla_seconds": "할당 SLA(초)",
+          "sla_hint": "담당자 없이 얼마나 기다린 뒤 코디네이터에게 알릴지입니다. 기한이 없으면 비워 두세요.",
+          "max_open": "인당 미완료 항목 한도",
+          "max_open_hint": "한도가 없으면 비워 두세요.",
+          "save": "정책 저장",
+          "mode": {
+            "manual": "코디네이터가 할당",
+            "self_claim": "구성원이 직접 가져감",
+            "least_loaded": "부하가 가장 적은 구성원",
+            "explicit": "지정한 사람"
+          },
+          "toast": {
+            "saved_title": "정책을 저장했습니다",
+            "saved": "새 작업은 이 규칙을 따릅니다.",
+            "not_saved": "저장하지 못했습니다"
+          }
+        },
+        "my_areas": {
+          "title": "내 영역",
+          "heading": "내 영역",
+          "description": "소속된 영역과 각 영역에서 대기 중인 작업입니다.",
+          "empty": "아직 어떤 영역에도 속하지 않습니다.",
+          "select": "영역 선택"
         }
       }
     },

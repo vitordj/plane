@@ -17,6 +17,7 @@ import uuid
 import pytest
 
 from plane.db.models import (
+    AssignmentDecision,
     AssignmentMode,
     IssueAssignee,
     IssueOrganizationalUnit,
@@ -574,6 +575,41 @@ class TestTheRoutingPayload:
         # A related field's representation is the pk, not its string form.
         assert routing["primary_executor"] == plain_user.id
         assert IssueAssignee.objects.filter(issue=issue, assignee=plain_user).exists()
+
+    def test_reposting_the_same_area_does_not_reallocate(
+        self,
+        admin_client,
+        workspace_with_members,
+        project_with_admin,
+        covering_unit,
+        add_member,
+        grant_manual_access,
+        plain_user,
+        make_issue,
+    ):
+        """R1.A1: a second POST of the same area is a no-op, not a re-queue."""
+        add_member(covering_unit, plain_user)
+        grant_manual_access(project_with_admin, plain_user)
+        OrganizationalUnitAssignmentPolicy.objects.create(
+            organizational_unit=covering_unit,
+            workspace=workspace_with_members,
+            default_mode=AssignmentMode.LEAST_LOADED,
+            allowed_modes=[AssignmentMode.LEAST_LOADED.value],
+        )
+        issue = make_issue(project_with_admin)
+        url = issue_unit_url(workspace_with_members.slug, project_with_admin.id, issue.id)
+        first = admin_client.post(url, {"organizational_unit_id": str(covering_unit.id)}, format="json")
+        assert first.data["routing"]["routing_state"] == RoutingState.ASSIGNED
+        decision_id = first.data["routing"]["current_assignment_decision"]["id"]
+        before = AssignmentDecision.objects.filter(issue=issue).count()
+
+        response = admin_client.post(url, {"organizational_unit_id": str(covering_unit.id)}, format="json")
+
+        assert response.status_code == 200
+        assert response.data["routing"]["routing_state"] == RoutingState.ASSIGNED
+        assert response.data["routing"]["primary_executor"] == plain_user.id
+        assert response.data["routing"]["current_assignment_decision"]["id"] == decision_id
+        assert AssignmentDecision.objects.filter(issue=issue).count() == before
 
     def test_clearing_the_area_leaves_the_event_behind(
         self, admin_client, workspace_with_members, project_with_admin, covering_unit, make_issue

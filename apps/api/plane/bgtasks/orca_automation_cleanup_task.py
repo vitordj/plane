@@ -15,9 +15,11 @@ notification logs at 7 (``cleanup_task.py``).
 
 **Deleting a receipt un-spends its idempotency key**, which is the opposite of
 what the table exists to guarantee, so the window is deliberately far longer
-than the others rather than shorter. What actually happens when a key arrives
-after its receipt is gone depends on the operation, and none of the three
-duplicates work:
+than the others rather than shorter. Receipts that an ``AssignmentDecision``
+still names are not deleted at all: the FK is ``SET_NULL``, and a hard delete
+would rewrite the append-only decision (R1.A3). What actually happens when a
+key arrives after an *unreferenced* receipt is gone depends on the operation,
+and none of the three duplicates work:
 
 - **Creation** is find-or-create on ``ExternalWorkItemBinding``, and this task
   never touches bindings. The binding still resolves the caller's external key
@@ -44,6 +46,7 @@ import logging
 
 # Django imports
 from django.conf import settings
+from django.db.models import Exists, OuterRef
 from django.utils import timezone
 
 # Third party imports
@@ -51,14 +54,14 @@ from celery import shared_task
 
 # Module imports
 from plane.bgtasks.cleanup_task import BATCH_SIZE, process_cleanup_task
-from plane.db.models import AutomationOperation
+from plane.db.models import AssignmentDecision, AutomationOperation
 
 logger = logging.getLogger("plane.worker")
 
 
 def get_orca_automation_operations_queryset():
     """
-    Receipts older than the retention window.
+    Receipts older than the retention window that no assignment decision names.
 
     @description Keyed on ``created_at`` rather than ``completed_at``, which is
     null while an operation is in progress. A row still ``in_progress`` after
@@ -67,12 +70,20 @@ def get_orca_automation_operations_queryset():
     take it over, so at a window measured in days there is no live request
     behind it, and excluding those rows would leak exactly the receipts nothing
     else cleans up.
+
+    Receipts that an ``AssignmentDecision`` still points at are left alone.
+    Deleting those would make Django ``SET NULL`` the append-only decision
+    row (R1.A3): the answer to "which call did this?" would vanish, and nothing
+    in the log would say it had been there. Unreferenced receipts — the ones that
+    never produced a decision — are still collected.
     @returns Iterator of primary keys to delete.
     """
     cutoff_time = timezone.now() - timedelta(days=settings.ORCA_AUTOMATION_OPERATION_RETENTION_DAYS)
     logger.info(f"Orca automation operations cutoff time: {cutoff_time}")
+    named_by_a_decision = AssignmentDecision.all_objects.filter(automation_operation_id=OuterRef("pk"))
     return (
         AutomationOperation.all_objects.filter(created_at__lte=cutoff_time)
+        .filter(~Exists(named_by_a_decision))
         .order_by("created_at")
         .values_list("id", flat=True)
         .iterator(chunk_size=BATCH_SIZE)

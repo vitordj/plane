@@ -707,7 +707,32 @@
             "not_assigned": "Nepřiřazeno",
             "returned_title": "Vráceno do fronty",
             "returned": "Znovu čeká na někoho.",
-            "not_returned": "Nevráceno"
+            "not_returned": "Nevráceno",
+            "transferred_title": "Přesunuto do jiné oblasti",
+            "transferred": "{name} je za to nyní odpovědný.",
+            "not_transferred": "Nepřesunuto"
+          },
+          "attention": "Vyžaduje pozornost",
+          "attention_overdue_date": "Po termínu",
+          "attention_suspended": "Pozastaveno",
+          "attention_unavailable": "Vykonavatel není k dispozici",
+          "attention_no_date": "Bez termínu",
+          "empty_attention": "Teď nic nevyžaduje pozornost.",
+          "decisions": "Rozhodnutí",
+          "empty_decisions": "Zatím žádná rozhodnutí o přidělení.",
+          "decision_supersedes": "Nahradilo dřívější rozhodnutí",
+          "decision_outcome": {
+            "assigned": "Přiřazeno",
+            "queued": "Ve frontě",
+            "allocation_failed": "Nelze přiřadit",
+            "rejected": "Odmítnuto"
+          },
+          "transfer": "Přesunout do jiné oblasti",
+          "transfer_modal": {
+            "title": "Přesunout do jiné oblasti",
+            "search": "Hledat oblasti",
+            "no_units": "Žádná jiná oblast nepokrývá tento projekt.",
+            "transferring": "Přesouvání…"
           }
         },
         "errors": {
@@ -738,6 +763,7 @@
           "coordinator_not_found": "Koordinátor nenalezen.",
           "not_the_executor": "Toto může udělat pouze aktuální vykonavatel, koordinátor této oblasti nebo správce pracovního prostoru.",
           "coordinator_must_be_member": "Koordinátor musí být aktivním členem nebo správcem pracovního prostoru.",
+          "invalid_queue_filter": "Tento filtr fronty není rozpoznán.",
           "public_api_disabled": "Automatizační API je v této instanci vypnuté.",
           "idempotency_key_required": "Tento požadavek vyžaduje hlavičku Idempotency-Key.",
           "idempotency_payload_mismatch": "Tento klíč už byl použit pro jiný požadavek.",
@@ -748,6 +774,55 @@
           "process_projection_disabled": "Projekce procesů je v této instanci vypnutá.",
           "completion_manual_only": "Tuto pracovní položku může dokončit jen člověk.",
           "internal_error": "Něco se pokazilo. Operace byla zaznamenána jako neúspěšná."
+        },
+        "coordinators": {
+          "tab": "Koordinátoři",
+          "select_person": "Vyberte osobu",
+          "no_addable": "Každý, kdo může tuto oblast koordinovat, to už dělá",
+          "add": "Přidat koordinátora",
+          "empty": "Tuto oblast zatím nikdo nekoordinuje. Koordinátor obsluhuje frontu, aniž by do oblasti musel patřit.",
+          "remove_aria": "Přestat, aby {name} koordinoval tuto oblast",
+          "note": "Koordinátor obsluhuje frontu oblasti. Nemusí do ní patřit. Hosté workspace nemohou být koordinátory.",
+          "toast": {
+            "added_title": "Koordinátor přidán",
+            "added": "Nyní může obsluhovat frontu této oblasti.",
+            "not_added": "Nepřidáno",
+            "removed_title": "Koordinátor odebrán",
+            "removed": "{name} už tuto oblast nekoordinuje.",
+            "not_removed": "Neodebráno"
+          }
+        },
+        "policy": {
+          "tab": "Pravidla",
+          "heading": "Jak tato oblast přiděluje práci",
+          "description": "Výchozí nastavení oblasti, které projekt může přepsat.",
+          "scope_area": "Výchozí oblasti",
+          "scope_project": "Výjimka pro {name}",
+          "default_mode": "Výchozí režim",
+          "allowed_modes": "Povolené režimy",
+          "sla_seconds": "SLA přidělení (sekundy)",
+          "sla_hint": "Jak dlouho může položka zůstat nepřiřazená, než se upozorní koordinátoři. Nechte prázdné, pokud nechcete lhůtu.",
+          "max_open": "Maximum otevřených položek na osobu",
+          "max_open_hint": "Nechte prázdné, pokud nechcete strop.",
+          "save": "Uložit pravidla",
+          "mode": {
+            "manual": "Koordinátor přiděluje",
+            "self_claim": "Lidé si práci berou sami",
+            "least_loaded": "Člen s nejmenší zátěží",
+            "explicit": "Jmenovaná osoba"
+          },
+          "toast": {
+            "saved_title": "Pravidla uložena",
+            "saved": "Nová práce se bude řídit těmito pravidly.",
+            "not_saved": "Neuloženo"
+          }
+        },
+        "my_areas": {
+          "title": "Moje oblasti",
+          "heading": "Moje oblasti",
+          "description": "Oblasti, do kterých patříte, a práce čekající v každé z nich.",
+          "empty": "Zatím nepatříte do žádné oblasti.",
+          "select": "Vyberte oblast"
         }
       }
     },

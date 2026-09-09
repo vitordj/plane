@@ -707,7 +707,32 @@
             "not_assigned": "Non attribué",
             "returned_title": "Remis dans la file",
             "returned": "Il attend de nouveau quelqu’un.",
-            "not_returned": "Non remis"
+            "not_returned": "Non remis",
+            "transferred_title": "Déplacé vers une autre zone",
+            "transferred": "{name} en est désormais responsable.",
+            "not_transferred": "Non déplacé"
+          },
+          "attention": "À traiter",
+          "attention_overdue_date": "Date d’échéance dépassée",
+          "attention_suspended": "En pause",
+          "attention_unavailable": "Exécutant indisponible",
+          "attention_no_date": "Sans date d’échéance",
+          "empty_attention": "Rien ne demande d’attention pour le moment.",
+          "decisions": "Décisions",
+          "empty_decisions": "Aucune décision d’affectation pour le moment.",
+          "decision_supersedes": "A remplacé une décision précédente",
+          "decision_outcome": {
+            "assigned": "Attribué",
+            "queued": "En file",
+            "allocation_failed": "Attribution impossible",
+            "rejected": "Refusé"
+          },
+          "transfer": "Déplacer vers une autre zone",
+          "transfer_modal": {
+            "title": "Déplacer vers une autre zone",
+            "search": "Rechercher des zones",
+            "no_units": "Aucune autre zone ne couvre ce projet.",
+            "transferring": "Déplacement…"
           }
         },
         "errors": {
@@ -738,6 +763,7 @@
           "coordinator_not_found": "Coordinateur introuvable.",
           "not_the_executor": "Seule la personne exécutante actuelle, le coordinateur de cette zone ou un administrateur de l’espace de travail peut faire cela.",
           "coordinator_must_be_member": "Un coordinateur doit être membre actif ou administrateur de l’espace de travail.",
+          "invalid_queue_filter": "Ce filtre de file n'est pas reconnu.",
           "public_api_disabled": "L’API d’automatisation est désactivée sur cette instance.",
           "idempotency_key_required": "Cette requête nécessite un en-tête Idempotency-Key.",
           "idempotency_payload_mismatch": "Cette clé a déjà été utilisée pour une autre requête.",
@@ -748,6 +774,55 @@
           "process_projection_disabled": "La projection de processus est désactivée sur cette instance.",
           "completion_manual_only": "Cet élément de travail ne peut être terminé que par une personne.",
           "internal_error": "Une erreur est survenue. L’opération a été enregistrée comme échouée."
+        },
+        "coordinators": {
+          "tab": "Coordinateurs",
+          "select_person": "Sélectionner une personne",
+          "no_addable": "Toutes les personnes qui peuvent coordonner cette zone le font déjà",
+          "add": "Ajouter un coordinateur",
+          "empty": "Personne ne coordonne encore cette zone. Un coordinateur gère la file sans avoir à en faire partie.",
+          "remove_aria": "Arrêter la coordination de cette zone par {name}",
+          "note": "Un coordinateur gère la file de la zone. Il n’a pas à en faire partie. Les invités de l’espace de travail ne peuvent pas être coordinateurs.",
+          "toast": {
+            "added_title": "Coordinateur ajouté",
+            "added": "Cette personne peut désormais gérer la file de cette zone.",
+            "not_added": "Non ajouté",
+            "removed_title": "Coordinateur retiré",
+            "removed": "{name} ne coordonne plus cette zone.",
+            "not_removed": "Non retiré"
+          }
+        },
+        "policy": {
+          "tab": "Politique",
+          "heading": "Comment cette zone attribue le travail",
+          "description": "La valeur par défaut de la zone, qu’un projet peut remplacer.",
+          "scope_area": "Valeur par défaut de la zone",
+          "scope_project": "Exception pour {name}",
+          "default_mode": "Mode par défaut",
+          "allowed_modes": "Modes autorisés",
+          "sla_seconds": "SLA d’attribution (secondes)",
+          "sla_hint": "Combien de temps un élément peut rester non attribué avant d’alerter les coordinateurs. Laissez vide pour n’imposer aucun délai.",
+          "max_open": "Nombre max. d’éléments ouverts par personne",
+          "max_open_hint": "Laissez vide pour n’imposer aucun plafond.",
+          "save": "Enregistrer la politique",
+          "mode": {
+            "manual": "Le coordinateur attribue",
+            "self_claim": "Les personnes prennent le travail",
+            "least_loaded": "Membre le moins chargé",
+            "explicit": "Personne nommée"
+          },
+          "toast": {
+            "saved_title": "Politique enregistrée",
+            "saved": "Le nouveau travail suivra ces règles.",
+            "not_saved": "Non enregistrée"
+          }
+        },
+        "my_areas": {
+          "title": "Mes zones",
+          "heading": "Mes zones",
+          "description": "Les zones auxquelles vous appartenez et le travail en attente dans chacune.",
+          "empty": "Vous n’appartenez encore à aucune zone.",
+          "select": "Sélectionner une zone"
         }
       }
     },

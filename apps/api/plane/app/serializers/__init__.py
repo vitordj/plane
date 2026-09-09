@@ -157,6 +157,7 @@ from .organizational_unit import (
     OrganizationalUnitCoordinatorSerializer,
     OrganizationalUnitSerializer,
     OrganizationalUnitMembershipSerializer,
+    OrganizationalUnitMembershipLiteSerializer,
     OrganizationalUnitMembershipCreateSerializer,
     OrganizationalUnitProjectSerializer,
 )

@@ -81,6 +81,28 @@ class TestScimAuthentication:
         directory_connection.refresh_from_db()
         assert directory_connection.token_last_used_at is not None
 
+    def test_a_throttled_call_does_not_stamp_last_used(
+        self, scim_client, workspace_with_members, directory_connection, monkeypatch
+    ):
+        """R1.A16: a 429 is not a successful use of the token."""
+        monkeypatch.setattr(SCIMRateThrottle, "allow_request", lambda self, request, view: False)
+        monkeypatch.setattr(SCIMRateThrottle, "wait", lambda self: 1)
+
+        response = scim_client.get(scim_users_url(workspace_with_members.slug))
+
+        assert response.status_code == 429
+        directory_connection.refresh_from_db()
+        assert directory_connection.token_last_used_at is None
+
+    def test_an_anonymous_caller_cannot_learn_the_kill_switch(self, settings, workspace_with_members):
+        """R1.A17: disabled or not, no token still means 401."""
+        settings.ORCA_ORG_UNITS_ENABLED = False
+        client = APIClient()
+
+        response = client.get(scim_users_url(workspace_with_members.slug))
+
+        assert response.status_code == 401
+
 
 @pytest.mark.unit
 class TestScimDiscovery:

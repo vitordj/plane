@@ -19,6 +19,12 @@ _which area is responsible_; the area's own policy decides _who_.
 > which gates the organizational layer as a whole). A 404 with
 > `"error_message": "ORG_PUBLIC_API_DISABLED"` means the instance has it off —
 > as opposed to a bare 404, which means you have the URL wrong.
+>
+> **Production.** The code conditions for turning it on (R1.A5, R1.A6, the
+> Fase 2 surface, the kill-switch runbook below) are in the tree. Gate
+> 2-minimum still requires a staging deploy and a pilot area before
+> `ORCA_PUBLIC_API_ENABLED=1` is set in production. Until then the switch stays
+> off.
 
 ---
 
@@ -69,6 +75,10 @@ get the same `201`, without the `Idempotent-Replay` header and describing the
 item's present state rather than the original snapshot — and a reassignment
 retried with its original `If-Match` is refused as stale. A transfer is the one operation that would genuinely run again —
 which matters only if something in your system can retry a call a month late.
+
+**A key is unique per API token, not across the workspace.** Two integrations
+sharing a workspace can reuse the same `Idempotency-Key` without one burning
+the other's namespace (R1.A12).
 
 ---
 
@@ -343,12 +353,12 @@ own web app receives `409` for the same condition. The public API answers
 The token grants nothing of its own — the effective permission is that of the
 **user the token belongs to** (RFC §7.1):
 
-| Route                                        | Requires                                      |
-| -------------------------------------------- | --------------------------------------------- |
-| `POST work-items/`, `reassign/`, `transfer/` | Active project member, role Member or Admin   |
-| `GET by-external/`                           | Active member of the item's project, any role |
-| `GET units/`                                 | Active workspace member                       |
-| `GET units/{slug}/queue/`                    | Member of that area, or workspace Admin       |
+| Route                                        | Requires                                                                   |
+| -------------------------------------------- | -------------------------------------------------------------------------- |
+| `POST work-items/`, `reassign/`, `transfer/` | Active project member, role Member or Admin                                |
+| `GET by-external/`                           | Active member of the item's project, any role                              |
+| `GET units/`                                 | Active workspace member; non-admin tokens only see projects they belong to |
+| `GET units/{slug}/queue/`                    | Member of that area, or workspace Admin                                    |
 
 Rate limit: `ORCA_PUBLIC_API_RATE_LIMIT`, default `300/minute`, **per token**,
 answering `429` with `{"error_code": 5900, "error_message": "RATE_LIMIT_EXCEEDED"}`.
@@ -415,11 +425,11 @@ Every route under `/api/v1/orca/` answers **404** with a coded body:
 
 All six routes (`apps/api/plane/api/urls/orca.py`) derive from
 `OrcaPublicBaseAPIView`, and the refusal is raised in
-`OrcaPublicApiFeatureMixin.initial` **before** `super().initial()` runs
-(`apps/api/plane/api/views/orca/base.py:49`) — that is, before authentication,
-permissions and the throttle. So the answer is the same 404 for a valid token,
-an expired one and no token at all, and a caller cannot use the endpoint to
-learn whether its credential is still good.
+`OrcaPublicApiFeatureMixin.initial` **after** `super().initial()` runs
+(`apps/api/plane/api/views/orca/base.py`) — that is, after authentication and
+the throttle (R1.A18). An anonymous caller is `401`'d and learns nothing about
+the switch. A caller with a valid token then gets the coded 404
+`ORG_PUBLIC_API_DISABLED`, and that call still counts against their budget.
 
 `ORCA_PUBLIC_API_ENABLED` also requires `ORCA_ORG_UNITS_ENABLED`
 (`apps/api/plane/app/services/orca/feature_flags.py:50`): turning the

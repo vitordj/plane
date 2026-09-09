@@ -4,10 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { observer } from "mobx-react";
-import { Ellipsis } from "lucide-react";
+import { Ellipsis, Network } from "lucide-react";
 import { Disclosure, Transition } from "@headlessui/react";
+import { useParams, usePathname } from "next/navigation";
+import Link from "next/link";
 // plane imports
 import {
   WORKSPACE_SIDEBAR_DYNAMIC_NAVIGATION_ITEMS_LINKS,
@@ -22,6 +24,7 @@ import { cn } from "@plane/utils";
 import { SidebarNavItem } from "@/components/sidebar/sidebar-navigation";
 // store hooks
 import { useAppTheme } from "@/hooks/store/use-app-theme";
+import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 import useLocalStorage from "@/hooks/use-local-storage";
 import {
   usePersonalNavigationPreferences,
@@ -43,6 +46,15 @@ export const SidebarMenuItems = observer(function SidebarMenuItems() {
   const { preferences: workspacePreferences } = useWorkspaceNavigationPreferences();
   // translation
   const { t } = useTranslation();
+  const { workspaceSlug } = useParams();
+  const pathname = usePathname();
+  const organizationalUnit = useOrganizationalUnit();
+  const slug = workspaceSlug?.toString() ?? "";
+
+  useEffect(() => {
+    if (!slug || !organizationalUnit.isEnabled) return;
+    organizationalUnit.fetchMyUnits(slug).catch(() => undefined);
+  }, [slug, organizationalUnit]);
 
   const toggleListDisclosure = (isOpen: boolean) => {
     toggleWorkspaceMenu(isOpen);
@@ -101,6 +113,18 @@ export const SidebarMenuItems = observer(function SidebarMenuItems() {
           // oxlint-disable-next-line react/no-array-index-key
           <SidebarItemBase key={`static_${_index}`} item={item} />
         ))}
+        {(organizationalUnit.myUnits?.length ?? 0) > 0 && (
+          <Link href={`/${slug}/my-areas/`}>
+            <SidebarNavItem isActive={pathname?.includes("/my-areas")}>
+              <div className="flex items-center gap-1.5 py-[1px]">
+                <Network className="size-4 flex-shrink-0" />
+                <p className="text-13 leading-5 font-medium">
+                  {t("workspace_settings.settings.organizational_units.my_areas.title")}
+                </p>
+              </div>
+            </SidebarNavItem>
+          </Link>
+        )}
       </div>
       <Disclosure as="div" className="flex flex-col" defaultOpen={!!isWorkspaceMenuOpen}>
         <div className="group flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-placeholder hover:bg-layer-transparent-hover">

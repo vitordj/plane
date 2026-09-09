@@ -707,7 +707,32 @@
             "not_assigned": "割り当てられませんでした",
             "returned_title": "キューに戻しました",
             "returned": "再び担当者を待っています。",
-            "not_returned": "戻せませんでした"
+            "not_returned": "戻せませんでした",
+            "transferred_title": "別のエリアに移動しました",
+            "transferred": "これから {name} が担当します。",
+            "not_transferred": "移動できませんでした"
+          },
+          "attention": "要対応",
+          "attention_overdue_date": "期限超過",
+          "attention_suspended": "一時停止",
+          "attention_unavailable": "担当者が不在",
+          "attention_no_date": "期限なし",
+          "empty_attention": "今すぐ対応が必要なものはありません。",
+          "decisions": "決定",
+          "empty_decisions": "まだ割り当て決定はありません。",
+          "decision_supersedes": "以前の決定を置き換えました",
+          "decision_outcome": {
+            "assigned": "割り当て済み",
+            "queued": "キュー待ち",
+            "allocation_failed": "割り当てできませんでした",
+            "rejected": "拒否"
+          },
+          "transfer": "別のエリアに移動",
+          "transfer_modal": {
+            "title": "別のエリアに移動",
+            "search": "エリアを検索",
+            "no_units": "このプロジェクトを担当する他のエリアはありません。",
+            "transferring": "移動中…"
           }
         },
         "errors": {
@@ -738,6 +763,7 @@
           "coordinator_not_found": "コーディネーターが見つかりません。",
           "not_the_executor": "現在の担当者、このエリアのコーディネーター、またはワークスペース管理者のみ実行できます。",
           "coordinator_must_be_member": "コーディネーターはワークスペースの有効なメンバーまたは管理者である必要があります。",
+          "invalid_queue_filter": "そのキューのフィルターは認識されません。",
           "public_api_disabled": "自動化 API はこのインスタンスでは無効です。",
           "idempotency_key_required": "このリクエストには Idempotency-Key ヘッダーが必要です。",
           "idempotency_payload_mismatch": "このキーは別のリクエストですでに使用されています。",
@@ -748,6 +774,55 @@
           "process_projection_disabled": "プロセス投影はこのインスタンスでは無効です。",
           "completion_manual_only": "この作業項目は人によってのみ完了できます。",
           "internal_error": "問題が発生しました。この操作は失敗として記録されました。"
+        },
+        "coordinators": {
+          "tab": "コーディネーター",
+          "select_person": "人を選択",
+          "no_addable": "このエリアをコーディネートできる人はすでに登録されています",
+          "add": "コーディネーターを追加",
+          "empty": "まだこのエリアをコーディネートしている人はいません。コーディネーターはエリアのメンバーでなくてもキューを運用できます。",
+          "remove_aria": "{name} のこのエリアのコーディネートを解除",
+          "note": "コーディネーターはエリアのキューを運用します。エリアのメンバーである必要はありません。ワークスペースのゲストはコーディネーターになれません。",
+          "toast": {
+            "added_title": "コーディネーターを追加しました",
+            "added": "このエリアのキューを運用できるようになりました。",
+            "not_added": "追加できませんでした",
+            "removed_title": "コーディネーターを削除しました",
+            "removed": "{name} はこのエリアをコーディネートしなくなりました。",
+            "not_removed": "削除できませんでした"
+          }
+        },
+        "policy": {
+          "tab": "ポリシー",
+          "heading": "このエリアの割り当て方法",
+          "description": "エリアの既定値です。プロジェクトごとに上書きできます。",
+          "scope_area": "エリアの既定",
+          "scope_project": "{name} の上書き",
+          "default_mode": "既定のモード",
+          "allowed_modes": "許可するモード",
+          "sla_seconds": "割り当て SLA（秒）",
+          "sla_hint": "未割り当てのままコーディネーターに通知するまでの秒数です。期限なしの場合は空のままにしてください。",
+          "max_open": "1人あたりの未完了上限",
+          "max_open_hint": "上限なしの場合は空のままにしてください。",
+          "save": "ポリシーを保存",
+          "mode": {
+            "manual": "コーディネーターが割り当て",
+            "self_claim": "自分で仕事を取る",
+            "least_loaded": "負荷が最も少ないメンバー",
+            "explicit": "指定した人"
+          },
+          "toast": {
+            "saved_title": "ポリシーを保存しました",
+            "saved": "新しい仕事はこのルールに従います。",
+            "not_saved": "保存できませんでした"
+          }
+        },
+        "my_areas": {
+          "title": "自分のエリア",
+          "heading": "自分のエリア",
+          "description": "所属しているエリアと、それぞれの待ち仕事です。",
+          "empty": "まだどのエリアにも所属していません。",
+          "select": "エリアを選択"
         }
       }
     },

@@ -19,6 +19,7 @@ type Props = {
   /** Shown in place of the list when there is nothing in it. */
   emptyMessage: string;
   onAssign: (row: IQueueRow) => void;
+  onTransfer?: (row: IQueueRow) => void;
 };
 
 /**
@@ -28,7 +29,7 @@ type Props = {
  * in a different place depending on which screen they opened.
  */
 export const QueueList = observer(function QueueList(props: Props) {
-  const { workspaceSlug, unitId, rows, isLoading, emptyMessage, onAssign } = props;
+  const { workspaceSlug, unitId, rows, isLoading, emptyMessage, onAssign, onTransfer } = props;
 
   if (isLoading)
     return (
@@ -44,7 +45,14 @@ export const QueueList = observer(function QueueList(props: Props) {
   return (
     <div className="divide-custom-border-200 border-custom-border-200 divide-y rounded border">
       {rows.map((row) => (
-        <QueueItemRow key={row.issue_id} workspaceSlug={workspaceSlug} unitId={unitId} row={row} onAssign={onAssign} />
+        <QueueItemRow
+          key={row.issue_id}
+          workspaceSlug={workspaceSlug}
+          unitId={unitId}
+          row={row}
+          onAssign={onAssign}
+          onTransfer={onTransfer}
+        />
       ))}
     </div>
   );
