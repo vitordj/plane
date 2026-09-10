@@ -12,6 +12,7 @@ from plane.db.models import (
     AssignmentDecision,
     Issue,
     IssueOrganizationalUnit,
+    MembershipAllocationSettings,
     OrganizationalDirectoryConnection,
     OrganizationalDirectoryIdentity,
     OrganizationalUnit,
@@ -19,6 +20,7 @@ from plane.db.models import (
     OrganizationalUnitCoordinator,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
+    WorkspaceMemberAvailability,
 )
 from plane.db.models.organizational_unit import OrganizationalUnitMemberRole
 
@@ -94,6 +96,40 @@ class OrganizationalUnitMembershipSerializer(BaseSerializer):
     email = serializers.CharField(source="workspace_member.member.email", read_only=True)
     avatar_url = serializers.CharField(source="workspace_member.member.avatar_url", read_only=True)
     workspace_role = serializers.IntegerField(source="workspace_member.role", read_only=True)
+    # Item 3.3: the members tab and the assign modal need leave and opt-out
+    # on the same payload they already fetch, rather than a second round-trip
+    # per person. Defaults match a missing MembershipAllocationSettings row.
+    accepts_new_work = serializers.SerializerMethodField()
+    max_open_items = serializers.SerializerMethodField()
+    is_available = serializers.SerializerMethodField()
+    unavailable_until = serializers.SerializerMethodField()
+
+    def _allocation_settings(self, obj):
+        settings_map = self.context.get("allocation_settings") or {}
+        return settings_map.get(obj.id)
+
+    def _covering_window(self, obj):
+        covering = self.context.get("covering_windows") or {}
+        return covering.get(obj.workspace_member_id)
+
+    def get_accepts_new_work(self, obj) -> bool:
+        settings_row = self._allocation_settings(obj)
+        if settings_row is None:
+            return True
+        return bool(settings_row.accepts_new_work)
+
+    def get_max_open_items(self, obj):
+        settings_row = self._allocation_settings(obj)
+        return settings_row.max_open_items if settings_row is not None else None
+
+    def get_is_available(self, obj) -> bool:
+        return self._covering_window(obj) is None
+
+    def get_unavailable_until(self, obj):
+        window = self._covering_window(obj)
+        if window is None or window.unavailable_until is None:
+            return None
+        return window.unavailable_until.isoformat()
 
     class Meta:
         model = OrganizationalUnitMembership
@@ -109,6 +145,10 @@ class OrganizationalUnitMembershipSerializer(BaseSerializer):
             "email",
             "avatar_url",
             "workspace_role",
+            "accepts_new_work",
+            "max_open_items",
+            "is_available",
+            "unavailable_until",
             "created_at",
         ]
         # workspace_member is the membership's identity, not an editable
@@ -431,4 +471,30 @@ class IssueRoutingSerializer(BaseSerializer):
             "created_at",
             "updated_at",
         ]
+        read_only_fields = fields
+
+
+class WorkspaceMemberAvailabilitySerializer(BaseSerializer):
+    """One unavailability window, as the availability API returns it."""
+
+    class Meta:
+        model = WorkspaceMemberAvailability
+        fields = [
+            "id",
+            "workspace_member",
+            "unavailable_from",
+            "unavailable_until",
+            "reason",
+            "source",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class MembershipAllocationSettingsSerializer(BaseSerializer):
+    """Per-membership opt-out and personal cap, as the allocation API returns it."""
+
+    class Meta:
+        model = MembershipAllocationSettings
+        fields = ["id", "membership", "accepts_new_work", "max_open_items", "updated_at"]
         read_only_fields = fields

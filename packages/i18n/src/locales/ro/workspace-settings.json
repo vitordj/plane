@@ -696,7 +696,9 @@
             "search": "Căutați după nume sau adresă de e-mail",
             "no_candidates": "Nimeni din această zonă nu poate prelua încă lucru. Adăugați mai întâi persoane în zonă.",
             "assigning": "Se atribuie…",
-            "open_items": "{count, plural, one {# element deschis} few {# elemente deschise} other {# de elemente deschise}}"
+            "open_items": "{count, plural, one {# element deschis} few {# elemente deschise} other {# de elemente deschise}}",
+            "unavailable": "Absent",
+            "opted_out": "Nu preia lucru nou"
           },
           "toast": {
             "claimed_title": "Activitate preluată",
@@ -733,7 +735,11 @@
             "search": "Caută zone",
             "no_units": "Nicio altă zonă nu acoperă acest proiect.",
             "transferring": "Se mută…"
-          }
+          },
+          "suggestion": "Sugestie: {name}",
+          "unavailable_until": "Absent până la {until}",
+          "unavailable_open": "Absent",
+          "executor_away": "Absent"
         },
         "errors": {
           "unit_not_found": "Această zonă nu mai există.",
@@ -773,7 +779,13 @@
           "if_match_required": "Această cerere necesită antetul If-Match cu decizia în vigoare.",
           "process_projection_disabled": "Proiecția proceselor este dezactivată pe această instanță.",
           "completion_manual_only": "Această activitate poate fi finalizată doar de o persoană.",
-          "internal_error": "Ceva nu a funcționat. Operațiunea a fost înregistrată ca eșuată."
+          "internal_error": "Ceva nu a funcționat. Operațiunea a fost înregistrată ca eșuată.",
+          "availability_window_not_found": "Această perioadă de indisponibilitate nu a fost găsită.",
+          "availability_invalid_interval": "Sfârșitul unei perioade de indisponibilitate trebuie să fie după început.",
+          "availability_from_required": "O perioadă de indisponibilitate are nevoie de o dată de început.",
+          "workspace_member_not_found": "Această persoană nu este membru al acestui workspace.",
+          "allocation_limit_forbidden": "Doar un coordonator sau un administrator al workspace-ului poate seta o limită personală de lucru.",
+          "not_availability_manager": "Doar un coordonator al uneia dintre zonele acestei persoane, sau un administrator al workspace-ului, poate face acest lucru."
         },
         "coordinators": {
           "tab": "Coordonatori",
@@ -823,6 +835,37 @@
           "description": "Zonele din care faci parte și munca care așteaptă în fiecare.",
           "empty": "Nu faci parte încă din nicio zonă.",
           "select": "Selectează o zonă"
+        },
+        "availability": {
+          "title": "Absențe",
+          "help": "Absența împiedică atribuirea automată să vă aleagă. Nu retrage ceea ce duceți deja.",
+          "empty": "Nimic înregistrat.",
+          "from": "De la",
+          "until": "Până la",
+          "add": "Adaugă",
+          "added": "Înregistrat",
+          "not_added": "Nu s-a putut înregistra",
+          "removed": "Eliminat",
+          "not_removed": "Nu s-a putut elimina",
+          "remove_aria": "Elimină această absență",
+          "range": "{from} – {until}",
+          "open_ended": "De la {from}, fără dată de revenire",
+          "reason": {
+            "vacation": "Concediu",
+            "leave": "Absență",
+            "other": "Altul"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Preia lucru nou din această zonă",
+          "accepts_new_work_help": "Dezactivat, atribuirea automată îi ocolește aici. Păstrează ce au și li se poate da ceva pe nume.",
+          "max_open_items": "Cele mai multe elemente deschise odată",
+          "max_open_items_help": "Atribuirea automată se oprește la acest număr. Gol înseamnă limita zonei.",
+          "no_limit": "Fără limită",
+          "saved": "Salvat",
+          "not_saved": "Nu s-a putut salva",
+          "limit_invalid": "Trebuie să fie un număr întreg de unu sau mai mult.",
+          "open_aria": "Setări de lucru pentru {name}"
         }
       }
     },

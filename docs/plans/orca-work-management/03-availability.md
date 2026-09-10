@@ -51,16 +51,22 @@ de outra pessoa.
 
 ---
 
-## 3.3 — Endpoints e UI `[ ]`
+## 3.3 — Endpoints e UI `[x]`
 
 - `GET/POST/DELETE /api/orca/workspaces/{slug}/availability/me/` (o próprio) e `.../members/{workspace_member_id}/availability/` (coordenador de qualquer área da pessoa, ou Admin).
 - `PUT .../organizational-units/{unit_id}/members/{pk}/allocation/` (coordenador da área, Admin; o próprio membro pode desligar `accepts_new_work`, não ligar o limite).
 - UI: `availability-form.tsx` no perfil do usuário (Preferences) e na aba de membros da área; badge "indisponível até …" na fila e no modal de atribuição; toggle "recebe novas tarefas" por membership.
 - i18n completo.
 
+**Entregue (10/09).** Rotas internas em `app/urls/orca.py` (não a API pública).
+Flag desligada → 404. O próprio membro desliga `accepts_new_work`; o teto
+pessoal é coordenador/Admin (`ORG_ALLOCATION_LIMIT_FORBIDDEN`). Códigos
+4938–4943. UI: `availability-form.tsx` em Preferências e na aba Pessoas,
+badge na fila e no modal, sugestão no item 3.5.
+
 ---
 
-## 3.4 — Sweep de indisponibilidade `[ ]`
+## 3.4 — Sweep de indisponibilidade `[x]`
 
 - Tarefa `plane.bgtasks.organizational_availability_task.sweep_unavailable_executors` horária (RFC §6.9): para cada `IssueOrganizationalUnit(routing_state=assigned)` cujo `primary_executor` está indisponível, ou cuja membership/`WorkspaceMember`/`ProjectMember` está inativa → `return_to_queue(queue_reason="executor_unavailable", trigger="availability")`; alerta aos coordenadores.
 - Comando `sweep_unavailable_executors` com `--write` (dry-run default) para operação manual; a tarefa só escreve com `ORCA_AVAILABILITY_ENABLED=1`.
@@ -72,20 +78,37 @@ automaticamente (a pessoa não recupera o item; coordenador decide);
 desativação de `WorkspaceMember`; remoção nativa do assignee; sweep repetido
 não duplica decisões.
 
+**Entregue (10/09).** Tarefa horária `:40`
+(`check-every-hour-for-unavailable-executors`). Comando
+`sweep_unavailable_executors` (dry-run default; `--write` recusado com a flag
+off). Signal em `IssueAssignee` devolve à fila quando o executor some; o
+`QuerySet.delete()` nativo não dispara signal — o buraco continua sendo o
+`audit_organizational_routing`. Alerta `executor_unavailable`. Nenhuma
+reatribuição automática.
+
 ---
 
-## 3.5 — Sugestão de próximo candidato `[ ]`
+## 3.5 — Sugestão de próximo candidato `[x]`
 
 - Na fila, para itens com `queue_reason=executor_unavailable`, a linha mostra "sugestão: <pessoa>" calculada por `rank_candidates` sob demanda (endpoint `GET .../work-items/{issue_id}/organizational-unit/candidates/`, já útil para o modal de atribuição).
 - Aceitar a sugestão é a mesma ação "Atribuir a…" (decisão com `trigger="ui_coordinator"`, `reason="accepted_suggestion"`).
 
+**Entregue (10/09).** `GET .../organizational-unit/candidates/` serializa
+`rank_candidates` (`.eligible` / `.excluded`). Na fila, a linha com
+`queue_reason=executor_unavailable` mostra `QueueSuggestion`; aceitar chama
+`reassign/` com `reason=accepted_suggestion`.
+
 ---
 
-## 3.6 — Testes de fechamento e documentação `[ ]`
+## 3.6 — Testes de fechamento e documentação `[x]`
 
 - Cenários: férias começam/terminam, saída da área, desativação, retorno, remoção nativa de assignee, limites por pessoa e por política.
 - Nenhuma reatribuição sem `AssignmentDecision(trigger=availability)` (teste que conta decisões por trigger).
 - `docs/organizational-units.md` §Disponibilidade; RFC §2.1 atualizado.
+
+**Entregue (10/09).** `test_availability_http.py` e `test_availability_sweep.py`
+cobrem férias, flag, limites, sweep, signal e a recusa de reatribuir sem
+`trigger=availability`. Gate 3 (staging / piloto / dump) continua aberto.
 
 ---
 

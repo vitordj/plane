@@ -26,6 +26,40 @@ from plane.db.models import MembershipAllocationSettings, WorkspaceMemberAvailab
 from .feature_flags import availability_enabled
 
 
+def covering_windows_for(workspace_member_ids, at=None) -> dict:
+    """
+    Covering unavailability window per workspace member at ``at``.
+
+    @description Not gated by ``ORCA_AVAILABILITY_ENABLED``: the availability
+    API and the UI (item 3.3) read the rows as they are, even while ranking
+    still ignores them. When several windows overlap, an unbounded one wins;
+    otherwise the one with the latest ``unavailable_until``.
+
+    @param workspace_member_ids: WorkspaceMember primary keys to check.
+    @param at: Instant to evaluate; defaults to now.
+    @returns: ``workspace_member_id -> WorkspaceMemberAvailability``.
+    """
+    ids = list(workspace_member_ids)
+    if not ids:
+        return {}
+    instant = timezone.now() if at is None else at
+    windows = WorkspaceMemberAvailability.objects.filter(
+        workspace_member_id__in=ids,
+        unavailable_from__lte=instant,
+    ).filter(Q(unavailable_until__isnull=True) | Q(unavailable_until__gt=instant))
+    chosen = {}
+    for window in windows:
+        current = chosen.get(window.workspace_member_id)
+        if current is None:
+            chosen[window.workspace_member_id] = window
+            continue
+        if window.unavailable_until is None:
+            chosen[window.workspace_member_id] = window
+        elif current.unavailable_until is not None and window.unavailable_until > current.unavailable_until:
+            chosen[window.workspace_member_id] = window
+    return chosen
+
+
 def unavailable_workspace_member_ids(workspace_member_ids, at=None) -> set:
     """
     Workspace-member ids that have a covering availability window at ``at``.
@@ -40,18 +74,24 @@ def unavailable_workspace_member_ids(workspace_member_ids, at=None) -> set:
     """
     if not availability_enabled():
         return set()
-    ids = list(workspace_member_ids)
+    return set(covering_windows_for(workspace_member_ids, at=at))
+
+
+def allocation_settings_map(membership_ids) -> dict:
+    """
+    Per-membership allocation knobs, keyed by membership id, ignoring the flag.
+
+    @description The availability API and the members list (item 3.3) need
+    the rows even while ranking still treats a missing map as "accepts work".
+    A missing row is not in the map: callers treat that as the defaults.
+
+    @param membership_ids: OrganizationalUnitMembership primary keys.
+    @returns: ``membership_id -> MembershipAllocationSettings``.
+    """
+    ids = list(membership_ids)
     if not ids:
-        return set()
-    instant = timezone.now() if at is None else at
-    return set(
-        WorkspaceMemberAvailability.objects.filter(
-            workspace_member_id__in=ids,
-            unavailable_from__lte=instant,
-        )
-        .filter(Q(unavailable_until__isnull=True) | Q(unavailable_until__gt=instant))
-        .values_list("workspace_member_id", flat=True)
-    )
+        return {}
+    return {row.membership_id: row for row in MembershipAllocationSettings.objects.filter(membership_id__in=ids)}
 
 
 def allocation_settings_for(membership_ids) -> dict:
@@ -67,10 +107,7 @@ def allocation_settings_for(membership_ids) -> dict:
     """
     if not availability_enabled():
         return {}
-    ids = list(membership_ids)
-    if not ids:
-        return {}
-    return {row.membership_id: row for row in MembershipAllocationSettings.objects.filter(membership_id__in=ids)}
+    return allocation_settings_map(membership_ids)
 
 
 def is_available(workspace_member, at=None) -> bool:

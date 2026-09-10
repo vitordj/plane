@@ -68,6 +68,7 @@ from plane.app.services.orca import (
     claim,
     queue_queryset,
     visible_project_ids_for,
+    rank_candidates,
     reassign,
     reconcile_coordinator,
     resolve_policy,
@@ -79,10 +80,12 @@ from plane.db.models import (
     AssignmentMode,
     DecisionTrigger,
     Issue,
+    IssueOrganizationalUnit,
     OrganizationalUnit,
     OrganizationalUnitCoordinator,
     ResponsibilitySource,
     RoutingState,
+    User,
     WorkspaceMember,
 )
 from plane.utils.orca_error_codes import orca_error, orca_not_found
@@ -112,7 +115,33 @@ def _tri_state(value):
     return None
 
 
-def _internal_queue_row(link, *, now, viewer, user_id, self_claim_allowed):
+def _executor_away_by_user(unit, links, now) -> dict:
+    """
+    Covering unavailability windows for executors on this page of the queue.
+
+    @description Empty while the availability flag is off, so the row never
+    claims somebody is away until ranking would also treat them that way.
+    Keyed by user id because that is what ``primary_executor`` is.
+    @returns: ``{user_id: WorkspaceMemberAvailability}``.
+    """
+    from plane.app.services.orca.availability import covering_windows_for, unavailable_workspace_member_ids
+
+    executor_ids = {link.primary_executor_id for link in links if link.primary_executor_id}
+    if not executor_ids:
+        return {}
+    member_of = dict(
+        WorkspaceMember.objects.filter(
+            workspace_id=unit.workspace_id, member_id__in=executor_ids, is_active=True
+        ).values_list("member_id", "id")
+    )
+    away_member_ids = unavailable_workspace_member_ids(member_of.values(), at=now)
+    if not away_member_ids:
+        return {}
+    windows = covering_windows_for(away_member_ids, at=now)
+    return {user_id: windows[member_id] for user_id, member_id in member_of.items() if member_id in windows}
+
+
+def _internal_queue_row(link, *, now, viewer, user_id, self_claim_allowed, executor_away=None):
     """
     @description The public queue row, plus what a screen needs and a script
     does not: nested ``project``/``state``, ``priority``/``target_date``,
@@ -153,6 +182,14 @@ def _internal_queue_row(link, *, now, viewer, user_id, self_claim_allowed):
             and bool(viewer["is_admin"] or viewer["is_coordinator"] or is_current_executor)
         ),
     }
+    executor = payload.get("primary_executor")
+    if executor is not None and link.primary_executor is not None:
+        window = (executor_away or {}).get(link.primary_executor_id)
+        executor["avatar_url"] = link.primary_executor.avatar_url
+        executor["is_available"] = window is None
+        executor["unavailable_until"] = (
+            window.unavailable_until.isoformat() if window is not None and window.unavailable_until is not None else None
+        )
     return payload
 
 
@@ -328,6 +365,7 @@ class OrganizationalUnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
         self_claim_cache = {}
 
         def on_results(rows):
+            away = _executor_away_by_user(unit, rows, now)
             results = []
             for row in rows:
                 if row.project_id not in self_claim_cache:
@@ -344,6 +382,7 @@ class OrganizationalUnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
                         viewer=viewer,
                         user_id=request.user.id,
                         self_claim_allowed=self_claim_cache[row.project_id],
+                        executor_away=away,
                     )
                 )
             return results
@@ -485,7 +524,55 @@ def _routing_data(link):
     return IssueRoutingSerializer(link).data
 
 
+class IssueCandidatesEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
+    """
+    Who could take this work item, and how loaded each of them is.
+
+    @description Backs the "assign to…" list and the suggestion on rows the
+    availability sweep handed back (item 3.5). Showing the load is the point:
+    a coordinator picking a name without it is guessing, and the ranking's
+    own choice becomes something they can agree or disagree with.
+    """
+
+    use_read_replica = True
+
+    @allow_permission([ROLE.ADMIN, ROLE.MEMBER], level="WORKSPACE")
+    def get(self, request, slug, project_id, issue_id):
+        issue = Issue.objects.filter(pk=issue_id, project_id=project_id, workspace__slug=slug).first()
+        if issue is None:
+            return orca_not_found("ORG_WORK_ITEM_NOT_FOUND")
+
+        link = IssueOrganizationalUnit.objects.select_related("organizational_unit").filter(issue=issue).first()
+        if link is None:
+            return orca_error("ORG_WORK_ITEM_HAS_NO_UNIT")
+
+        resolution = resolve_policy(link.organizational_unit, link.project_id)
+        ranked = rank_candidates(link.organizational_unit, link.project_id, resolution)
+        users = {
+            str(user.id): user
+            for user in User.objects.filter(id__in=[row.user_id for row in (*ranked.eligible, *ranked.excluded)])
+        }
+
+        def describe(candidate):
+            user = users.get(str(candidate.user_id))
+            return {
+                **candidate.as_snapshot(),
+                "display_name": user.display_name if user else None,
+                "avatar_url": user.avatar_url if user else None,
+            }
+
+        return Response(
+            {
+                "effective_mode": resolution.effective_mode,
+                "candidates": [describe(row) for row in ranked.eligible],
+                "excluded": [describe(row) for row in ranked.excluded],
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 __all__ = [
+    "IssueCandidatesEndpoint",
     "IssueClaimEndpoint",
     "IssueReassignEndpoint",
     "IssueReturnEndpoint",

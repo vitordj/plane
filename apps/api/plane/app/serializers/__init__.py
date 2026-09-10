@@ -160,4 +160,6 @@ from .organizational_unit import (
     OrganizationalUnitMembershipLiteSerializer,
     OrganizationalUnitMembershipCreateSerializer,
     OrganizationalUnitProjectSerializer,
+    MembershipAllocationSettingsSerializer,
+    WorkspaceMemberAvailabilitySerializer,
 )

@@ -696,7 +696,9 @@
             "search": "Nach Name oder E-Mail-Adresse suchen",
             "no_candidates": "Niemand in diesem Bereich kann bisher Arbeit übernehmen. Fügen Sie dem Bereich zuerst Personen hinzu.",
             "assigning": "Wird zugewiesen…",
-            "open_items": "{count, plural, one {# offenes Element} other {# offene Elemente}}"
+            "open_items": "{count, plural, one {# offenes Element} other {# offene Elemente}}",
+            "unavailable": "Abwesend",
+            "opted_out": "Nimmt keine neue Arbeit an"
           },
           "toast": {
             "claimed_title": "Arbeitselement übernommen",
@@ -733,7 +735,11 @@
             "search": "Bereiche durchsuchen",
             "no_units": "Kein anderer Bereich deckt dieses Projekt ab.",
             "transferring": "Wird verschoben…"
-          }
+          },
+          "suggestion": "Vorschlag: {name}",
+          "unavailable_until": "Abwesend bis {until}",
+          "unavailable_open": "Abwesend",
+          "executor_away": "Abwesend"
         },
         "errors": {
           "unit_not_found": "Diesen Bereich gibt es nicht mehr.",
@@ -773,7 +779,13 @@
           "if_match_required": "Für diese Anfrage wird ein If-Match-Header mit der aktuellen Entscheidung benötigt.",
           "process_projection_disabled": "Die Prozessprojektion ist auf dieser Instanz ausgeschaltet.",
           "completion_manual_only": "Dieses Arbeitselement kann nur von einer Person abgeschlossen werden.",
-          "internal_error": "Etwas ist schiefgelaufen. Der Vorgang wurde als fehlgeschlagen vermerkt."
+          "internal_error": "Etwas ist schiefgelaufen. Der Vorgang wurde als fehlgeschlagen vermerkt.",
+          "availability_window_not_found": "Dieser Abwesenheitszeitraum wurde nicht gefunden.",
+          "availability_invalid_interval": "Das Ende eines Abwesenheitszeitraums muss nach dem Beginn liegen.",
+          "availability_from_required": "Ein Abwesenheitszeitraum braucht einen Beginn.",
+          "workspace_member_not_found": "Diese Person ist kein Mitglied dieses Workspace.",
+          "allocation_limit_forbidden": "Nur ein Koordinator oder ein Workspace-Admin darf ein persönliches Arbeitlimit setzen.",
+          "not_availability_manager": "Nur ein Koordinator eines Bereichs dieser Person oder ein Workspace-Admin darf das tun."
         },
         "coordinators": {
           "tab": "Koordinatoren",
@@ -823,6 +835,37 @@
           "description": "Bereiche, denen Sie angehören, und die Arbeit, die in jedem wartet.",
           "empty": "Sie gehören noch keinem Bereich an.",
           "select": "Bereich auswählen"
+        },
+        "availability": {
+          "title": "Abwesenheit",
+          "help": "Abwesenheit verhindert, dass die automatische Zuweisung Sie auswählt. Was Sie bereits tragen, wird nicht zurückgenommen.",
+          "empty": "Nichts erfasst.",
+          "from": "Von",
+          "until": "Bis",
+          "add": "Hinzufügen",
+          "added": "Erfasst",
+          "not_added": "Konnte nicht erfasst werden",
+          "removed": "Entfernt",
+          "not_removed": "Konnte nicht entfernt werden",
+          "remove_aria": "Diese Abwesenheit entfernen",
+          "range": "{from} bis {until}",
+          "open_ended": "Ab {from}, ohne Rückkehrdatum",
+          "reason": {
+            "vacation": "Urlaub",
+            "leave": "Freistellung",
+            "other": "Sonstiges"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Nimmt neue Arbeit aus diesem Bereich an",
+          "accepts_new_work_help": "Aus bedeutet, die automatische Zuweisung überspringt sie hier. Vorhandene Arbeit bleibt, und namentliche Zuweisung ist weiter möglich.",
+          "max_open_items": "Höchstens offene Elemente gleichzeitig",
+          "max_open_items_help": "Die automatische Zuweisung stoppt bei dieser Zahl. Leer entscheidet das Limit des Bereichs.",
+          "no_limit": "Kein Limit",
+          "saved": "Gespeichert",
+          "not_saved": "Konnte nicht gespeichert werden",
+          "limit_invalid": "Das muss eine ganze Zahl von eins oder mehr sein.",
+          "open_aria": "Arbeitseinstellungen für {name}"
         }
       }
     },

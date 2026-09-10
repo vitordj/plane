@@ -696,7 +696,9 @@
             "search": "Cari berdasarkan nama atau email",
             "no_candidates": "Belum ada di area ini yang dapat mengambil pekerjaan. Tambahkan orang ke area ini terlebih dahulu.",
             "assigning": "Menugaskan…",
-            "open_items": "{count, plural, one {# item terbuka} other {# item terbuka}}"
+            "open_items": "{count, plural, one {# item terbuka} other {# item terbuka}}",
+            "unavailable": "Tidak ada",
+            "opted_out": "Tidak menerima pekerjaan baru"
           },
           "toast": {
             "claimed_title": "Item kerja diambil",
@@ -733,7 +735,11 @@
             "search": "Cari area",
             "no_units": "Tidak ada area lain yang mencakup proyek ini.",
             "transferring": "Memindahkan…"
-          }
+          },
+          "suggestion": "Saran: {name}",
+          "unavailable_until": "Tidak ada hingga {until}",
+          "unavailable_open": "Tidak ada",
+          "executor_away": "Tidak ada"
         },
         "errors": {
           "unit_not_found": "Area itu sudah tidak ada.",
@@ -773,7 +779,13 @@
           "if_match_required": "Permintaan ini memerlukan header If-Match berisi keputusan yang berlaku.",
           "process_projection_disabled": "Proyeksi proses dimatikan pada instansi ini.",
           "completion_manual_only": "Item kerja ini hanya dapat diselesaikan oleh orang.",
-          "internal_error": "Terjadi kesalahan. Operasi dicatat sebagai gagal."
+          "internal_error": "Terjadi kesalahan. Operasi dicatat sebagai gagal.",
+          "availability_window_not_found": "Periode ketidaktersediaan itu tidak ditemukan.",
+          "availability_invalid_interval": "Akhir periode ketidaktersediaan harus setelah awalnya.",
+          "availability_from_required": "Periode ketidaktersediaan memerlukan tanggal mulai.",
+          "workspace_member_not_found": "Orang itu bukan anggota workspace ini.",
+          "allocation_limit_forbidden": "Hanya koordinator atau admin workspace yang boleh menetapkan batas kerja pribadi.",
+          "not_availability_manager": "Hanya koordinator salah satu area orang ini, atau admin workspace, yang boleh melakukan ini."
         },
         "coordinators": {
           "tab": "Koordinator",
@@ -823,6 +835,37 @@
           "description": "Area tempat Anda menjadi anggota, dan pekerjaan yang menunggu di masing-masing.",
           "empty": "Anda belum menjadi anggota area mana pun.",
           "select": "Pilih area"
+        },
+        "availability": {
+          "title": "Waktu tidak ada",
+          "help": "Tidak ada membuat penugasan otomatis tidak memilih Anda. Pekerjaan yang sudah Anda bawa tidak ditarik.",
+          "empty": "Belum ada catatan.",
+          "from": "Dari",
+          "until": "Sampai",
+          "add": "Tambah",
+          "added": "Tercatat",
+          "not_added": "Tidak dapat mencatatnya",
+          "removed": "Dihapus",
+          "not_removed": "Tidak dapat menghapusnya",
+          "remove_aria": "Hapus ketidakhadiran ini",
+          "range": "{from} sampai {until}",
+          "open_ended": "Dari {from}, tanpa tanggal kembali",
+          "reason": {
+            "vacation": "Libur",
+            "leave": "Cuti",
+            "other": "Lainnya"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Menerima pekerjaan baru dari area ini",
+          "accepts_new_work_help": "Nonaktif berarti penugasan otomatis melewati mereka di sini. Mereka tetap membawa yang sudah ada, dan masih bisa diberi secara nama.",
+          "max_open_items": "Paling banyak item terbuka sekaligus",
+          "max_open_items_help": "Penugasan otomatis berhenti pada angka ini. Kosong berarti batas area yang berlaku.",
+          "no_limit": "Tanpa batas",
+          "saved": "Disimpan",
+          "not_saved": "Tidak dapat menyimpan",
+          "limit_invalid": "Harus berupa bilangan bulat satu atau lebih.",
+          "open_aria": "Pengaturan kerja untuk {name}"
         }
       }
     },

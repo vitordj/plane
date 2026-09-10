@@ -263,6 +263,7 @@ from .organizational_unit import (
     OrganizationalUnitPolicyEndpoint,
 )
 from .organizational_queue import (
+    IssueCandidatesEndpoint,
     IssueClaimEndpoint,
     IssueReassignEndpoint,
     IssueReturnEndpoint,
@@ -270,6 +271,11 @@ from .organizational_queue import (
     OrganizationalUnitCoordinatorViewSet,
     OrganizationalUnitDecisionsEndpoint,
     OrganizationalUnitQueueEndpoint,
+)
+from .organizational_availability import (
+    MemberAvailabilityEndpoint,
+    MembershipAllocationEndpoint,
+    MyAvailabilityEndpoint,
 )
 from .orca_build_info import OrcaBuildInfoEndpoint
 from .orca_language import UserLanguagePreferenceEndpoint
