@@ -114,7 +114,9 @@ ORCA_ERROR_MESSAGES = {
     "ORG_AVAILABILITY_FROM_REQUIRED": "An unavailability period needs a start",
     "ORG_WORKSPACE_MEMBER_NOT_FOUND": "That person is not a member of this workspace",
     "ORG_ALLOCATION_LIMIT_FORBIDDEN": "Only a coordinator or a workspace admin may set a personal work limit",
-    "ORG_NOT_AVAILABILITY_MANAGER": "Only a coordinator of one of this person's areas, or a workspace admin, may do this",
+    "ORG_NOT_AVAILABILITY_MANAGER": (
+        "Only a coordinator of one of this person's areas, or a workspace admin, may do this"
+    ),
     "ORG_PUBLIC_API_DISABLED": "The Orca public automation API is disabled on this instance",
     "ORG_IDEMPOTENCY_KEY_REQUIRED": "This request needs an Idempotency-Key header",
     "ORG_IDEMPOTENCY_PAYLOAD_MISMATCH": "This Idempotency-Key was already used with a different payload",
