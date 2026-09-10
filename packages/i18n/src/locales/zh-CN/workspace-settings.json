@@ -742,6 +742,49 @@
           "executor_away": "离开",
           "process_progress": "{done}/{total}"
         },
+        "executive": {
+          "title": "管理视图",
+          "heading": "按区域查看工作",
+          "description": "各区域以及正在运行的流程中，工作进展如何。",
+          "link": "管理视图",
+          "load_failed": "无法加载管理视图。",
+          "empty": "还没有区域。",
+          "hidden_count": "{count, plural, one {# 个工作项位于您无法打开的项目中} other {# 个工作项位于您无法打开的项目中}}",
+          "period": {
+            "label": "周期",
+            "7d": "最近 7 天",
+            "30d": "最近 30 天",
+            "90d": "最近 90 天"
+          },
+          "indicators": {
+            "area": "区域",
+            "backlog": "待办",
+            "queued": "排队中",
+            "assignment_overdue": "分配逾期",
+            "target_overdue": "目标日期已过",
+            "queue_age_p50": "队列时长 p50",
+            "queue_age_p90": "队列时长 p90",
+            "throughput": "吞吐",
+            "cycle_time_p50": "周期时间 p50",
+            "cycle_time_p90": "周期时间 p90",
+            "concentration_top3": "前 3 名集中度",
+            "auto_assign_kept_ratio": "自动分配保留率"
+          },
+          "processes": {
+            "heading": "流程",
+            "running": "进行中",
+            "completed": "本期内完成",
+            "lead_time_p50": "前置时间 p50",
+            "lead_time_p90": "前置时间 p90",
+            "empty": "本期内没有进行中或已完成的流程。",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "没有可显示的内容。您无法打开的项目中的工作项会计入总数，但不会列出。",
+            "close": "关闭"
+          }
+        },
         "errors": {
           "unit_not_found": "该区域已不存在。",
           "name_required": "区域需要一个名称。",

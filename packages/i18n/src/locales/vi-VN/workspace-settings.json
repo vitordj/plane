@@ -742,6 +742,49 @@
           "executor_away": "Vắng",
           "process_progress": "{done}/{total}"
         },
+        "executive": {
+          "title": "Góc nhìn điều hành",
+          "heading": "Công việc theo khu vực",
+          "description": "Công việc đang diễn ra như thế nào ở từng khu vực và trong các quy trình đang chạy.",
+          "link": "Góc nhìn điều hành",
+          "load_failed": "Không thể tải góc nhìn điều hành.",
+          "empty": "Chưa có khu vực nào.",
+          "hidden_count": "{count, plural, one {# mục công việc nằm trong dự án bạn không thể mở} other {# mục công việc nằm trong các dự án bạn không thể mở}}",
+          "period": {
+            "label": "Kỳ",
+            "7d": "7 ngày qua",
+            "30d": "30 ngày qua",
+            "90d": "90 ngày qua"
+          },
+          "indicators": {
+            "area": "Khu vực",
+            "backlog": "Backlog",
+            "queued": "Trong hàng đợi",
+            "assignment_overdue": "Gán việc quá hạn",
+            "target_overdue": "Quá ngày mục tiêu",
+            "queue_age_p50": "Tuổi hàng đợi p50",
+            "queue_age_p90": "Tuổi hàng đợi p90",
+            "throughput": "Sản lượng",
+            "cycle_time_p50": "Thời gian chu kỳ p50",
+            "cycle_time_p90": "Thời gian chu kỳ p90",
+            "concentration_top3": "Tập trung top 3",
+            "auto_assign_kept_ratio": "Gán tự động được giữ"
+          },
+          "processes": {
+            "heading": "Quy trình",
+            "running": "Đang chạy",
+            "completed": "Hoàn thành trong kỳ",
+            "lead_time_p50": "Lead time p50",
+            "lead_time_p90": "Lead time p90",
+            "empty": "Không có quy trình đang chạy hoặc hoàn thành trong kỳ này.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Không có gì để hiển thị. Mục trong dự án bạn không mở được được tính, không được liệt kê.",
+            "close": "Đóng"
+          }
+        },
         "errors": {
           "unit_not_found": "Khu vực đó không còn tồn tại.",
           "name_required": "Khu vực cần có tên.",

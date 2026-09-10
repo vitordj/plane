@@ -49,7 +49,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[x]` 6/6 no código · Gate 2-mínimo ainda aberto (staging + piloto)                                                 | —               |
 | 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[x]` 6/6 no código · Gate 3 ainda aberto (staging + piloto) · ranking `lb-2`                                       | —               |
 | 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[~]` 6/7 · 4.1, 4.2, 4.3, 4.5, 4.6, 4.7 `[x]` · **4.4** outro repositório · Gate 4 aberto (orquestrador + staging) | —               |
-| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                                           | —               |
+| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[~]` 3/4 · 5.1, 5.3, 5.4 `[x]` · 5.2 aberto (falta medição em staging)                                             | —               |
 | R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[x]` 20/20 de código · resta T1 (decisão de negócio)                                                               | n/a             |
 
 ## Próximo item recomendado
@@ -58,10 +58,12 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 (orquestrador sidecar, outro repositório). 4.1 fechou A5: Compose é schema
 em Git, instâncias pela API pública (`docs/orca-compose-notes.md`). 4.5
 enriquece o webhook nativo; 4.6 agrupa a fila por instância; 4.7 é o
-runbook. A6 (módulo nativo) ficou fora da v1.
+runbook. A6 (módulo nativo) ficou fora da v1. A Fase 5 está 3/4: 5.1,
+5.3 e 5.4 nesta PR.
 
-**O próximo item de código neste monorepo é `5.1+5.3+5.4`.** 4.4 não se
-abre daqui. 5.2 só depois de medir 5.1 em staging.
+**Não há próximo item de código neste monorepo.** `5.1`, `5.3` e `5.4`
+estão nesta PR. **5.2** permanece `[ ]` até medir 5.1 em staging (>2 s) —
+sem tabela de snapshot até lá. 4.4 não se abre daqui.
 
 **Antes de escolher qualquer item, saiba destas quatro coisas.**
 
@@ -92,9 +94,9 @@ negócio (P0.12, P0.13, P0.17).
 
 ### Ordem que eu recomendaria
 
-1. **`5.1+5.3+5.4`** — métrica por área e por processo (a 0142 já existe).
-2. **Staging**: Gate 2-mínimo, Gate 3 e a auditoria do Gate D0 com a área piloto.
-3. **4.4** no repositório do orquestrador, quando esse repo existir.
+1. **Staging**: Gate 2-mínimo, Gate 3 e a auditoria do Gate D0 com a área piloto.
+2. **4.4** no repositório do orquestrador, quando esse repo existir.
+3. **5.2** só se 5.1 passar de 2 s em staging — senão marcar `[-]` com o tempo.
 4. **R1.T1** só se a trilha de decisões passar a ser tratada como evidência
    regulatória.
 

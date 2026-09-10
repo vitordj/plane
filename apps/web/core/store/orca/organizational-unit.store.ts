@@ -24,6 +24,10 @@ import type {
   IUserOrganizationalUnit,
   TOrganizationalUnitAssignMode,
   TOrganizationalUnitMemberRole,
+  IExecutiveDrillDown,
+  IExecutiveReport,
+  TExecutiveMetric,
+  TExecutivePeriod,
 } from "@plane/types";
 import { OrganizationalUnitService } from "@/services/orca/organizational-unit.service";
 import type { CoreRootStore } from "../root.store";
@@ -219,6 +223,19 @@ export interface IOrganizationalUnitStore {
     row: IQueueRow,
     destinationUnitId: string
   ) => Promise<IIssueRouting>;
+  executiveReport: IExecutiveReport | null;
+  executiveLoader: boolean;
+  executiveDrillDown: IExecutiveDrillDown | null;
+  executiveDrillLoader: boolean;
+  fetchExecutive: (
+    workspaceSlug: string,
+    params?: { period?: TExecutivePeriod; unit?: string }
+  ) => Promise<IExecutiveReport>;
+  fetchExecutiveDrillDown: (
+    workspaceSlug: string,
+    params: { unit: string; metric: TExecutiveMetric; period?: TExecutivePeriod }
+  ) => Promise<IExecutiveDrillDown>;
+  clearExecutiveDrillDown: () => void;
 }
 
 /**
@@ -254,6 +271,10 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
   featureEnabled: boolean | null = null;
   availabilityEnabled: boolean | null = null;
   availabilityByMember: Record<string, IMemberAvailability[]> = {};
+  executiveReport: IExecutiveReport | null = null;
+  executiveLoader = false;
+  executiveDrillDown: IExecutiveDrillDown | null = null;
+  executiveDrillLoader = false;
 
   rootStore: CoreRootStore;
   service: OrganizationalUnitService;
@@ -273,6 +294,10 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       featureEnabled: observable.ref,
       availabilityEnabled: observable.ref,
       availabilityByMember: observable,
+      executiveReport: observable.ref,
+      executiveLoader: observable.ref,
+      executiveDrillDown: observable.ref,
+      executiveDrillLoader: observable.ref,
       units: computed,
       isEnabled: computed,
       fetchConfig: action,
@@ -312,6 +337,9 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       addAvailability: action,
       removeAvailability: action,
       setAllocationSettings: action,
+      fetchExecutive: action,
+      fetchExecutiveDrillDown: action,
+      clearExecutiveDrillDown: action,
     });
 
     this.rootStore = _rootStore;
@@ -849,5 +877,58 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       };
     });
     return routing;
+  };
+
+  /**
+   * @description Workspace-admin aggregates. Replaces whatever report was
+   * showing: a period change is a different question, not a patch.
+   */
+  fetchExecutive = async (workspaceSlug: string, params?: { period?: TExecutivePeriod; unit?: string }) => {
+    runInAction(() => {
+      this.executiveLoader = true;
+    });
+    try {
+      const report = await this.service.getExecutive(workspaceSlug, params);
+      runInAction(() => {
+        this.executiveReport = report;
+        this.executiveLoader = false;
+      });
+      return report;
+    } catch (error) {
+      runInAction(() => {
+        this.executiveLoader = false;
+      });
+      throw error;
+    }
+  };
+
+  /**
+   * @description The list behind one number. Action flags on every row are
+   * off: this is a report, not the coordinator's board.
+   */
+  fetchExecutiveDrillDown = async (
+    workspaceSlug: string,
+    params: { unit: string; metric: TExecutiveMetric; period?: TExecutivePeriod }
+  ) => {
+    runInAction(() => {
+      this.executiveDrillLoader = true;
+    });
+    try {
+      const page = await this.service.getExecutiveDrillDown(workspaceSlug, params);
+      runInAction(() => {
+        this.executiveDrillDown = page;
+        this.executiveDrillLoader = false;
+      });
+      return page;
+    } catch (error) {
+      runInAction(() => {
+        this.executiveDrillLoader = false;
+      });
+      throw error;
+    }
+  };
+
+  clearExecutiveDrillDown = () => {
+    this.executiveDrillDown = null;
   };
 }

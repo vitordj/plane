@@ -393,3 +393,85 @@ export interface IDirectoryIdentity {
   last_seen_at: string | null;
   created_at: string;
 }
+
+/** Window the executive report covers. */
+export type TExecutivePeriod = "7d" | "30d" | "90d";
+
+/** Indicator a director can open as a filtered list. */
+export type TExecutiveMetric = "backlog" | "queued" | "assignment_overdue" | "target_overdue" | "throughput";
+
+/** One day's throughput for the CSS sparkline — no chart library. */
+export interface IExecutiveSparklineBar {
+  date: string;
+  count: number;
+}
+
+/**
+ * Aggregates for one area. Counts include items in projects the reader
+ * cannot open; `hidden_count` is how many of those there are. Durations
+ * are seconds. Ratios are 0–1, or null when the denominator is 0.
+ */
+export interface IExecutiveUnitMetrics {
+  unit_id: string;
+  name: string;
+  slug: string;
+  backlog: number;
+  queued: number;
+  assignment_overdue: number;
+  target_overdue: number;
+  queue_age_p50: number | null;
+  queue_age_p90: number | null;
+  throughput: number;
+  cycle_time_p50: number | null;
+  cycle_time_p90: number | null;
+  concentration_top3: number | null;
+  auto_assign_kept_ratio: number | null;
+  throughput_sparkline: IExecutiveSparklineBar[];
+  hidden_count: number;
+}
+
+/** An open process step whose promised date has passed. */
+export interface IExecutiveDelayedStep {
+  process_instance_id: string;
+  template_name: string;
+  step_key: string;
+  issue_id: string;
+  due_at: string | null;
+  kind: "completion" | "assignment";
+  late_seconds: number;
+}
+
+export interface IExecutiveProcessInstance {
+  process_instance_id: string;
+  template_name: string;
+  template_version: string;
+  status: "running" | "completed" | "cancelled";
+  started_at: string | null;
+  completed_at: string | null;
+  lead_time_seconds: number | null;
+}
+
+export interface IExecutiveProcessMetrics {
+  running: number;
+  completed: number;
+  lead_time_p50: number | null;
+  lead_time_p90: number | null;
+  delayed_steps: IExecutiveDelayedStep[];
+  instances: IExecutiveProcessInstance[];
+}
+
+/** Payload of `GET /api/orca/workspaces/{slug}/executive/`. */
+export interface IExecutiveReport {
+  period: TExecutivePeriod;
+  period_start: string;
+  generated_at: string;
+  units: IExecutiveUnitMetrics[];
+  processes: IExecutiveProcessMetrics;
+}
+
+/** Payload of `GET /api/orca/workspaces/{slug}/executive/drill-down/`. */
+export type IExecutiveDrillDown = TPaginatedResponse<IQueueRow[]> & {
+  metric: TExecutiveMetric;
+  unit_id: string;
+  hidden_count: number;
+};

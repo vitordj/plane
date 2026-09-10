@@ -742,6 +742,49 @@
           "executor_away": "Ausente",
           "process_progress": "{done}/{total}"
         },
+        "executive": {
+          "title": "Vista ejecutiva",
+          "heading": "Trabajo por área",
+          "description": "Cómo avanza el trabajo en cada área y en los procesos en curso.",
+          "link": "Vista ejecutiva",
+          "load_failed": "No se pudo cargar la vista ejecutiva.",
+          "empty": "Todavía no hay áreas.",
+          "hidden_count": "{count, plural, one {# elemento de trabajo está en un proyecto que no puede abrir} other {# elementos de trabajo están en proyectos que no puede abrir}}",
+          "period": {
+            "label": "Período",
+            "7d": "Últimos 7 días",
+            "30d": "Últimos 30 días",
+            "90d": "Últimos 90 días"
+          },
+          "indicators": {
+            "area": "Área",
+            "backlog": "Pendiente",
+            "queued": "En cola",
+            "assignment_overdue": "Asignación vencida",
+            "target_overdue": "Fecha objetivo vencida",
+            "queue_age_p50": "Antigüedad de la cola p50",
+            "queue_age_p90": "Antigüedad de la cola p90",
+            "throughput": "Rendimiento",
+            "cycle_time_p50": "Tiempo de ciclo p50",
+            "cycle_time_p90": "Tiempo de ciclo p90",
+            "concentration_top3": "Concentración de los 3 principales",
+            "auto_assign_kept_ratio": "Asignación automática conservada"
+          },
+          "processes": {
+            "heading": "Procesos",
+            "running": "En curso",
+            "completed": "Completados en el período",
+            "lead_time_p50": "Tiempo de espera p50",
+            "lead_time_p90": "Tiempo de espera p90",
+            "empty": "No hay procesos en curso o completados en este período.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Nada que mostrar. Los elementos de proyectos que no puede abrir se cuentan, no se listan.",
+            "close": "Cerrar"
+          }
+        },
         "errors": {
           "unit_not_found": "Esa área ya no existe.",
           "name_required": "Un área necesita un nombre.",

@@ -105,10 +105,10 @@ Contexto que você não precisa redescobrir:
   regressão sua.
 - A migração mais recente é 0142_orca_process_projection. A Fase 3 está
   fechada no código (3.1–3.6). Os itens 4.1, 4.2, 4.3, 4.5, 4.6 e 4.7
-  estão em stage ou nesta PR. `docs/orca-compose-notes.md` existe e F12
-  está confirmada. 4.4 é outro repositório — não o abra daqui. O próximo
-  código neste monorepo é 5.1+5.3+5.4. Não consertar o job vermelho do
-  Release Please.
+  estão em stage. `docs/orca-compose-notes.md` existe e F12 está
+  confirmada. 4.4 é outro repositório — não o abra daqui. 5.1, 5.3 e 5.4
+  estão nesta PR; 5.2 só depois de medir 5.1 em staging (>2 s). Não
+  consertar o job vermelho do Release Please.
 ```
 
 ---

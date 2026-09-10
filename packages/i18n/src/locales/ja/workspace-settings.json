@@ -742,6 +742,49 @@
           "executor_away": "不在",
           "process_progress": "{done}/{total}"
         },
+        "executive": {
+          "title": "エグゼクティブビュー",
+          "heading": "エリア別の作業",
+          "description": "各エリアと実行中のプロセスで、作業がどのように進んでいるか。",
+          "link": "エグゼクティブビュー",
+          "load_failed": "エグゼクティブビューを読み込めませんでした。",
+          "empty": "エリアはまだありません。",
+          "hidden_count": "{count, plural, one {開けないプロジェクトに作業項目が #件 あります} other {開けないプロジェクトに作業項目が #件 あります}}",
+          "period": {
+            "label": "期間",
+            "7d": "過去7日",
+            "30d": "過去30日",
+            "90d": "過去90日"
+          },
+          "indicators": {
+            "area": "エリア",
+            "backlog": "バックログ",
+            "queued": "キュー待ち",
+            "assignment_overdue": "割り当て期限超過",
+            "target_overdue": "目標日超過",
+            "queue_age_p50": "キュー経過 p50",
+            "queue_age_p90": "キュー経過 p90",
+            "throughput": "スループット",
+            "cycle_time_p50": "サイクルタイム p50",
+            "cycle_time_p90": "サイクルタイム p90",
+            "concentration_top3": "上位3人の集中度",
+            "auto_assign_kept_ratio": "自動割り当ての維持率"
+          },
+          "processes": {
+            "heading": "プロセス",
+            "running": "実行中",
+            "completed": "期間内に完了",
+            "lead_time_p50": "リードタイム p50",
+            "lead_time_p90": "リードタイム p90",
+            "empty": "この期間に実行中または完了したプロセスはありません。",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "表示するものがありません。開けないプロジェクトの項目は件数に含まれ、一覧には出ません。",
+            "close": "閉じる"
+          }
+        },
         "errors": {
           "unit_not_found": "そのエリアは存在しません。",
           "name_required": "エリアには名前が必要です。",

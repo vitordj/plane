@@ -742,6 +742,49 @@
           "executor_away": "Uzak",
           "process_progress": "{done}/{total}"
         },
+        "executive": {
+          "title": "Yönetici görünümü",
+          "heading": "Alana göre iş",
+          "description": "İşin her alanda ve yürüyen süreçlerde nasıl ilerlediği.",
+          "link": "Yönetici görünümü",
+          "load_failed": "Yönetici görünümü yüklenemedi.",
+          "empty": "Henüz alan yok.",
+          "hidden_count": "{count, plural, one {# iş öğesi, açamadığınız bir projede} other {# iş öğesi, açamadığınız projelerde}}",
+          "period": {
+            "label": "Dönem",
+            "7d": "Son 7 gün",
+            "30d": "Son 30 gün",
+            "90d": "Son 90 gün"
+          },
+          "indicators": {
+            "area": "Alan",
+            "backlog": "Backlog",
+            "queued": "Kuyrukta",
+            "assignment_overdue": "Atama gecikmiş",
+            "target_overdue": "Hedef tarihi geçmiş",
+            "queue_age_p50": "Kuyruk yaşı p50",
+            "queue_age_p90": "Kuyruk yaşı p90",
+            "throughput": "İş hacmi",
+            "cycle_time_p50": "Çevrim süresi p50",
+            "cycle_time_p90": "Çevrim süresi p90",
+            "concentration_top3": "İlk 3 yoğunluğu",
+            "auto_assign_kept_ratio": "Otomatik atama korundu"
+          },
+          "processes": {
+            "heading": "Süreçler",
+            "running": "Çalışıyor",
+            "completed": "Dönemde tamamlanan",
+            "lead_time_p50": "Teslim süresi p50",
+            "lead_time_p90": "Teslim süresi p90",
+            "empty": "Bu dönemde çalışan veya tamamlanmış süreç yok.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Gösterilecek bir şey yok. Açamadığınız projelerdeki öğeler sayıya girer, listeye girmez.",
+            "close": "Kapat"
+          }
+        },
         "errors": {
           "unit_not_found": "Bu alan artık yok.",
           "name_required": "Bir alanın adı olmalı.",

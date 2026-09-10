@@ -277,6 +277,10 @@ from .organizational_availability import (
     MembershipAllocationEndpoint,
     MyAvailabilityEndpoint,
 )
+from .organizational_executive import (
+    OrganizationalExecutiveDrillDownEndpoint,
+    OrganizationalExecutiveEndpoint,
+)
 from .orca_build_info import OrcaBuildInfoEndpoint
 from .orca_language import UserLanguagePreferenceEndpoint
 from .organizational_directory import (
