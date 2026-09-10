@@ -5,8 +5,10 @@
 from .base import OrcaPublicApiFeatureMixin, OrcaPublicBaseAPIView
 from .units import UnitListEndpoint, UnitQueueEndpoint
 from .work_items import (
+    ProcessInstanceEndpoint,
     WorkItemAutomationEndpoint,
     WorkItemByExternalEndpoint,
+    WorkItemCompleteEndpoint,
     WorkItemReassignEndpoint,
     WorkItemTransferEndpoint,
 )
@@ -14,10 +16,12 @@ from .work_items import (
 __all__ = [
     "OrcaPublicApiFeatureMixin",
     "OrcaPublicBaseAPIView",
+    "ProcessInstanceEndpoint",
     "UnitListEndpoint",
     "UnitQueueEndpoint",
     "WorkItemAutomationEndpoint",
     "WorkItemByExternalEndpoint",
+    "WorkItemCompleteEndpoint",
     "WorkItemReassignEndpoint",
     "WorkItemTransferEndpoint",
 ]

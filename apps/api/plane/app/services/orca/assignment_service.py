@@ -71,6 +71,7 @@ from .alerts import notify_allocation_failed_safely
 from .availability import allocation_settings_for, unavailable_workspace_member_ids
 from .coverage import unit_covers_project
 from .metrics import record_assignment_outcome, record_decision_superseded, record_no_candidate
+from .service_level import record_from_resolution
 from .errors import (
     AlreadyClaimed,
     AssignmentModeNotAllowed,
@@ -637,6 +638,7 @@ def allocate(
     actor=None,
     trigger: str = DecisionTrigger.INTERNAL_API,
     assignment_due_at=None,
+    completion_due_at=None,
     automation_operation=None,
 ) -> AllocationResult:
     """
@@ -655,6 +657,9 @@ def allocate(
     @param actor: Who is acting; ``None`` means the system decided.
     @param trigger: Member of ``DecisionTrigger``.
     @param assignment_due_at: Explicit SLA deadline, which wins over policy.
+    @param completion_due_at: When the work itself should be done. Mirrored
+        into ``IssueServiceLevel`` (Phase 4, RFC F22); the originals on that
+        row never move.
     @param automation_operation: The public-API operation behind this call, if
         any; recorded on every decision the call produces.
     @returns What happened, including the decision that was written.
@@ -698,7 +703,16 @@ def allocate(
                 automation_operation=automation_operation,
             )
             _apply_assigned(link, decision, executor_id)
-            return AllocationResult(link, decision, DecisionOutcome.ASSIGNED, executor_id)
+            result = AllocationResult(link, decision, DecisionOutcome.ASSIGNED, executor_id)
+            record_from_resolution(
+                issue,
+                result.link,
+                resolution,
+                actor=actor,
+                assignment_due_at=assignment_due_at,
+                completion_due_at=completion_due_at,
+            )
+            return result
 
         # --- least_loaded: the ranking decides -----------------------------
         if resolution.effective_mode == AssignmentMode.LEAST_LOADED:
@@ -719,7 +733,16 @@ def allocate(
                     automation_operation=automation_operation,
                 )
                 _apply_assigned(link, decision, chosen.user_id)
-                return AllocationResult(link, decision, DecisionOutcome.ASSIGNED, chosen.user_id)
+                result = AllocationResult(link, decision, DecisionOutcome.ASSIGNED, chosen.user_id)
+                record_from_resolution(
+                    issue,
+                    result.link,
+                    resolution,
+                    actor=actor,
+                    assignment_due_at=assignment_due_at,
+                    completion_due_at=completion_due_at,
+                )
+                return result
 
             record_no_candidate(
                 unit_id=unit.id,
@@ -746,9 +769,18 @@ def allocate(
                 sla_seconds=resolution.sla_seconds,
                 assignment_due_at=assignment_due_at,
             )
-            return AllocationResult(
+            result = AllocationResult(
                 link, decision, DecisionOutcome.ALLOCATION_FAILED, None, QueueReason.NO_ELIGIBLE_MEMBER
             )
+            record_from_resolution(
+                issue,
+                result.link,
+                resolution,
+                actor=actor,
+                assignment_due_at=assignment_due_at,
+                completion_due_at=completion_due_at,
+            )
+            return result
 
         # --- manual / self_claim: the item waits ---------------------------
         queue_reason = QUEUE_REASON_FOR_MODE.get(resolution.effective_mode, QueueReason.AWAITING_COORDINATOR)
@@ -771,7 +803,16 @@ def allocate(
             sla_seconds=resolution.sla_seconds,
             assignment_due_at=assignment_due_at,
         )
-        return AllocationResult(link, decision, DecisionOutcome.QUEUED, None, queue_reason)
+        result = AllocationResult(link, decision, DecisionOutcome.QUEUED, None, queue_reason)
+        record_from_resolution(
+            issue,
+            result.link,
+            resolution,
+            actor=actor,
+            assignment_due_at=assignment_due_at,
+            completion_due_at=completion_due_at,
+        )
+        return result
 
 
 def claim(issue, user, *, actor=None) -> AllocationResult:
@@ -1015,6 +1056,7 @@ def set_responsibility(
     collaborators: Iterable = (),
     reason="",
     assignment_due_at=None,
+    completion_due_at=None,
     trigger: str = DecisionTrigger.INTERNAL_API,
     automation_operation=None,
 ) -> AllocationResult:
@@ -1101,5 +1143,6 @@ def set_responsibility(
         actor=actor,
         trigger=trigger,
         assignment_due_at=assignment_due_at,
+        completion_due_at=completion_due_at,
         automation_operation=automation_operation,
     )

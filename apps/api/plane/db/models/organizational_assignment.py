@@ -134,6 +134,12 @@ class OrganizationalUnitAssignmentPolicy(BaseModel):
             ``default_mode``.
         assignment_sla_seconds (int): Default assignment SLA, in seconds.
         max_open_items_per_member (int): Hard cap used by ``least_loaded``.
+        completed_state (State): Optional project state an automatic close
+            moves a step to (Phase 4). When null, the first completed-group
+            state by ``sequence`` is used.
+        review_state (State): Optional project state ``automatic_with_review``
+            moves a step to. When null, the step keeps its state and gets the
+            ``aguardando-validacao`` label.
         version (int): Incremented on every save.
     """
 
@@ -166,6 +172,23 @@ class OrganizationalUnitAssignmentPolicy(BaseModel):
     allowed_modes = models.JSONField(default=list)
     assignment_sla_seconds = models.PositiveIntegerField(null=True, blank=True)
     max_open_items_per_member = models.PositiveIntegerField(null=True, blank=True)
+    # Phase 4: where an automatic close lands, and where a step flagged for
+    # review waits. Optional — most projects have one completed state and
+    # never need either. Sidecar columns on this Orca table, not on State.
+    completed_state = models.ForeignKey(
+        "db.State",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orca_completing_policies",
+    )
+    review_state = models.ForeignKey(
+        "db.State",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orca_reviewing_policies",
+    )
     is_active = models.BooleanField(default=True)
     version = models.PositiveIntegerField(default=1)
 

@@ -103,12 +103,13 @@ Contexto que você não precisa redescobrir:
   configuração do repositório, não por código (GitHub Actions sem permissão para
   criar PR). Um stage vermelho nesse job só, com os outros 17 verdes, não é
   regressão sua.
-- A migração mais recente é 0141_orca_availability. A Fase 3 está fechada no
-  código (3.1–3.6). A 0142 é da Faixa B (4.2), não desta. O ranking já é
-  `lb-2`. Depois que A (este PR) e B (4.2/4.3) mesclarem em stage — A primeiro
-  se brigarem em urls/orca.py — o próximo código é 4.5+4.6+4.7 num PR e
-  5.1+5.3+5.4 noutro. Não abrir 4.1, 4.4, 5.1 inteiro agora, 5.2, nem
-  consertar o job vermelho do Release Please.
+- A migração mais recente é 0142_orca_process_projection. A Fase 3 está
+  fechada no código (3.1–3.6). Os itens 4.2 e 4.3 (SLA lateral, bloco
+  `process`, `complete/`, leitura da instância) entram com esta PR. O ranking
+  já é `lb-2`. O próximo código é 4.5+4.6+4.7 num PR. Não abrir 4.1 sem a
+  leitura da doc oficial do Compose (`docs/orca-compose-notes.md` ainda não
+  existe). 4.4 é outro repositório. Não consertar o job vermelho do Release
+  Please.
 ```
 
 ---

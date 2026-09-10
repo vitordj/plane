@@ -413,6 +413,14 @@ def public_transfer_url(slug, project_id, issue_id):
     return f"{public_work_items_url(slug, project_id)}{issue_id}/transfer/"
 
 
+def public_complete_url(slug, project_id, issue_id):
+    return f"{public_work_items_url(slug, project_id)}{issue_id}/complete/"
+
+
+def public_process_instance_url(slug, source, instance_id):
+    return f"/api/v1/orca/workspaces/{slug}/process-instances/{source}/{instance_id}/"
+
+
 @pytest.fixture
 def public_api_on(settings):
     """Both switches on: the automation API ships off (item 1.2)."""

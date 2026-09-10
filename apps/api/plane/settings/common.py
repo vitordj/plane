@@ -623,6 +623,12 @@ ORCA_PUBLIC_API_ENABLED = env_flag("ORCA_PUBLIC_API_ENABLED", default=False)
 # answer while this is off, which is what makes the default safe.
 ORCA_AVAILABILITY_ENABLED = env_flag("ORCA_AVAILABILITY_ENABLED", default=False)
 
+# Recurring processes projected into Plane (Phase 4). Default off so the
+# tables can exist and the assignment service can fill IssueServiceLevel
+# without an orchestrator being able to attach a `process` block. Same
+# strict parser as the three switches above.
+ORCA_PROCESS_PROJECTION_ENABLED = env_flag("ORCA_PROCESS_PROJECTION_ENABLED", default=False)
+
 # Per-token budget for the automation API. Keyed on the API token rather than
 # the address, because every call from one integration arrives from the same
 # host and an address-keyed limit would let one workspace's automation

@@ -66,3 +66,23 @@ def availability_enabled() -> bool:
         may change ranking and the sweep.
     """
     return bool(getattr(settings, "ORCA_AVAILABILITY_ENABLED", False))
+
+
+def process_projection_enabled() -> bool:
+    """
+    Whether this instance records process runs against work items.
+
+    @description Default off. The tables can exist (and the assignment
+    service can fill ``IssueServiceLevel``) while ``POST work-items/``
+    still refuses a ``process`` block: an orchestrator that thought it was
+    building a run and got four unrelated work items is worse than an
+    error. Independent of the public-API switch — the flag is what the
+    complete/ and process-instance routes consult, and they already sit
+    behind ``ORCA_PUBLIC_API_ENABLED``.
+
+    Read at call time, for the same reason as the other three.
+
+    @returns: ``True`` when the process block, ``complete/`` and the
+        instance read are accepted.
+    """
+    return bool(getattr(settings, "ORCA_PROCESS_PROJECTION_ENABLED", False))
