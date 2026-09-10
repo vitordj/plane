@@ -16,11 +16,13 @@ F20, F21, F22, Apêndice B.
 
 ---
 
-## 4.1 — Fechar A5 e decidir o papel do Compose `[ ]`
+## 4.1 — Fechar A5 e decidir o papel do Compose `[x]`
 
-- Ler a documentação oficial do Plane Compose e registrar no RFC §4.2: autenticação, campos de work item, comportamento de re-push com mesmo id, arquivo de estado, ausência/presença de campo de área ou custom property na base CE 1.4.x.
-- Decisão esperada (F12): Compose só para schema (estados, labels, estrutura de projetos) versionado em Git; instâncias sempre pela API pública. Se a leitura contradisser F12, reabrir no RFC antes de prosseguir.
-- Entregável: `docs/orca-compose-notes.md` curto com a decisão e um exemplo de YAML de schema do projeto piloto (se aplicável).
+- Lida a documentação oficial do Plane Compose (`https://developers.plane.so/dev-tools/plane-compose`, PyPI `0.5.2`) e registrada em [`docs/orca-compose-notes.md`](../../orca-compose-notes.md).
+- Autenticação: connection `(server, pat\|workspace, token)` em `~/.config/plane-compose/`, nunca em `plane.yaml`.
+- Re-push com o mesmo `id` local atualiza o mesmo work item remoto; sem `id`, a chave derivada do conteúdo pode duplicar.
+- Não há campo de área nem custom property na CE 1.4.x. Compose não consegue carregar a área.
+- Decisão (F12, confirmada): Compose só para schema (estados, labels, tipos) versionado em Git; instâncias sempre pela API pública. RFC §4.2 rev. 14.
 
 ---
 
@@ -50,6 +52,11 @@ reflete estado nativo alterado pela UI.
 
 ## 4.4 — Orquestrador sidecar `[ ]`
 
+**Fora deste monorepo.** Esta sessão não abre o item: o orquestrador é um
+repositório próprio, e o contrato (`docs/orca-orchestrator-contract.md`) só
+faz sentido quando esse repo existir. O runbook de 4.7 e o sidecar de
+webhook de 4.5 são o que esse repo poderá assumir.
+
 Repositório próprio (sugestão: `orca-orchestrator`), fora deste monorepo,
 conforme FORK.md §1.B. Escopo mínimo:
 
@@ -66,24 +73,28 @@ contrato que ele deve passar contra staging.
 
 ---
 
-## 4.5 — Webhooks e retorno `[ ]`
+## 4.5 — Webhooks e retorno `[x]`
 
-- Verificar que a criação via `/api/v1/orca/` dispara os webhooks nativos de `issue` (via `issue_activity` em `on_commit`) e que o payload inclui `external_source`/`external_id` (já existe `workspace_slug` no payload pelo fork).
-- Se necessário, enriquecer o payload com `orca: {unit_slug, routing_state, primary_executor}` por um `WebhookPayloadExtension` lateral, sem alterar o serializer nativo além de um hook.
+- A criação via `/api/v1/orca/` já disparava `model_activity` em `on_commit` (os testes de 1.4 pinam isso). O payload nativo inclui `workspace_slug`, `external_source` e `external_id`.
+- Sidecar `data.orca = {unit_slug, routing_state, primary_executor}` (ou `null`) em `get_model_data`, sem alterar `IssueExpandSerializer`. Ver `services/orca/webhook_payload.py`.
+- `WEBHOOK_ALLOWED_HOSTS` / `WEBHOOK_ALLOWED_IPS` já existem no fork; o runbook diz ao operador para incluir o host do orquestrador.
 
----
-
-## 4.6 — Agrupamento visual `[ ]`
-
-- Fila e "Minha Área" agrupam por `ProcessInstanceReference` quando existe (colapsável), mostrando progresso `n/m`.
-- Opcional (A6): quando todos os itens da instância estão no mesmo projeto, criar um `Module` nativo por instância e vincular os itens (idempotente por `external_id` do módulo). Só com flag de política por área↔projeto (`project_module_per_instance`).
+**Testes:** item com área nomeia a área; item sem área tem `orca: null`; `external_source`/`external_id` viajam no serializer nativo.
 
 ---
 
-## 4.7 — Runbook e testes de fechamento `[ ]`
+## 4.6 — Agrupamento visual `[x]`
 
-- `docs/orca-processes-runbook.md`: desligar o orquestrador, religar, reprocessar, corrigir uma instância manualmente, desligar `ORCA_PROCESS_PROJECTION_ENABLED` e o que continua funcionando (tudo, exceto o bloco `process` e `complete/`).
-- Teste de contrato: reprocessar os mesmos 20 eventos duas vezes → contagens idênticas; falha injetada na etapa 3 de 4 → replay completa a instância.
+- Fila interna e pública, e portanto a aba Trabalho / Minha Área, carregam `process: {source, instance_id, template_name, step_key, done, total}` (ou `null`). `n/m` é o progresso da instância, não o da página.
+- A lista agrupa por `ProcessInstanceReference` (colapsável, aberto por omissão).
+- A6: módulo nativo por instância **não** entra na v1 (F20). Reabrir se um piloto de um só projeto precisar da vista de Module.
+
+---
+
+## 4.7 — Runbook e testes de fechamento `[x]`
+
+- [`docs/orca-processes-runbook.md`](../../orca-processes-runbook.md): desligar o orquestrador, religar, reprocessar, corrigir uma instância à mão, desligar `ORCA_PROCESS_PROJECTION_ENABLED`.
+- Teste: 20 eventos de criação, reprocessados, deixam as contagens iguais; falha injetada na etapa 3 de 4 (projeto sem estado completed) e replay com chave nova completa a instância.
 
 ---
 

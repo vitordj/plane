@@ -562,18 +562,41 @@ if result.replayed:
 
 ---
 
+## Native webhooks
+
+A work item created through this API is announced the same way a person
+creating one in the UI is: `model_activity` runs after commit. Subscribe to
+native `issue` webhooks.
+
+The envelope already has `workspace_slug`. The work item in `data` carries
+native `external_source` / `external_id`. An Orca sidecar is attached
+without changing the upstream serializer:
+
+```json
+"orca": {
+  "unit_slug": "compliance",
+  "routing_state": "queued",
+  "primary_executor": null
+}
+```
+
+`orca` is `null` when the item has no area. Put the orchestrator's host in
+`WEBHOOK_ALLOWED_HOSTS` (see `docs/orca-processes-runbook.md`).
+
+---
+
 ## Not here yet
 
 | Wanted                                           | Where it is                  |
 | ------------------------------------------------ | ---------------------------- |
 | Orchestrator sidecar (templates, event consumer) | Phase 4.4, outside this repo |
-| Queue grouped by process instance                | Phase 4.6                    |
-| Native webhook payload enriched with Orca fields | Phase 4.5                    |
 
 `process`, `completion_due_at` and `POST .../complete/` shipped in items 4.2
-and 4.3, behind `ORCA_PROCESS_PROJECTION_ENABLED` (default off). Coordinator
-access to another area's queue shipped in Phase 2. Availability affects
-ranking (`lb-2`) when `ORCA_AVAILABILITY_ENABLED` is on.
+and 4.3, behind `ORCA_PROCESS_PROJECTION_ENABLED` (default off). Native
+webhooks carry the Orca sidecar (4.5). The coordinator inbox groups by
+process instance (4.6). Coordinator access to another area's queue shipped
+in Phase 2. Availability affects ranking (`lb-2`) when
+`ORCA_AVAILABILITY_ENABLED` is on.
 
 The full design, including the invariants these endpoints preserve, is in
 [`docs/orca-work-management-rfc.md`](./orca-work-management-rfc.md).
