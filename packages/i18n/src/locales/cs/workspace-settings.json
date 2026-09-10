@@ -741,6 +741,49 @@
           "unavailable_open": "Nepřítomen",
           "executor_away": "Nepřítomen"
         },
+        "executive": {
+          "title": "Manažerský přehled",
+          "heading": "Práce podle oblasti",
+          "description": "Jak práce postupuje v každé oblasti a v běžících procesech.",
+          "link": "Manažerský přehled",
+          "load_failed": "Manažerský přehled se nepodařilo načíst.",
+          "empty": "Zatím žádné oblasti.",
+          "hidden_count": "{count, plural, one {# pracovní položka je v projektu, který nemůžete otevřít} few {# pracovní položky jsou v projektech, které nemůžete otevřít} many {# pracovní položky je v projektech, které nemůžete otevřít} other {# pracovních položek je v projektech, které nemůžete otevřít}}",
+          "period": {
+            "label": "Období",
+            "7d": "Posledních 7 dní",
+            "30d": "Posledních 30 dní",
+            "90d": "Posledních 90 dní"
+          },
+          "indicators": {
+            "area": "Oblast",
+            "backlog": "Backlog",
+            "queued": "Ve frontě",
+            "assignment_overdue": "Přiřazení po termínu",
+            "target_overdue": "Cílové datum po termínu",
+            "queue_age_p50": "Stáří fronty p50",
+            "queue_age_p90": "Stáří fronty p90",
+            "throughput": "Průtok",
+            "cycle_time_p50": "Čas cyklu p50",
+            "cycle_time_p90": "Čas cyklu p90",
+            "concentration_top3": "Koncentrace top 3",
+            "auto_assign_kept_ratio": "Zachované automatické přiřazení"
+          },
+          "processes": {
+            "heading": "Procesy",
+            "running": "Běžící",
+            "completed": "Dokončené v období",
+            "lead_time_p50": "Průběžná doba p50",
+            "lead_time_p90": "Průběžná doba p90",
+            "empty": "V tomto období neběží ani neskončil žádný proces.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Není co zobrazit. Položky v projektech, které nemůžete otevřít, se počítají, ne vypisují.",
+            "close": "Zavřít"
+          }
+        },
         "errors": {
           "unit_not_found": "Tato oblast už neexistuje.",
           "name_required": "Oblast potřebuje název.",

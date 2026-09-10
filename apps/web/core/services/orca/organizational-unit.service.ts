@@ -25,6 +25,10 @@ import type {
   TOrganizationalUnitMemberRole,
   TOrganizationalUnitAssignMode,
   TRoutingState,
+  IExecutiveDrillDown,
+  IExecutiveReport,
+  TExecutiveMetric,
+  TExecutivePeriod,
 } from "@plane/types";
 import { APIService } from "@/services/api.service";
 
@@ -596,6 +600,38 @@ export class OrganizationalUnitService extends APIService {
     payload: Partial<IMembershipAllocation>
   ): Promise<IMembershipAllocation> {
     return this.put(`${this.basePath(workspaceSlug)}/${unitId}/members/${membershipId}/allocation/`, payload)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description Workspace-admin aggregates by area and process. Counts
+   * include items in projects the reader cannot open; each area's
+   * `hidden_count` says how many.
+   */
+  async getExecutive(
+    workspaceSlug: string,
+    params?: { period?: TExecutivePeriod; unit?: string }
+  ): Promise<IExecutiveReport> {
+    return this.get(`/api/orca/workspaces/${workspaceSlug}/executive/`, { params })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  /**
+   * @description The list behind one cell of the executive table. Items in
+   * projects the reader does not belong to are omitted and counted in
+   * `hidden_count`.
+   */
+  async getExecutiveDrillDown(
+    workspaceSlug: string,
+    params: { unit: string; metric: TExecutiveMetric; period?: TExecutivePeriod }
+  ): Promise<IExecutiveDrillDown> {
+    return this.get(`/api/orca/workspaces/${workspaceSlug}/executive/drill-down/`, { params })
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;

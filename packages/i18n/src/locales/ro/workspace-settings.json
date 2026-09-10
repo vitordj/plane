@@ -741,6 +741,49 @@
           "unavailable_open": "Absent",
           "executor_away": "Absent"
         },
+        "executive": {
+          "title": "Vizualizare executivă",
+          "heading": "Lucru pe zonă",
+          "description": "Cum avansează lucrul în fiecare zonă și în procesele în derulare.",
+          "link": "Vizualizare executivă",
+          "load_failed": "Vizualizarea executivă nu a putut fi încărcată.",
+          "empty": "Nu există încă zone.",
+          "hidden_count": "{count, plural, one {# activitate se află într-un proiect pe care nu îl puteți deschide} few {# activități se află în proiecte pe care nu le puteți deschide} other {# de activități se află în proiecte pe care nu le puteți deschide}}",
+          "period": {
+            "label": "Perioadă",
+            "7d": "Ultimele 7 zile",
+            "30d": "Ultimele 30 de zile",
+            "90d": "Ultimele 90 de zile"
+          },
+          "indicators": {
+            "area": "Zonă",
+            "backlog": "Backlog",
+            "queued": "În coadă",
+            "assignment_overdue": "Alocare restantă",
+            "target_overdue": "Dată țintă depășită",
+            "queue_age_p50": "Vârsta cozii p50",
+            "queue_age_p90": "Vârsta cozii p90",
+            "throughput": "Debit",
+            "cycle_time_p50": "Timp de ciclu p50",
+            "cycle_time_p90": "Timp de ciclu p90",
+            "concentration_top3": "Concentrarea primilor 3",
+            "auto_assign_kept_ratio": "Alocare automată păstrată"
+          },
+          "processes": {
+            "heading": "Procese",
+            "running": "În derulare",
+            "completed": "Finalizate în perioadă",
+            "lead_time_p50": "Timp de execuție p50",
+            "lead_time_p90": "Timp de execuție p90",
+            "empty": "Niciun proces în derulare sau finalizat în această perioadă.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Nimic de afișat. Activitățile din proiectele pe care nu le puteți deschide sunt numărate, nu listate.",
+            "close": "Închideți"
+          }
+        },
         "errors": {
           "unit_not_found": "Această zonă nu mai există.",
           "name_required": "O zonă are nevoie de un nume.",

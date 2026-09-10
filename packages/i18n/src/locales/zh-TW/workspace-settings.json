@@ -741,6 +741,49 @@
           "unavailable_open": "離開",
           "executor_away": "離開"
         },
+        "executive": {
+          "title": "管理檢視",
+          "heading": "依區域查看工作",
+          "description": "各區域以及正在執行的流程中，工作進展如何。",
+          "link": "管理檢視",
+          "load_failed": "無法載入管理檢視。",
+          "empty": "還沒有區域。",
+          "hidden_count": "{count, plural, one {# 個工作事項位於您無法開啟的專案中} other {# 個工作事項位於您無法開啟的專案中}}",
+          "period": {
+            "label": "期間",
+            "7d": "最近 7 天",
+            "30d": "最近 30 天",
+            "90d": "最近 90 天"
+          },
+          "indicators": {
+            "area": "區域",
+            "backlog": "待辦",
+            "queued": "排隊中",
+            "assignment_overdue": "指派逾期",
+            "target_overdue": "目標日期已過",
+            "queue_age_p50": "佇列時長 p50",
+            "queue_age_p90": "佇列時長 p90",
+            "throughput": "吞吐",
+            "cycle_time_p50": "週期時間 p50",
+            "cycle_time_p90": "週期時間 p90",
+            "concentration_top3": "前 3 名集中度",
+            "auto_assign_kept_ratio": "自動指派保留率"
+          },
+          "processes": {
+            "heading": "流程",
+            "running": "進行中",
+            "completed": "本期間完成",
+            "lead_time_p50": "前置時間 p50",
+            "lead_time_p90": "前置時間 p90",
+            "empty": "本期間沒有進行中或已完成的流程。",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "沒有可顯示的內容。您無法開啟的專案中的工作事項會計入總數，但不會列出。",
+            "close": "關閉"
+          }
+        },
         "errors": {
           "unit_not_found": "該區域已不存在。",
           "name_required": "區域需要一個名稱。",

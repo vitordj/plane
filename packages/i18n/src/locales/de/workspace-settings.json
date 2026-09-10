@@ -741,6 +741,49 @@
           "unavailable_open": "Abwesend",
           "executor_away": "Abwesend"
         },
+        "executive": {
+          "title": "Führungsübersicht",
+          "heading": "Arbeit nach Bereich",
+          "description": "Wie die Arbeit in jedem Bereich und in laufenden Prozessen vorankommt.",
+          "link": "Führungsübersicht",
+          "load_failed": "Die Führungsübersicht konnte nicht geladen werden.",
+          "empty": "Noch keine Bereiche.",
+          "hidden_count": "{count, plural, one {# Arbeitselement liegt in einem Projekt, das Sie nicht öffnen können} other {# Arbeitselemente liegen in Projekten, die Sie nicht öffnen können}}",
+          "period": {
+            "label": "Zeitraum",
+            "7d": "Letzte 7 Tage",
+            "30d": "Letzte 30 Tage",
+            "90d": "Letzte 90 Tage"
+          },
+          "indicators": {
+            "area": "Bereich",
+            "backlog": "Backlog",
+            "queued": "In der Warteschlange",
+            "assignment_overdue": "Zuweisung überfällig",
+            "target_overdue": "Zieldatum überschritten",
+            "queue_age_p50": "Warteschlangenalter p50",
+            "queue_age_p90": "Warteschlangenalter p90",
+            "throughput": "Durchsatz",
+            "cycle_time_p50": "Zykluszeit p50",
+            "cycle_time_p90": "Zykluszeit p90",
+            "concentration_top3": "Konzentration der Top 3",
+            "auto_assign_kept_ratio": "Automatische Zuweisung beibehalten"
+          },
+          "processes": {
+            "heading": "Prozesse",
+            "running": "Laufend",
+            "completed": "Im Zeitraum abgeschlossen",
+            "lead_time_p50": "Durchlaufzeit p50",
+            "lead_time_p90": "Durchlaufzeit p90",
+            "empty": "Keine laufenden oder abgeschlossenen Prozesse in diesem Zeitraum.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Nichts anzuzeigen. Elemente in Projekten, die Sie nicht öffnen können, werden gezählt, nicht aufgelistet.",
+            "close": "Schließen"
+          }
+        },
         "errors": {
           "unit_not_found": "Diesen Bereich gibt es nicht mehr.",
           "name_required": "Ein Bereich braucht einen Namen.",

@@ -6,9 +6,10 @@
 
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { Plus } from "lucide-react";
 // plane imports
+import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { Loader } from "@plane/ui";
@@ -23,6 +24,7 @@ import {
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 // hooks
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
+import { useUserPermissions } from "@/hooks/store/user";
 import { OrganizationalUnitsWorkspaceSettingsHeader } from "./header";
 
 const OU = "workspace_settings.settings.organizational_units";
@@ -31,6 +33,12 @@ const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
   const { workspaceSlug } = useParams();
   const store = useOrganizationalUnit();
   const { t } = useTranslation();
+  const { allowPermissions } = useUserPermissions();
+  const isAdmin = allowPermissions(
+    [EUserPermissions.ADMIN],
+    EUserPermissionsLevel.WORKSPACE,
+    workspaceSlug?.toString()
+  );
 
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -83,9 +91,18 @@ const OrganizationalUnitsPage = observer(function OrganizationalUnitsPage() {
                 <h3 className="text-xl text-custom-text-100 font-medium">{heading}</h3>
                 <p className="text-sm text-custom-text-300">{description}</p>
               </div>
-              <Button variant="primary" size="sm" onClick={() => setIsCreating(true)} prependIcon={<Plus />}>
-                {t(`${OU}.add`)}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                {isAdmin && (
+                  <Link to={`/${workspaceSlug}/settings/organizational-units/executive`}>
+                    <Button variant="secondary" size="sm">
+                      {t(`${OU}.executive.link`)}
+                    </Button>
+                  </Link>
+                )}
+                <Button variant="primary" size="sm" onClick={() => setIsCreating(true)} prependIcon={<Plus />}>
+                  {t(`${OU}.add`)}
+                </Button>
+              </div>
             </div>
 
             {isLoading ? (

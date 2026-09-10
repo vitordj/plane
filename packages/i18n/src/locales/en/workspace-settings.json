@@ -517,6 +517,49 @@
           "unavailable_open": "Away",
           "executor_away": "Away"
         },
+        "executive": {
+          "title": "Executive view",
+          "heading": "Work by area",
+          "description": "How work is moving through each area, and through running processes.",
+          "link": "Executive view",
+          "load_failed": "The executive view could not be loaded.",
+          "empty": "No areas yet.",
+          "hidden_count": "{count, plural, one {# work item is in a project you cannot open} other {# work items are in projects you cannot open}}",
+          "period": {
+            "label": "Period",
+            "7d": "Last 7 days",
+            "30d": "Last 30 days",
+            "90d": "Last 90 days"
+          },
+          "indicators": {
+            "area": "Area",
+            "backlog": "Backlog",
+            "queued": "Queued",
+            "assignment_overdue": "Assignment overdue",
+            "target_overdue": "Past target date",
+            "queue_age_p50": "Queue age p50",
+            "queue_age_p90": "Queue age p90",
+            "throughput": "Throughput",
+            "cycle_time_p50": "Cycle time p50",
+            "cycle_time_p90": "Cycle time p90",
+            "concentration_top3": "Top 3 concentration",
+            "auto_assign_kept_ratio": "Auto-assign kept"
+          },
+          "processes": {
+            "heading": "Processes",
+            "running": "Running",
+            "completed": "Completed in period",
+            "lead_time_p50": "Lead time p50",
+            "lead_time_p90": "Lead time p90",
+            "empty": "No running or completed processes in this period.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Nothing to show. Items in projects you cannot open are counted, not listed.",
+            "close": "Close"
+          }
+        },
         "errors": {
           "unit_not_found": "That area no longer exists.",
           "name_required": "An area needs a name.",

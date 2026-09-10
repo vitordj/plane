@@ -741,6 +741,49 @@
           "unavailable_open": "부재",
           "executor_away": "부재"
         },
+        "executive": {
+          "title": "경영진 보기",
+          "heading": "영역별 작업",
+          "description": "각 영역과 진행 중인 프로세스에서 작업이 어떻게 흘러가는지 확인합니다.",
+          "link": "경영진 보기",
+          "load_failed": "경영진 보기를 불러오지 못했습니다.",
+          "empty": "아직 영역이 없습니다.",
+          "hidden_count": "{count, plural, one {열 수 없는 프로젝트에 작업 항목이 #개 있습니다} other {열 수 없는 프로젝트에 작업 항목이 #개 있습니다}}",
+          "period": {
+            "label": "기간",
+            "7d": "최근 7일",
+            "30d": "최근 30일",
+            "90d": "최근 90일"
+          },
+          "indicators": {
+            "area": "영역",
+            "backlog": "백로그",
+            "queued": "대기열",
+            "assignment_overdue": "할당 기한 초과",
+            "target_overdue": "목표일 초과",
+            "queue_age_p50": "대기열 경과 p50",
+            "queue_age_p90": "대기열 경과 p90",
+            "throughput": "처리량",
+            "cycle_time_p50": "사이클 타임 p50",
+            "cycle_time_p90": "사이클 타임 p90",
+            "concentration_top3": "상위 3명 집중도",
+            "auto_assign_kept_ratio": "자동 할당 유지율"
+          },
+          "processes": {
+            "heading": "프로세스",
+            "running": "진행 중",
+            "completed": "기간 내 완료",
+            "lead_time_p50": "리드 타임 p50",
+            "lead_time_p90": "리드 타임 p90",
+            "empty": "이 기간에 진행 중이거나 완료된 프로세스가 없습니다.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "표시할 항목이 없습니다. 열 수 없는 프로젝트의 항목은 집계에만 포함됩니다.",
+            "close": "닫기"
+          }
+        },
         "errors": {
           "unit_not_found": "해당 영역이 더 이상 없습니다.",
           "name_required": "영역에는 이름이 필요합니다.",

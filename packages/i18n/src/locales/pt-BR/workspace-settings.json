@@ -517,6 +517,49 @@
           "unavailable_open": "Ausente",
           "executor_away": "Ausente"
         },
+        "executive": {
+          "title": "Visão executiva",
+          "heading": "Trabalho por área",
+          "description": "Como o trabalho está avançando em cada área e nos processos em andamento.",
+          "link": "Visão executiva",
+          "load_failed": "Não foi possível carregar a visão executiva.",
+          "empty": "Ainda não há áreas.",
+          "hidden_count": "{count, plural, one {# item de trabalho está em um projeto que você não pode abrir} many {# de itens de trabalho estão em projetos que você não pode abrir} other {# itens de trabalho estão em projetos que você não pode abrir}}",
+          "period": {
+            "label": "Período",
+            "7d": "Últimos 7 dias",
+            "30d": "Últimos 30 dias",
+            "90d": "Últimos 90 dias"
+          },
+          "indicators": {
+            "area": "Área",
+            "backlog": "Backlog",
+            "queued": "Na fila",
+            "assignment_overdue": "Atribuição atrasada",
+            "target_overdue": "Prazo alvo vencido",
+            "queue_age_p50": "Idade da fila p50",
+            "queue_age_p90": "Idade da fila p90",
+            "throughput": "Vazão",
+            "cycle_time_p50": "Tempo de ciclo p50",
+            "cycle_time_p90": "Tempo de ciclo p90",
+            "concentration_top3": "Concentração dos 3 principais",
+            "auto_assign_kept_ratio": "Atribuição automática mantida"
+          },
+          "processes": {
+            "heading": "Processos",
+            "running": "Em andamento",
+            "completed": "Concluídos no período",
+            "lead_time_p50": "Lead time p50",
+            "lead_time_p90": "Lead time p90",
+            "empty": "Nenhum processo em andamento ou concluído neste período.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Nada a mostrar. Itens em projetos que você não pode abrir entram na contagem, não na lista.",
+            "close": "Fechar"
+          }
+        },
         "errors": {
           "unit_not_found": "Essa área não existe mais.",
           "name_required": "Uma área precisa de um nome.",

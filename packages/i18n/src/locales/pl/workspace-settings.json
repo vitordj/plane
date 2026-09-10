@@ -741,6 +741,49 @@
           "unavailable_open": "Nieobecny",
           "executor_away": "Nieobecny"
         },
+        "executive": {
+          "title": "Widok kierowniczy",
+          "heading": "Praca według obszaru",
+          "description": "Jak praca przesuwa się w każdym obszarze i w trwających procesach.",
+          "link": "Widok kierowniczy",
+          "load_failed": "Nie udało się wczytać widoku kierowniczego.",
+          "empty": "Nie ma jeszcze obszarów.",
+          "hidden_count": "{count, plural, one {# element pracy jest w projekcie, którego nie można otworzyć} few {# elementy pracy są w projektach, których nie można otworzyć} many {# elementów pracy jest w projektach, których nie można otworzyć} other {# elementu pracy jest w projektach, których nie można otworzyć}}",
+          "period": {
+            "label": "Okres",
+            "7d": "Ostatnie 7 dni",
+            "30d": "Ostatnie 30 dni",
+            "90d": "Ostatnie 90 dni"
+          },
+          "indicators": {
+            "area": "Obszar",
+            "backlog": "Backlog",
+            "queued": "W kolejce",
+            "assignment_overdue": "Przeterminowane przypisanie",
+            "target_overdue": "Przekroczona data docelowa",
+            "queue_age_p50": "Wiek kolejki p50",
+            "queue_age_p90": "Wiek kolejki p90",
+            "throughput": "Przepustowość",
+            "cycle_time_p50": "Czas cyklu p50",
+            "cycle_time_p90": "Czas cyklu p90",
+            "concentration_top3": "Koncentracja top 3",
+            "auto_assign_kept_ratio": "Zachowane auto-przypisanie"
+          },
+          "processes": {
+            "heading": "Procesy",
+            "running": "W toku",
+            "completed": "Zakończone w okresie",
+            "lead_time_p50": "Czas realizacji p50",
+            "lead_time_p90": "Czas realizacji p90",
+            "empty": "Brak procesów trwających lub zakończonych w tym okresie.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Nic do pokazania. Elementy z projektów, których nie można otworzyć, są liczone, nie wymieniane.",
+            "close": "Zamknij"
+          }
+        },
         "errors": {
           "unit_not_found": "Ten obszar już nie istnieje.",
           "name_required": "Obszar potrzebuje nazwy.",

@@ -741,6 +741,49 @@
           "unavailable_open": "Assente",
           "executor_away": "Assente"
         },
+        "executive": {
+          "title": "Vista esecutiva",
+          "heading": "Lavoro per area",
+          "description": "Come procede il lavoro in ogni area e nei processi in corso.",
+          "link": "Vista esecutiva",
+          "load_failed": "Impossibile caricare la vista esecutiva.",
+          "empty": "Nessuna area al momento.",
+          "hidden_count": "{count, plural, one {# elemento di lavoro si trova in un progetto che Lei non può aprire} many {# elementi di lavoro si trovano in progetti che Lei non può aprire} other {# elementi di lavoro si trovano in progetti che Lei non può aprire}}",
+          "period": {
+            "label": "Periodo",
+            "7d": "Ultimi 7 giorni",
+            "30d": "Ultimi 30 giorni",
+            "90d": "Ultimi 90 giorni"
+          },
+          "indicators": {
+            "area": "Area",
+            "backlog": "Backlog",
+            "queued": "In coda",
+            "assignment_overdue": "Assegnazione in ritardo",
+            "target_overdue": "Data obiettivo scaduta",
+            "queue_age_p50": "Età della coda p50",
+            "queue_age_p90": "Età della coda p90",
+            "throughput": "Throughput",
+            "cycle_time_p50": "Tempo di ciclo p50",
+            "cycle_time_p90": "Tempo di ciclo p90",
+            "concentration_top3": "Concentrazione dei primi 3",
+            "auto_assign_kept_ratio": "Assegnazione automatica mantenuta"
+          },
+          "processes": {
+            "heading": "Processi",
+            "running": "In corso",
+            "completed": "Completati nel periodo",
+            "lead_time_p50": "Lead time p50",
+            "lead_time_p90": "Lead time p90",
+            "empty": "Nessun processo in corso o completato in questo periodo.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Niente da mostrare. Gli elementi dei progetti che Lei non può aprire sono conteggiati, non elencati.",
+            "close": "Chiudi"
+          }
+        },
         "errors": {
           "unit_not_found": "Quell’area non esiste più.",
           "name_required": "Un’area deve avere un nome.",

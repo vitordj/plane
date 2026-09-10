@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+export * from "./executive-view";
 export * from "./assign-member-modal";
 export * from "./availability-form";
 export * from "./coordinators-tab";

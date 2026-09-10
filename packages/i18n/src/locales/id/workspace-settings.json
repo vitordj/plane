@@ -741,6 +741,49 @@
           "unavailable_open": "Tidak ada",
           "executor_away": "Tidak ada"
         },
+        "executive": {
+          "title": "Tampilan eksekutif",
+          "heading": "Kerja per area",
+          "description": "Bagaimana pekerjaan bergerak di setiap area, dan pada proses yang sedang berjalan.",
+          "link": "Tampilan eksekutif",
+          "load_failed": "Tampilan eksekutif tidak dapat dimuat.",
+          "empty": "Belum ada area.",
+          "hidden_count": "{count, plural, one {# item kerja berada di proyek yang tidak dapat Anda buka} other {# item kerja berada di proyek yang tidak dapat Anda buka}}",
+          "period": {
+            "label": "Periode",
+            "7d": "7 hari terakhir",
+            "30d": "30 hari terakhir",
+            "90d": "90 hari terakhir"
+          },
+          "indicators": {
+            "area": "Area",
+            "backlog": "Backlog",
+            "queued": "Dalam antrean",
+            "assignment_overdue": "Penugasan terlambat",
+            "target_overdue": "Tanggal target terlewati",
+            "queue_age_p50": "Usia antrean p50",
+            "queue_age_p90": "Usia antrean p90",
+            "throughput": "Throughput",
+            "cycle_time_p50": "Waktu siklus p50",
+            "cycle_time_p90": "Waktu siklus p90",
+            "concentration_top3": "Konsentrasi 3 teratas",
+            "auto_assign_kept_ratio": "Penugasan otomatis dipertahankan"
+          },
+          "processes": {
+            "heading": "Proses",
+            "running": "Berjalan",
+            "completed": "Selesai dalam periode",
+            "lead_time_p50": "Lead time p50",
+            "lead_time_p90": "Lead time p90",
+            "empty": "Tidak ada proses yang berjalan atau selesai dalam periode ini.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Tidak ada yang ditampilkan. Item di proyek yang tidak dapat Anda buka dihitung, bukan didaftarkan.",
+            "close": "Tutup"
+          }
+        },
         "errors": {
           "unit_not_found": "Area itu sudah tidak ada.",
           "name_required": "Area memerlukan nama.",

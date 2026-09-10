@@ -81,7 +81,9 @@ export const WORKSPACE_SETTINGS: Record<TWorkspaceSettingsTabs, TWorkspaceSettin
     i18n_label: "workspace_settings.settings.organizational_units.title",
     href: `/settings/organizational-units`,
     access: [EUserWorkspaceRoles.ADMIN],
-    highlight: (pathname: string, baseUrl: string) => pathname === `${baseUrl}/settings/organizational-units/`,
+    highlight: (pathname: string, baseUrl: string) =>
+      pathname === `${baseUrl}/settings/organizational-units/` ||
+      pathname.startsWith(`${baseUrl}/settings/organizational-units/`),
   },
 };
 

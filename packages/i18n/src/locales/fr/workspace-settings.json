@@ -741,6 +741,49 @@
           "unavailable_open": "Absent",
           "executor_away": "Absent"
         },
+        "executive": {
+          "title": "Vue exécutive",
+          "heading": "Travail par domaine",
+          "description": "Comment le travail avance dans chaque domaine et dans les processus en cours.",
+          "link": "Vue exécutive",
+          "load_failed": "Impossible de charger la vue exécutive.",
+          "empty": "Aucun domaine pour le moment.",
+          "hidden_count": "{count, plural, one {# élément de travail se trouve dans un projet que vous ne pouvez pas ouvrir} many {# éléments de travail se trouvent dans des projets que vous ne pouvez pas ouvrir} other {# éléments de travail se trouvent dans des projets que vous ne pouvez pas ouvrir}}",
+          "period": {
+            "label": "Période",
+            "7d": "7 derniers jours",
+            "30d": "30 derniers jours",
+            "90d": "90 derniers jours"
+          },
+          "indicators": {
+            "area": "Domaine",
+            "backlog": "Backlog",
+            "queued": "En file",
+            "assignment_overdue": "Attribution en retard",
+            "target_overdue": "Date cible dépassée",
+            "queue_age_p50": "Ancienneté de la file p50",
+            "queue_age_p90": "Ancienneté de la file p90",
+            "throughput": "Débit",
+            "cycle_time_p50": "Temps de cycle p50",
+            "cycle_time_p90": "Temps de cycle p90",
+            "concentration_top3": "Concentration des 3 premiers",
+            "auto_assign_kept_ratio": "Attribution automatique conservée"
+          },
+          "processes": {
+            "heading": "Processus",
+            "running": "En cours",
+            "completed": "Terminés sur la période",
+            "lead_time_p50": "Délai d'exécution p50",
+            "lead_time_p90": "Délai d'exécution p90",
+            "empty": "Aucun processus en cours ou terminé sur cette période.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Rien à afficher. Les éléments des projets que vous ne pouvez pas ouvrir sont comptés, pas listés.",
+            "close": "Fermer"
+          }
+        },
         "errors": {
           "unit_not_found": "Cette zone n’existe plus.",
           "name_required": "Une zone doit avoir un nom.",
