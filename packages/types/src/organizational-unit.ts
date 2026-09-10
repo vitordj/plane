@@ -110,10 +110,61 @@ export interface IQueueRow {
   /** Past `assignment_due_at` with nobody on it — the row the coordinator owes. */
   assignment_overdue: boolean;
   age_seconds: number;
-  primary_executor: { id: string; display_name: string; email: string; avatar_url: string } | null;
+  primary_executor: {
+    id: string;
+    display_name: string;
+    email: string;
+    avatar_url: string;
+    /** False when a covering unavailability window exists and the feature is on. */
+    is_available?: boolean;
+    /** End of that window, when it has one. */
+    unavailable_until?: string | null;
+  } | null;
   /** Sent back as `expected_decision_id`, so two coordinators cannot both act. */
   current_decision_id: string | null;
   permissions: IQueueRowPermissions;
+}
+
+/** Why somebody is away. */
+export type TAvailabilityReason = "vacation" | "leave" | "other";
+
+/**
+ * One stretch of time somebody is not available for work.
+ *
+ * Global to the workspace rather than per area: a holiday is a holiday
+ * everywhere, and asking somebody to record the same fortnight once per area
+ * is how a feature stops being used.
+ */
+export interface IMemberAvailability {
+  id: string;
+  workspace_member: string;
+  unavailable_from: string;
+  /** Null means open-ended — away, and nobody knows until when. */
+  unavailable_until: string | null;
+  reason: TAvailabilityReason;
+  source: "manual" | "hr" | "directory";
+  created_at: string;
+}
+
+/** How much work one area gives one of its people. */
+export interface IMembershipAllocation {
+  id?: string;
+  membership: string;
+  accepts_new_work: boolean;
+  /** Null means the area's policy decides alone. */
+  max_open_items: number | null;
+  updated_at?: string;
+}
+
+/** Somebody an area could hand a work item to, with the load that ranks them. */
+export interface IAssignmentCandidate {
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  total_open: number;
+  unit_open: number;
+  last_auto_at: string | null;
+  excluded_reason?: string;
 }
 
 /**
@@ -207,6 +258,14 @@ export interface IOrganizationalUnitMembership {
   avatar_url: string;
   /** The person's workspace role, which caps any role a unit can grant. */
   workspace_role: number;
+  /** Whether this membership is willing to take more work from its area. Default true. */
+  accepts_new_work?: boolean;
+  /** Personal cap on open items; null means none. */
+  max_open_items?: number | null;
+  /** False when a covering unavailability window exists right now. */
+  is_available?: boolean;
+  /** End of the covering window, when it has one. Null means open-ended. */
+  unavailable_until?: string | null;
   created_at: string;
 }
 

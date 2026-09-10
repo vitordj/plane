@@ -118,6 +118,13 @@ app.conf.beat_schedule = {
         "task": "plane.bgtasks.organizational_queue_task.sweep_assignment_sla",
         "schedule": crontab(minute="*/15"),
     },
+    # Orca: return work whose executor went away, left the area, the
+    # workspace, or the project. Hourly; the command is the dry-run. :40
+    # keeps it clear of the directory resolve at :20.
+    "check-every-hour-for-unavailable-executors": {
+        "task": "plane.bgtasks.organizational_availability_task.sweep_unavailable_executors",
+        "schedule": crontab(minute=40),
+    },
 }
 
 

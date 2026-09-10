@@ -38,6 +38,8 @@ from .automation_operation import (
 from .availability import (
     accepts_new_work,
     allocation_settings_for,
+    allocation_settings_map,
+    covering_windows_for,
     is_available,
     unavailable_workspace_member_ids,
 )
@@ -138,6 +140,7 @@ __all__ = [
     "WorkItemNotFound",
     "accepts_new_work",
     "allocation_settings_for",
+    "allocation_settings_map",
     "allocate",
     "assign_from_unit",
     "audit_routing",
@@ -148,6 +151,7 @@ __all__ = [
     "cap_role_to_workspace_role",
     "claim",
     "complete_operation",
+    "covering_windows_for",
     "dispatch_reconciliation",
     "fail_operation",
     "get_default_language",

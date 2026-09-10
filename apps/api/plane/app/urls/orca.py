@@ -22,10 +22,14 @@ from plane.app.views import (
     OrcaBuildInfoEndpoint,
     OrcaConfigEndpoint,
     OrganizationalUnitPolicyEndpoint,
+    IssueCandidatesEndpoint,
     IssueClaimEndpoint,
     IssueReassignEndpoint,
     IssueReturnEndpoint,
     IssueTransferEndpoint,
+    MemberAvailabilityEndpoint,
+    MembershipAllocationEndpoint,
+    MyAvailabilityEndpoint,
     OrganizationalUnitCoordinatorViewSet,
     OrganizationalUnitDecisionsEndpoint,
     OrganizationalUnitQueueEndpoint,
@@ -153,6 +157,11 @@ urlpatterns = [
         name="organizational-unit-member",
     ),
     path(
+        "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/members/<uuid:pk>/allocation/",
+        MembershipAllocationEndpoint.as_view(),
+        name="orca-membership-allocation",
+    ),
+    path(
         "orca/workspaces/<str:slug>/organizational-units/<uuid:unit_id>/projects/",
         OrganizationalUnitProjectViewSet.as_view({"get": "list", "post": "create"}),
         name="organizational-unit-projects",
@@ -226,6 +235,33 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/transfer/",
         IssueTransferEndpoint.as_view(),
         name="issue-organizational-unit-transfer",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/organizational-unit/candidates/",
+        IssueCandidatesEndpoint.as_view(),
+        name="issue-organizational-unit-candidates",
+    ),
+    # Absences and per-membership load knobs (item 3.3). 404 while the
+    # availability flag is off — see AvailabilityFeatureMixin.
+    path(
+        "orca/workspaces/<str:slug>/availability/me/",
+        MyAvailabilityEndpoint.as_view(),
+        name="orca-my-availability",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/availability/me/<uuid:pk>/",
+        MyAvailabilityEndpoint.as_view(),
+        name="orca-my-availability-detail",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/members/<uuid:workspace_member_id>/availability/",
+        MemberAvailabilityEndpoint.as_view(),
+        name="orca-member-availability",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/members/<uuid:workspace_member_id>/availability/<uuid:pk>/",
+        MemberAvailabilityEndpoint.as_view(),
+        name="orca-member-availability-detail",
     ),
     # Directory connection administration. Workspace-admin only: issuing a SCIM
     # token hands a machine the power to grant project access.

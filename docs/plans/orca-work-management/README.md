@@ -47,19 +47,22 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | D0 Fundação do domínio     | [D0-domain-foundation.md](./D0-domain-foundation.md)         | 12                | `[~]` 12/12 · migrações e `check:types` fechados em 07/09 — falta só a auditoria num dump de `stage`  | —               |
 | 1 Contrato público         | [01-public-contract.md](./01-public-contract.md)             | 8                 | `[x]` 8/8 · **iniciada e concluída com os gates P0 e D0 abertos**; o Gate 1 continua exigindo os dois | —               |
 | 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[x]` 6/6 no código · Gate 2-mínimo ainda aberto (staging + piloto)                                   | —               |
-| 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[~]` 2/6 · 3.1–3.2 `[x]`; 3.3–3.6 abertos · ranking `lb-2`                                           | —               |
+| 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[x]` 6/6 no código · Gate 3 ainda aberto (staging + piloto) · ranking `lb-2`                         | —               |
 | 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[ ]` 0/7                                                                                             | —               |
 | 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                             | —               |
 | R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[x]` 20/20 de código · resta T1 (decisão de negócio)                                                 | n/a             |
 
 ## Próximo item recomendado
 
-**Estado em 09/09/2026.** A Fase 2 está fechada no código (2.1–2.6). Os
-achados de código da revisão (R1.A1–A20) estão corrigidos. Os itens **3.1**
-e **3.2** entregaram as tabelas de disponibilidade, a flag, os helpers e o
-ranking `lb-2`.
+**Estado em 10/09/2026.** A Fase 3 está fechada no código (3.1–3.6). Os
+achados de código da revisão (R1.A1–A20) estão corrigidos. O ranking é
+`lb-2`. A fundação da Fase 4 (4.2, e 4.3 se couber) corre em paralelo noutro
+PR; a 0142 é só dessa faixa.
 
-**O próximo item de código é o `3.3`** — endpoints e UI de disponibilidade.
+**O próximo item de código, depois que A (Fase 3) e B (4.2/4.3) mesclarem em
+`stage` — A primeiro se brigarem em `urls/orca.py` — é `4.5+4.6+4.7` num PR e
+`5.1+5.3+5.4` noutro.** Não abrir 4.1 (já há `docs/orca-compose-notes.md`),
+4.4 (outro repositório), 5.1 inteiro agora, nem 5.2.
 
 **Antes de escolher qualquer item, saiba destas quatro coisas.**
 
@@ -90,16 +93,18 @@ negócio (P0.12, P0.13, P0.17).
 
 ### Ordem que eu recomendaria
 
-1. **`3.3`** — endpoints e UI de disponibilidade (perfil, área, i18n).
-2. **Staging**: deploy, e então o Gate 2-mínimo com a área piloto. Isso também
-   fecha a auditoria do Gate D0, que só precisa de um dump, e é onde a aba
-   Trabalho precisa de um olho humano.
-3. **3.4, 3.5, 3.6** — sweep, sugestão de candidato, testes de fechamento.
-4. **R1.T1** só se a trilha de decisões passar a ser tratada como evidência
-   regulatória — constraint/trigger no PostgreSQL, decisão de negócio.
+1. **Mesclar A (Fase 3) e B (4.2/4.3) em `stage`**, A primeiro se
+   `app/urls/orca.py` conflitar.
+2. **`4.5+4.6+4.7`** num PR — webhooks, agrupamento na fila, runbook.
+3. **`5.1+5.3+5.4`** noutro — métrica por área e por processo (a 0142 já
+   existe depois de B).
+4. **Staging**: Gate 2-mínimo e Gate 3 com a área piloto; isso também fecha
+   a auditoria do Gate D0.
+5. **R1.T1** só se a trilha de decisões passar a ser tratada como evidência
+   regulatória.
 
-Só depois disso a Fase 4 faz sentido, e ela ainda depende da pendência externa
-A5 do quadro abaixo.
+4.1 (Compose) e 4.4 (orquestrador) não são atalho deste monorepo. 5.2 já foi
+descartado sem medição em staging.
 
 ## O que a madrugada de 07/09 entregou, e o que não entregou
 

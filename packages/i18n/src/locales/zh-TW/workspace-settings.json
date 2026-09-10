@@ -696,7 +696,9 @@
             "search": "依姓名或電子郵件搜尋",
             "no_candidates": "此區域中尚無人可以承接工作。請先將成員加入該區域。",
             "assigning": "正在指派…",
-            "open_items": "{count, plural, one {# 項未完成} other {# 項未完成}}"
+            "open_items": "{count, plural, one {# 項未完成} other {# 項未完成}}",
+            "unavailable": "離開",
+            "opted_out": "不接受新工作"
           },
           "toast": {
             "claimed_title": "已接手工作事項",
@@ -733,7 +735,11 @@
             "search": "搜尋區域",
             "no_units": "沒有其他區域涵蓋此專案。",
             "transferring": "正在移動…"
-          }
+          },
+          "suggestion": "建議：{name}",
+          "unavailable_until": "離開至 {until}",
+          "unavailable_open": "離開",
+          "executor_away": "離開"
         },
         "errors": {
           "unit_not_found": "該區域已不存在。",
@@ -773,7 +779,13 @@
           "if_match_required": "此請求需要帶有目前決定的 If-Match 標頭。",
           "process_projection_disabled": "此執行個體已關閉流程投影。",
           "completion_manual_only": "此工作事項只能由人完成。",
-          "internal_error": "發生問題。該操作已記錄為失敗。"
+          "internal_error": "發生問題。該操作已記錄為失敗。",
+          "availability_window_not_found": "找不到該不可用時段。",
+          "availability_invalid_interval": "不可用時段的結束時間必須晚於開始時間。",
+          "availability_from_required": "不可用時段需要開始時間。",
+          "workspace_member_not_found": "該使用者不是此工作區的成員。",
+          "allocation_limit_forbidden": "只有協調員或工作區管理員可以設定個人工作上限。",
+          "not_availability_manager": "只有該使用者所屬某個區域的協調員，或工作區管理員，才能執行此操作。"
         },
         "coordinators": {
           "tab": "協調人",
@@ -823,6 +835,37 @@
           "description": "你所屬的區域，以及每個區域中等待處理的工作。",
           "empty": "你還不屬於任何區域。",
           "select": "選取區域"
+        },
+        "availability": {
+          "title": "離開時間",
+          "help": "離開期間，自動分配不會選擇您。已經在您手上的工作不會被收回。",
+          "empty": "尚無記錄。",
+          "from": "開始",
+          "until": "結束",
+          "add": "新增",
+          "added": "已記錄",
+          "not_added": "無法記錄",
+          "removed": "已刪除",
+          "not_removed": "無法刪除",
+          "remove_aria": "刪除此離開紀錄",
+          "range": "{from} 至 {until}",
+          "open_ended": "自 {from} 起，無返回日期",
+          "reason": {
+            "vacation": "假期",
+            "leave": "請假",
+            "other": "其他"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "接受此區域的新工作",
+          "accepts_new_work_help": "關閉後，自動分配會在此處跳過該成員。既有工作保留，仍可依姓名指派。",
+          "max_open_items": "同時開啟的工作上限",
+          "max_open_items_help": "自動分配在此數量處停止。留空則使用該區域自己的上限。",
+          "no_limit": "無上限",
+          "saved": "已儲存",
+          "not_saved": "無法儲存",
+          "limit_invalid": "必須是大於或等於 1 的整數。",
+          "open_aria": "{name} 的工作設定"
         }
       }
     },

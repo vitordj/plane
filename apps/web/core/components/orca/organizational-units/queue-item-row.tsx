@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import { observer } from "mobx-react";
+import { CalendarOff } from "lucide-react";
 import { Link } from "react-router";
 // plane imports
 import { resolveOrcaErrorKey } from "@plane/constants";
@@ -15,6 +16,9 @@ import { PriorityIcon, StateGroupIcon } from "@plane/propel/icons";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { IQueueRow } from "@plane/types";
 import { Avatar, Tooltip } from "@plane/ui";
+import { renderFormattedDate } from "@plane/utils";
+// components
+import { QueueSuggestion } from "./queue-suggestion";
 // hooks
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
 
@@ -134,6 +138,11 @@ export const QueueItemRow = observer(function QueueItemRow(props: Props) {
         <div className="text-xs text-custom-text-300 flex flex-wrap items-center gap-x-3 gap-y-1">
           {row.queue_reason && <span>{t(`${OU}.work.reason.${row.queue_reason}`)}</span>}
           <span>{t(`${OU}.work.age.${age.key}`, { count: age.count })}</span>
+          {/* Only where somebody has to pick the next person: the rows the
+              availability sweep handed back. */}
+          {row.queue_reason === "executor_unavailable" && row.permissions.can_assign && (
+            <QueueSuggestion workspaceSlug={workspaceSlug} unitId={unitId} row={row} />
+          )}
           {/* The one thing the area owes somebody: an allocation past its own
               deadline. Called out rather than left to be read off a date. */}
           {row.assignment_overdue && (
@@ -145,6 +154,22 @@ export const QueueItemRow = observer(function QueueItemRow(props: Props) {
             <span className="flex min-w-0 items-center gap-1.5">
               <Avatar name={row.primary_executor.display_name} src={row.primary_executor.avatar_url} size="sm" />
               <span className="truncate">{row.primary_executor.display_name}</span>
+              {row.primary_executor.is_available === false && (
+                <Tooltip
+                  tooltipContent={
+                    row.primary_executor.unavailable_until
+                      ? t(`${OU}.work.unavailable_until`, {
+                          until: renderFormattedDate(row.primary_executor.unavailable_until),
+                        })
+                      : t(`${OU}.work.unavailable_open`)
+                  }
+                >
+                  <span className="text-custom-text-300 flex items-center gap-1">
+                    <CalendarOff className="size-3" />
+                    {t(`${OU}.work.executor_away`)}
+                  </span>
+                </Tooltip>
+              )}
             </span>
           ) : (
             <span className="text-custom-text-400">{t(`${OU}.work.unassigned`)}</span>

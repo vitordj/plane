@@ -6,10 +6,13 @@
 
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import type {
+  IAssignmentCandidate,
   IAssignmentDecisionDetail,
   IAssignmentPolicyPayload,
   IAssignmentPolicyResolution,
   IIssueRouting,
+  IMemberAvailability,
+  IMembershipAllocation,
   IOrganizationalUnit,
   IOrganizationalUnitAccessChange,
   IOrganizationalUnitCoordinator,
@@ -52,6 +55,10 @@ export interface IOrganizationalUnitStore {
   loader: boolean;
   /** `null` until the config endpoint answers; see `isEnabled`. */
   featureEnabled: boolean | null;
+  /** `null` until the config endpoint answers; availability is off by default. */
+  availabilityEnabled: boolean | null;
+  /** Absences by workspace member id, only for the people actually looked at. */
+  availabilityByMember: Record<string, IMemberAvailability[]>;
   // computed
   units: IOrganizationalUnit[];
   isEnabled: boolean;
@@ -148,8 +155,49 @@ export interface IOrganizationalUnitStore {
   ) => Promise<IIssueRouting>;
   fetchQueue: (workspaceSlug: string, unitId: string) => Promise<IUnitQueue>;
   claim: (workspaceSlug: string, unitId: string, row: IQueueRow) => Promise<IIssueRouting>;
-  assign: (workspaceSlug: string, unitId: string, row: IQueueRow, executorId: string) => Promise<IIssueRouting>;
+  assign: (
+    workspaceSlug: string,
+    unitId: string,
+    row: IQueueRow,
+    executorId: string,
+    options?: { reason?: string }
+  ) => Promise<IIssueRouting>;
   returnToQueue: (workspaceSlug: string, unitId: string, row: IQueueRow) => Promise<IIssueRouting>;
+  fetchCandidates: (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string
+  ) => Promise<{
+    effective_mode: string;
+    candidates: IAssignmentCandidate[];
+    excluded: IAssignmentCandidate[];
+  }>;
+  getAvailabilityByMemberId: (workspaceMemberId: string) => IMemberAvailability[];
+  fetchMyAvailability: (workspaceSlug: string, workspaceMemberId: string) => Promise<IMemberAvailability[]>;
+  fetchMemberAvailability: (workspaceSlug: string, workspaceMemberId: string) => Promise<IMemberAvailability[]>;
+  addAvailability: (
+    workspaceSlug: string,
+    workspaceMemberId: string,
+    payload: { unavailable_from: string; unavailable_until?: string | null; reason?: string },
+    forSelf?: boolean
+  ) => Promise<void>;
+  removeAvailability: (
+    workspaceSlug: string,
+    workspaceMemberId: string,
+    availabilityId: string,
+    forSelf?: boolean
+  ) => Promise<void>;
+  getAllocationSettings: (
+    workspaceSlug: string,
+    unitId: string,
+    membershipId: string
+  ) => Promise<IMembershipAllocation>;
+  setAllocationSettings: (
+    workspaceSlug: string,
+    unitId: string,
+    membershipId: string,
+    payload: Partial<IMembershipAllocation>
+  ) => Promise<IMembershipAllocation>;
   fetchCoordinators: (workspaceSlug: string, unitId: string) => Promise<IOrganizationalUnitCoordinator[]>;
   addCoordinator: (
     workspaceSlug: string,
@@ -204,6 +252,8 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
   myUnits: IUserOrganizationalUnit[] | null = null;
   loader = false;
   featureEnabled: boolean | null = null;
+  availabilityEnabled: boolean | null = null;
+  availabilityByMember: Record<string, IMemberAvailability[]> = {};
 
   rootStore: CoreRootStore;
   service: OrganizationalUnitService;
@@ -221,6 +271,8 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       myUnits: observable,
       loader: observable.ref,
       featureEnabled: observable.ref,
+      availabilityEnabled: observable.ref,
+      availabilityByMember: observable,
       units: computed,
       isEnabled: computed,
       fetchConfig: action,
@@ -255,6 +307,11 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       fetchPolicy: action,
       updatePolicy: action,
       transfer: action,
+      fetchMyAvailability: action,
+      fetchMemberAvailability: action,
+      addAvailability: action,
+      removeAvailability: action,
+      setAllocationSettings: action,
     });
 
     this.rootStore = _rootStore;
@@ -283,6 +340,10 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       const enabled = response?.organizational_units_enabled ?? true;
       runInAction(() => {
         this.featureEnabled = enabled;
+        // Availability is off by default, so an absent field means off — the
+        // opposite of the layer's own switch, and deliberately so: showing a
+        // form nothing reads is worse than not showing one.
+        this.availabilityEnabled = response?.availability_enabled ?? false;
       });
       return enabled;
     } catch {
@@ -290,6 +351,7 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       // the default rather than hiding a layer that may well be on.
       runInAction(() => {
         this.featureEnabled = true;
+        this.availabilityEnabled = false;
       });
       return true;
     }
@@ -579,6 +641,15 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
             display_name: details?.member?.display_name ?? row.primary_executor?.display_name ?? "",
             email: details?.member?.email ?? row.primary_executor?.email ?? "",
             avatar_url: details?.member?.avatar_url ?? row.primary_executor?.avatar_url ?? "",
+            // Keep the badge the queue already had when the same person is
+            // still on it. A newly chosen executor has no window in this
+            // payload; the next fetch fills it rather than inventing one.
+            ...(executorId === row.primary_executor?.id
+              ? {
+                  is_available: row.primary_executor.is_available,
+                  unavailable_until: row.primary_executor.unavailable_until,
+                }
+              : {}),
           }
         : null,
       current_decision_id: routing.current_assignment_decision?.id ?? null,
@@ -616,12 +687,92 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
     return routing;
   };
 
-  assign = async (workspaceSlug: string, unitId: string, row: IQueueRow, executorId: string) => {
+  assign = async (
+    workspaceSlug: string,
+    unitId: string,
+    row: IQueueRow,
+    executorId: string,
+    options?: { reason?: string }
+  ) => {
     const routing = await this.service.reassignIssue(workspaceSlug, row.project.id, row.issue_id, executorId, {
       expectedDecisionId: row.current_decision_id,
+      reason: options?.reason,
     });
     this.placeRow(unitId, this.mergeRoutingIntoRow(row, routing));
     return routing;
+  };
+
+  fetchCandidates = (workspaceSlug: string, projectId: string, issueId: string) =>
+    this.service.getAssignmentCandidates(workspaceSlug, projectId, issueId);
+
+  // --- availability -------------------------------------------------------
+
+  getAvailabilityByMemberId = (workspaceMemberId: string) => this.availabilityByMember[workspaceMemberId] ?? [];
+
+  /**
+   * @description One's own absences. Takes the workspace member id purely to
+   * key the same map the coordinator view fills — the endpoint it calls is the
+   * one that only ever answers about the caller.
+   */
+  fetchMyAvailability = async (workspaceSlug: string, workspaceMemberId: string) => {
+    const response = await this.service.getMyAvailability(workspaceSlug);
+    runInAction(() => {
+      this.availabilityByMember[workspaceMemberId] = response;
+    });
+    return response;
+  };
+
+  fetchMemberAvailability = async (workspaceSlug: string, workspaceMemberId: string) => {
+    const response = await this.service.getMemberAvailability(workspaceSlug, workspaceMemberId);
+    runInAction(() => {
+      this.availabilityByMember[workspaceMemberId] = response;
+    });
+    return response;
+  };
+
+  /**
+   * @description Record an absence. `forSelf` picks the route rather than the
+   * permission: the "me" route is the one somebody with no coordinator rights
+   * can use, so a person editing their own row must not be sent through the
+   * other one.
+   */
+  addAvailability = async (
+    workspaceSlug: string,
+    workspaceMemberId: string,
+    payload: { unavailable_from: string; unavailable_until?: string | null; reason?: string },
+    forSelf = false
+  ) => {
+    if (forSelf) await this.service.addMyAvailability(workspaceSlug, payload);
+    else await this.service.addMemberAvailability(workspaceSlug, workspaceMemberId, payload);
+    if (forSelf) await this.fetchMyAvailability(workspaceSlug, workspaceMemberId);
+    else await this.fetchMemberAvailability(workspaceSlug, workspaceMemberId);
+  };
+
+  removeAvailability = async (
+    workspaceSlug: string,
+    workspaceMemberId: string,
+    availabilityId: string,
+    forSelf = false
+  ) => {
+    if (forSelf) await this.service.removeMyAvailability(workspaceSlug, availabilityId);
+    else await this.service.removeMemberAvailability(workspaceSlug, workspaceMemberId, availabilityId);
+    if (forSelf) await this.fetchMyAvailability(workspaceSlug, workspaceMemberId);
+    else await this.fetchMemberAvailability(workspaceSlug, workspaceMemberId);
+  };
+
+  getAllocationSettings = (workspaceSlug: string, unitId: string, membershipId: string) =>
+    this.service.getAllocationSettings(workspaceSlug, unitId, membershipId);
+
+  setAllocationSettings = async (
+    workspaceSlug: string,
+    unitId: string,
+    membershipId: string,
+    payload: Partial<IMembershipAllocation>
+  ) => {
+    const response = await this.service.setAllocationSettings(workspaceSlug, unitId, membershipId, payload);
+    // The ranking reads these, so anything showing a queue is now stale.
+    await this.fetchMembers(workspaceSlug, unitId);
+    return response;
   };
 
   returnToQueue = async (workspaceSlug: string, unitId: string, row: IQueueRow) => {

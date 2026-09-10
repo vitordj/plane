@@ -42,6 +42,9 @@ type TCandidate = {
   email: string;
   avatarUrl: string;
   openIssues: number;
+  isAvailable: boolean;
+  acceptsNewWork: boolean;
+  unavailableUntil: string | null;
 };
 
 /**
@@ -94,6 +97,9 @@ export const AssignMemberModal = observer(function AssignMemberModal(props: Prop
         email: membership.email ?? "",
         avatarUrl: membership.avatar_url,
         openIssues: loadByWorkspaceMember.get(membership.workspace_member) ?? 0,
+        isAvailable: membership.is_available !== false,
+        acceptsNewWork: membership.accepts_new_work !== false,
+        unavailableUntil: membership.unavailable_until ?? null,
       }))
       .toSorted((a, b) => a.openIssues - b.openIssues || a.displayName.localeCompare(b.displayName));
   }, [workload, memberships]);
@@ -170,7 +176,11 @@ export const AssignMemberModal = observer(function AssignMemberModal(props: Prop
                     <span className="text-xs text-custom-text-300 block truncate">{candidate.email}</span>
                   </span>
                 </span>
-                <span className="text-xs text-custom-text-300 shrink-0">
+                <span className="text-xs text-custom-text-300 flex shrink-0 items-center gap-2">
+                  {!candidate.isAvailable && <span>{t(`${OU}.work.assign_modal.unavailable`)}</span>}
+                  {candidate.isAvailable && !candidate.acceptsNewWork && (
+                    <span>{t(`${OU}.work.assign_modal.opted_out`)}</span>
+                  )}
                   {assigningUserId === candidate.userId
                     ? t(`${OU}.work.assign_modal.assigning`)
                     : t(`${OU}.work.assign_modal.open_items`, { count: candidate.openIssues })}

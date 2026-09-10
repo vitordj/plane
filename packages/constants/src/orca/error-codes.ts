@@ -52,6 +52,13 @@ export const ORCA_ERROR_CODE_KEYS: Record<number, string> = {
   4935: "workspace_settings.settings.organizational_units.errors.not_the_executor",
   4936: "workspace_settings.settings.organizational_units.errors.coordinator_must_be_member",
   4937: "workspace_settings.settings.organizational_units.errors.invalid_queue_filter",
+  // availability
+  4938: "workspace_settings.settings.organizational_units.errors.availability_window_not_found",
+  4939: "workspace_settings.settings.organizational_units.errors.availability_invalid_interval",
+  4940: "workspace_settings.settings.organizational_units.errors.availability_from_required",
+  4941: "workspace_settings.settings.organizational_units.errors.workspace_member_not_found",
+  4942: "workspace_settings.settings.organizational_units.errors.allocation_limit_forbidden",
+  4943: "workspace_settings.settings.organizational_units.errors.not_availability_manager",
   // public automation API
   4922: "workspace_settings.settings.organizational_units.errors.public_api_disabled",
   4923: "workspace_settings.settings.organizational_units.errors.idempotency_key_required",

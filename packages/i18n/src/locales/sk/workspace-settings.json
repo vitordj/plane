@@ -696,7 +696,9 @@
             "search": "Hľadať podľa mena alebo e-mailu",
             "no_candidates": "Nikto v tejto oblasti zatiaľ nemôže prevziať prácu. Pridajte prosím najprv osoby do oblasti.",
             "assigning": "Priraďovanie…",
-            "open_items": "{count, plural, one {# otvorená položka} few {# otvorené položky} many {# otvorenej položky} other {# otvorených položiek}}"
+            "open_items": "{count, plural, one {# otvorená položka} few {# otvorené položky} many {# otvorenej položky} other {# otvorených položiek}}",
+            "unavailable": "Neprítomný",
+            "opted_out": "Neprijíma novú prácu"
           },
           "toast": {
             "claimed_title": "Pracovná položka prevzatá",
@@ -733,7 +735,11 @@
             "search": "Hľadať oblasti",
             "no_units": "Žiadna iná oblasť nepokrýva tento projekt.",
             "transferring": "Presúva sa…"
-          }
+          },
+          "suggestion": "Návrh: {name}",
+          "unavailable_until": "Neprítomný do {until}",
+          "unavailable_open": "Neprítomný",
+          "executor_away": "Neprítomný"
         },
         "errors": {
           "unit_not_found": "Táto oblasť už neexistuje.",
@@ -773,7 +779,13 @@
           "if_match_required": "Táto požiadavka vyžaduje hlavičku If-Match s aktuálnym rozhodnutím.",
           "process_projection_disabled": "Projekcia procesov je v tejto inštancii vypnutá.",
           "completion_manual_only": "Túto pracovnú položku môže dokončiť len človek.",
-          "internal_error": "Niečo sa pokazilo. Operácia bola zaznamenaná ako neúspešná."
+          "internal_error": "Niečo sa pokazilo. Operácia bola zaznamenaná ako neúspešná.",
+          "availability_window_not_found": "Toto obdobie nedostupnosti sa nenašlo.",
+          "availability_invalid_interval": "Koniec obdobia nedostupnosti musí byť po jeho začiatku.",
+          "availability_from_required": "Obdobie nedostupnosti potrebuje začiatok.",
+          "workspace_member_not_found": "Táto osoba nie je členom tohto workspace.",
+          "allocation_limit_forbidden": "Osobný limit práce môže nastaviť len koordinátor alebo správca workspace.",
+          "not_availability_manager": "Toto môže urobiť len koordinátor jednej z oblastí tejto osoby, alebo správca workspace."
         },
         "coordinators": {
           "tab": "Koordinátori",
@@ -823,6 +835,37 @@
           "description": "Oblasti, do ktorých patríte, a práca, ktorá v každej čaká.",
           "empty": "Zatiaľ nepatríte do žiadnej oblasti.",
           "select": "Vyberte oblasť"
+        },
+        "availability": {
+          "title": "Neprítomnosť",
+          "help": "Neprítomnosť zabráni automatickému prideleniu, aby vás vybralo. Neodoberie to, čo už nesiete.",
+          "empty": "Nič nie je zaznamenané.",
+          "from": "Od",
+          "until": "Do",
+          "add": "Pridať",
+          "added": "Zaznamenané",
+          "not_added": "Nepodarilo sa zaznamenať",
+          "removed": "Odstránené",
+          "not_removed": "Nepodarilo sa odstrániť",
+          "remove_aria": "Odstrániť túto neprítomnosť",
+          "range": "{from} až {until}",
+          "open_ended": "Od {from}, bez dátumu návratu",
+          "reason": {
+            "vacation": "Dovolenka",
+            "leave": "Voľno",
+            "other": "Iné"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Prijíma novú prácu z tejto oblasti",
+          "accepts_new_work_help": "Vypnuté znamená, že automatické pridelenie ich tu preskočí. Čo už nesú, ostáva a stále im možno niečo prideliť menom.",
+          "max_open_items": "Najviac otvorených položiek naraz",
+          "max_open_items_help": "Automatické pridelenie sa zastaví na tomto čísle. Prázdne pole znamená limit oblasti.",
+          "no_limit": "Bez limitu",
+          "saved": "Uložené",
+          "not_saved": "Nepodarilo sa uložiť",
+          "limit_invalid": "Musí to byť celé číslo jedna alebo viac.",
+          "open_aria": "Nastavenia práce pre {name}"
         }
       }
     },

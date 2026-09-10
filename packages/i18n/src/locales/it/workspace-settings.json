@@ -696,7 +696,9 @@
             "search": "Cercare per nome o indirizzo e-mail",
             "no_candidates": "Nessuno di quest’area può ancora prendere lavoro. Aggiunga prima delle persone all’area.",
             "assigning": "Assegnazione in corso…",
-            "open_items": "{count, plural, one {# elemento aperto} many {# elemento aperto} other {# elementi aperti}}"
+            "open_items": "{count, plural, one {# elemento aperto} many {# elemento aperto} other {# elementi aperti}}",
+            "unavailable": "Assente",
+            "opted_out": "Non accetta nuovo lavoro"
           },
           "toast": {
             "claimed_title": "Elemento di lavoro preso",
@@ -733,7 +735,11 @@
             "search": "Cerca aree",
             "no_units": "Nessun’altra area copre questo progetto.",
             "transferring": "Spostamento…"
-          }
+          },
+          "suggestion": "Suggerito: {name}",
+          "unavailable_until": "Assente fino al {until}",
+          "unavailable_open": "Assente",
+          "executor_away": "Assente"
         },
         "errors": {
           "unit_not_found": "Quell’area non esiste più.",
@@ -773,7 +779,13 @@
           "if_match_required": "Questa richiesta richiede un’intestazione If-Match con la decisione in vigore.",
           "process_projection_disabled": "La proiezione dei processi è disattivata su questa istanza.",
           "completion_manual_only": "Questo elemento di lavoro può essere completato solo da una persona.",
-          "internal_error": "Qualcosa è andato storto. L’operazione è stata registrata come fallita."
+          "internal_error": "Qualcosa è andato storto. L’operazione è stata registrata come fallita.",
+          "availability_window_not_found": "Questo periodo di indisponibilità non è stato trovato.",
+          "availability_invalid_interval": "La fine di un periodo di indisponibilità deve essere successiva all’inizio.",
+          "availability_from_required": "Un periodo di indisponibilità richiede una data di inizio.",
+          "workspace_member_not_found": "Questa persona non è un membro di questo workspace.",
+          "allocation_limit_forbidden": "Solo un coordinatore o un amministratore del workspace può impostare un limite personale di lavoro.",
+          "not_availability_manager": "Solo un coordinatore di una delle aree di questa persona, o un amministratore del workspace, può farlo."
         },
         "coordinators": {
           "tab": "Coordinatori",
@@ -823,6 +835,37 @@
           "description": "Aree a cui appartieni e il lavoro in attesa in ciascuna.",
           "empty": "Non appartieni ancora a nessuna area.",
           "select": "Seleziona un’area"
+        },
+        "availability": {
+          "title": "Assenze",
+          "help": "Essere assenti impedisce all’assegnazione automatica di sceglierti. Non toglie ciò che stai già portando.",
+          "empty": "Niente registrato.",
+          "from": "Dal",
+          "until": "Al",
+          "add": "Aggiungi",
+          "added": "Registrato",
+          "not_added": "Impossibile registrarlo",
+          "removed": "Rimosso",
+          "not_removed": "Impossibile rimuoverlo",
+          "remove_aria": "Rimuovi questa assenza",
+          "range": "Dal {from} al {until}",
+          "open_ended": "Dal {from}, senza data di rientro",
+          "reason": {
+            "vacation": "Ferie",
+            "leave": "Congedo",
+            "other": "Altro"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Accetta nuovo lavoro da quest’area",
+          "accepts_new_work_help": "Disattivato, l’assegnazione automatica li ignora qui. Tengono ciò che hanno e possono ancora ricevere qualcosa per nome.",
+          "max_open_items": "Massimo di elementi aperti contemporaneamente",
+          "max_open_items_help": "L’assegnazione automatica si ferma a questo numero. Vuoto, vale il limite dell’area.",
+          "no_limit": "Nessun limite",
+          "saved": "Salvato",
+          "not_saved": "Impossibile salvare",
+          "limit_invalid": "Deve essere un numero intero di uno o più.",
+          "open_aria": "Impostazioni di lavoro di {name}"
         }
       }
     },

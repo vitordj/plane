@@ -696,7 +696,9 @@
             "search": "Buscar por nombre o correo electrónico",
             "no_candidates": "Todavía nadie de esta área puede asumir trabajo. Agregue personas al área primero.",
             "assigning": "Asignando…",
-            "open_items": "{count, plural, one {# elemento abierto} other {# elementos abiertos}}"
+            "open_items": "{count, plural, one {# elemento abierto} other {# elementos abiertos}}",
+            "unavailable": "Ausente",
+            "opted_out": "No acepta trabajo nuevo"
           },
           "toast": {
             "claimed_title": "Elemento de trabajo tomado",
@@ -733,7 +735,11 @@
             "search": "Buscar áreas",
             "no_units": "Ninguna otra área cubre este proyecto.",
             "transferring": "Moviendo…"
-          }
+          },
+          "suggestion": "Sugerido: {name}",
+          "unavailable_until": "Ausente hasta {until}",
+          "unavailable_open": "Ausente",
+          "executor_away": "Ausente"
         },
         "errors": {
           "unit_not_found": "Esa área ya no existe.",
@@ -773,7 +779,13 @@
           "if_match_required": "Esta solicitud necesita una cabecera If-Match con la decisión vigente.",
           "process_projection_disabled": "La proyección de procesos está desactivada en esta instancia.",
           "completion_manual_only": "Este elemento de trabajo solo puede completarlo una persona.",
-          "internal_error": "Algo salió mal. La operación quedó registrada como fallida."
+          "internal_error": "Algo salió mal. La operación quedó registrada como fallida.",
+          "availability_window_not_found": "No se encontró ese período de indisponibilidad.",
+          "availability_invalid_interval": "El fin de un período de indisponibilidad debe ser posterior al inicio.",
+          "availability_from_required": "Un período de indisponibilidad necesita una fecha de inicio.",
+          "workspace_member_not_found": "Esa persona no es miembro de este workspace.",
+          "allocation_limit_forbidden": "Solo un coordinador o un administrador del workspace puede fijar un límite personal de trabajo.",
+          "not_availability_manager": "Solo un coordinador de una de las áreas de esta persona, o un administrador del workspace, puede hacer esto."
         },
         "coordinators": {
           "tab": "Coordinadores",
@@ -823,6 +835,37 @@
           "description": "Áreas a las que perteneces y el trabajo que espera en cada una.",
           "empty": "Todavía no perteneces a ninguna área.",
           "select": "Selecciona un área"
+        },
+        "availability": {
+          "title": "Ausencias",
+          "help": "Estar ausente impide que la asignación automática lo elija. Nunca retira lo que ya tiene asignado.",
+          "empty": "Nada registrado.",
+          "from": "Desde",
+          "until": "Hasta",
+          "add": "Añadir",
+          "added": "Registrado",
+          "not_added": "No se pudo registrar",
+          "removed": "Eliminado",
+          "not_removed": "No se pudo eliminar",
+          "remove_aria": "Quitar esta ausencia",
+          "range": "{from} a {until}",
+          "open_ended": "Desde {from}, sin fecha de retorno",
+          "reason": {
+            "vacation": "Vacaciones",
+            "leave": "Permiso",
+            "other": "Otro"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Acepta trabajo nuevo de esta área",
+          "accepts_new_work_help": "Desactivado, la asignación automática lo omite aquí. Conserva lo que tiene y aún se le puede dar algo por nombre.",
+          "max_open_items": "Máximo de elementos abiertos a la vez",
+          "max_open_items_help": "La asignación automática se detiene en este número. En blanco, decide el límite del área.",
+          "no_limit": "Sin límite",
+          "saved": "Guardado",
+          "not_saved": "No se pudo guardar",
+          "limit_invalid": "Tiene que ser un número entero de uno o más.",
+          "open_aria": "Ajustes de trabajo de {name}"
         }
       }
     },

@@ -376,6 +376,10 @@ CELERY_IMPORTS = (
     # 15 minutes, and a worker that never imported the module answers it with
     # "Received unregistered task", silently, for as long as the queue exists.
     "plane.bgtasks.organizational_queue_task",
+    # Same for the hourly availability sweep: beat hands the worker a name,
+    # and a worker that never imported the module answers it with "Received
+    # unregistered task", silently, every hour.
+    "plane.bgtasks.organizational_availability_task",
 )
 
 FILE_SIZE_LIMIT = int(os.environ.get("FILE_SIZE_LIMIT", 5242880))
