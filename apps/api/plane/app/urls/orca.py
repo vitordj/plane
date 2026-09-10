@@ -37,6 +37,8 @@ from plane.app.views import (
     OrganizationalDirectoryResyncEndpoint,
     OrganizationalDirectoryTokenEndpoint,
     OrganizationalDirectoryUnresolvedEndpoint,
+    OrganizationalExecutiveDrillDownEndpoint,
+    OrganizationalExecutiveEndpoint,
     UserLanguagePreferenceEndpoint,
     SCIMGroupDetailEndpoint,
     SCIMGroupListEndpoint,
@@ -129,8 +131,20 @@ urlpatterns = [
         ProjectLabelPropertyEndpoint.as_view(),
         name="project-project-label-property",
     ),
+    # Executive aggregates (Fase 5). Workspace Admin only. Sidecar
+    # namespace — not an upstream route.
     # Organizational units — the fork's organizational layer (see FORK.md).
     # Mutations are workspace-admin only; reads are open to workspace members.
+    path(
+        "orca/workspaces/<str:slug>/executive/",
+        OrganizationalExecutiveEndpoint.as_view(),
+        name="orca-executive",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/executive/drill-down/",
+        OrganizationalExecutiveDrillDownEndpoint.as_view(),
+        name="orca-executive-drill-down",
+    ),
     path(
         "orca/workspaces/<str:slug>/organizational-units/me/",
         UserOrganizationalUnitsEndpoint.as_view(),
