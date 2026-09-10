@@ -49,7 +49,7 @@ Legenda: `[ ]` não iniciado · `[~]` em andamento · `[x]` concluído · `[-]` 
 | 2 Fila e coordenador       | [02-queue-and-coordinator.md](./02-queue-and-coordinator.md) | 6 (+ gate mínimo) | `[x]` 6/6 no código · Gate 2-mínimo ainda aberto (staging + piloto)                                   | —               |
 | 3 Disponibilidade          | [03-availability.md](./03-availability.md)                   | 6                 | `[x]` 6/6 no código · Gate 3 ainda aberto (staging + piloto) · ranking `lb-2`                         | —               |
 | 4 Processos                | [04-processes.md](./04-processes.md)                         | 7                 | `[~]` 2/7 · 4.2 e 4.3 `[x]` · 4.1, 4.4–4.7 abertos · migração `0142` entregue                         | —               |
-| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[ ]` 0/4                                                                                             | —               |
+| 5 Visão executiva          | [05-executive-view.md](./05-executive-view.md)               | 4                 | `[~]` 3/4 · 5.1, 5.3, 5.4 `[x]` · 5.2 aberto (falta medição em staging)                               | —               |
 | R1 Achados da revisão      | [R1-review-findings.md](./R1-review-findings.md)             | 20 (+ 1 desenho)  | `[x]` 20/20 de código · resta T1 (decisão de negócio)                                                 | n/a             |
 
 ## Próximo item recomendado
@@ -60,11 +60,11 @@ instância) estão nesta PR, rebaseada sobre o merge do #24. Ranking `lb-2`.
 Migração `0142`.
 
 **O próximo item de código, depois deste merge, é `4.5+4.6+4.7`** — webhooks
-nativos, agrupamento visual na fila, runbook. `5.1+5.3+5.4` pode começar em
-paralelo porque a 0142 já existe. **Não abrir 4.1** sem a leitura da doc
+nativos, agrupamento visual na fila, runbook. `5.1`, `5.3` e `5.4` estão
+entregues; **5.2** permanece `[ ]` até medir 5.1 em staging (>2 s) — sem
+tabela de snapshot até lá. **Não abrir 4.1** sem a leitura da doc
 oficial do Compose: `docs/orca-compose-notes.md` **ainda não existe** (um
-README anterior afirmou o contrário). 4.4 é outro repositório. 5.2 só depois
-de medir 5.1 em staging.
+README anterior afirmou o contrário). 4.4 é outro repositório.
 
 **Antes de escolher qualquer item, saiba destas quatro coisas.**
 
