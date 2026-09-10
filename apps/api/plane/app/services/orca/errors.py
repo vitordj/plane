@@ -185,14 +185,41 @@ class AssigneesNotAllowedHere(OrcaDomainError):
 
 
 class ProcessProjectionDisabled(OrcaDomainError):
-    """A ``process`` block arrived before Phase 4 exists.
+    """A ``process`` block arrived while projection is switched off.
 
     @description The block is part of the published contract, so it is refused
     with its own code rather than as an unknown field: an integration that
-    sends it is not wrong, it is early, and the code says so.
+    sends it is not wrong, it is early (or the operator has the flag off), and
+    the code says so.
     """
 
     error_code = "ORG_PROCESS_PROJECTION_DISABLED"
+
+
+class CompletionManualOnly(OrcaDomainError):
+    """The template says a person closes this step, not an API key.
+
+    @description 409 rather than 400: the request is well formed, and the
+    server is refusing to do the thing the step's ``completion_mode`` exists
+    to keep out of the automation path (RFC §7.2, F21).
+    """
+
+    error_code = "ORG_COMPLETION_MANUAL_ONLY"
+    http_status = status.HTTP_409_CONFLICT
+
+
+class ProcessItemConflict(OrcaDomainError):
+    """This work item is already a step of a different process run.
+
+    @description Reuses ``ORG_INVALID_ROUTING_TRANSITION`` rather than a new
+    code: the published catalogue already covers a work item that cannot move
+    to the state asked of it, and a step that belongs to two runs is that
+    refusal. 409 because the item exists; the caller has to pick a different
+    work item, not fix a field.
+    """
+
+    error_code = "ORG_INVALID_ROUTING_TRANSITION"
+    http_status = status.HTTP_409_CONFLICT
 
 
 class IfMatchRequired(OrcaDomainError):

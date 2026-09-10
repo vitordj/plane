@@ -6,7 +6,9 @@ from .base import StrictSerializer
 from .units import queue_row, unit_payload
 from .work_items import (
     AssignmentSerializer,
+    CompleteStepSerializer,
     ExternalReferenceSerializer,
+    ProcessBlockSerializer,
     ReassignSerializer,
     ResponsibilitySerializer,
     TransferSerializer,
@@ -18,7 +20,9 @@ from .work_items import (
 
 __all__ = [
     "AssignmentSerializer",
+    "CompleteStepSerializer",
     "ExternalReferenceSerializer",
+    "ProcessBlockSerializer",
     "ReassignSerializer",
     "ResponsibilitySerializer",
     "StrictSerializer",

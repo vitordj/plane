@@ -47,6 +47,7 @@ from rest_framework.response import Response
 # Module imports
 from plane.api.serializers import IssueSerializer
 from plane.api.serializers.orca import (
+    CompleteStepSerializer,
     ReassignSerializer,
     TransferSerializer,
     WorkItemAutomationSerializer,
@@ -56,16 +57,24 @@ from plane.app.permissions import ProjectEntityPermission
 from plane.app.services.orca import (
     ExternalBindingConflict,
     OrcaDomainError,
+    ProcessProjectionDisabled,
     UnitNotInWorkspace,
     WorkItemHasNoUnit,
     WorkItemNotFound,
+    attach_to_process,
     begin_operation,
+    complete_step,
+    instance_progress,
+    process_projection_enabled,
     reassign,
+    refresh_instance_status,
+    resolve_policy,
     return_to_queue,
     set_responsibility,
     transfer_unit,
 )
 from plane.app.services.orca.errors import IfMatchRequired
+from plane.app.services.orca.service_level import record_service_level
 from plane.bgtasks.issue_activities_task import issue_activity
 from plane.bgtasks.webhook_task import model_activity
 from plane.db.models import (
@@ -75,10 +84,13 @@ from plane.db.models import (
     Issue,
     IssueOrganizationalUnit,
     OrganizationalUnit,
+    ProcessInstanceItem,
+    ProcessInstanceReference,
     Project,
     ProjectMember,
     RequestedAssignmentMode,
     ResponsibilitySource,
+    ServiceLevelSource,
 )
 from plane.utils.exception_logger import log_exception
 from plane.utils.host import base_host
@@ -91,6 +103,7 @@ from .base import (
     replay_response,
     validation_error_response,
 )
+from .units import OrcaWorkspaceReadEndpoint
 
 
 class OrcaWorkItemBaseEndpoint(OrcaPublicBaseAPIView):
@@ -233,6 +246,7 @@ class WorkItemAutomationEndpoint(OrcaWorkItemBaseEndpoint):
             unit = self.resolve_unit(project.workspace_id, responsibility["unit"])
             issue, binding, created = self._bind(request, project, external)
             link, decision = self._place(request, handle, issue, unit, mode, explicit, assignment, responsibility)
+            process_item = self._attach_process(request, issue, data.get("process"), responsibility, link)
 
             body = work_item_envelope(
                 issue,
@@ -244,6 +258,15 @@ class WorkItemAutomationEndpoint(OrcaWorkItemBaseEndpoint):
                 operation=handle.operation,
                 replay=False,
             )
+            if process_item is not None:
+                body["process"] = {
+                    "instance_id": process_item.process_instance.external_instance_id,
+                    "source": process_item.process_instance.external_source,
+                    "template_name": process_item.process_instance.template_name,
+                    "template_version": process_item.process_instance.template_version,
+                    "step_key": process_item.step_key,
+                    "completion_mode": process_item.completion_mode,
+                }
 
             if created:
                 # Only on creation, and only after the row is really there:
@@ -293,9 +316,43 @@ class WorkItemAutomationEndpoint(OrcaWorkItemBaseEndpoint):
             explicit_executor=assignment.get("primary_executor") if explicit else None,
             collaborators=assignment.get("collaborators") or (),
             assignment_due_at=responsibility.get("assignment_due_at"),
+            completion_due_at=responsibility.get("completion_due_at"),
             automation_operation=handle.operation,
         )
         return result.link, result.decision
+
+    def _attach_process(self, request, issue, process_block, responsibility, link):
+        """
+        @description Record the step, and the dates the template promised, in
+        the same transaction as the work item. ``None`` when the caller sent
+        no ``process`` block.
+        @returns The ``ProcessInstanceItem``, or ``None``.
+        """
+        if process_block:
+            item = attach_to_process(issue, process_block)
+            record_service_level(
+                issue,
+                assignment_due_at=responsibility.get("assignment_due_at") or link.assignment_due_at,
+                completion_due_at=responsibility.get("completion_due_at"),
+                source=ServiceLevelSource.PROCESS,
+                source_version=process_block["template_version"],
+                changed_by=request.user,
+                reason=responsibility.get("reason", ""),
+            )
+            return item
+        if responsibility.get("completion_due_at") is not None:
+            # No process block: the caller set the completion date by hand.
+            # allocate() already mirrored assignment_due_at; this adds the
+            # completion half without changing the source allocate chose.
+            record_service_level(
+                issue,
+                assignment_due_at=responsibility.get("assignment_due_at") or link.assignment_due_at,
+                completion_due_at=responsibility["completion_due_at"],
+                source=ServiceLevelSource.MANUAL,
+                changed_by=request.user,
+                reason=responsibility.get("reason", ""),
+            )
+        return None
 
     def _bind(self, request, project, external):
         """
@@ -587,9 +644,188 @@ class WorkItemTransferEndpoint(OrcaWorkItemBaseEndpoint):
         return body, issue
 
 
+class WorkItemCompleteEndpoint(OrcaWorkItemBaseEndpoint):
+    """
+    ``POST .../work-items/{issue_id}/complete/``
+
+    @description An outside system asserting that a step is done (RFC §7.2).
+    Only for work items that are steps of a process run, and only in the way
+    the step's template allows. ``manual`` is refused with
+    ``ORG_COMPLETION_MANUAL_ONLY``.
+    """
+
+    def post(self, request, slug, project_id, issue_id):
+        if not process_projection_enabled():
+            raise ProcessProjectionDisabled()
+        project = self.resolve_project(slug, project_id)
+        issue = self._resolve_issue(project, issue_id)
+        return self.run_operation(
+            request,
+            project.workspace,
+            AutomationOperationType.COMPLETE,
+            lambda handle: self._complete(request, handle, project, issue),
+        )
+
+    def _complete(self, request, handle, project, issue):
+        payload = CompleteStepSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        data = payload.validated_data
+
+        link = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
+        policy = None
+        if link is not None:
+            policy = resolve_policy(link.organizational_unit, issue.project_id).policy
+
+        event, item = complete_step(
+            issue,
+            source=data.get("source") or "public_api",
+            event_id=data.get("event_id", ""),
+            rule_version=data.get("rule_version", ""),
+            evidence=data.get("evidence") or {},
+            actor=request.user,
+            policy=policy,
+        )
+        issue.refresh_from_db()
+        item.process_instance.refresh_from_db()
+        body = {
+            "work_item": {
+                "id": str(issue.id),
+                "sequence_id": issue.sequence_id,
+                "identifier": f"{issue.project.identifier}-{issue.sequence_id}",
+                "state": str(issue.state_id) if issue.state_id else None,
+            },
+            "process": {
+                "instance_id": item.process_instance.external_instance_id,
+                "source": item.process_instance.external_source,
+                "step_key": item.step_key,
+                "completion_mode": item.completion_mode,
+                "status": item.process_instance.status,
+                "progress": instance_progress(item.process_instance),
+            },
+            "completion": {
+                "id": str(event.id),
+                "source": event.source,
+                "event_id": event.event_id,
+                "rule_version": event.rule_version,
+                "recorded_at": event.created_at.isoformat(),
+            },
+            "operation": {"idempotency_key": handle.operation.idempotency_key, "replay": False},
+        }
+        return body, issue
+
+
+class ProcessInstanceEndpoint(OrcaWorkspaceReadEndpoint):
+    """
+    ``GET /api/v1/orca/workspaces/{slug}/process-instances/{source}/{instance_id}/``
+
+    @description One run of a process, as it stands. Read from the work items
+    rather than from a counter kept up to date as steps close, so a step
+    reopened by hand in the app is reflected here.
+
+    Not a replica read: deriving the status can write it back.
+    """
+
+    use_read_replica = False
+
+    def get(self, request, slug, source, instance_id):
+        if not process_projection_enabled():
+            raise ProcessProjectionDisabled()
+
+        workspace, _member = self.workspace_for(request, slug)
+        if workspace is None:
+            return self.forbidden()
+
+        instance = ProcessInstanceReference.objects.filter(
+            workspace=workspace, external_source=source, external_instance_id=instance_id
+        ).first()
+        if instance is None:
+            raise WorkItemNotFound(external_source=source, external_id=instance_id)
+
+        items = list(
+            ProcessInstanceItem.objects.filter(process_instance=instance)
+            .select_related("issue", "issue__project", "issue__state", "issue__orca_service_level")
+            .order_by("created_at")
+        )
+        routing_by_issue = {
+            link.issue_id: link
+            for link in IssueOrganizationalUnit.objects.filter(
+                issue_id__in=[item.issue_id for item in items]
+            ).select_related("organizational_unit", "primary_executor")
+        }
+
+        refresh_instance_status(instance)
+        instance.refresh_from_db()
+
+        return Response(
+            {
+                "instance": {
+                    "source": instance.external_source,
+                    "instance_id": instance.external_instance_id,
+                    "template_name": instance.template_name,
+                    "template_version": instance.template_version,
+                    "status": instance.status,
+                    "started_at": instance.started_at.isoformat() if instance.started_at else None,
+                    "completed_at": instance.completed_at.isoformat() if instance.completed_at else None,
+                    "progress": instance_progress(instance),
+                },
+                "items": [self._item(item, routing_by_issue.get(item.issue_id)) for item in items],
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def _item(self, item, link):
+        """@description One step of the run, as the orchestrator needs it after a restart."""
+        issue = item.issue
+        service_level = getattr(issue, "orca_service_level", None)
+        executor = link.primary_executor if link else None
+        return {
+            "step_key": item.step_key,
+            "completion_mode": item.completion_mode,
+            "work_item": {
+                "id": str(issue.id),
+                "sequence_id": issue.sequence_id,
+                "identifier": f"{issue.project.identifier}-{issue.sequence_id}",
+                "name": issue.name,
+                "project_id": str(issue.project_id),
+                "state": {"id": str(issue.state_id), "group": issue.state.group} if issue.state_id else None,
+            },
+            "responsibility": {
+                "unit": link.organizational_unit.slug if link else None,
+                "routing_state": link.routing_state if link else None,
+                "queue_reason": link.queue_reason if link else None,
+                "primary_executor": (
+                    {"id": str(executor.id), "email": executor.email, "display_name": executor.display_name}
+                    if executor
+                    else None
+                ),
+            },
+            "service_level": (
+                {
+                    "assignment_due_at": (
+                        service_level.assignment_due_at.isoformat() if service_level.assignment_due_at else None
+                    ),
+                    "completion_due_at": (
+                        service_level.completion_due_at.isoformat() if service_level.completion_due_at else None
+                    ),
+                    "original_completion_due_at": (
+                        service_level.original_completion_due_at.isoformat()
+                        if service_level.original_completion_due_at
+                        else None
+                    ),
+                    "source": service_level.source,
+                    "source_version": service_level.source_version,
+                }
+                if service_level
+                else None
+            ),
+        }
+
+
 __all__ = [
     "WorkItemAutomationEndpoint",
     "WorkItemByExternalEndpoint",
     "WorkItemReassignEndpoint",
     "WorkItemTransferEndpoint",
+    "WorkItemCompleteEndpoint",
+    "ProcessInstanceEndpoint",
 ]

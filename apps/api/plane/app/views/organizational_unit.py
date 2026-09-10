@@ -40,6 +40,7 @@ from plane.app.services.orca import (
     availability_enabled,
     orca_public_api_enabled,
     organizational_units_enabled,
+    process_projection_enabled,
     plan_access,
     reconcile_membership,
     reconcile_unit,
@@ -152,6 +153,11 @@ class OrcaConfigEndpoint(BaseAPIView):
                 # people concern. Default off, so ranking stays as it is until
                 # an operator turns Phase 3 on (item 3.1).
                 "availability_enabled": availability_enabled(),
+                # Independent of the other two: process projection can sit
+                # behind the public API while this flag stays off, so an
+                # orchestrator that sends a `process` block is refused rather
+                # than silently creating unrelated work items (item 4.2).
+                "process_projection_enabled": process_projection_enabled(),
             },
             status=status.HTTP_200_OK,
         )

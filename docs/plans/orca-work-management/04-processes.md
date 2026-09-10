@@ -19,7 +19,7 @@ F20, F21, F22, Apêndice B.
 
 ---
 
-## 4.2 — Migrações 0142/0143 e flag `[ ]`
+## 4.2 — Migrações 0142/0143 e flag `[x]`
 
 - `IssueServiceLevel`, `ProcessInstanceReference`, `ProcessInstanceItem` (RFC §5.2) em `organizational_process.py`; exportar.
 - `ORCA_PROCESS_PROJECTION_ENABLED` em settings e `.env.example`.
@@ -30,7 +30,7 @@ inválido rejeitado.
 
 ---
 
-## 4.3 — Bloco `process`, `complete/` e leitura da instância `[ ]`
+## 4.3 — Bloco `process`, `complete/` e leitura da instância `[x]`
 
 - `POST work-items/` aceita `process` (RFC §7.2): `get_or_create` de `ProcessInstanceReference` e `ProcessInstanceItem` dentro da mesma transação; `template_version` obrigatório.
 - `POST .../work-items/{issue_id}/complete/`: RFC §7.2 — `automatic` move para o estado do grupo `completed` do projeto (o primeiro por `sequence`, ou o configurado em `OrganizationalUnitAssignmentPolicy.completed_state` — campo novo opcional nesta migração); `automatic_with_review` aplica o estado de revisão configurado ou a label `aguardando-validacao` (criada sob demanda no projeto); `manual` → 409. Registra `AssignmentDecision`? Não: registra `ProcessCompletionEvent` (tabela pequena append-only nesta fase: `issue, source, event_id, rule_version, evidence JSON, mode, created_at`). `Idempotency-Key` obrigatório.

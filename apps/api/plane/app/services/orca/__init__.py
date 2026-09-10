@@ -37,10 +37,12 @@ from .automation_operation import (
 )
 from .availability import accepts_new_work, is_available
 from .coverage import unit_covers_project
+from .process import attach_to_process, complete_step, instance_progress, refresh_instance_status
 from .errors import (
     AlreadyClaimed,
     AssigneesNotAllowedHere,
     AssignmentModeNotAllowed,
+    CompletionManualOnly,
     DecisionStale,
     ExecutorNotEligible,
     ExternalBindingConflict,
@@ -50,6 +52,7 @@ from .errors import (
     InvalidTransition,
     OperationInProgress,
     OrcaDomainError,
+    ProcessItemConflict,
     ProcessProjectionDisabled,
     UnitNotCoveringProject,
     UnitNotInWorkspace,
@@ -65,7 +68,12 @@ from .directory_projector import (
     resolve_identity,
     unresolved_identities,
 )
-from .feature_flags import availability_enabled, orca_public_api_enabled, organizational_units_enabled
+from .feature_flags import (
+    availability_enabled,
+    orca_public_api_enabled,
+    organizational_units_enabled,
+    process_projection_enabled,
+)
 from .language import (
     DEFAULT_LANGUAGE_KEY,
     FALLBACK_LANGUAGE,
@@ -105,6 +113,7 @@ __all__ = [
     "AssignmentCandidate",
     "AssignmentModeNotAllowed",
     "Candidate",
+    "CompletionManualOnly",
     "DEFAULT_LANGUAGE_KEY",
     "DecisionStale",
     "ExecutorNotEligible",
@@ -121,6 +130,7 @@ __all__ = [
     "OperationInProgress",
     "OrcaDomainError",
     "PolicyResolution",
+    "ProcessItemConflict",
     "ProcessProjectionDisabled",
     "ProjectionResult",
     "RankedCandidates",
@@ -134,6 +144,7 @@ __all__ = [
     "accepts_new_work",
     "allocate",
     "assign_from_unit",
+    "attach_to_process",
     "audit_routing",
     "availability_enabled",
     "begin_operation",
@@ -142,14 +153,17 @@ __all__ = [
     "cap_role_to_workspace_role",
     "claim",
     "complete_operation",
+    "complete_step",
     "dispatch_reconciliation",
     "fail_operation",
     "get_default_language",
+    "instance_progress",
     "is_available",
     "match_workspace_member",
     "normalize_language",
     "orca_public_api_enabled",
     "organizational_units_enabled",
+    "process_projection_enabled",
     "member_ids_for_unit",
     "plan_access",
     "project_ids_for_unit",
@@ -168,6 +182,7 @@ __all__ = [
     "record_assignment_outcome",
     "record_decision_superseded",
     "record_no_candidate",
+    "refresh_instance_status",
     "resolve_identity",
     "resolve_policy",
     "return_to_queue",

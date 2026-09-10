@@ -16,7 +16,7 @@ instead:
 * ``assignees`` inside ``work_item`` — the area decides who does the work, and
   a silently dropped assignee would leave the caller believing it assigned
   somebody (``ORG_ASSIGNEES_NOT_ALLOWED_HERE``);
-* a ``process`` block — part of the published contract, but Phase 4
+* a ``process`` block while ``ORCA_PROCESS_PROJECTION_ENABLED`` is off
   (``ORG_PROCESS_PROJECTION_DISABLED``).
 
 Both raise the domain exception rather than a ``ValidationError``, so the view
@@ -33,7 +33,8 @@ from rest_framework import serializers
 
 # Module imports
 from plane.app.services.orca import AssigneesNotAllowedHere, ProcessProjectionDisabled
-from plane.db.models import Issue, RequestedAssignmentMode
+from plane.app.services.orca.feature_flags import process_projection_enabled
+from plane.db.models import CompletionMode, Issue, RequestedAssignmentMode
 
 from .base import StrictSerializer
 
@@ -106,15 +107,36 @@ class ResponsibilitySerializer(StrictSerializer):
     unit = serializers.CharField(max_length=100)
     assignment = AssignmentSerializer(required=False)
     assignment_due_at = serializers.DateTimeField(required=False, allow_null=True)
-    # Accepted in the RFC's example body, refused until Phase 4 gives it
-    # somewhere to live (IssueServiceLevel). Taking it and dropping it would be
-    # a lie the caller cannot see.
     completion_due_at = serializers.DateTimeField(required=False, allow_null=True)
 
-    def validate_completion_due_at(self, value):
-        raise serializers.ValidationError(
-            "Completion deadlines arrive with process projection (Phase 4). Use assignment_due_at."
-        )
+
+class ProcessBlockSerializer(StrictSerializer):
+    """
+    Which run of which process this work item is a step of.
+
+    @description ``template_version`` is required, not defaulted. A run whose
+    steps were created under two versions of a template is a thing that
+    happens, and the only way to find out later is if every step says which
+    version made it.
+    """
+
+    source = serializers.CharField(max_length=255)
+    instance_id = serializers.CharField(max_length=255)
+    template_name = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")
+    template_version = serializers.CharField(max_length=64)
+    step_key = serializers.CharField(max_length=255)
+    completion_mode = serializers.ChoiceField(
+        choices=CompletionMode.values, required=False, default=CompletionMode.MANUAL
+    )
+
+
+class CompleteStepSerializer(StrictSerializer):
+    """An outside system asserting that a step is done."""
+
+    source = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")
+    event_id = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")
+    rule_version = serializers.CharField(max_length=64, required=False, allow_blank=True, default="")
+    evidence = serializers.DictField(required=False, default=dict)
 
 
 class WorkItemAutomationSerializer(StrictSerializer):
@@ -123,10 +145,10 @@ class WorkItemAutomationSerializer(StrictSerializer):
     external = ExternalReferenceSerializer()
     work_item = WorkItemBodySerializer()
     responsibility = ResponsibilitySerializer()
-    process = serializers.DictField(required=False)
+    process = ProcessBlockSerializer(required=False)
 
     def to_internal_value(self, data):
-        if isinstance(data, dict) and "process" in data:
+        if isinstance(data, dict) and "process" in data and not process_projection_enabled():
             raise ProcessProjectionDisabled()
         return super().to_internal_value(data)
 

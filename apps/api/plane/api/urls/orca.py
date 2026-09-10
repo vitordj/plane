@@ -17,10 +17,12 @@ already depends on.
 from django.urls import path
 
 from plane.api.views.orca import (
+    ProcessInstanceEndpoint,
     UnitListEndpoint,
     UnitQueueEndpoint,
     WorkItemAutomationEndpoint,
     WorkItemByExternalEndpoint,
+    WorkItemCompleteEndpoint,
     WorkItemReassignEndpoint,
     WorkItemTransferEndpoint,
 )
@@ -58,5 +60,15 @@ urlpatterns = [
         "orca/workspaces/<str:slug>/projects/<uuid:project_id>/work-items/<uuid:issue_id>/transfer/",
         WorkItemTransferEndpoint.as_view(http_method_names=["post"]),
         name="orca-work-item-transfer",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/projects/<uuid:project_id>/work-items/<uuid:issue_id>/complete/",
+        WorkItemCompleteEndpoint.as_view(http_method_names=["post"]),
+        name="orca-work-item-complete",
+    ),
+    path(
+        "orca/workspaces/<str:slug>/process-instances/<str:source>/<str:instance_id>/",
+        ProcessInstanceEndpoint.as_view(http_method_names=["get"]),
+        name="orca-process-instance",
     ),
 ]

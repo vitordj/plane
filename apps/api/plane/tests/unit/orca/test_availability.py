@@ -238,6 +238,7 @@ class TestTheConfigEndpoint:
         assert response.data["availability_enabled"] is False
         assert "organizational_units_enabled" in response.data
         assert "public_api_enabled" in response.data
+        assert response.data["process_projection_enabled"] is False
 
     def test_availability_is_reported_on_when_the_flag_is_on(self, admin_client, workspace_with_members, settings):
         settings.ORCA_AVAILABILITY_ENABLED = True

@@ -96,6 +96,15 @@ from .organizational_automation import (
     AutomationOperationType,
     ExternalWorkItemBinding,
 )
+from .organizational_process import (
+    CompletionMode,
+    IssueServiceLevel,
+    ProcessCompletionEvent,
+    ProcessInstanceItem,
+    ProcessInstanceReference,
+    ProcessInstanceStatus,
+    ServiceLevelSource,
+)
 from .organizational_directory import (
     OrganizationalDirectoryConnection,
     OrganizationalDirectoryGroupMembership,

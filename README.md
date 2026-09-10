@@ -69,6 +69,7 @@ Whatever runs the stack, three things have to be true:
 | `ORCA_PUBLIC_API_RATE_LIMIT`                          |    No    | Budget per API token for the automation API. Read at process start, so a change needs a restart                                                                                         | `300/minute`                                         |
 | `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS`            |    No    | Days the automation API remembers an `Idempotency-Key`. Expired daily by the beat; `0` expires every receipt, it does not disable the expiry                                            | `30`                                                 |
 | `ORCA_AVAILABILITY_ENABLED`                           |    No    | Leave, opt-out and personal caps in ranking and the unavailability sweep. Default off so the tables can exist without changing who gets work until Phase 3 is switched on               | `0`                                                  |
+| `ORCA_PROCESS_PROJECTION_ENABLED`                     |    No    | Process runs projected onto work items (`process` block, `complete/`, instance read). Default off so the tables can exist without an orchestrator attaching steps until Phase 4 is on   | `0`                                                  |
 
 ### 🚀 Fork Workflow & Git Strategy
 

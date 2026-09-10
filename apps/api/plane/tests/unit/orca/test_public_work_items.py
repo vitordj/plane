@@ -341,13 +341,18 @@ class TestRefusing:
         assert response.status_code == 400
         assert response.data["error_message"] == "ORG_PROCESS_PROJECTION_DISABLED"
 
-    def test_a_completion_deadline_is_refused_until_phase_four(self, caller, project, world):
+    def test_a_completion_deadline_is_kept_on_the_service_level(self, caller, project, world):
         payload = body(responsibility={"unit": "compliance", "completion_due_at": "2026-09-30T12:00:00Z"})
 
         response = post(caller, project, payload)
 
-        assert response.status_code == 400
-        assert "completion_due_at" in str(response.data["detail"])
+        assert response.status_code == 201
+        from plane.db.models import IssueServiceLevel
+
+        row = IssueServiceLevel.objects.get(issue_id=response.data["work_item"]["id"])
+        assert row.completion_due_at.isoformat().startswith("2026-09-30T12:00")
+        assert row.original_completion_due_at == row.completion_due_at
+        assert row.source == "manual"
 
     def test_an_unknown_field_is_refused_rather_than_ignored(self, caller, project, world):
         response = post(caller, project, body(work_item={"name": "x", "asignees": []}))
