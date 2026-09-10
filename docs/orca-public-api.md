@@ -137,7 +137,7 @@ curl -sS -X POST \
     "effective_mode": "least_loaded",
     "policy_source": "unit_project",
     "policy_version": 3,
-    "algorithm_version": "lb-1",
+    "algorithm_version": "lb-2",
     "outcome": "assigned"
   },
   "operation": { "idempotency_key": "orca-9f86...", "replay": false }

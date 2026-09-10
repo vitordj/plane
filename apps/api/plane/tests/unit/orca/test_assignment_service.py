@@ -3,7 +3,7 @@
 # See the LICENSE file for details.
 
 """
-The assignment service: policy resolution, the lb-1 ranking, and the states.
+The assignment service: policy resolution, the lb-2 ranking, and the states.
 
 Every rule here is one an allocation is wrong without, and every one of them
 was previously either absent or restated at a call site:
@@ -20,7 +20,10 @@ was previously either absent or restated at a call site:
 Concurrency has its own file: it needs real transactions and threads.
 """
 
+from datetime import timedelta
+
 import pytest
+from django.utils import timezone
 
 from plane.app.services.orca import (
     AlreadyClaimed,
@@ -44,18 +47,23 @@ from plane.db.models import (
     AutomationOperation,
     AutomationOperationStatus,
     AutomationOperationType,
+    AvailabilityReason,
+    AvailabilitySource,
     DecisionOutcome,
     DecisionTrigger,
     IssueAssignee,
     IssueOrganizationalUnit,
     IssueResponsibilityEvent,
+    MembershipAllocationSettings,
     OrganizationalUnitAssignmentPolicy,
+    OrganizationalUnitMembership,
     PolicySource,
     ProjectMember,
     QueueReason,
     ResponsibilitySource,
     RoutingState,
     StateGroup,
+    WorkspaceMemberAvailability,
 )
 
 from .conftest import ROLE_GUEST, ROLE_MEMBER
@@ -89,6 +97,27 @@ def make_link(unit, project, make_issue):
 
 def policy_for(unit, workspace, **kwargs):
     return OrganizationalUnitAssignmentPolicy.objects.create(organizational_unit=unit, workspace=workspace, **kwargs)
+
+
+def covering_window(workspace_member, **kwargs):
+    """A leave window that covers now — the case ranking has to notice."""
+    now = timezone.now()
+    defaults = {
+        "workspace_member": workspace_member,
+        "workspace": workspace_member.workspace,
+        "unavailable_from": now - timedelta(hours=1),
+        "unavailable_until": now + timedelta(hours=1),
+        "reason": AvailabilityReason.VACATION,
+        "source": AvailabilitySource.MANUAL,
+    }
+    defaults.update(kwargs)
+    return WorkspaceMemberAvailability.objects.create(**defaults)
+
+
+def membership_of(unit, user):
+    return OrganizationalUnitMembership.objects.get(
+        organizational_unit=unit, workspace_member__member=user, is_active=True
+    )
 
 
 @pytest.mark.unit
@@ -250,7 +279,7 @@ class TestRanking:
         ranked = rank_candidates(unit, project.id, resolve_policy(unit, project.id))
 
         assert [candidate.user_id for candidate in ranked.eligible] == [idle.id]
-        assert [candidate.excluded_reason for candidate in ranked.excluded] == ["at_max_open_items"]
+        assert [candidate.excluded_reason for candidate in ranked.excluded] == ["policy_limit"]
 
     def test_the_order_is_deterministic_on_a_tie(self, unit, project, staffed):
         first = rank_candidates(unit, project.id)
@@ -272,6 +301,140 @@ class TestRanking:
                 "excluded_reason": "not_a_project_member",
             }
         ]
+
+
+@pytest.mark.unit
+class TestAvailabilityRanking:
+    """Item 3.2: leave, opt-out and caps drop people from ``lb-2``, named on the snapshot."""
+
+    def test_an_unavailable_person_is_excluded_with_their_load(
+        self, unit, project, staffed, make_link, make_issue, workspace_member_of, settings
+    ):
+        """
+        Load is per executor. Leaving the ranking does not move their open
+        items onto anyone else — the snapshot still shows the numbers they
+        were carrying, so "why was this person skipped?" is answerable.
+        """
+        settings.ORCA_AVAILABILITY_ENABLED = True
+        busy, idle = staffed
+        for index in range(2):
+            link = make_link(make_issue(project, name=f"Busy {index}"))
+            link.routing_state = RoutingState.ASSIGNED
+            link.primary_executor = busy
+            link.save()
+        covering_window(workspace_member_of(busy))
+
+        ranked = rank_candidates(unit, project.id)
+
+        assert [candidate.user_id for candidate in ranked.eligible] == [idle.id]
+        assert ranked.eligible[0].total_open == 0
+        skipped = next(candidate for candidate in ranked.excluded if candidate.user_id == busy.id)
+        assert skipped.excluded_reason == "unavailable"
+        assert skipped.total_open == 2
+        assert any(row.get("excluded_reason") == "unavailable" for row in ranked.snapshot())
+
+    def test_opting_out_excludes_only_that_area(
+        self, unit, second_unit, project, staffed, add_member, link_project, settings
+    ):
+        settings.ORCA_AVAILABILITY_ENABLED = True
+        busy, idle = staffed
+        MembershipAllocationSettings.objects.create(membership=membership_of(unit, busy), accepts_new_work=False)
+        link_project(second_unit, project)
+        add_member(second_unit, busy)
+        add_member(second_unit, idle)
+
+        here = rank_candidates(unit, project.id)
+        there = rank_candidates(second_unit, project.id)
+
+        assert [candidate.user_id for candidate in here.eligible] == [idle.id]
+        assert [candidate.excluded_reason for candidate in here.excluded] == ["opted_out"]
+        assert {candidate.user_id for candidate in there.eligible} == {busy.id, idle.id}
+
+    def test_the_personal_cap_excludes_before_the_policy_cap(
+        self, unit, project, staffed, make_link, make_issue, workspace_with_members, settings
+    ):
+        settings.ORCA_AVAILABILITY_ENABLED = True
+        busy, idle = staffed
+        link = make_link(make_issue(project, name="One"))
+        link.routing_state = RoutingState.ASSIGNED
+        link.primary_executor = busy
+        link.save()
+        MembershipAllocationSettings.objects.create(membership=membership_of(unit, busy), max_open_items=1)
+        policy_for(
+            unit,
+            workspace_with_members,
+            default_mode=AssignmentMode.LEAST_LOADED,
+            allowed_modes=[AssignmentMode.LEAST_LOADED.value],
+            max_open_items_per_member=5,
+        )
+
+        ranked = rank_candidates(unit, project.id, resolve_policy(unit, project.id))
+
+        assert [candidate.user_id for candidate in ranked.eligible] == [idle.id]
+        assert [candidate.excluded_reason for candidate in ranked.excluded] == ["member_limit"]
+
+    def test_the_policy_cap_is_named_policy_limit(
+        self, unit, project, staffed, make_link, make_issue, workspace_with_members, settings
+    ):
+        settings.ORCA_AVAILABILITY_ENABLED = True
+        busy, idle = staffed
+        link = make_link(make_issue(project, name="One"))
+        link.routing_state = RoutingState.ASSIGNED
+        link.primary_executor = busy
+        link.save()
+        policy_for(
+            unit,
+            workspace_with_members,
+            default_mode=AssignmentMode.LEAST_LOADED,
+            allowed_modes=[AssignmentMode.LEAST_LOADED.value],
+            max_open_items_per_member=1,
+        )
+
+        ranked = rank_candidates(unit, project.id, resolve_policy(unit, project.id))
+
+        assert [candidate.user_id for candidate in ranked.eligible] == [idle.id]
+        assert [candidate.excluded_reason for candidate in ranked.excluded] == ["policy_limit"]
+
+    def test_windows_and_caps_do_not_exclude_while_the_flag_is_off(
+        self, unit, project, staffed, make_link, make_issue, workspace_member_of, settings
+    ):
+        settings.ORCA_AVAILABILITY_ENABLED = False
+        busy, idle = staffed
+        link = make_link(make_issue(project, name="One"))
+        link.routing_state = RoutingState.ASSIGNED
+        link.primary_executor = busy
+        link.save()
+        covering_window(workspace_member_of(busy))
+        MembershipAllocationSettings.objects.create(
+            membership=membership_of(unit, busy), accepts_new_work=False, max_open_items=1
+        )
+
+        ranked = rank_candidates(unit, project.id)
+
+        assert {candidate.user_id for candidate in ranked.eligible} == {busy.id, idle.id}
+        assert ranked.excluded == []
+
+    def test_least_loaded_skips_someone_on_leave_and_stamps_lb2(
+        self, unit, project, staffed, make_link, make_issue, workspace_with_members, workspace_member_of, settings
+    ):
+        settings.ORCA_AVAILABILITY_ENABLED = True
+        policy_for(
+            unit,
+            workspace_with_members,
+            default_mode=AssignmentMode.LEAST_LOADED,
+            allowed_modes=[AssignmentMode.LEAST_LOADED.value],
+        )
+        busy, idle = staffed
+        covering_window(workspace_member_of(busy))
+        issue = make_issue(project)
+        make_link(issue)
+
+        result = allocate(issue, unit)
+
+        assert result.outcome == DecisionOutcome.ASSIGNED
+        assert result.chosen_user_id == idle.id
+        assert result.decision.algorithm_version == "lb-2"
+        assert any(row.get("excluded_reason") == "unavailable" for row in result.decision.candidates_snapshot)
 
 
 @pytest.mark.unit
@@ -316,7 +479,7 @@ class TestAllocate:
         assert result.link.primary_executor_id == result.chosen_user_id
         assert IssueAssignee.objects.filter(issue=issue, assignee_id=result.chosen_user_id).exists()
         assert result.decision.candidates_snapshot  # the ranking is on the record
-        assert result.decision.algorithm_version == "lb-1"
+        assert result.decision.algorithm_version == "lb-2"
         assert result.decision.policy_version == 1
 
     def test_least_loaded_with_nobody_eligible_fails_loudly(

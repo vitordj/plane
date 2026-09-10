@@ -67,7 +67,7 @@ def candidates_for(unit: OrganizationalUnit, project_id, exclude_user_ids=()) ->
     Rank the people a unit could assign work to on one project.
 
     @description Delegates to ``assignment_service.rank_candidates`` (the
-    ``lb-1`` algorithm) and maps the result onto the shape the existing callers
+    ``lb-2`` algorithm) and maps the result onto the shape the existing callers
     read. Two differences from what this function used to return, both of them
     the service's rules: load counts only items where the person is the
     **primary executor** (a collaborator left over from an earlier assignment
