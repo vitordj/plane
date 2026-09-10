@@ -256,7 +256,9 @@ class TestTheAllocationEndpoint:
         assert response.status_code == status.HTTP_200_OK, response.data
         assert MembershipAllocationSettings.objects.get(membership=membership).max_open_items == 4
 
-    def test_a_ceiling_of_zero_is_refused(self, availability_on, admin_client, workspace_with_members, unit, membership):
+    def test_a_ceiling_of_zero_is_refused(
+        self, availability_on, admin_client, workspace_with_members, unit, membership
+    ):
         response = admin_client.put(
             membership_allocation_url(workspace_with_members.slug, unit.id, membership.id),
             {"max_open_items": 0},
@@ -302,7 +304,10 @@ class TestTheMembersListCarriesAvailability:
         response = admin_client.get(members_url(workspace_with_members.slug, unit.id))
 
         assert response.status_code == status.HTTP_200_OK
-        row = next(item for item in response.data if item["id"] == str(membership.id))
+        # BaseSerializer exposes ``id`` as PrimaryKeyRelatedField, so
+        # ``response.data`` still holds UUID objects rather than the strings
+        # the JSON renderer would emit.
+        row = next(item for item in response.data if str(item["id"]) == str(membership.id))
         assert row["accepts_new_work"] is False
         assert row["max_open_items"] == 2
         assert row["is_available"] is False

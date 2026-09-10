@@ -187,9 +187,8 @@ def _internal_queue_row(link, *, now, viewer, user_id, self_claim_allowed, execu
         window = (executor_away or {}).get(link.primary_executor_id)
         executor["avatar_url"] = link.primary_executor.avatar_url
         executor["is_available"] = window is None
-        executor["unavailable_until"] = (
-            window.unavailable_until.isoformat() if window is not None and window.unavailable_until is not None else None
-        )
+        until = window.unavailable_until if window is not None else None
+        executor["unavailable_until"] = until.isoformat() if until is not None else None
     return payload
 
 
