@@ -44,7 +44,7 @@ from .availability import (
     unavailable_workspace_member_ids,
 )
 from .coverage import unit_covers_project
-from .process import attach_to_process, complete_step, instance_progress, refresh_instance_status
+from .process import attach_to_process, complete_step, instance_progress, process_payloads_for, refresh_instance_status
 from .errors import (
     AlreadyClaimed,
     AssigneesNotAllowedHere,
@@ -174,6 +174,7 @@ __all__ = [
     "normalize_language",
     "orca_public_api_enabled",
     "organizational_units_enabled",
+    "process_payloads_for",
     "process_projection_enabled",
     "member_ids_for_unit",
     "plan_access",

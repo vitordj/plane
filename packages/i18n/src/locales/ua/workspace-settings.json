@@ -739,7 +739,8 @@
           "suggestion": "Пропозиція: {name}",
           "unavailable_until": "Відсутній до {until}",
           "unavailable_open": "Відсутній",
-          "executor_away": "Відсутній"
+          "executor_away": "Відсутній",
+          "process_progress": "{done}/{total}"
         },
         "errors": {
           "unit_not_found": "Цієї області більше немає.",

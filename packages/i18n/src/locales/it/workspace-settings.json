@@ -739,7 +739,8 @@
           "suggestion": "Suggerito: {name}",
           "unavailable_until": "Assente fino al {until}",
           "unavailable_open": "Assente",
-          "executor_away": "Assente"
+          "executor_away": "Assente",
+          "process_progress": "{done}/{total}"
         },
         "errors": {
           "unit_not_found": "Quell’area non esiste più.",

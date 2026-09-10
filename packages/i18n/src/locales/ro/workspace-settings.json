@@ -739,7 +739,8 @@
           "suggestion": "Sugestie: {name}",
           "unavailable_until": "Absent până la {until}",
           "unavailable_open": "Absent",
-          "executor_away": "Absent"
+          "executor_away": "Absent",
+          "process_progress": "{done}/{total}"
         },
         "errors": {
           "unit_not_found": "Această zonă nu mai există.",

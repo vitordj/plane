@@ -739,7 +739,8 @@
           "suggestion": "Предложение: {name}",
           "unavailable_until": "Отсутствует до {until}",
           "unavailable_open": "Отсутствует",
-          "executor_away": "Отсутствует"
+          "executor_away": "Отсутствует",
+          "process_progress": "{done}/{total}"
         },
         "errors": {
           "unit_not_found": "Этой области больше нет.",

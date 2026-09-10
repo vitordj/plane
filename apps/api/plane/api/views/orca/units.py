@@ -31,7 +31,7 @@ from rest_framework.response import Response
 # Module imports
 from plane.api.serializers.orca import queue_row, unit_payload
 from plane.app.permissions.organizational_unit import may_see_queue
-from plane.app.services.orca import ALL_STATES, queue_queryset, visible_project_ids_for
+from plane.app.services.orca import ALL_STATES, process_payloads_for, queue_queryset, visible_project_ids_for
 from plane.db.models import (
     OrganizationalUnit,
     OrganizationalUnitProject,
@@ -158,10 +158,14 @@ class UnitQueueEndpoint(OrcaWorkspaceReadEndpoint):
             visible_project_ids=visible_project_ids_for(request.user, workspace),
         )
 
+        def on_results(rows):
+            processes = process_payloads_for(rows)
+            return [queue_row(row, now=now, process=processes.get(row.issue_id)) for row in rows]
+
         return self.paginate(
             request=request,
             queryset=queryset,
-            on_results=lambda rows: [queue_row(row, now=now) for row in rows],
+            on_results=on_results,
         )
 
 

@@ -739,7 +739,8 @@
           "suggestion": "Gợi ý: {name}",
           "unavailable_until": "Vắng đến {until}",
           "unavailable_open": "Vắng",
-          "executor_away": "Vắng"
+          "executor_away": "Vắng",
+          "process_progress": "{done}/{total}"
         },
         "errors": {
           "unit_not_found": "Khu vực đó không còn tồn tại.",

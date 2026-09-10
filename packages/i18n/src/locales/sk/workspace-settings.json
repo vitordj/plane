@@ -739,7 +739,8 @@
           "suggestion": "Návrh: {name}",
           "unavailable_until": "Neprítomný do {until}",
           "unavailable_open": "Neprítomný",
-          "executor_away": "Neprítomný"
+          "executor_away": "Neprítomný",
+          "process_progress": "{done}/{total}"
         },
         "errors": {
           "unit_not_found": "Táto oblasť už neexistuje.",

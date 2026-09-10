@@ -570,6 +570,56 @@ class TestQueue:
         assert response.status_code == 400
         assert response.data["error_message"] == "ORG_INVALID_QUEUE_FILTER"
 
+    def test_a_process_step_carries_the_run_on_the_row(
+        self,
+        member_client,
+        workspace_with_members,
+        project,
+        queued_link,
+        eligible_member,
+        make_issue,
+    ):
+        """Item 4.6: the inbox groups by ProcessInstanceReference, so the row
+        has to name the run and the instance's n/m, not just this page."""
+        from plane.db.models import ProcessInstanceItem, ProcessInstanceReference
+
+        instance = ProcessInstanceReference.objects.create(
+            workspace=workspace_with_members,
+            external_source="espo-onboarding",
+            external_instance_id="client-9",
+            template_name="onboarding",
+            template_version="3",
+        )
+        ProcessInstanceItem.objects.create(
+            process_instance=instance,
+            issue=queued_link.issue,
+            workspace=workspace_with_members,
+            step_key="kyc",
+        )
+        sibling = make_issue(project, name="Interview")
+        ProcessInstanceItem.objects.create(
+            process_instance=instance,
+            issue=sibling,
+            workspace=workspace_with_members,
+            step_key="interview",
+        )
+
+        response = member_client.get(unit_queue_url(workspace_with_members.slug, queued_link.organizational_unit_id))
+
+        assert response.status_code == 200
+        row = response.data["results"][0]
+        assert row["process"]["source"] == "espo-onboarding"
+        assert row["process"]["instance_id"] == "client-9"
+        assert row["process"]["template_name"] == "onboarding"
+        assert row["process"]["step_key"] == "kyc"
+        assert row["process"]["done"] == 0
+        assert row["process"]["total"] == 2
+
+    def test_an_ordinary_item_has_no_process(self, member_client, workspace_with_members, queued_link, eligible_member):
+        response = member_client.get(unit_queue_url(workspace_with_members.slug, queued_link.organizational_unit_id))
+
+        assert response.data["results"][0]["process"] is None
+
 
 @pytest.mark.unit
 class TestDecisions:

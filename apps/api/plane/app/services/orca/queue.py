@@ -102,7 +102,14 @@ def queue_queryset(unit, *, routing_state=None, overdue=None, project_id=None, n
         queryset = queryset.filter(assignment_overdue=False)
 
     return (
-        queryset.select_related("issue", "primary_executor", "organizational_unit")
+        queryset.select_related(
+            "issue",
+            "issue__state",
+            "issue__project",
+            "issue__orca_process_item__process_instance",
+            "primary_executor",
+            "organizational_unit",
+        )
         # ``-assignment_overdue`` puts True first. ``queued_at`` last so an
         # assigned item, which has none, sorts predictably rather than by
         # whatever the database returns.
