@@ -78,6 +78,19 @@ def kinds(findings):
     return [finding.kind for finding in findings]
 
 
+def drop_assignee_the_way_the_app_does(issue, user):
+    """
+    Soft-delete the assignee row with a queryset ``UPDATE``.
+
+    @description That is the native work-item editor's path, and it fires no
+    Django signal — so the area's link still says the person is executing.
+    Instance ``delete()`` and ``delete(soft=False)`` are already closed by
+    the Phase 3 receivers; those cannot plant an I3 finding any more, which
+    is the remaining hole this audit exists to cover (RFC §12).
+    """
+    IssueAssignee.objects.filter(issue=issue, assignee=user).delete()
+
+
 @pytest.mark.unit
 class TestWhatTheAuditFinds:
     def test_a_healthy_workspace_has_nothing_to_report(self, workspace_with_members, assigned_item):
@@ -86,7 +99,7 @@ class TestWhatTheAuditFinds:
     def test_an_executor_who_is_no_longer_an_assignee(self, workspace_with_members, assigned_item, staffed):
         """Someone removed the assignee in the work item; the area still
         believes the item is being worked (I3)."""
-        IssueAssignee.objects.filter(issue=assigned_item, assignee=staffed).delete(soft=False)
+        drop_assignee_the_way_the_app_does(assigned_item, staffed)
 
         findings = audit_routing(workspace_with_members.id)
 
@@ -151,7 +164,7 @@ class TestWhatTheAuditFinds:
     def test_findings_from_another_workspace_are_not_reported(
         self, workspace_with_members, other_workspace, assigned_item, staffed
     ):
-        IssueAssignee.objects.filter(issue=assigned_item, assignee=staffed).delete(soft=False)
+        drop_assignee_the_way_the_app_does(assigned_item, staffed)
 
         assert audit_routing(other_workspace.id) == []
 
@@ -159,7 +172,7 @@ class TestWhatTheAuditFinds:
 @pytest.mark.unit
 class TestWhatWriteRepairs:
     def test_dry_run_changes_nothing(self, workspace_with_members, assigned_item, staffed):
-        IssueAssignee.objects.filter(issue=assigned_item, assignee=staffed).delete(soft=False)
+        drop_assignee_the_way_the_app_does(assigned_item, staffed)
 
         audit_routing(workspace_with_members.id)
 
@@ -168,7 +181,7 @@ class TestWhatWriteRepairs:
         assert link.primary_executor_id == staffed.id
 
     def test_write_returns_the_item_to_the_queue(self, workspace_with_members, assigned_item, staffed):
-        IssueAssignee.objects.filter(issue=assigned_item, assignee=staffed).delete(soft=False)
+        drop_assignee_the_way_the_app_does(assigned_item, staffed)
 
         findings = audit_routing(workspace_with_members.id, write=True)
 
@@ -180,7 +193,7 @@ class TestWhatWriteRepairs:
 
     def test_the_repair_is_a_decision_like_any_other(self, workspace_with_members, assigned_item, staffed):
         """Not an UPDATE nobody can trace: the trail says the command did it."""
-        IssueAssignee.objects.filter(issue=assigned_item, assignee=staffed).delete(soft=False)
+        drop_assignee_the_way_the_app_does(assigned_item, staffed)
 
         audit_routing(workspace_with_members.id, write=True)
 
@@ -209,7 +222,7 @@ class TestWhatWriteRepairs:
         assert IssueOrganizationalUnit.objects.get(issue=issue).routing_state == RoutingState.QUEUED
 
     def test_running_it_twice_finds_nothing_the_second_time(self, workspace_with_members, assigned_item, staffed):
-        IssueAssignee.objects.filter(issue=assigned_item, assignee=staffed).delete(soft=False)
+        drop_assignee_the_way_the_app_does(assigned_item, staffed)
 
         audit_routing(workspace_with_members.id, write=True)
 
@@ -219,7 +232,7 @@ class TestWhatWriteRepairs:
 @pytest.mark.unit
 class TestTheCommand:
     def test_it_reports_the_findings(self, workspace_with_members, assigned_item, staffed):
-        IssueAssignee.objects.filter(issue=assigned_item, assignee=staffed).delete(soft=False)
+        drop_assignee_the_way_the_app_does(assigned_item, staffed)
 
         output = run(workspace_with_members.slug)
 
@@ -228,7 +241,7 @@ class TestTheCommand:
         assert IssueOrganizationalUnit.objects.get(issue=assigned_item).routing_state == RoutingState.ASSIGNED
 
     def test_write_repairs_and_says_so(self, workspace_with_members, assigned_item, staffed):
-        IssueAssignee.objects.filter(issue=assigned_item, assignee=staffed).delete(soft=False)
+        drop_assignee_the_way_the_app_does(assigned_item, staffed)
 
         output = run(workspace_with_members.slug, "--write")
 
