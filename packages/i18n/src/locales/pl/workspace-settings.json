@@ -739,7 +739,8 @@
           "suggestion": "Propozycja: {name}",
           "unavailable_until": "Nieobecny do {until}",
           "unavailable_open": "Nieobecny",
-          "executor_away": "Nieobecny"
+          "executor_away": "Nieobecny",
+          "process_progress": "{done}/{total}"
         },
         "errors": {
           "unit_not_found": "Ten obszar już nie istnieje.",

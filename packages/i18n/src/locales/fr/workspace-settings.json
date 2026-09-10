@@ -739,7 +739,8 @@
           "suggestion": "Suggestion : {name}",
           "unavailable_until": "Absent jusqu’au {until}",
           "unavailable_open": "Absent",
-          "executor_away": "Absent"
+          "executor_away": "Absent",
+          "process_progress": "{done}/{total}"
         },
         "errors": {
           "unit_not_found": "Cette zone n’existe plus.",

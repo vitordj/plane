@@ -66,6 +66,7 @@ from plane.app.services.orca import (
     OrcaDomainError,
     WAITING_STATES,
     claim,
+    process_payloads_for,
     queue_queryset,
     visible_project_ids_for,
     rank_candidates,
@@ -141,7 +142,7 @@ def _executor_away_by_user(unit, links, now) -> dict:
     return {user_id: windows[member_id] for user_id, member_id in member_of.items() if member_id in windows}
 
 
-def _internal_queue_row(link, *, now, viewer, user_id, self_claim_allowed, executor_away=None):
+def _internal_queue_row(link, *, now, viewer, user_id, self_claim_allowed, executor_away=None, process=None):
     """
     @description The public queue row, plus what a screen needs and a script
     does not: nested ``project``/``state``, ``priority``/``target_date``,
@@ -152,7 +153,7 @@ def _internal_queue_row(link, *, now, viewer, user_id, self_claim_allowed, execu
         effective ``allowed_modes`` — resolved once per project per page by the
         caller, not once per row.
     """
-    payload = queue_row(link, now=now)
+    payload = queue_row(link, now=now, process=process)
     issue = link.issue
     state = issue.state
 
@@ -365,6 +366,7 @@ class OrganizationalUnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
 
         def on_results(rows):
             away = _executor_away_by_user(unit, rows, now)
+            processes = process_payloads_for(rows)
             results = []
             for row in rows:
                 if row.project_id not in self_claim_cache:
@@ -382,6 +384,7 @@ class OrganizationalUnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
                         user_id=request.user.id,
                         self_claim_allowed=self_claim_cache[row.project_id],
                         executor_away=away,
+                        process=processes.get(row.issue_id),
                     )
                 )
             return results

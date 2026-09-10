@@ -739,7 +739,8 @@
           "suggestion": "Saran: {name}",
           "unavailable_until": "Tidak ada hingga {until}",
           "unavailable_open": "Tidak ada",
-          "executor_away": "Tidak ada"
+          "executor_away": "Tidak ada",
+          "process_progress": "{done}/{total}"
         },
         "errors": {
           "unit_not_found": "Area itu sudah tidak ada.",
