@@ -9,6 +9,11 @@ etapa.
 `ProcessInstanceItem`), §6.6, §7.2 (bloco `process`, `complete/`), F12, F19,
 F20, F21, F22, Apêndice B.
 
+> Os itens **4.2 e 4.3** foram entregues com o Gate 3 ainda aberto (só
+> falta staging + piloto). Nada neles depende do gate para estar correto —
+> são modelos, uma migração, uma flag e a superfície pública —, mas o
+> pré-requisito continua valendo para o **Gate 4**.
+
 ---
 
 ## 4.1 — Fechar A5 e decidir o papel do Compose `[ ]`

@@ -30,6 +30,7 @@ from .organizational_unit import (
     is_unit_member,
     is_workspace_admin,
     link_for_issue,
+    may_manage_member_availability,
     may_see_queue,
     permission_denied,
     unit_for_issue,

@@ -363,6 +363,24 @@ def coordinator_url(slug, unit_id, pk):
     return f"{coordinators_url(slug, unit_id)}{pk}/"
 
 
+def my_availability_url(slug, pk=None):
+    base = f"/api/orca/workspaces/{slug}/availability/me/"
+    return f"{base}{pk}/" if pk else base
+
+
+def member_availability_url(slug, workspace_member_id, pk=None):
+    base = f"/api/orca/workspaces/{slug}/members/{workspace_member_id}/availability/"
+    return f"{base}{pk}/" if pk else base
+
+
+def membership_allocation_url(slug, unit_id, membership_id):
+    return f"{members_url(slug, unit_id)}{membership_id}/allocation/"
+
+
+def issue_candidates_url(slug, project_id, issue_id):
+    return f"{issue_unit_url(slug, project_id, issue_id)}candidates/"
+
+
 # --- public automation API (/api/v1/orca/, item 1.4) --------------------------
 #
 # A separate block, and separate builders, because the prefix is the point: the
@@ -389,6 +407,10 @@ def public_by_external_url(slug, source, external_id):
 
 def public_reassign_url(slug, project_id, issue_id):
     return f"{public_work_items_url(slug, project_id)}{issue_id}/reassign/"
+
+
+def public_transfer_url(slug, project_id, issue_id):
+    return f"{public_work_items_url(slug, project_id)}{issue_id}/transfer/"
 
 
 def public_complete_url(slug, project_id, issue_id):

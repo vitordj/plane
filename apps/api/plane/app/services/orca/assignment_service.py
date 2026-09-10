@@ -39,7 +39,7 @@ See docs/orca-work-management-rfc.md §6.
 
 # Python imports
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta
 from typing import Iterable, Optional
 
@@ -68,6 +68,7 @@ from plane.db.models import (
 )
 
 from .alerts import notify_allocation_failed_safely
+from .availability import allocation_settings_for, unavailable_workspace_member_ids
 from .coverage import unit_covers_project
 from .metrics import record_assignment_outcome, record_decision_superseded, record_no_candidate
 from .service_level import record_from_resolution
@@ -86,8 +87,10 @@ logger = logging.getLogger("plane.orca.assignment")
 CLOSED_STATE_GROUPS = [StateGroup.COMPLETED.value, StateGroup.CANCELLED.value]
 
 # Bumped when the ranking changes, and frozen into every decision, so an old
-# decision is never read as if it had used today's rules.
-ALGORITHM_VERSION = "lb-1"
+# decision is never read as if it had used today's rules. ``lb-2`` is ``lb-1``
+# plus the Phase 3 filters (availability, opt-out, personal cap); with the
+# flag off those filters are no-ops and who gets picked does not change.
+ALGORITHM_VERSION = "lb-2"
 
 # The minimum project role that can hold an assignment, matching Plane's own
 # assignee validation.
@@ -117,6 +120,14 @@ class PolicyResolution:
     sla_seconds: Optional[int] = None
     max_open_items_per_member: Optional[int] = None
     allowed_modes: tuple = ()
+
+
+@dataclass(frozen=True)
+class RosterEntry:
+    """One active area membership the ranking can consider."""
+
+    membership_id: object
+    workspace_member_id: object
 
 
 @dataclass(frozen=True)
@@ -271,10 +282,16 @@ def resolve_policy(unit, project_id, requested_mode: Optional[str] = None) -> Po
     )
 
 
-def _membership_map(unit) -> dict:
-    """@description Active area memberships by user id. @returns dict user_id -> workspace_member_id."""
+def _roster(unit) -> dict:
+    """
+    @description Active area memberships keyed by user id.
+    @returns dict user_id -> RosterEntry (membership and workspace member).
+    """
     return {
-        membership.workspace_member.member_id: membership.workspace_member_id
+        membership.workspace_member.member_id: RosterEntry(
+            membership_id=membership.id,
+            workspace_member_id=membership.workspace_member_id,
+        )
         for membership in OrganizationalUnitMembership.objects.filter(
             organizational_unit=unit, is_active=True, workspace_member__is_active=True
         ).select_related("workspace_member")
@@ -284,10 +301,10 @@ def _membership_map(unit) -> dict:
 def _load_counts(unit, workspace_id, user_ids) -> tuple:
     """
     @description Open work per person, counted over the whole workspace and
-    then within the area, as ``lb-1`` requires. Only the **primary executor**
-    counts: a collaborator left on an item from an earlier assignment is not
-    the person answerable for it, and counting them would keep pushing them
-    down the ranking for work they no longer own.
+    then within the area. ``lb-2`` counts the same way ``lb-1`` did. Only the
+    **primary executor** counts: a collaborator left on an item from an
+    earlier assignment is not the person answerable for it, and counting
+    them would keep pushing them down the ranking for work they no longer own.
     @returns ``(total_open_by_user, unit_open_by_user)``.
     """
     if not user_ids:
@@ -331,14 +348,38 @@ def _last_automatic_assignment(user_ids) -> dict:
     return last
 
 
+def _phase3_exclusion(candidate: Candidate, roster_entry: RosterEntry, unavailable, settings_by_membership, policy_cap):
+    """
+    @description Why ``lb-2`` would leave this person out, after they already
+    passed project membership. Availability and opt-out are Phase 3 and
+    no-ops while the flag is off (the lookups return empty). Personal cap
+    is checked before the policy cap so a tighter individual limit is the
+    reason on the snapshot, not the area-wide one they also happen to hit.
+    @returns An excluded ``Candidate``, or ``None`` if they stay eligible.
+    """
+    if roster_entry.workspace_member_id in unavailable:
+        return replace(candidate, excluded_reason="unavailable")
+    settings_row = settings_by_membership.get(roster_entry.membership_id)
+    if settings_row is not None and not settings_row.accepts_new_work:
+        return replace(candidate, excluded_reason="opted_out")
+    member_cap = settings_row.max_open_items if settings_row is not None else None
+    if member_cap is not None and candidate.total_open >= member_cap:
+        return replace(candidate, excluded_reason="member_limit")
+    if policy_cap is not None and candidate.total_open >= policy_cap:
+        return replace(candidate, excluded_reason="policy_limit")
+    return None
+
+
 def rank_candidates(
     unit, project_id, policy: Optional[PolicyResolution] = None, exclude_user_ids: Iterable = ()
 ) -> RankedCandidates:
     """
-    @description The ``lb-1`` ranking (RFC §6.4): least total open work first,
+    @description The ``lb-2`` ranking (RFC §6.4): least total open work first,
     then least open work in this area, then whoever went longest without an
     automatic assignment (never, first), then user id so two runs over the same
-    data always agree.
+    data always agree. Phase 3 then excludes people on leave, opted out of
+    this area, or over a personal or policy open-item cap — recorded on the
+    snapshot, never redistributed onto someone else.
     @param unit: The responsible area.
     @param project_id: Project of the work item.
     @param policy: Resolved policy, for ``max_open_items_per_member``.
@@ -354,21 +395,21 @@ def rank_candidates(
     if not unit_covers_project(unit, project_id):
         return RankedCandidates()
 
-    memberships = _membership_map(unit)
-    if not memberships:
+    roster = _roster(unit)
+    if not roster:
         return RankedCandidates()
 
     project_members = {
         member.member_id: member
         for member in ProjectMember.objects.filter(
-            project_id=project_id, member_id__in=list(memberships), is_active=True
+            project_id=project_id, member_id__in=list(roster), is_active=True
         ).select_related("member")
     }
 
     skip = {str(user_id) for user_id in exclude_user_ids}
     excluded = []
-    eligible_ids = []
-    for user_id in memberships:
+    remaining_ids = []
+    for user_id in roster:
         member = project_members.get(user_id)
         if str(user_id) in skip:
             excluded.append(Candidate(user_id=user_id, excluded_reason="already_assigned"))
@@ -379,32 +420,28 @@ def rank_candidates(
         elif getattr(member.member, "is_bot", False):
             excluded.append(Candidate(user_id=user_id, excluded_reason="bot"))
         else:
-            eligible_ids.append(user_id)
+            remaining_ids.append(user_id)
 
-    total_open, unit_open = _load_counts(unit, unit.workspace_id, eligible_ids)
-    last_auto = _last_automatic_assignment(eligible_ids)
-    cap = policy.max_open_items_per_member if policy else None
+    total_open, unit_open = _load_counts(unit, unit.workspace_id, remaining_ids)
+    last_auto = _last_automatic_assignment(remaining_ids)
+    policy_cap = policy.max_open_items_per_member if policy else None
+    remaining_entries = [roster[user_id] for user_id in remaining_ids]
+    unavailable = unavailable_workspace_member_ids(entry.workspace_member_id for entry in remaining_entries)
+    settings_by_membership = allocation_settings_for(entry.membership_id for entry in remaining_entries)
 
     eligible = []
-    for user_id in eligible_ids:
+    for user_id in remaining_ids:
+        entry = roster[user_id]
         candidate = Candidate(
             user_id=user_id,
-            workspace_member_id=memberships[user_id],
+            workspace_member_id=entry.workspace_member_id,
             total_open=total_open.get(user_id, 0),
             unit_open=unit_open.get(user_id, 0),
             last_auto_at=last_auto.get(user_id),
         )
-        if cap is not None and candidate.total_open >= cap:
-            excluded.append(
-                Candidate(
-                    user_id=user_id,
-                    workspace_member_id=candidate.workspace_member_id,
-                    total_open=candidate.total_open,
-                    unit_open=candidate.unit_open,
-                    last_auto_at=candidate.last_auto_at,
-                    excluded_reason="at_max_open_items",
-                )
-            )
+        dropped = _phase3_exclusion(candidate, entry, unavailable, settings_by_membership, policy_cap)
+        if dropped is not None:
+            excluded.append(dropped)
         else:
             eligible.append(candidate)
 

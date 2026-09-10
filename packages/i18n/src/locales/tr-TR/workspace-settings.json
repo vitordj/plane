@@ -696,7 +696,9 @@
             "search": "Ada veya e-posta adresine göre arayın",
             "no_candidates": "Bu alandaki kimse henüz iş üstlenemez. Önce alana kişi ekleyin.",
             "assigning": "Atanıyor…",
-            "open_items": "{count, plural, one {# açık öğe} other {# açık öğe}}"
+            "open_items": "{count, plural, one {# açık öğe} other {# açık öğe}}",
+            "unavailable": "Uzak",
+            "opted_out": "Yeni iş almıyor"
           },
           "toast": {
             "claimed_title": "İş öğesi üstlenildi",
@@ -733,7 +735,11 @@
             "search": "Alan ara",
             "no_units": "Bu projeyi kapsayan başka alan yok.",
             "transferring": "Taşınıyor…"
-          }
+          },
+          "suggestion": "Öneri: {name}",
+          "unavailable_until": "{until} tarihine kadar uzak",
+          "unavailable_open": "Uzak",
+          "executor_away": "Uzak"
         },
         "errors": {
           "unit_not_found": "Bu alan artık yok.",
@@ -773,7 +779,13 @@
           "if_match_required": "Bu istek, geçerli kararı taşıyan bir If-Match başlığı gerektiriyor.",
           "process_projection_disabled": "Süreç izdüşümü bu örnekte kapalı.",
           "completion_manual_only": "Bu iş öğesi yalnızca bir kişi tarafından tamamlanabilir.",
-          "internal_error": "Bir şeyler ters gitti. İşlem başarısız olarak kaydedildi."
+          "internal_error": "Bir şeyler ters gitti. İşlem başarısız olarak kaydedildi.",
+          "availability_window_not_found": "Bu müsait olmama dönemi bulunamadı.",
+          "availability_invalid_interval": "Müsait olmama döneminin bitişi başlangıcından sonra olmalıdır.",
+          "availability_from_required": "Bir müsait olmama döneminin başlangıcı olmalıdır.",
+          "workspace_member_not_found": "Bu kişi bu çalışma alanının üyesi değil.",
+          "allocation_limit_forbidden": "Kişisel iş sınırını yalnızca bir koordinatör veya çalışma alanı yöneticisi belirleyebilir.",
+          "not_availability_manager": "Bunu yalnızca bu kişinin alanlarından birinin koordinatörü veya bir çalışma alanı yöneticisi yapabilir."
         },
         "coordinators": {
           "tab": "Koordinatörler",
@@ -823,6 +835,37 @@
           "description": "Üyesi olduğunuz alanlar ve her birinde bekleyen iş.",
           "empty": "Henüz hiçbir alana üye değilsiniz.",
           "select": "Bir alan seçin"
+        },
+        "availability": {
+          "title": "Uzak kalma",
+          "help": "Uzak olmak, otomatik atamanın sizi seçmesini engeller. Üzerinizdeki işi geri almaz.",
+          "empty": "Kayıt yok.",
+          "from": "Başlangıç",
+          "until": "Bitiş",
+          "add": "Ekle",
+          "added": "Kaydedildi",
+          "not_added": "Kaydedilemedi",
+          "removed": "Kaldırıldı",
+          "not_removed": "Kaldırılamadı",
+          "remove_aria": "Bu yokluğu kaldır",
+          "range": "{from} – {until}",
+          "open_ended": "{from} tarihinden itibaren, dönüş tarihi yok",
+          "reason": {
+            "vacation": "Tatil",
+            "leave": "İzin",
+            "other": "Diğer"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Bu alandan yeni iş alır",
+          "accepts_new_work_help": "Kapalıysa otomatik atama onları burada atlar. Üzerlerindeki iş kalır ve adla yine iş verilebilir.",
+          "max_open_items": "Aynı anda en fazla açık öğe",
+          "max_open_items_help": "Otomatik atama bu sayıda durur. Boş bırakılırsa alanın kendi sınırı geçerlidir.",
+          "no_limit": "Sınır yok",
+          "saved": "Kaydedildi",
+          "not_saved": "Kaydedilemedi",
+          "limit_invalid": "Bu, bir veya daha fazla tam sayı olmalıdır.",
+          "open_aria": "{name} için iş ayarları"
         }
       }
     },

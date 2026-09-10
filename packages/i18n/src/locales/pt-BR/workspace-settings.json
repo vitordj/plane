@@ -472,7 +472,9 @@
             "search": "Buscar por nome ou e-mail",
             "no_candidates": "Ninguém desta área pode assumir trabalho ainda. Adicione pessoas à área primeiro.",
             "assigning": "Atribuindo…",
-            "open_items": "{count, plural, one {# item aberto} many {# de itens abertos} other {# itens abertos}}"
+            "open_items": "{count, plural, one {# item aberto} many {# de itens abertos} other {# itens abertos}}",
+            "unavailable": "Ausente",
+            "opted_out": "Não recebe trabalho novo"
           },
           "toast": {
             "claimed_title": "Item de trabalho assumido",
@@ -509,7 +511,11 @@
             "search": "Buscar áreas",
             "no_units": "Nenhuma outra área cobre este projeto.",
             "transferring": "Movendo…"
-          }
+          },
+          "suggestion": "Sugestão: {name}",
+          "unavailable_until": "Ausente até {until}",
+          "unavailable_open": "Ausente",
+          "executor_away": "Ausente"
         },
         "errors": {
           "unit_not_found": "Essa área não existe mais.",
@@ -549,7 +555,13 @@
           "if_match_required": "Esta requisição precisa do cabeçalho If-Match com a decisão vigente.",
           "process_projection_disabled": "A projeção de processos está desligada nesta instância.",
           "completion_manual_only": "Este item de trabalho só pode ser concluído por uma pessoa.",
-          "internal_error": "Algo deu errado. A operação foi registrada como falha."
+          "internal_error": "Algo deu errado. A operação foi registrada como falha.",
+          "availability_window_not_found": "Esse período de indisponibilidade não foi encontrado.",
+          "availability_invalid_interval": "O fim de um período de indisponibilidade precisa ser depois do início.",
+          "availability_from_required": "Um período de indisponibilidade precisa de um início.",
+          "workspace_member_not_found": "Essa pessoa não é membro deste workspace.",
+          "allocation_limit_forbidden": "Só um coordenador ou um administrador do workspace pode definir um limite pessoal de trabalho.",
+          "not_availability_manager": "Só um coordenador de uma das áreas desta pessoa, ou um administrador do workspace, pode fazer isso."
         },
         "coordinators": {
           "tab": "Coordenadores",
@@ -599,6 +611,37 @@
           "description": "Áreas às quais você pertence e o trabalho aguardando em cada uma.",
           "empty": "Você ainda não pertence a nenhuma área.",
           "select": "Selecione uma área"
+        },
+        "availability": {
+          "title": "Ausências",
+          "help": "Estar ausente impede que a atribuição automática escolha você. Não tira o que você já está levando.",
+          "empty": "Nada registrado.",
+          "from": "De",
+          "until": "Até",
+          "add": "Adicionar",
+          "added": "Registrado",
+          "not_added": "Não foi possível registrar",
+          "removed": "Removido",
+          "not_removed": "Não foi possível remover",
+          "remove_aria": "Remover esta ausência",
+          "range": "{from} a {until}",
+          "open_ended": "De {from}, sem data de retorno",
+          "reason": {
+            "vacation": "Férias",
+            "leave": "Afastamento",
+            "other": "Outro"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Recebe trabalho novo desta área",
+          "accepts_new_work_help": "Desligado, a atribuição automática não escolhe esta pessoa aqui. Ela mantém o que tem e ainda pode receber algo pelo nome.",
+          "max_open_items": "Máximo de itens abertos ao mesmo tempo",
+          "max_open_items_help": "A atribuição automática para neste número. Em branco, vale o limite da área.",
+          "no_limit": "Sem limite",
+          "saved": "Salvo",
+          "not_saved": "Não foi possível salvar",
+          "limit_invalid": "Tem de ser um número inteiro de um ou mais.",
+          "open_aria": "Configurações de trabalho de {name}"
         }
       },
       "projects": {

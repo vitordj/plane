@@ -35,7 +35,14 @@ from .automation_operation import (
     fail_operation,
     start_operation,
 )
-from .availability import accepts_new_work, is_available
+from .availability import (
+    accepts_new_work,
+    allocation_settings_for,
+    allocation_settings_map,
+    covering_windows_for,
+    is_available,
+    unavailable_workspace_member_ids,
+)
 from .coverage import unit_covers_project
 from .process import attach_to_process, complete_step, instance_progress, refresh_instance_status
 from .errors import (
@@ -142,6 +149,8 @@ __all__ = [
     "WorkItemHasNoUnit",
     "WorkItemNotFound",
     "accepts_new_work",
+    "allocation_settings_for",
+    "allocation_settings_map",
     "allocate",
     "assign_from_unit",
     "attach_to_process",
@@ -154,11 +163,13 @@ __all__ = [
     "claim",
     "complete_operation",
     "complete_step",
+    "covering_windows_for",
     "dispatch_reconciliation",
     "fail_operation",
     "get_default_language",
     "instance_progress",
     "is_available",
+    "unavailable_workspace_member_ids",
     "match_workspace_member",
     "normalize_language",
     "orca_public_api_enabled",

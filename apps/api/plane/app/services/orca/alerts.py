@@ -37,6 +37,7 @@ logger = logging.getLogger("plane.worker")
 
 ALERT_ALLOCATION_FAILED = "allocation_failed"
 ALERT_ASSIGNMENT_SLA = "assignment_sla"
+ALERT_EXECUTOR_UNAVAILABLE = "executor_unavailable"
 
 
 def recipients_for(unit) -> list:
@@ -82,7 +83,8 @@ def notify(link: IssueOrganizationalUnit, kind: str) -> int:
     existing notification UI can render the issue without a second fetch.
     ``triggered_by`` is null: these alerts are the system's, not a person's.
     @param link: The item-to-area link that is waiting.
-    @param kind: ``allocation_failed`` or ``assignment_sla``.
+    @param kind: ``allocation_failed``, ``assignment_sla``, or
+        ``executor_unavailable``.
     @returns How many notifications were created.
     """
     issue = link.issue
@@ -91,6 +93,8 @@ def notify(link: IssueOrganizationalUnit, kind: str) -> int:
     identifier = f"{project.identifier}-{issue.sequence_id}"
     if kind == ALERT_ALLOCATION_FAILED:
         title = f"Allocation failed: nobody in {unit.name} could take {identifier}"
+    elif kind == ALERT_EXECUTOR_UNAVAILABLE:
+        title = f"Executor unavailable: {identifier} is waiting again in {unit.name}"
     else:
         title = f"Assignment overdue: {identifier} has been waiting in {unit.name} past its deadline"
 

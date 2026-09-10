@@ -696,7 +696,9 @@
             "search": "Tìm theo tên hoặc email",
             "no_candidates": "Chưa có ai trong khu vực này có thể nhận việc. Bạn hãy thêm người vào khu vực trước.",
             "assigning": "Đang giao…",
-            "open_items": "{count, plural, one {# mục đang mở} other {# mục đang mở}}"
+            "open_items": "{count, plural, one {# mục đang mở} other {# mục đang mở}}",
+            "unavailable": "Vắng",
+            "opted_out": "Không nhận việc mới"
           },
           "toast": {
             "claimed_title": "Đã nhận mục công việc",
@@ -733,7 +735,11 @@
             "search": "Tìm khu vực",
             "no_units": "Không có khu vực nào khác bao phủ dự án này.",
             "transferring": "Đang chuyển…"
-          }
+          },
+          "suggestion": "Gợi ý: {name}",
+          "unavailable_until": "Vắng đến {until}",
+          "unavailable_open": "Vắng",
+          "executor_away": "Vắng"
         },
         "errors": {
           "unit_not_found": "Khu vực đó không còn tồn tại.",
@@ -773,7 +779,13 @@
           "if_match_required": "Yêu cầu này cần tiêu đề If-Match kèm quyết định hiện hành.",
           "process_projection_disabled": "Phép chiếu quy trình đang tắt trên phiên bản này.",
           "completion_manual_only": "Mục công việc này chỉ có thể do một người hoàn tất.",
-          "internal_error": "Đã xảy ra lỗi. Thao tác được ghi nhận là thất bại."
+          "internal_error": "Đã xảy ra lỗi. Thao tác được ghi nhận là thất bại.",
+          "availability_window_not_found": "Không tìm thấy khoảng thời gian không sẵn sàng đó.",
+          "availability_invalid_interval": "Thời điểm kết thúc của khoảng không sẵn sàng phải sau thời điểm bắt đầu.",
+          "availability_from_required": "Khoảng không sẵn sàng cần có ngày bắt đầu.",
+          "workspace_member_not_found": "Người đó không phải thành viên của workspace này.",
+          "allocation_limit_forbidden": "Chỉ điều phối viên hoặc quản trị viên workspace mới được đặt giới hạn công việc cá nhân.",
+          "not_availability_manager": "Chỉ điều phối viên của một trong các khu vực của người này, hoặc quản trị viên workspace, mới được làm việc này."
         },
         "coordinators": {
           "tab": "Điều phối viên",
@@ -823,6 +835,37 @@
           "description": "Các khu vực bạn thuộc về và công việc đang chờ ở mỗi khu vực.",
           "empty": "Bạn chưa thuộc khu vực nào.",
           "select": "Chọn một khu vực"
+        },
+        "availability": {
+          "title": "Thời gian vắng",
+          "help": "Vắng mặt khiến phân công tự động không chọn bạn. Việc bạn đang mang không bị lấy lại.",
+          "empty": "Chưa có ghi nhận.",
+          "from": "Từ",
+          "until": "Đến",
+          "add": "Thêm",
+          "added": "Đã ghi nhận",
+          "not_added": "Không ghi nhận được",
+          "removed": "Đã xóa",
+          "not_removed": "Không xóa được",
+          "remove_aria": "Xóa khoảng vắng này",
+          "range": "{from} đến {until}",
+          "open_ended": "Từ {from}, chưa có ngày trở lại",
+          "reason": {
+            "vacation": "Nghỉ phép",
+            "leave": "Nghỉ",
+            "other": "Khác"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Nhận việc mới từ khu vực này",
+          "accepts_new_work_help": "Tắt nghĩa là phân công tự động bỏ qua họ ở đây. Họ giữ việc đang có và vẫn có thể được giao theo tên.",
+          "max_open_items": "Nhiều mục đang mở nhất cùng lúc",
+          "max_open_items_help": "Phân công tự động dừng ở số này. Để trống thì dùng giới hạn của khu vực.",
+          "no_limit": "Không giới hạn",
+          "saved": "Đã lưu",
+          "not_saved": "Không lưu được",
+          "limit_invalid": "Phải là số nguyên từ một trở lên.",
+          "open_aria": "Cài đặt công việc của {name}"
         }
       }
     },

@@ -696,7 +696,9 @@
             "search": "Hledat podle jména nebo e-mailu",
             "no_candidates": "Nikdo v této oblasti zatím nemůže převzít práci. Přidejte prosím nejprve osoby do oblasti.",
             "assigning": "Přiřazování…",
-            "open_items": "{count, plural, one {# otevřená položka} few {# otevřené položky} many {# otevřené položky} other {# otevřených položek}}"
+            "open_items": "{count, plural, one {# otevřená položka} few {# otevřené položky} many {# otevřené položky} other {# otevřených položek}}",
+            "unavailable": "Nepřítomen",
+            "opted_out": "Nepřijímá novou práci"
           },
           "toast": {
             "claimed_title": "Pracovní položka převzata",
@@ -733,7 +735,11 @@
             "search": "Hledat oblasti",
             "no_units": "Žádná jiná oblast nepokrývá tento projekt.",
             "transferring": "Přesouvání…"
-          }
+          },
+          "suggestion": "Návrh: {name}",
+          "unavailable_until": "Nepřítomen do {until}",
+          "unavailable_open": "Nepřítomen",
+          "executor_away": "Nepřítomen"
         },
         "errors": {
           "unit_not_found": "Tato oblast už neexistuje.",
@@ -773,7 +779,13 @@
           "if_match_required": "Tento požadavek vyžaduje hlavičku If-Match s aktuálním rozhodnutím.",
           "process_projection_disabled": "Projekce procesů je v této instanci vypnutá.",
           "completion_manual_only": "Tuto pracovní položku může dokončit jen člověk.",
-          "internal_error": "Něco se pokazilo. Operace byla zaznamenána jako neúspěšná."
+          "internal_error": "Něco se pokazilo. Operace byla zaznamenána jako neúspěšná.",
+          "availability_window_not_found": "Toto období nedostupnosti se nenašlo.",
+          "availability_invalid_interval": "Konec období nedostupnosti musí být po jeho začátku.",
+          "availability_from_required": "Období nedostupnosti potřebuje začátek.",
+          "workspace_member_not_found": "Tato osoba není členem tohoto workspace.",
+          "allocation_limit_forbidden": "Osobní limit práce může nastavit jen koordinátor nebo správce workspace.",
+          "not_availability_manager": "Toto může udělat jen koordinátor jedné z oblastí této osoby, nebo správce workspace."
         },
         "coordinators": {
           "tab": "Koordinátoři",
@@ -823,6 +835,37 @@
           "description": "Oblasti, do kterých patříte, a práce čekající v každé z nich.",
           "empty": "Zatím nepatříte do žádné oblasti.",
           "select": "Vyberte oblast"
+        },
+        "availability": {
+          "title": "Nepřítomnost",
+          "help": "Nepřítomnost zabrání automatickému přidělení, aby vás vybralo. Neodebere to, co už nesete.",
+          "empty": "Nic není zaznamenáno.",
+          "from": "Od",
+          "until": "Do",
+          "add": "Přidat",
+          "added": "Zaznamenáno",
+          "not_added": "Nepodařilo se zaznamenat",
+          "removed": "Odebráno",
+          "not_removed": "Nepodařilo se odebrat",
+          "remove_aria": "Odebrat tuto nepřítomnost",
+          "range": "{from} až {until}",
+          "open_ended": "Od {from}, bez data návratu",
+          "reason": {
+            "vacation": "Dovolená",
+            "leave": "Volno",
+            "other": "Jiné"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Přijímá novou práci z této oblasti",
+          "accepts_new_work_help": "Vypnuto znamená, že automatické přidělení je tady přeskočí. Co už nesou, zůstává a stále jim lze něco přidělit jménem.",
+          "max_open_items": "Nejvíce otevřených položek najednou",
+          "max_open_items_help": "Automatické přidělení se zastaví na tomto čísle. Prázdné pole znamená limit oblasti.",
+          "no_limit": "Bez limitu",
+          "saved": "Uloženo",
+          "not_saved": "Nepodařilo se uložit",
+          "limit_invalid": "Musí to být celé číslo jedna nebo více.",
+          "open_aria": "Nastavení práce pro {name}"
         }
       }
     },

@@ -696,7 +696,9 @@
             "search": "Szukaj według nazwy lub adresu e-mail",
             "no_candidates": "Nikt w tym obszarze nie może jeszcze przejąć pracy. Proszę najpierw dodać osoby do obszaru.",
             "assigning": "Przypisywanie…",
-            "open_items": "{count, plural, one {# otwarty element} few {# otwarte elementy} many {# otwartych elementów} other {# otwartego elementu}}"
+            "open_items": "{count, plural, one {# otwarty element} few {# otwarte elementy} many {# otwartych elementów} other {# otwartego elementu}}",
+            "unavailable": "Nieobecny",
+            "opted_out": "Nie przyjmuje nowej pracy"
           },
           "toast": {
             "claimed_title": "Element pracy przejęty",
@@ -733,7 +735,11 @@
             "search": "Szukaj obszarów",
             "no_units": "Żaden inny obszar nie obejmuje tego projektu.",
             "transferring": "Przenoszenie…"
-          }
+          },
+          "suggestion": "Propozycja: {name}",
+          "unavailable_until": "Nieobecny do {until}",
+          "unavailable_open": "Nieobecny",
+          "executor_away": "Nieobecny"
         },
         "errors": {
           "unit_not_found": "Ten obszar już nie istnieje.",
@@ -773,7 +779,13 @@
           "if_match_required": "To żądanie wymaga nagłówka If-Match z aktualną decyzją.",
           "process_projection_disabled": "Projekcja procesów jest wyłączona w tej instancji.",
           "completion_manual_only": "Ten element pracy może zakończyć tylko osoba.",
-          "internal_error": "Coś poszło nie tak. Operacja została zapisana jako nieudana."
+          "internal_error": "Coś poszło nie tak. Operacja została zapisana jako nieudana.",
+          "availability_window_not_found": "Nie znaleziono tego okresu niedostępności.",
+          "availability_invalid_interval": "Koniec okresu niedostępności musi przypadać po jego początku.",
+          "availability_from_required": "Okres niedostępności wymaga daty rozpoczęcia.",
+          "workspace_member_not_found": "Ta osoba nie jest członkiem tej przestrzeni roboczej.",
+          "allocation_limit_forbidden": "Tylko koordynator lub administrator przestrzeni roboczej może ustawić osobisty limit pracy.",
+          "not_availability_manager": "Tylko koordynator jednej z obszarów tej osoby lub administrator przestrzeni roboczej może to zrobić."
         },
         "coordinators": {
           "tab": "Koordynatorzy",
@@ -823,6 +835,37 @@
           "description": "Obszary, do których należysz, i praca czekająca w każdym z nich.",
           "empty": "Nie należysz jeszcze do żadnego obszaru.",
           "select": "Wybierz obszar"
+        },
+        "availability": {
+          "title": "Nieobecności",
+          "help": "Nieobecność sprawia, że automatyczne przydzielanie Cię pomija. Nie odbiera tego, co już nosisz.",
+          "empty": "Nic nie zapisano.",
+          "from": "Od",
+          "until": "Do",
+          "add": "Dodaj",
+          "added": "Zapisano",
+          "not_added": "Nie udało się zapisać",
+          "removed": "Usunięto",
+          "not_removed": "Nie udało się usunąć",
+          "remove_aria": "Usuń tę nieobecność",
+          "range": "{from} – {until}",
+          "open_ended": "Od {from}, bez daty powrotu",
+          "reason": {
+            "vacation": "Urlop",
+            "leave": "Nieobecność",
+            "other": "Inne"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Przyjmuje nową pracę z tego obszaru",
+          "accepts_new_work_help": "Wyłączone oznacza, że automatyczne przydzielanie pomija tę osobę tutaj. Zachowuje to, co ma, i nadal można jej coś przydzielić z nazwy.",
+          "max_open_items": "Najwięcej otwartych elementów naraz",
+          "max_open_items_help": "Automatyczne przydzielanie zatrzymuje się na tej liczbie. Puste pole oznacza limit obszaru.",
+          "no_limit": "Bez limitu",
+          "saved": "Zapisano",
+          "not_saved": "Nie udało się zapisać",
+          "limit_invalid": "To musi być liczba całkowita równa co najmniej jeden.",
+          "open_aria": "Ustawienia pracy {name}"
         }
       }
     },

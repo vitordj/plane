@@ -5,7 +5,10 @@
  */
 
 export * from "./assign-member-modal";
+export * from "./availability-form";
 export * from "./coordinators-tab";
+export * from "./member-work-settings";
+export * from "./queue-suggestion";
 export * from "./decision-timeline";
 export * from "./directory-sync-panel";
 export * from "./issue-unit-property";

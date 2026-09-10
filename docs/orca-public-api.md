@@ -137,7 +137,7 @@ curl -sS -X POST \
     "effective_mode": "least_loaded",
     "policy_source": "unit_project",
     "policy_version": 3,
-    "algorithm_version": "lb-1",
+    "algorithm_version": "lb-2",
     "outcome": "assigned"
   },
   "operation": { "idempotency_key": "orca-9f86...", "replay": false }
@@ -564,13 +564,16 @@ if result.replayed:
 
 ## Not here yet
 
-| Wanted                                          | Where it is                                                                                     |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `process` block (template, instance, step)      | Phase 4 — refused with `ORG_PROCESS_PROJECTION_DISABLED` today                                  |
-| `completion_due_at`                             | Phase 4, with the service-level record that stores it. Refused rather than accepted and dropped |
-| `POST .../complete/`                            | Phase 4                                                                                         |
-| Coordinator access to another area's queue      | Phase 2, when the coordinator role exists                                                       |
-| Availability and holidays affecting the ranking | Phase 3                                                                                         |
+| Wanted                                           | Where it is                  |
+| ------------------------------------------------ | ---------------------------- |
+| Orchestrator sidecar (templates, event consumer) | Phase 4.4, outside this repo |
+| Queue grouped by process instance                | Phase 4.6                    |
+| Native webhook payload enriched with Orca fields | Phase 4.5                    |
+
+`process`, `completion_due_at` and `POST .../complete/` shipped in items 4.2
+and 4.3, behind `ORCA_PROCESS_PROJECTION_ENABLED` (default off). Coordinator
+access to another area's queue shipped in Phase 2. Availability affects
+ranking (`lb-2`) when `ORCA_AVAILABILITY_ENABLED` is on.
 
 The full design, including the invariants these endpoints preserve, is in
 [`docs/orca-work-management-rfc.md`](./orca-work-management-rfc.md).

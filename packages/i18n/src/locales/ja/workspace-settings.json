@@ -696,7 +696,9 @@
             "search": "名前またはメールアドレスで検索",
             "no_candidates": "このエリアにはまだ作業を引き受けられる人がいません。先にエリアにメンバーを追加してください。",
             "assigning": "割り当てています…",
-            "open_items": "{count, plural, one {未完了 #件} other {未完了 #件}}"
+            "open_items": "{count, plural, one {未完了 #件} other {未完了 #件}}",
+            "unavailable": "不在",
+            "opted_out": "新規の作業を受けません"
           },
           "toast": {
             "claimed_title": "作業項目を引き受けました",
@@ -733,7 +735,11 @@
             "search": "エリアを検索",
             "no_units": "このプロジェクトを担当する他のエリアはありません。",
             "transferring": "移動中…"
-          }
+          },
+          "suggestion": "提案: {name}",
+          "unavailable_until": "{until}まで不在",
+          "unavailable_open": "不在",
+          "executor_away": "不在"
         },
         "errors": {
           "unit_not_found": "そのエリアは存在しません。",
@@ -773,7 +779,13 @@
           "if_match_required": "このリクエストには、現在の決定を含む If-Match ヘッダーが必要です。",
           "process_projection_disabled": "プロセス投影はこのインスタンスでは無効です。",
           "completion_manual_only": "この作業項目は人によってのみ完了できます。",
-          "internal_error": "問題が発生しました。この操作は失敗として記録されました。"
+          "internal_error": "問題が発生しました。この操作は失敗として記録されました。",
+          "availability_window_not_found": "その不在期間は見つかりませんでした。",
+          "availability_invalid_interval": "不在期間の終了は開始より後である必要があります。",
+          "availability_from_required": "不在期間には開始日が必要です。",
+          "workspace_member_not_found": "その人はこのワークスペースのメンバーではありません。",
+          "allocation_limit_forbidden": "個人の作業上限を設定できるのは、コーディネーターまたはワークスペース管理者だけです。",
+          "not_availability_manager": "この操作ができるのは、その人のいずれかのエリアのコーディネーター、またはワークスペース管理者だけです。"
         },
         "coordinators": {
           "tab": "コーディネーター",
@@ -823,6 +835,37 @@
           "description": "所属しているエリアと、それぞれの待ち仕事です。",
           "empty": "まだどのエリアにも所属していません。",
           "select": "エリアを選択"
+        },
+        "availability": {
+          "title": "不在期間",
+          "help": "不在にすると自動割り当てはあなたを選びません。すでに持っている作業は取り上げません。",
+          "empty": "記録はありません。",
+          "from": "開始",
+          "until": "終了",
+          "add": "追加",
+          "added": "記録しました",
+          "not_added": "記録できませんでした",
+          "removed": "削除しました",
+          "not_removed": "削除できませんでした",
+          "remove_aria": "この不在を削除",
+          "range": "{from}から{until}",
+          "open_ended": "{from}から、復帰日なし",
+          "reason": {
+            "vacation": "休暇",
+            "leave": "休業",
+            "other": "その他"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "このエリアから新しい作業を受け取る",
+          "accepts_new_work_help": "オフにすると、ここでの自動割り当てはその人を選びません。持っている作業は残り、名前を指定して渡すこともできます。",
+          "max_open_items": "同時に開ける作業の上限",
+          "max_open_items_help": "自動割り当てはこの数で止まります。空欄ならエリア自身の上限が使われます。",
+          "no_limit": "上限なし",
+          "saved": "保存しました",
+          "not_saved": "保存できませんでした",
+          "limit_invalid": "1以上の整数である必要があります。",
+          "open_aria": "{name}の作業設定"
         }
       }
     },

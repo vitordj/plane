@@ -696,7 +696,9 @@
             "search": "Rechercher par nom ou adresse e-mail",
             "no_candidates": "Personne de ce domaine ne peut encore prendre de travail. Ajoutez d’abord des personnes au domaine.",
             "assigning": "Attribution en cours…",
-            "open_items": "{count, plural, one {# élément ouvert} many {# élément ouvert} other {# éléments ouverts}}"
+            "open_items": "{count, plural, one {# élément ouvert} many {# élément ouvert} other {# éléments ouverts}}",
+            "unavailable": "Absent",
+            "opted_out": "N’accepte plus de nouveau travail"
           },
           "toast": {
             "claimed_title": "Élément de travail pris",
@@ -733,7 +735,11 @@
             "search": "Rechercher des zones",
             "no_units": "Aucune autre zone ne couvre ce projet.",
             "transferring": "Déplacement…"
-          }
+          },
+          "suggestion": "Suggestion : {name}",
+          "unavailable_until": "Absent jusqu’au {until}",
+          "unavailable_open": "Absent",
+          "executor_away": "Absent"
         },
         "errors": {
           "unit_not_found": "Cette zone n’existe plus.",
@@ -773,7 +779,13 @@
           "if_match_required": "Cette requête nécessite un en-tête If-Match portant la décision en cours.",
           "process_projection_disabled": "La projection de processus est désactivée sur cette instance.",
           "completion_manual_only": "Cet élément de travail ne peut être terminé que par une personne.",
-          "internal_error": "Une erreur est survenue. L’opération a été enregistrée comme échouée."
+          "internal_error": "Une erreur est survenue. L’opération a été enregistrée comme échouée.",
+          "availability_window_not_found": "Cette période d’indisponibilité est introuvable.",
+          "availability_invalid_interval": "La fin d’une période d’indisponibilité doit être postérieure au début.",
+          "availability_from_required": "Une période d’indisponibilité a besoin d’un début.",
+          "workspace_member_not_found": "Cette personne n’est pas membre de cet espace de travail.",
+          "allocation_limit_forbidden": "Seul un coordinateur ou un administrateur de l’espace de travail peut fixer une limite personnelle de travail.",
+          "not_availability_manager": "Seul un coordinateur d’une des zones de cette personne, ou un administrateur de l’espace de travail, peut le faire."
         },
         "coordinators": {
           "tab": "Coordinateurs",
@@ -823,6 +835,37 @@
           "description": "Les zones auxquelles vous appartenez et le travail en attente dans chacune.",
           "empty": "Vous n’appartenez encore à aucune zone.",
           "select": "Sélectionner une zone"
+        },
+        "availability": {
+          "title": "Absences",
+          "help": "Être absent empêche l’attribution automatique de vous choisir. Cela ne reprend jamais ce que vous portez déjà.",
+          "empty": "Rien n’est enregistré.",
+          "from": "Du",
+          "until": "Au",
+          "add": "Ajouter",
+          "added": "Enregistré",
+          "not_added": "Impossible de l’enregistrer",
+          "removed": "Supprimé",
+          "not_removed": "Impossible de le supprimer",
+          "remove_aria": "Supprimer cette absence",
+          "range": "Du {from} au {until}",
+          "open_ended": "À partir du {from}, sans date de retour",
+          "reason": {
+            "vacation": "Congés",
+            "leave": "Absence",
+            "other": "Autre"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Accepte du nouveau travail de cette zone",
+          "accepts_new_work_help": "Désactivé, l’attribution automatique les ignore ici. Ils gardent ce qu’ils ont et peuvent encore recevoir quelque chose nommément.",
+          "max_open_items": "Nombre maximal d’éléments ouverts à la fois",
+          "max_open_items_help": "L’attribution automatique s’arrête à ce nombre. Vide, c’est la limite de la zone qui s’applique.",
+          "no_limit": "Aucune limite",
+          "saved": "Enregistré",
+          "not_saved": "Impossible d’enregistrer",
+          "limit_invalid": "Cela doit être un nombre entier d’au moins un.",
+          "open_aria": "Paramètres de travail de {name}"
         }
       }
     },

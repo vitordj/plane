@@ -472,7 +472,9 @@
             "search": "Search by name or email",
             "no_candidates": "Nobody in this area can take work yet. Add people to the area first.",
             "assigning": "Assigning…",
-            "open_items": "{count, plural, one {# open item} other {# open items}}"
+            "open_items": "{count, plural, one {# open item} other {# open items}}",
+            "unavailable": "Away",
+            "opted_out": "Not taking new work"
           },
           "toast": {
             "claimed_title": "Work item taken",
@@ -509,7 +511,11 @@
             "search": "Search areas",
             "no_units": "No other area covers this project.",
             "transferring": "Moving…"
-          }
+          },
+          "suggestion": "Suggested: {name}",
+          "unavailable_until": "Away until {until}",
+          "unavailable_open": "Away",
+          "executor_away": "Away"
         },
         "errors": {
           "unit_not_found": "That area no longer exists.",
@@ -549,7 +555,13 @@
           "if_match_required": "This request needs an If-Match header with the current decision.",
           "process_projection_disabled": "Process projection is turned off on this instance.",
           "completion_manual_only": "This work item can only be completed by a person.",
-          "internal_error": "Something went wrong. The operation was recorded as failed."
+          "internal_error": "Something went wrong. The operation was recorded as failed.",
+          "availability_window_not_found": "That unavailability period was not found.",
+          "availability_invalid_interval": "The end of an unavailability period must be after its start.",
+          "availability_from_required": "An unavailability period needs a start.",
+          "workspace_member_not_found": "That person is not a member of this workspace.",
+          "allocation_limit_forbidden": "Only a coordinator or a workspace admin may set a personal work limit.",
+          "not_availability_manager": "Only a coordinator of one of this person's areas, or a workspace admin, may do this."
         },
         "coordinators": {
           "tab": "Coordinators",
@@ -599,6 +611,37 @@
           "description": "Areas you belong to, and the work waiting in each.",
           "empty": "You do not belong to an area yet.",
           "select": "Select an area"
+        },
+        "availability": {
+          "title": "Time away",
+          "help": "Being away keeps automatic assignment from picking you. It never takes back what you are already carrying.",
+          "empty": "Nothing recorded.",
+          "from": "From",
+          "until": "Until",
+          "add": "Add",
+          "added": "Recorded",
+          "not_added": "Could not record it",
+          "removed": "Removed",
+          "not_removed": "Could not remove it",
+          "remove_aria": "Remove this absence",
+          "range": "{from} to {until}",
+          "open_ended": "From {from}, open-ended",
+          "reason": {
+            "vacation": "Holiday",
+            "leave": "Leave",
+            "other": "Other"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Takes new work from this area",
+          "accepts_new_work_help": "Off means automatic assignment skips them here. They keep what they have, and can still be given something by name.",
+          "max_open_items": "Most open items at once",
+          "max_open_items_help": "Automatic assignment stops at this number. Blank means the area's own limit decides.",
+          "no_limit": "No limit",
+          "saved": "Saved",
+          "not_saved": "Could not save it",
+          "limit_invalid": "That has to be a whole number of one or more.",
+          "open_aria": "Work settings for {name}"
         }
       },
       "projects": {

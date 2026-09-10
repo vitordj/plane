@@ -118,6 +118,36 @@ def is_unit_member(user, unit) -> bool:
     ).exists()
 
 
+def may_manage_member_availability(user, workspace_member) -> bool:
+    """
+    Whether the caller may read and write another person's availability windows.
+
+    @description Workspace Admin always may. Otherwise the caller has to
+    coordinate **any area this person belongs to** (item 3.3): leave is a
+    fact about the person, not about one area, so the coordinator who
+    would otherwise keep handing them work is the one who may record it.
+    A coordinator of an unrelated area may not.
+    @param user: The requesting user.
+    @param workspace_member: The ``WorkspaceMember`` whose windows are at stake.
+    @returns bool.
+    """
+    if workspace_member is None or user is None or getattr(user, "is_anonymous", False):
+        return False
+    if is_workspace_admin(user, workspace_member.workspace_id):
+        return True
+    unit_ids = OrganizationalUnitMembership.objects.filter(
+        workspace_member=workspace_member, is_active=True
+    ).values_list("organizational_unit_id", flat=True)
+    if not unit_ids:
+        return False
+    return OrganizationalUnitCoordinator.objects.filter(
+        organizational_unit_id__in=unit_ids,
+        workspace_member__member=user,
+        workspace_member__is_active=True,
+        is_active=True,
+    ).exists()
+
+
 def may_see_queue(user, unit) -> bool:
     """
     @description Who may read an area's queue: the people in it, the person
@@ -272,6 +302,7 @@ __all__ = [
     "is_unit_member",
     "is_workspace_admin",
     "link_for_issue",
+    "may_manage_member_availability",
     "may_see_queue",
     "permission_denied",
     "unit_for_issue",

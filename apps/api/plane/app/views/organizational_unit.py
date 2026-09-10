@@ -37,7 +37,9 @@ from plane.app.services.orca import (
     MODE_APPEND,
     MODE_FILL_EMPTY,
     OrcaDomainError,
+    allocation_settings_map,
     availability_enabled,
+    covering_windows_for,
     orca_public_api_enabled,
     organizational_units_enabled,
     process_projection_enabled,
@@ -303,7 +305,18 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
             if workspace_member is not None and workspace_member.role == ROLE.GUEST.value
             else OrganizationalUnitMembershipSerializer
         )
-        serializer = serializer_class(memberships, many=True)
+        # Item 3.3: leave and opt-out ride on the same payload the members
+        # tab already fetches. Not gated by the ranking flag — the rows are
+        # still there while ranking ignores them.
+        membership_list = list(memberships)
+        serializer = serializer_class(
+            membership_list,
+            many=True,
+            context={
+                "allocation_settings": allocation_settings_map(m.id for m in membership_list),
+                "covering_windows": covering_windows_for(m.workspace_member_id for m in membership_list),
+            },
+        )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @allow_permission([ROLE.ADMIN], level="WORKSPACE")
