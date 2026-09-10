@@ -649,3 +649,115 @@ class TestReadingAnInstance:
 
         assert response.status_code == status.HTTP_409_CONFLICT
         assert ProcessInstanceItem.objects.count() == 1
+
+
+@pytest.mark.unit
+@pytest.mark.django_db
+class TestReprocessingARun:
+    """Item 4.7: the same events twice change nothing, and a failure in the
+    middle of a run is something a replay can finish."""
+
+    def test_twenty_events_replayed_leave_the_counts_alone(
+        self, caller, workspace_with_members, project, covered_unit, backlog_state, executor
+    ):
+        from plane.db.models import Issue
+
+        url = work_items_url(workspace_with_members, project)
+        # Five runs of four steps is twenty create events, which is the
+        # contract the runbook quotes: re-delivering the same webhooks must
+        # not grow the projection.
+        keys = []
+        for run in range(5):
+            for step in range(4):
+                instance = f"client-{run}"
+                key = f"espo-onboarding:{instance}:step-{step}:evt-1"
+                keys.append(key)
+                response = post(
+                    caller,
+                    url,
+                    step_payload(covered_unit.slug, f"step-{step}", instance=instance, mode="automatic"),
+                    key=key,
+                )
+                assert response.status_code == status.HTTP_201_CREATED, response.data
+
+        counts = (
+            Issue.objects.count(),
+            ProcessInstanceItem.objects.count(),
+            ProcessInstanceReference.objects.count(),
+        )
+        assert counts == (20, 20, 5)
+
+        for run in range(5):
+            for step in range(4):
+                instance = f"client-{run}"
+                key = f"espo-onboarding:{instance}:step-{step}:evt-1"
+                response = post(
+                    caller,
+                    url,
+                    step_payload(covered_unit.slug, f"step-{step}", instance=instance, mode="automatic"),
+                    key=key,
+                )
+                assert response.status_code == status.HTTP_201_CREATED
+                assert response["Idempotent-Replay"] == "true"
+
+        assert (
+            Issue.objects.count(),
+            ProcessInstanceItem.objects.count(),
+            ProcessInstanceReference.objects.count(),
+        ) == counts
+
+    def test_a_failure_on_step_three_is_finished_by_a_replay(
+        self,
+        caller,
+        workspace_with_members,
+        project,
+        covered_unit,
+        backlog_state,
+        done_state,
+        executor,
+    ):
+        url = work_items_url(workspace_with_members, project)
+        issue_ids = []
+        for index, step in enumerate(("intake", "kyc", "interview", "welcome")):
+            response = post(
+                caller,
+                url,
+                step_payload(covered_unit.slug, step, mode="automatic"),
+                key=f"run:client-1:{step}:create",
+            )
+            assert response.status_code == status.HTTP_201_CREATED, response.data
+            issue_ids.append(response.data["work_item"]["id"])
+
+        def complete(issue_id, event_id, key):
+            return caller.post(
+                public_complete_url(workspace_with_members.slug, project.id, issue_id),
+                {"source": "espo", "event_id": event_id},
+                format="json",
+                HTTP_IDEMPOTENCY_KEY=key,
+            )
+
+        assert complete(issue_ids[0], "e1", "complete-1").status_code == status.HTTP_200_OK
+        assert complete(issue_ids[1], "e2", "complete-2").status_code == status.HTTP_200_OK
+
+        # Inject a failure at step 3: the project has no completed state, so
+        # automatic close cannot land. A 4xx spends that idempotency key
+        # (RFC §6.7), so the retry after the project is fixed uses a new one.
+        done_group = done_state.group
+        done_state.group = StateGroup.STARTED.value
+        done_state.save(update_fields=["group"])
+
+        failed = complete(issue_ids[2], "e3", "complete-3-failed")
+        assert failed.status_code == status.HTTP_400_BAD_REQUEST
+
+        done_state.group = done_group
+        done_state.save(update_fields=["group"])
+
+        replayed = complete(issue_ids[2], "e3-retry", "complete-3-retry")
+        assert replayed.status_code == status.HTTP_200_OK, replayed.data
+        last = complete(issue_ids[3], "e4", "complete-4")
+        assert last.status_code == status.HTTP_200_OK, last.data
+
+        instance = ProcessInstanceReference.objects.get(external_instance_id="client-1")
+        assert instance.status == "completed"
+        assert ProcessCompletionEvent.objects.filter(issue_id__in=issue_ids).count() == 4
+        assert ProcessInstanceItem.objects.filter(process_instance=instance).count() == 4
