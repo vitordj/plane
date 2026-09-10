@@ -238,3 +238,47 @@ def instance_progress(instance):
     total = len(items)
     done = sum(1 for item in items if item.issue.state_id and item.issue.state.group in CLOSED_GROUPS)
     return {"done": done, "total": total}
+
+
+def process_payloads_for(links):
+    """
+    @description The process-run block a queue row shows, batched for a page.
+
+    One query for the page's steps, one for every sibling of those runs so the
+    ``n/m`` is the instance's progress, not "how many of this run happened to
+    land on this page". Items that are not a step of a run are omitted.
+    @param links: An iterable of ``IssueOrganizationalUnit``.
+    @returns: ``{issue_id: dict}``.
+    """
+    issue_ids = [link.issue_id for link in links]
+    if not issue_ids:
+        return {}
+
+    page_items = list(ProcessInstanceItem.objects.filter(issue_id__in=issue_ids).select_related("process_instance"))
+    if not page_items:
+        return {}
+
+    instance_ids = {item.process_instance_id for item in page_items}
+    siblings = ProcessInstanceItem.objects.filter(process_instance_id__in=instance_ids).select_related("issue__state")
+    progress: dict = {}
+    for item in siblings:
+        bucket = progress.setdefault(item.process_instance_id, {"done": 0, "total": 0})
+        bucket["total"] += 1
+        if item.issue.state_id and item.issue.state.group in CLOSED_GROUPS:
+            bucket["done"] += 1
+
+    payloads = {}
+    for item in page_items:
+        inst = item.process_instance
+        prog = progress[inst.id]
+        payloads[item.issue_id] = {
+            "source": inst.external_source,
+            "instance_id": inst.external_instance_id,
+            "template_name": inst.template_name,
+            "template_version": inst.template_version,
+            "step_key": item.step_key,
+            "status": inst.status,
+            "done": prog["done"],
+            "total": prog["total"],
+        }
+    return payloads

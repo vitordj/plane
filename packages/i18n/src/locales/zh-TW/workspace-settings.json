@@ -739,7 +739,8 @@
           "suggestion": "建議：{name}",
           "unavailable_until": "離開至 {until}",
           "unavailable_open": "離開",
-          "executor_away": "離開"
+          "executor_away": "離開",
+          "process_progress": "{done}/{total}"
         },
         "executive": {
           "title": "管理檢視",

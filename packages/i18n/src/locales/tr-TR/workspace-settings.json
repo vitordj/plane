@@ -739,7 +739,8 @@
           "suggestion": "Öneri: {name}",
           "unavailable_until": "{until} tarihine kadar uzak",
           "unavailable_open": "Uzak",
-          "executor_away": "Uzak"
+          "executor_away": "Uzak",
+          "process_progress": "{done}/{total}"
         },
         "executive": {
           "title": "Yönetici görünümü",

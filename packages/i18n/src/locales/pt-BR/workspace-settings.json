@@ -515,7 +515,8 @@
           "suggestion": "Sugestão: {name}",
           "unavailable_until": "Ausente até {until}",
           "unavailable_open": "Ausente",
-          "executor_away": "Ausente"
+          "executor_away": "Ausente",
+          "process_progress": "{done}/{total}"
         },
         "executive": {
           "title": "Visão executiva",

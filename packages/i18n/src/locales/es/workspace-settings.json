@@ -739,7 +739,8 @@
           "suggestion": "Sugerido: {name}",
           "unavailable_until": "Ausente hasta {until}",
           "unavailable_open": "Ausente",
-          "executor_away": "Ausente"
+          "executor_away": "Ausente",
+          "process_progress": "{done}/{total}"
         },
         "executive": {
           "title": "Vista ejecutiva",

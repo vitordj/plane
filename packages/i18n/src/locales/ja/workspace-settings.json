@@ -739,7 +739,8 @@
           "suggestion": "提案: {name}",
           "unavailable_until": "{until}まで不在",
           "unavailable_open": "不在",
-          "executor_away": "不在"
+          "executor_away": "不在",
+          "process_progress": "{done}/{total}"
         },
         "executive": {
           "title": "エグゼクティブビュー",

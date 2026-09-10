@@ -739,7 +739,8 @@
           "suggestion": "Návrh: {name}",
           "unavailable_until": "Nepřítomen do {until}",
           "unavailable_open": "Nepřítomen",
-          "executor_away": "Nepřítomen"
+          "executor_away": "Nepřítomen",
+          "process_progress": "{done}/{total}"
         },
         "executive": {
           "title": "Manažerský přehled",

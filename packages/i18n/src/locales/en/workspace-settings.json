@@ -515,7 +515,8 @@
           "suggestion": "Suggested: {name}",
           "unavailable_until": "Away until {until}",
           "unavailable_open": "Away",
-          "executor_away": "Away"
+          "executor_away": "Away",
+          "process_progress": "{done}/{total}"
         },
         "executive": {
           "title": "Executive view",

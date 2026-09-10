@@ -104,12 +104,11 @@ Contexto que você não precisa redescobrir:
   criar PR). Um stage vermelho nesse job só, com os outros 17 verdes, não é
   regressão sua.
 - A migração mais recente é 0142_orca_process_projection. A Fase 3 está
-  fechada no código (3.1–3.6). Os itens 4.2 e 4.3 (SLA lateral, bloco
-  `process`, `complete/`, leitura da instância) entram com esta PR. O ranking
-  já é `lb-2`. O próximo código é 4.5+4.6+4.7 num PR. Não abrir 4.1 sem a
-  leitura da doc oficial do Compose (`docs/orca-compose-notes.md` ainda não
-  existe). 4.4 é outro repositório. Não consertar o job vermelho do Release
-  Please.
+  fechada no código (3.1–3.6). Os itens 4.1, 4.2, 4.3, 4.5, 4.6 e 4.7
+  estão em stage. `docs/orca-compose-notes.md` existe e F12 está
+  confirmada. 4.4 é outro repositório — não o abra daqui. 5.1, 5.3 e 5.4
+  estão nesta PR; 5.2 só depois de medir 5.1 em staging (>2 s). Não
+  consertar o job vermelho do Release Please.
 ```
 
 ---

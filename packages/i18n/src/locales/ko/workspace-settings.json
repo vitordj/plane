@@ -739,7 +739,8 @@
           "suggestion": "제안: {name}",
           "unavailable_until": "{until}까지 부재",
           "unavailable_open": "부재",
-          "executor_away": "부재"
+          "executor_away": "부재",
+          "process_progress": "{done}/{total}"
         },
         "executive": {
           "title": "경영진 보기",

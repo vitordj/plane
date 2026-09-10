@@ -9,7 +9,9 @@ import { observer } from "mobx-react";
 import type { IQueueRow } from "@plane/types";
 import { Loader } from "@plane/ui";
 // components
+import { groupQueueRows } from "./queue-groups";
 import { QueueItemRow } from "./queue-item-row";
+import { QueueProcessGroup } from "./queue-process-group";
 
 type Props = {
   workspaceSlug: string;
@@ -24,9 +26,13 @@ type Props = {
 
 /**
  * @description A list of queued work items, in the order the API returned
- * them. Deliberately does not sort: the backend puts overdue allocations
- * first, and a second ordering here would mean the row a coordinator owes sits
- * in a different place depending on which screen they opened.
+ * them, grouped by process run when a row is a step of one.
+ *
+ * Deliberately does not sort: the backend puts overdue allocations first, and
+ * a second ordering here would mean the row a coordinator owes sits in a
+ * different place depending on which screen they opened. Grouping pulls later
+ * steps of a run into the first block that mentioned it; it does not reorder
+ * unrelated items.
  */
 export const QueueList = observer(function QueueList(props: Props) {
   const { workspaceSlug, unitId, rows, isLoading, emptyMessage, onAssign, onTransfer } = props;
@@ -42,18 +48,34 @@ export const QueueList = observer(function QueueList(props: Props) {
 
   if (rows.length === 0) return <p className="text-sm text-custom-text-300 py-8 text-center">{emptyMessage}</p>;
 
+  const blocks = groupQueueRows(rows);
+
   return (
     <div className="divide-custom-border-200 border-custom-border-200 divide-y rounded border">
-      {rows.map((row) => (
-        <QueueItemRow
-          key={row.issue_id}
-          workspaceSlug={workspaceSlug}
-          unitId={unitId}
-          row={row}
-          onAssign={onAssign}
-          onTransfer={onTransfer}
-        />
-      ))}
+      {blocks.map((block) =>
+        block.kind === "item" ? (
+          <QueueItemRow
+            key={block.row.issue_id}
+            workspaceSlug={workspaceSlug}
+            unitId={unitId}
+            row={block.row}
+            onAssign={onAssign}
+            onTransfer={onTransfer}
+          />
+        ) : (
+          <QueueProcessGroup
+            key={block.key}
+            workspaceSlug={workspaceSlug}
+            unitId={unitId}
+            name={block.name}
+            done={block.done}
+            total={block.total}
+            rows={block.rows}
+            onAssign={onAssign}
+            onTransfer={onTransfer}
+          />
+        )
+      )}
     </div>
   );
 });

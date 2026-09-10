@@ -739,7 +739,8 @@
           "suggestion": "建议：{name}",
           "unavailable_until": "离开至 {until}",
           "unavailable_open": "离开",
-          "executor_away": "离开"
+          "executor_away": "离开",
+          "process_progress": "{done}/{total}"
         },
         "executive": {
           "title": "管理视图",

@@ -16,6 +16,7 @@ export * from "./issue-unit-property";
 export * from "./policy-form";
 export * from "./queue-item-row";
 export * from "./queue-list";
+export * from "./queue-process-group";
 export * from "./transfer-unit-modal";
 export * from "./unit-detail";
 export * from "./unit-form-modal";

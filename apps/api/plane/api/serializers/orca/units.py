@@ -48,13 +48,17 @@ def unit_payload(unit, unit_projects):
     return {"id": str(unit.id), "slug": unit.slug, "name": unit.name, "projects": projects}
 
 
-def queue_row(link, *, now):
+def queue_row(link, *, now, process=None):
     """
     @description One item waiting on an area.
     @param link: An ``IssueOrganizationalUnit`` with its issue and executor
         already selected.
     @param now: The moment the page was read, so every row on a page is judged
         overdue against the same instant.
+    @param process: The run this item is a step of, or ``None``. Batched by
+        the caller (``process_payloads_for``) so a page does not query once
+        per row. Always present on the payload so the UI can group without
+        testing for the key.
     @returns A JSON-serializable dict.
     """
     executor = link.primary_executor
@@ -73,4 +77,5 @@ def queue_row(link, *, now):
         "primary_executor": None
         if executor is None
         else {"id": str(executor.id), "email": executor.email, "display_name": executor.display_name},
+        "process": process,
     }

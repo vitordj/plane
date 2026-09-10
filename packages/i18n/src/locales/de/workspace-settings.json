@@ -739,7 +739,8 @@
           "suggestion": "Vorschlag: {name}",
           "unavailable_until": "Abwesend bis {until}",
           "unavailable_open": "Abwesend",
-          "executor_away": "Abwesend"
+          "executor_away": "Abwesend",
+          "process_progress": "{done}/{total}"
         },
         "executive": {
           "title": "Führungsübersicht",

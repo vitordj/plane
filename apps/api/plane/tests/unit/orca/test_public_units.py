@@ -189,6 +189,7 @@ class TestReadingTheQueue:
         assert [row["name"] for row in response.data["results"]] == ["First"]
         assert response.data["results"][0]["routing_state"] == RoutingState.QUEUED
         assert response.data["results"][0]["assignment_overdue"] is False
+        assert response.data["results"][0]["process"] is None
 
     def test_overdue_items_come_first(self, insider, workspace_with_members, unit, queued):
         now = timezone.now()

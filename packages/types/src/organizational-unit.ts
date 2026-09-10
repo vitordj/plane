@@ -95,6 +95,17 @@ export interface IAssignmentPolicyResolution {
  * own project, state and priority on the same line, and the three action
  * flags below so the row can hide what this viewer may not do.
  */
+export interface IQueueProcess {
+  source: string;
+  instance_id: string;
+  template_name: string;
+  template_version: string;
+  step_key: string;
+  status: string;
+  done: number;
+  total: number;
+}
+
 export interface IQueueRow {
   issue_id: string;
   sequence_id: number;
@@ -123,6 +134,12 @@ export interface IQueueRow {
   /** Sent back as `expected_decision_id`, so two coordinators cannot both act. */
   current_decision_id: string | null;
   permissions: IQueueRowPermissions;
+  /**
+   * The process run this row is a step of, when it is one. `done`/`total`
+   * are the instance's progress, not how many of its steps happen to be on
+   * this page. Null when the item is ordinary area work.
+   */
+  process?: IQueueProcess | null;
 }
 
 /** Why somebody is away. */
