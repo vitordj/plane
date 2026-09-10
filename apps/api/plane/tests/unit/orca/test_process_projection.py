@@ -19,6 +19,7 @@ from django.utils import timezone
 from rest_framework import status
 
 from plane.app.services.orca import set_responsibility
+from plane.app.services.orca.service_level import record_service_level
 from plane.db.models import (
     IssueServiceLevel,
     Label,
@@ -262,6 +263,27 @@ class TestTheAssignmentServiceFillsTheServiceLevel:
         assert row.completion_due_at == due
         assert row.original_completion_due_at == due
 
+    def test_a_process_claim_overrides_the_allocation_source(self, project, make_issue):
+        """Allocation writes the row first; the template still owns the dates."""
+        issue = make_issue(project)
+        due = timezone.now() + timedelta(days=1)
+        record_service_level(issue, assignment_due_at=due, completion_due_at=due, source="manual")
+        record_service_level(
+            issue,
+            assignment_due_at=due,
+            completion_due_at=due,
+            source="process",
+            source_version="3",
+        )
+
+        row = IssueServiceLevel.objects.get(issue=issue)
+        assert row.source == "process"
+        assert row.source_version == "3"
+
+        record_service_level(issue, assignment_due_at=due, completion_due_at=due, source="manual")
+        row.refresh_from_db()
+        assert row.source == "process"
+
 
 @pytest.mark.unit
 @pytest.mark.django_db
@@ -302,12 +324,17 @@ class TestBuildingAnInstance:
     ):
         url = work_items_url(workspace_with_members, project)
         body = step_payload(covered_unit.slug, "kyc")
-        post(caller, url, body, key="same-key")
+        first = post(caller, url, body, key="same-key")
+        assert first.status_code == status.HTTP_201_CREATED, first.data
 
         response = post(caller, url, body, key="same-key")
 
-        assert response.status_code == status.HTTP_200_OK, response.data
+        # A replay answers the recorded response, 201 included — status is
+        # not what distinguishes it from a second create (RFC §6.7).
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        assert response["Idempotent-Replay"] == "true"
         assert response.data["operation"]["replay"] is True
+        assert response.data["work_item"]["id"] == first.data["work_item"]["id"]
         assert ProcessInstanceItem.objects.count() == 1
 
     def test_the_template_version_is_required(

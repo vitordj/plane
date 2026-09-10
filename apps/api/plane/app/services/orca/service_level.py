@@ -85,7 +85,13 @@ def record_service_level(
     if completion_due_at is not None and completion_due_at != row.completion_due_at:
         row.completion_due_at = completion_due_at
         changed = True
-    if not changed:
+    # Allocation writes the row first, in the same request, with source
+    # unit/manual — those are the assignment dates. A process block that
+    # then arrives with the same dates still owns the completion promise,
+    # and must be able to say so. Treating identical dates as "nothing
+    # happened" would leave source=manual on every templated step.
+    process_owns = source == ServiceLevelSource.PROCESS and row.source != ServiceLevelSource.PROCESS
+    if not changed and not process_owns:
         return row
 
     row.source = source
