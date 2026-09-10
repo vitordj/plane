@@ -27,11 +27,18 @@ def audit_fields():
     return [
         ("created_at", models.DateTimeField(auto_now_add=True, verbose_name="Created At")),
         ("updated_at", models.DateTimeField(auto_now=True, verbose_name="Last Modified At")),
+        ("deleted_at", models.DateTimeField(blank=True, null=True, verbose_name="Deleted At")),
         (
             "id",
-            models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, unique=True),
+            models.UUIDField(
+                db_index=True,
+                default=uuid.uuid4,
+                editable=False,
+                primary_key=True,
+                serialize=False,
+                unique=True,
+            ),
         ),
-        ("deleted_at", models.DateTimeField(blank=True, null=True)),
     ]
 
 
@@ -40,7 +47,6 @@ def audit_relations():
         (
             "created_by",
             models.ForeignKey(
-                blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name="%(class)s_created_by",
@@ -51,7 +57,6 @@ def audit_relations():
         (
             "updated_by",
             models.ForeignKey(
-                blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name="%(class)s_updated_by",
