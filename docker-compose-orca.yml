@@ -25,7 +25,7 @@ services:
     depends_on:
       - api
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -44,7 +44,7 @@ services:
       - api
       - web
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/god-mode/ || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/god-mode/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -63,7 +63,7 @@ services:
       - api
       - web
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/spaces/ || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/spaces/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -298,7 +298,7 @@ services:
     depends_on:
       - api
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/live/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -375,7 +375,9 @@ services:
     # container was pulled, so two environments -- or the same environment
     # before and after a redeploy -- could run different MinIO builds. Bump
     # deliberately; the tag below is what :latest pointed at when it was set.
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    # Pulled from quay.io, MinIO's own registry: the `minio/minio` repository on
+    # Docker Hub stopped resolving in September 2026 (every tag, `latest` included).
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
     restart: always
     command: server /export --console-address ":9090"
     volumes:
