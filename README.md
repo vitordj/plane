@@ -19,7 +19,7 @@ Plane Orca enhances official Plane Community Edition with extended workflow capa
 | **🤖 Automation API**  | Work by area over an API key       | Composed, idempotent `/api/v1/orca/` endpoints that create work and let an **area** decide who does it ([guide](./docs/orca-public-api.md), [client](./tools/orca-client/README.md)). Off by default. |
 | **🛠️ Data Migration**  | Plane-to-Plane Migration Tool      | Built-in CLI migration utility ([tools/migration](./tools/migration/README.md)) to migrate issues, cycles, labels, and projects between Plane instances.                                              |
 | **🎨 UI & Privacy**    | Clean & Distraction-Free UI        | Removed telemetry trackers and promotional ads for a faster, clutter-free workspace.                                                                                                                  |
-| **🐳 Self-Hosting**    | VPS & PaaS Ready                   | Optimized low-memory footprint stack ([docker-compose-orca.yml](./docker-compose-orca.yml)) running smoothly under 3GB RAM.                                                                           |
+| **🐳 Self-Hosting**    | VPS, VM & PaaS Ready               | Optimized low-memory footprint stack ([docker-compose-orca.yml](./docker-compose-orca.yml)) running smoothly under 3GB RAM, with a plain-Compose deployment path ([deployments/compose](./deployments/compose)).       |
 
 ### 🐳 Self-Hosted Deployment (`docker-compose-orca.yml`)
 
@@ -42,8 +42,25 @@ Whatever runs the stack, three things have to be true:
 
 </details>
 
+<details>
+<summary>Worked example: a plain Compose stack on a VM — the 4UM target</summary>
+
+**This is the deployment target for 4UM** (P0.17): `docker compose up` on an internal VM, with nothing in front of the stack. Caddy is the edge, not a second hop behind an ingress.
+
+[`deployments/compose`](./deployments/compose) holds what a PaaS would otherwise have supplied:
+
+1. **`update.sh`** — pull, migrate, up, then verify: it refuses a mutable tag, waits for `api` to become healthy, and prints `orca_build_info` plus the resolved digest for the three containers sharing the api image. That check is the point; a deploy job going green only means the request was accepted.
+2. **`compose.override.example.yaml`** — publishing `:80`, `TRUSTED_PROXIES` restricted to the Docker networks (the stack is its own edge, so trusting the site subnet would let any client on it forge `X-Forwarded-For`), and resource limits for a host with room.
+
+The stack directory keeps `compose.yaml` as a verbatim copy of `docker-compose-orca.yml` and puts everything host-specific in `compose.override.yaml`, so refreshing to a new commit is a `git show` and a readable diff. `DOMAIN_NAME` and `WEB_URL` must be set explicitly here: `SERVICE_FQDN_PROXY` / `SERVICE_URL_PROXY` are Coolify's, and without them the stack comes up on `localhost`.
+
+</details>
+
 > [!NOTE]
-> The deploy jobs in `.github/workflows/{stage,prod}.yml` call the Coolify API and are opt-in through the `COOLIFY_DEPLOY_ENABLED` variable; leave it unset and the workflows still lint, test, build and publish, while the deploy step is skipped. The 4UM deployment target is not yet decided (P0.17 in [the platform hardening plan](./docs/plans/orca-work-management/P0-platform-hardening.md)) — record it here once it is.
+> Coolify remains a supported path, not the default one. The deploy jobs in `.github/workflows/{stage,prod}.yml` call the Coolify API and are opt-in through the `COOLIFY_DEPLOY_ENABLED` variable; leave it unset — as the 4UM deployment does — and the workflows still lint, test, build and publish, while the deploy step is skipped and the VM pulls the published digest itself.
+
+> [!NOTE]
+> **The memory limits in `docker-compose-orca.yml` are floors, not recommendations.** The file is tuned for a VPS under 3 GB, which is why `api` is capped at 350M and `beat-worker` at 150M. On a host with room, raise them in `compose.override.yaml` rather than editing the file — the 4UM VM runs `api`, `worker` and `plane-db` at 1G each. Editing the copy is what turns the next refresh into a merge.
 
 > [!TIP]
 > **Generate Secret Keys**: Run `openssl rand -hex 32` in your terminal to generate 64-character secret keys.
@@ -61,6 +78,8 @@ Whatever runs the stack, three things have to be true:
 | `SERVICE_USER_RABBITMQ` / `SERVICE_PASSWORD_RABBITMQ` | **Yes**  | RabbitMQ credentials, on the same terms as the database ones                                                                                                                            | _User-provided; Coolify generates both_              |
 | `SERVICE_USER_AWS` / `SERVICE_PASSWORD_AWS`           | **Yes**  | MinIO / S3 storage credentials; reach the containers as `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, and MinIO as its root user                                                       | _User-provided; Coolify generates both_              |
 | `AWS_S3_BUCKET_NAME`                                  |    No    | File upload storage bucket                                                                                                                                                              | `uploads`                                            |
+| `DEFAULT_LANGUAGE`                                    |    No    | Interface language new accounts follow until somebody picks their own. Seeds the instance configuration on first boot; after that `/god-mode/` owns it. Must be a locale the catalogue has (`en`, `pt-BR`, ...) -- see [docs/i18n.md](./docs/i18n.md) | `en`                                                 |
+| `TZ`                                                  |    No    | Container clock for the four api-image services and PostgreSQL. Celery beat schedules daily jobs against it, so a beat on UTC and an operator on UTC-3 disagree about which day a nightly job belongs to | `UTC`                                                |
 | `ORCA_IMAGE_REPOSITORY`                               |    No    | Registry namespace the images are pulled from. Must be the namespace `stage.yml` publishes to (`ghcr.io/<owner>/<repo>`); CI fails when they drift                                      | `ghcr.io/vitordj/plane`                              |
 | `TAG`                                                 |    No    | Image tag for all six services; prefer an immutable `sha-<commit>` for production                                                                                                       | `stage`                                              |
 | `TRUSTED_PROXIES`                                     | **Yes**  | CIDR range(s) of the ingress or reverse proxy in front of Caddy, **space-separated** (Caddy rejects a comma). Only these sources may set the client IP via `X-Forwarded-For`; the stack refuses to start without it | _User-provided (e.g. `10.0.0.0/8`)_                  |

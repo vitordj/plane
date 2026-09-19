@@ -1,0 +1,75 @@
+# Example override for running docker-compose-orca.yml on a VM with nothing in
+# front of it -- no PaaS, no ingress controller, no second reverse proxy. Caddy
+# is the edge.
+#
+# Copy this next to a `compose.yaml` that is a verbatim copy of
+# docker-compose-orca.yml, name it `compose.override.yaml`, and `docker compose`
+# merges the two by name. Keeping the copy verbatim is the point: everything
+# specific to the host lives here, so refreshing the copy from a new commit is a
+# `git show <commit>:docker-compose-orca.yml` and a diff you can read.
+#
+# What is deliberately NOT here: secrets. They belong in `.env` (mode 0600),
+# and the upstream file already refuses to start without them.
+
+services:
+  proxy:
+    # Nothing is in front, so the proxy publishes itself. `0.0.0.0` means every
+    # interface -- on a host without a firewall that is the whole subnet, which
+    # is usually what an internal deployment wants and never what a public one
+    # does. Only the proxy is published: database, queue, cache and object
+    # store stay on the Compose network.
+    ports:
+      - "0.0.0.0:80:80"
+    environment:
+      # Caddy is the edge here, so the only hops it may believe are Docker's own
+      # networks -- the bridge that forwards the published port. Putting the
+      # site subnet (10.0.0.0/8, say) in this list would let any client on that
+      # network forge X-Forwarded-For and choose the IP the application logs and
+      # rate-limits on, which is the failure TRUSTED_PROXIES exists to prevent.
+      #
+      # SPACE-separated. Caddy rejects a comma-separated list, and the error
+      # arrives as a config parse failure at startup, not as a warning.
+      TRUSTED_PROXIES: "127.0.0.1/32 172.16.0.0/12"
+
+  # docker-compose-orca.yml is tuned for a VPS under 3 GB: every limit in it is
+  # a floor, not a recommendation. On a host with room, raise them here rather
+  # than editing the copy. The values below are what a 15 GiB internal VM runs.
+  api:
+    deploy:
+      resources:
+        limits:
+          pids: 512
+          cpus: "2.0"
+          memory: 1G
+
+  worker:
+    deploy:
+      resources:
+        limits:
+          pids: 512
+          cpus: "1.5"
+          memory: 1G
+
+  beat-worker:
+    deploy:
+      resources:
+        limits:
+          pids: 256
+          cpus: "0.5"
+          memory: 300M
+
+  migrator:
+    deploy:
+      resources:
+        limits:
+          pids: 256
+          cpus: "2.0"
+          memory: 1G
+
+  plane-db:
+    deploy:
+      resources:
+        limits:
+          pids: 1100
+          cpus: "2.0"
+          memory: 1G

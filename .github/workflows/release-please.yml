@@ -17,7 +17,19 @@ jobs:
       - name: Run Release Please
         uses: googleapis/release-please-action@v4
         with:
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          # `secrets.RELEASE_PLEASE_TOKEN` is optional: an unset secret expands
+          # to an empty string, and passing an empty `token` to the action is
+          # not the same as omitting it -- the action runs unauthenticated and
+          # silently opens no Release PR at all. The fallback keeps the release
+          # chain working on a repository that never sets the secret, which is
+          # the same pattern the Release Candidate job in stage.yml uses.
+          #
+          # With GITHUB_TOKEN, "Allow GitHub Actions to create and approve pull
+          # requests" (Settings -> Actions -> General) must stay on, and the
+          # Release PR it opens does not itself trigger workflows. Neither
+          # matters here: the PR only bumps the version and the changelog, and
+          # `Production CI/CD` keys on the push that its merge produces.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           config-file: .github/release-please-config.json
           manifest-file: .github/release-please-manifest.json
           target-branch: prod

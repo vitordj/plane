@@ -10,9 +10,10 @@ not faster, it is just unverified.
 
 > **Status:** written alongside the release-chain work (P0.1–P0.3, P0.15,
 > P0.16). The end-to-end rehearsal called for by P0.13 has **not** happened
-> yet; the rehearsal log at the bottom is empty on purpose. Treat the timings
-> as estimates and the version-bump step (§2) as the one most likely to need a
-> correction on the first run.
+> yet; the rehearsal log at the bottom is empty on purpose, and the timings are
+> estimates. §2 no longer carries the version-bump warning it was written with:
+> that question has been answered against the tool, and what it actually does
+> is recorded there.
 
 ---
 
@@ -62,15 +63,53 @@ the PR by hand.
 1. Open the RC PR and walk its checklist.
 2. Merge it into `prod`.
 3. Wait for **Release Please** to open a Release PR on `prod`.
+
+   **If no Release PR appears and the workflow is green, it ran without a
+   token.** `release-please.yml` passes `token:` to the action; an unset
+   secret expands to an empty string, which the action accepts as a token it
+   was given rather than one it was not, and it then does nothing — no PR, no
+   `chore(prod): release` commit, and `Production CI/CD` skipped, because that
+   workflow only promotes on that commit message. This is what happened on
+   19/09/2026 (run 35455579399): `prod` moved and nothing was promoted. The
+   remedy is either a `RELEASE_PLEASE_TOKEN` secret or a
+   `|| secrets.GITHUB_TOKEN` fallback in that workflow; with the fallback,
+   "Allow GitHub Actions to create and approve pull requests" has to stay on.
+
 4. **Check the version it proposes before merging.** The fork's convention is
    `v<fork version>-plane.<upstream version>` (FORK.md), which semver reads as
-   a prerelease suffix. Release Please is configured without a prerelease
-   strategy, so on the first release it may propose a version that **drops the
-   `-plane.<upstream>` suffix**. This has not been observed yet — the Release
-   PR is where you find out, and it is editable before merge. If the suffix is
-   gone, either fix the version in that PR by hand, or configure
-   `prerelease: true` in `.github/release-please-config.json` and re-run;
-   record which one was chosen here.
+   a prerelease suffix, and the configuration sets no prerelease strategy — so
+   this runbook used to warn that the first release might **drop** the
+   `-plane.<upstream>` suffix.
+
+   **It does not.** Checked against release-please 17.9.0, the version
+   `googleapis/release-please-action@v4` bundles, with this repository's
+   config, bumping from the current manifest value `1.5.0-plane.1.4.2`:
+
+   | Commits on the release | Proposed version |
+   | --- | --- |
+   | `fix` only | `1.5.1-plane.1.4.2` |
+   | `fix` + `feat` | `1.6.0-plane.1.4.2` |
+   | breaking change | `2.0.0-plane.1.4.2` |
+
+   `DefaultVersioningStrategy` carries the prerelease component through the
+   bump untouched; it is the numeric core that moves. The resulting tag
+   (`include-v-in-tag`) is e.g. `v1.6.0-plane.1.4.2`, which is a valid Docker
+   tag, so the `:X.Y.Z` and `:vX.Y.Z` names the promotion job writes are fine.
+
+   Two consequences worth knowing rather than discovering:
+
+   - The suffix only changes when an upstream sync changes it (P0.11 sets it by
+     hand in `.github/release-please-manifest.json`). Release Please will never
+     advance it on its own, which is correct — it tracks upstream, not this
+     fork's release count.
+   - Every such version is a semver **prerelease**, so it sorts *before* the
+     plain `1.6.0` that will never exist, and GitHub marks the Release as a
+     prerelease. That is a property of the convention in FORK.md, not a
+     misconfiguration.
+
+   The Release PR is still editable before merge, and it remains the place to
+   look. If a future upstream sync makes the proposal wrong, fix it there and
+   record what was done in the rehearsal log below.
 5. Merge the Release PR. That is the commit — `chore(prod): release X.Y.Z` —
    that both promotion jobs key on.
 
@@ -100,9 +139,16 @@ Keep the promoted digest list. §6 is where you need it.
 Not "the deploy job went green" — that only means the platform accepted the
 request.
 
+On a plain Compose host, `deployments/compose/update.sh` does all of the
+below in one pass — see [deployments/compose](../deployments/compose/README.md).
+By hand:
+
 ```bash
 # 1. The container is running the image we think it is.
-docker inspect --format '{{.Config.Image}} {{index .RepoDigests 0}}' api
+#    `RepoDigests` belongs to the image, not to the container -- asking a
+#    container for it fails with "map has no entry for key RepoDigests".
+docker inspect --format '{{.Config.Image}}' api
+docker image inspect --format '{{index .RepoDigests 0}}' "$(docker inspect --format '{{.Image}}' api)"
 
 # 2. The image is the commit that was released (P0.15).
 #    Through the API, as an instance admin:
@@ -117,6 +163,16 @@ All three must report the **same** `git_sha` and the **same**
 `orca_org_units_enabled`. A worker left behind on an older image is the failure
 mode this check exists for: it keeps writing `ProjectMember` rows with last
 week's rules while the API serves this week's.
+
+**`git_sha` is the commit that built the image, not the commit in the tag.**
+Promotion (§3) copies a digest onto a new tag; it never rebuilds. So for a
+release whose stage commit only changed files no service Dockerfile sees — a
+docs-only commit, say — the images were retagged rather than rebuilt, and all
+three containers correctly report the *earlier* commit that produced those
+bits. That is not drift. The two equalities that mean something are: the three
+services agree with each other, and the digest running on the host is the
+digest the promotion job wrote. `deployments/compose/update.sh` prints both and
+does not fail on a `git_sha` that differs from the tag, deliberately.
 
 ```bash
 # 3. The organizational kill switch agrees across services (P0.14).
