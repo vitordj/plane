@@ -145,7 +145,10 @@ By hand:
 
 ```bash
 # 1. The container is running the image we think it is.
-docker inspect --format '{{.Config.Image}} {{index .RepoDigests 0}}' api
+#    `RepoDigests` belongs to the image, not to the container -- asking a
+#    container for it fails with "map has no entry for key RepoDigests".
+docker inspect --format '{{.Config.Image}}' api
+docker image inspect --format '{{index .RepoDigests 0}}' "$(docker inspect --format '{{.Image}}' api)"
 
 # 2. The image is the commit that was released (P0.15).
 #    Through the API, as an instance admin:

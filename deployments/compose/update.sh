@@ -98,9 +98,17 @@ for s in $API_SERVICES; do
   echo
 done
 
+# `RepoDigests` is a field of the IMAGE, not of the container: asking
+# `docker inspect <container>` for it fails with "map has no entry for key
+# RepoDigests" and, under `set -e`, takes the whole script with it. The
+# container knows its image id; the image knows its digest.
 echo "==> running digests"
 docker compose ps -q | while read -r cid; do
-  docker inspect --format '{{.Name}} {{.Config.Image}} {{if .RepoDigests}}{{index .RepoDigests 0}}{{end}}' "$cid"
+  name=$(docker inspect --format '{{.Name}}' "$cid")
+  image_id=$(docker inspect --format '{{.Image}}' "$cid")
+  digest=$(docker image inspect --format '{{if .RepoDigests}}{{index .RepoDigests 0}}{{else}}(no digest: built locally){{end}}' "$image_id")
+  printf '%-16s %s
+' "${name#/}" "$digest"
 done
 
 [ "$st" = healthy ] || { echo "FAILED: api never became healthy" >&2; exit 1; }
