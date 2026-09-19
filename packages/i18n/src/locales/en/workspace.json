@@ -223,6 +223,14 @@
       "search": {
         "description": "No projects detected with the matching criteria.\nCreate a new project instead"
       }
+    },
+    "group_by_button": "Group by: {value}",
+    "group": {
+      "no_label": "No label"
+    },
+    "card": {
+      "set_state": "Set state",
+      "add_label": "+ Label"
     }
   },
   "workspace_views": {

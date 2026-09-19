@@ -59,19 +59,140 @@ docker compose -f docker-compose-test.yml down -v
 
 `-v` removes the ephemeral volumes and the `test_env` network. Because the data directories are tmpfs, no host state survives a teardown — every run starts clean. Run this between unrelated test sessions to free Docker resources.
 
+## What an agent session can run
+
+The agent session that edits this repository has no Docker daemon, but it
+does have PostgreSQL 16, `redis-server` and Python 3.11 binaries — enough to
+run the suite without the compose stack. The recipe is
+`docs/plans/orca-work-management/HANDOFF-PROMPT.md` §Ambiente local (venv
+setup, `initdb` under the `postgres` user, `redis-server --daemonize`). Once
+that environment is up, these commands run directly and produce real,
+executed results rather than a description of what should happen — measured
+in this session on 07/09/2026, against the tip of PR #15 (`31d35e2b`):
+
+| Command                                                                                                                                                                                                | Result                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| `pytest plane/tests/unit/orca -q -m unit -p no:cacheprovider`                                                                                                                                          | 767 passed, 255 deselected, in 1541.04s (25m41s) |
+| `pytest plane/tests/contract/test_orca_public_contract.py -q`                                                                                                                                          | 9 passed in 122.82s                              |
+| `python manage.py makemigrations --check --dry-run`                                                                                                                                                    | exit 0, "No changes detected"                    |
+| `python manage.py migrate` / `migrate db <n-1>` / `migrate`                                                                                                                                            | round-trips cleanly                              |
+| `pnpm check:types --filter=web` (repo root, via turbo — **not** `pnpm --filter web check:types` alone, which fails because `check:types` depends on `^build` and the package is never built by itself) | exit 0 in 92s                                    |
+| `pnpm --filter web check:lint`                                                                                                                                                                         | exit 0                                           |
+| `pnpm --filter @plane/i18n check:sync`                                                                                                                                                                 | exit 0, 2s                                       |
+
+What still needs Docker or a real deployment: the full non-`unit` suite that
+needs MinIO/RabbitMQ, anything reading a `stage` database dump, and staging
+itself. Always redirect output to a file and read the tail (`-q`, then
+`tail -20`) — the constraint AGENTS.md protects is context volume, not
+whether the command runs at all.
+
 ## How it works
 
-| Service      | Image                                | Purpose                                       |
-| ------------ | ------------------------------------ | --------------------------------------------- |
-| `test-db`    | `postgres:15.7-alpine`               | Application database                          |
-| `test-redis` | `valkey/valkey:7.2.11-alpine`        | Cache / Celery broker                         |
-| `test-mq`    | `rabbitmq:3.13.6-management-alpine`  | Task queue                                    |
-| `test-minio` | `minio/minio`                        | S3-compatible object storage                  |
-| `api-tests`  | built from `apps/api/Dockerfile.dev` | Installs `requirements/test.txt`, runs pytest |
+| Service      | Image                                      | Purpose                                       |
+| ------------ | ------------------------------------------ | --------------------------------------------- |
+| `test-db`    | `postgres:15.7-alpine`                     | Application database                          |
+| `test-redis` | `valkey/valkey:7.2.11-alpine`              | Cache / Celery broker                         |
+| `test-mq`    | `rabbitmq:3.13.6-management-alpine`        | Task queue                                    |
+| `test-minio` | `minio/minio:RELEASE.2025-09-07T16-13-09Z` | S3-compatible object storage                  |
+| `api-tests`  | built from `apps/api/Dockerfile.dev`       | Installs `requirements/test.txt`, runs pytest |
+
+### Image versions
+
+Every dependency is pinned to an immutable tag, including MinIO — an untagged
+image is whatever `:latest` resolved to on the day it was pulled, which makes a
+run's verdict depend on its date. Bump a pin deliberately, in its own commit.
+
+PostgreSQL is **15.7** here, in every compose file in the repository, and in the
+`api_tests` job of `.github/workflows/stage.yml`. That job ran 16 until P0.16;
+CI on a different major than the one the deployment runs is a difference the
+suite cannot see and production can. If the deployment is ever moved to 16, move
+all four together and record the migration plan here.
 
 All four dependencies expose health checks; `api-tests` waits for `service_healthy` on each via `depends_on`, so pytest only starts once the stack is ready.
 
 Test-time env overrides live in the compose file itself (`POSTGRES_HOST=test-db`, `REDIS_URL=redis://test-redis:6379/`, `AWS_S3_ENDPOINT_URL=http://test-minio:9000`, `DJANGO_SETTINGS_MODULE=plane.settings.test`). Everything else is inherited from `apps/api/.env`.
+
+## What CI runs
+
+Two jobs in `.github/workflows/stage.yml`, split by what they need to stand up:
+
+| Job                     | Command                                                       | Services                                 | When                         |
+| ----------------------- | ------------------------------------------------------------- | ---------------------------------------- | ---------------------------- |
+| `api_tests`             | `pytest plane/tests/unit -q -m unit`                          | PostgreSQL, Valkey                       | every PR and push to `stage` |
+| `api_tests`             | `pytest plane/tests/contract/test_orca_public_contract.py -q` | PostgreSQL, Valkey                       | every PR and push to `stage` |
+| `api_integration_tests` | `pytest plane/tests/contract plane/tests/smoke -q`            | the full `docker-compose-test.yml` stack | manual (`workflow_dispatch`) |
+
+The merge gate is the whole unit suite, upstream directories included — not
+just `plane/tests/unit/orca/`. This fork deploys the upstream code as much as
+its own, so an upstream regression carried into `stage` is ours either way
+(P0.8).
+
+**Why one contract file is in the merge gate.** `test_orca_public_contract.py`
+is the only file under `plane/tests/contract/` that `api_tests` runs, and it is
+there for what it proves rather than where it lives: that replaying fifty
+operations leaves the same number of rows in every table, and that two callers
+racing on one idempotency key produce one work item. Neither is observable from
+a test sharing a transaction with the server — the second is settled by a
+database constraint — and both are promises integrations are built on. It needs
+a live HTTP server and PostgreSQL, which the job already provides, and nothing
+from the Docker stack.
+
+It runs without RabbitMQ because the creation endpoint queues its native
+activity in `transaction.on_commit` and **logs rather than raises** when the
+queue is unreachable. That is a deliberate choice, not a test accommodation:
+those callbacks run after the work item is committed, so letting a broker
+outage propagate would answer 500 for an operation that succeeded and poison
+its idempotency key forever. A unit test asserts the behaviour.
+
+### Exclusions in CI
+
+None. If a directory ever has to be dropped from the `api_tests` selection,
+add a row here naming the service it needs and the job that does cover it —
+an `--ignore` in the workflow with no line here is how a suite quietly stops
+covering something.
+
+| Path | Why it is excluded | Covered by |
+| ---- | ------------------ | ---------- |
+| —    | —                  | —          |
+
+`plane/tests/contract` and `plane/tests/smoke` are not exclusions: they are
+not selected in the first place (the path is `plane/tests/unit`), and they
+run in `api_integration_tests`.
+
+## Concurrency tests
+
+A few rules only hold under a real race — the ones the Orca assignment
+service protects with a row lock or an advisory lock. Sequential tests pass
+against those rules with no lock at all, so the tests that matter run threads
+against real transactions. The pattern, from
+`plane/tests/unit/orca/test_assignment_concurrency.py`:
+
+```python
+@pytest.mark.unit
+@pytest.mark.django_db(transaction=True)
+def test_simultaneous_allocations_spread_evenly(world):
+    ...
+```
+
+Four things make them behave:
+
+- **`transaction=True`** (and `transactional_db` in the fixtures they use).
+  The default `django_db` wraps each test in a transaction that is rolled
+  back, and a thread on another connection cannot see uncommitted data — the
+  test would deadlock or see an empty database.
+- **Fixtures of their own.** The fixtures in `conftest.py` are built for the
+  wrapped-transaction case; a concurrency test builds its world inside the
+  `transactional_db` fixture instead.
+- **Every thread closes its connection.** Django opens one per thread and
+  does not close it; without a `finally: connection.close()` each test leaves
+  Postgres backends behind and a long run exhausts `max_connections`.
+- **Assertions on the aggregate, not on who won.** Which thread wins is not
+  deterministic and must not be asserted; what is asserted is the
+  distribution (20 items over 4 people is 5/5/5/5), the count of winners
+  (exactly one claim), and the invariant (one executor, never two).
+
+They are slower than the rest and truncate tables rather than rolling back,
+so keep them few and keep them in their own file.
 
 ## Troubleshooting
 

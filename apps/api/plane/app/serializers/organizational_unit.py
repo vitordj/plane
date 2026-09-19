@@ -1,0 +1,500 @@
+# Copyright (c) 2023-present Plane Software, Inc. and contributors
+# SPDX-License-Identifier: AGPL-3.0-only
+# See the LICENSE file for details.
+
+"""Serializers for the Orca organizational layer (see FORK.md)."""
+
+# Third party imports
+from rest_framework import serializers
+
+# Module imports
+from plane.db.models import (
+    AssignmentDecision,
+    Issue,
+    IssueOrganizationalUnit,
+    MembershipAllocationSettings,
+    OrganizationalDirectoryConnection,
+    OrganizationalDirectoryIdentity,
+    OrganizationalUnit,
+    OrganizationalUnitAssignmentPolicy,
+    OrganizationalUnitCoordinator,
+    OrganizationalUnitMembership,
+    OrganizationalUnitProject,
+    WorkspaceMemberAvailability,
+)
+from plane.db.models.organizational_unit import OrganizationalUnitMemberRole
+
+from .base import BaseSerializer
+
+
+class OrganizationalUnitSerializer(BaseSerializer):
+    """Read/write serializer for organizational units."""
+
+    member_count = serializers.IntegerField(read_only=True)
+    project_count = serializers.IntegerField(read_only=True)
+    project_ids = serializers.SerializerMethodField()
+
+    # Filled by the list endpoint's Prefetch; absent when a single unit is
+    # serialized on its own.
+    COVERED_PROJECTS_ATTR = "covered_projects"
+
+    def get_project_ids(self, obj) -> list:
+        """
+        @description The projects this area actually covers — the ones a work
+        item may name it responsible for. Archived projects are left out: they
+        grant nothing, so an area linked only to archived projects covers none
+        of them, and the interface must not offer it there (defect D1).
+
+        Uses the list endpoint's prefetch when it is there, so listing areas
+        stays one query rather than one per area, and falls back to a filtered
+        query for the single-unit responses, which serialize one object anyway.
+        @param obj: The organizational unit being serialized.
+        @returns: Project ids as strings.
+        """
+        links = getattr(obj, self.COVERED_PROJECTS_ATTR, None)
+        if links is None:
+            links = obj.unit_projects.filter(project__archived_at__isnull=True)
+        return [str(link.project_id) for link in links]
+
+    class Meta:
+        model = OrganizationalUnit
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "logo_props",
+            "is_active",
+            "workspace",
+            "member_count",
+            "project_count",
+            "project_ids",
+            "sync_source",
+            "external_id",
+            "directory_synced_at",
+            "created_at",
+            "updated_at",
+        ]
+        # The directory binding is written by the SCIM endpoints, never by the
+        # settings UI: letting an admin retype an external id by hand would let
+        # them silently steal another group's binding.
+        read_only_fields = [
+            "workspace",
+            "sync_source",
+            "external_id",
+            "directory_synced_at",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class OrganizationalUnitMembershipSerializer(BaseSerializer):
+    """Membership of a workspace member in a unit, with light member details."""
+
+    member_id = serializers.UUIDField(source="workspace_member.member_id", read_only=True)
+    display_name = serializers.CharField(source="workspace_member.member.display_name", read_only=True)
+    email = serializers.CharField(source="workspace_member.member.email", read_only=True)
+    avatar_url = serializers.CharField(source="workspace_member.member.avatar_url", read_only=True)
+    workspace_role = serializers.IntegerField(source="workspace_member.role", read_only=True)
+    # Item 3.3: the members tab and the assign modal need leave and opt-out
+    # on the same payload they already fetch, rather than a second round-trip
+    # per person. Defaults match a missing MembershipAllocationSettings row.
+    accepts_new_work = serializers.SerializerMethodField()
+    max_open_items = serializers.SerializerMethodField()
+    is_available = serializers.SerializerMethodField()
+    unavailable_until = serializers.SerializerMethodField()
+
+    def _allocation_settings(self, obj):
+        settings_map = self.context.get("allocation_settings") or {}
+        return settings_map.get(obj.id)
+
+    def _covering_window(self, obj):
+        covering = self.context.get("covering_windows") or {}
+        return covering.get(obj.workspace_member_id)
+
+    def get_accepts_new_work(self, obj) -> bool:
+        settings_row = self._allocation_settings(obj)
+        if settings_row is None:
+            return True
+        return bool(settings_row.accepts_new_work)
+
+    def get_max_open_items(self, obj):
+        settings_row = self._allocation_settings(obj)
+        return settings_row.max_open_items if settings_row is not None else None
+
+    def get_is_available(self, obj) -> bool:
+        return self._covering_window(obj) is None
+
+    def get_unavailable_until(self, obj):
+        window = self._covering_window(obj)
+        if window is None or window.unavailable_until is None:
+            return None
+        return window.unavailable_until.isoformat()
+
+    class Meta:
+        model = OrganizationalUnitMembership
+        fields = [
+            "id",
+            "organizational_unit",
+            "workspace_member",
+            "role",
+            "is_active",
+            "sync_source",
+            "member_id",
+            "display_name",
+            "email",
+            "avatar_url",
+            "workspace_role",
+            "accepts_new_work",
+            "max_open_items",
+            "is_available",
+            "unavailable_until",
+            "created_at",
+        ]
+        # workspace_member is the membership's identity, not an editable
+        # attribute. A PATCH that re-points it at another person would
+        # reconcile only the new person, leaving the previous one holding the
+        # ProjectMember rows this membership had granted them. Swapping people
+        # goes through DELETE + POST, which withdraws before it grants.
+        # sync_source records where the row came from (manual or directory) and
+        # is what lets a directory sync take back only what it gave, so it is
+        # never editable through the API either.
+        read_only_fields = ["organizational_unit", "workspace_member", "sync_source", "created_at"]
+
+
+class OrganizationalUnitMembershipLiteSerializer(OrganizationalUnitMembershipSerializer):
+    """
+    Guest-facing membership: the same shape minus email.
+
+    @description Plane's own workspace member list withholds email from Guest
+    (``UserLiteSerializer``). The area roster used to ignore that distinction
+    and hand every Guest a directory of corporate addresses (R1.A4).
+    """
+
+    class Meta(OrganizationalUnitMembershipSerializer.Meta):
+        fields = [field for field in OrganizationalUnitMembershipSerializer.Meta.fields if field != "email"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields.pop("email", None)
+
+
+class OrganizationalUnitProjectSerializer(BaseSerializer):
+    """Link between a unit and a project, carrying the inherited project role."""
+
+    project_name = serializers.CharField(source="project.name", read_only=True)
+    project_identifier = serializers.CharField(source="project.identifier", read_only=True)
+
+    class Meta:
+        model = OrganizationalUnitProject
+        fields = [
+            "id",
+            "organizational_unit",
+            "project",
+            "default_role",
+            "project_name",
+            "project_identifier",
+            "created_at",
+        ]
+        # Same reasoning as the membership above: re-pointing `project` would
+        # reconcile the new project only and strand the inherited access on the
+        # old one. Only default_role is editable in place.
+        read_only_fields = ["organizational_unit", "project", "created_at"]
+
+
+class OrganizationalUnitMembershipCreateSerializer(serializers.Serializer):
+    """
+    Input serializer for adding people to a unit.
+
+    The write path is ``get_or_create`` plus a reactivation, not a
+    ``ModelSerializer.save()``, so nothing on that path validates the payload:
+    ``choices`` is only checked during model validation, and assigning a field
+    and saving skips it. Without this serializer an arbitrary ``role`` string
+    is persisted, and every second active lead surfaces as an
+    ``IntegrityError`` from the single-lead partial index. ``BaseViewSet``
+    reports that as a generic ``400 {"error": "The payload is not valid"}``
+    which names neither the field nor the conflict, and it still aborts the
+    surrounding ``transaction.atomic()`` block, so a bulk add applies nothing.
+
+    The lead rules are checked against the unit before the transaction opens,
+    counting both the leads the request sets directly and the ones it would
+    resurrect by reactivating a membership stored as ``lead``.
+    """
+
+    workspace_member_ids = serializers.ListField(
+        child=serializers.UUIDField(),
+        allow_empty=False,
+        error_messages={"empty": "At least one workspace member is required"},
+    )
+    role = serializers.ChoiceField(
+        choices=OrganizationalUnitMemberRole.choices,
+        default=OrganizationalUnitMemberRole.MEMBER,
+    )
+
+    def validate(self, attrs):
+        unit = self.context["organizational_unit"]
+        # Deduplicate but keep order, so the count check in the view compares
+        # like with like and a repeated id cannot inflate the lead count.
+        member_ids = list(dict.fromkeys(attrs["workspace_member_ids"]))
+        attrs["workspace_member_ids"] = member_ids
+        role = attrs["role"]
+
+        # Leads this request would leave active: the ones it sets outright,
+        # plus the ones it revives by reactivating a membership whose stored
+        # role is already ``lead``.
+        lead_ids = set(member_ids) if role == OrganizationalUnitMemberRole.LEAD else set()
+        lead_ids |= set(
+            OrganizationalUnitMembership.objects.filter(
+                organizational_unit=unit,
+                workspace_member_id__in=member_ids,
+                role=OrganizationalUnitMemberRole.LEAD,
+                is_active=False,
+            ).values_list("workspace_member_id", flat=True)
+        )
+
+        if len(lead_ids) > 1:
+            raise serializers.ValidationError(
+                {"role": "An organizational unit can have only one lead; add leads one at a time."}
+            )
+
+        # A lead already in this request is not a conflict with itself.
+        if lead_ids and (
+            OrganizationalUnitMembership.objects.filter(
+                organizational_unit=unit,
+                role=OrganizationalUnitMemberRole.LEAD,
+                is_active=True,
+            )
+            .exclude(workspace_member_id__in=member_ids)
+            .exists()
+        ):
+            raise serializers.ValidationError({"role": "This organizational unit already has an active lead"})
+
+        return attrs
+
+
+class OrganizationalDirectoryConnectionSerializer(BaseSerializer):
+    """
+    Read-only-ish view of a workspace's directory connection.
+
+    The bearer token is never serialized — only whether one exists and the
+    short prefix, so the settings screen can show which credential is
+    installed without ever being able to reveal it.
+    """
+
+    has_token = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrganizationalDirectoryConnection
+        fields = [
+            "id",
+            "provider",
+            "is_enabled",
+            "tenant_id",
+            "auto_create_units",
+            "deprovision_removes_membership",
+            "token_prefix",
+            "token_issued_at",
+            "token_last_used_at",
+            "last_sync_at",
+            "last_sync_summary",
+            "has_token",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "provider",
+            "token_prefix",
+            "token_issued_at",
+            "token_last_used_at",
+            "last_sync_at",
+            "last_sync_summary",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_has_token(self, obj) -> bool:
+        """@returns: Whether a SCIM bearer token is currently installed."""
+        return bool(obj.token_hash)
+
+
+class OrganizationalDirectoryIdentitySerializer(BaseSerializer):
+    """A mirrored directory identity, as the unresolved report shows it."""
+
+    workspace_member_display_name = serializers.CharField(
+        source="workspace_member.member.display_name", read_only=True, default=None
+    )
+
+    class Meta:
+        model = OrganizationalDirectoryIdentity
+        fields = [
+            "id",
+            "external_id",
+            "user_name",
+            "email",
+            "display_name",
+            "is_active",
+            "state",
+            "workspace_member",
+            "workspace_member_display_name",
+            "last_seen_at",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class AssignmentPolicySerializer(BaseSerializer):
+    """How an area hands work out, as the interface needs to read it."""
+
+    class Meta:
+        model = OrganizationalUnitAssignmentPolicy
+        fields = [
+            "id",
+            "organizational_unit",
+            "unit_project",
+            "default_mode",
+            "allowed_modes",
+            "assignment_sla_seconds",
+            "max_open_items_per_member",
+            "is_active",
+            "version",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "organizational_unit", "version", "created_at", "updated_at"]
+
+
+class OrganizationalUnitCoordinatorSerializer(BaseSerializer):
+    """
+    Who answers for an area's work, as the coordinators/ endpoint shows it.
+
+    ``member`` is a small nested view of the person, shaped like the one
+    ``unit-members-tab.tsx`` already renders — the interface has one card for
+    "a person and their standing in an area" and this keeps it reusable for
+    coordinators too.
+    """
+
+    member = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrganizationalUnitCoordinator
+        fields = ["id", "workspace_member", "member", "is_active", "created_at"]
+        # workspace_member is the coordinator's identity, not an editable
+        # attribute — same reasoning as OrganizationalUnitMembershipSerializer:
+        # swapping the person goes through DELETE + POST, which withdraws the
+        # access coordinating gave before granting it to somebody else.
+        read_only_fields = ["workspace_member", "created_at"]
+
+    def get_member(self, obj) -> dict:
+        user = obj.workspace_member.member
+        return {
+            "id": str(user.id),
+            "display_name": user.display_name,
+            "email": user.email,
+            "avatar_url": user.avatar_url,
+        }
+
+
+class AssignmentDecisionSerializer(BaseSerializer):
+    """
+    One allocation, as the interface shows it.
+
+    @description ``candidates_snapshot`` is deliberately **not** exposed: it
+    carries the load of every person the ranking considered, which is a
+    performance-shaped view of a team that a work item panel has no business
+    publishing. The audit path can read the row directly.
+    """
+
+    class Meta:
+        model = AssignmentDecision
+        fields = [
+            "id",
+            "trigger",
+            "requested_mode",
+            "effective_mode",
+            "policy_source",
+            "policy_version",
+            "algorithm_version",
+            "outcome",
+            "chosen_assignee",
+            "previous_primary_executor",
+            "decided_by",
+            "supersedes",
+            "reason",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class AssignmentDecisionIssueSerializer(BaseSerializer):
+    """The work item, exactly as the decision log needs to name it."""
+
+    class Meta:
+        model = Issue
+        fields = ["id", "sequence_id", "name", "project_id"]
+        read_only_fields = fields
+
+
+class AssignmentDecisionDetailSerializer(AssignmentDecisionSerializer):
+    """
+    ``AssignmentDecisionSerializer`` plus what the coordinator's decision log
+    needs: which item it was about, and one level into what it replaced.
+
+    ``supersedes`` nests the plain serializer rather than this one, so the
+    chain stops after one level instead of walking every decision an item
+    ever had (RFC §5.2: "supersedes expandido em um nível").
+    """
+
+    issue = AssignmentDecisionIssueSerializer(read_only=True)
+    supersedes = AssignmentDecisionSerializer(read_only=True)
+
+    class Meta(AssignmentDecisionSerializer.Meta):
+        fields = AssignmentDecisionSerializer.Meta.fields + ["issue"]
+
+
+class IssueRoutingSerializer(BaseSerializer):
+    """Where a work item stands between "an area owns this" and "a person is on it"."""
+
+    organizational_unit = OrganizationalUnitSerializer(read_only=True)
+    current_assignment_decision = AssignmentDecisionSerializer(read_only=True)
+
+    class Meta:
+        model = IssueOrganizationalUnit
+        fields = [
+            "id",
+            "organizational_unit",
+            "routing_state",
+            "queue_reason",
+            "queued_at",
+            "assignment_due_at",
+            "primary_executor",
+            "current_assignment_decision",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+
+class WorkspaceMemberAvailabilitySerializer(BaseSerializer):
+    """One unavailability window, as the availability API returns it."""
+
+    class Meta:
+        model = WorkspaceMemberAvailability
+        fields = [
+            "id",
+            "workspace_member",
+            "unavailable_from",
+            "unavailable_until",
+            "reason",
+            "source",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class MembershipAllocationSettingsSerializer(BaseSerializer):
+    """Per-membership opt-out and personal cap, as the allocation API returns it."""
+
+    class Meta:
+        model = MembershipAllocationSettings
+        fields = ["id", "membership", "accepts_new_work", "max_open_items", "updated_at"]
+        read_only_fields = fields

@@ -146,6 +146,10 @@ export enum EAuthErrorCodes {
   GOOGLE_OAUTH_PROVIDER_ERROR = "5115",
   GITHUB_OAUTH_PROVIDER_ERROR = "5120",
   GITLAB_OAUTH_PROVIDER_ERROR = "5121",
+  // Orca: Microsoft Entra ID sign-in. Numbered above the upstream block so a
+  // provider upstream adds later cannot collide.
+  ENTRA_NOT_CONFIGURED = "5113",
+  ENTRA_OAUTH_PROVIDER_ERROR = "5126",
   // Reset Password
   INVALID_PASSWORD_TOKEN = "5125",
   EXPIRED_PASSWORD_TOKEN = "5130",

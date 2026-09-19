@@ -13,6 +13,7 @@ import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { ToggleSwitch, AlertModalCore } from "@plane/ui";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { GroupList } from "@/components/project-states";
+import { useTranslation } from "@plane/i18n";
 // hooks
 import { useCustomProjectState } from "@/hooks/store/use-custom-project-state";
 import { ProjectStatesWorkspaceSettingsHeader } from "./header";
@@ -20,6 +21,9 @@ import { ProjectStatesWorkspaceSettingsHeader } from "./header";
 const ProjectStatesPage = observer(function ProjectStatesPage() {
   const { workspaceSlug } = useParams();
   const store = useCustomProjectState();
+  const { t } = useTranslation();
+
+  const PS = "workspace_settings.settings.project_states";
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -47,14 +51,14 @@ const ProjectStatesPage = observer(function ProjectStatesPage() {
       });
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Success",
-        message: `Project States feature ${nextValue ? "enabled" : "disabled"} successfully.`,
+        title: t(nextValue ? `${PS}.toast.enabled` : `${PS}.toast.disabled`),
+        message: t(nextValue ? `${PS}.confirm.enable_content` : `${PS}.confirm.disable_content`),
       });
     } catch (_e) {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error",
-        message: "Failed to update project state settings.",
+        title: t(`${PS}.toast.not_saved`),
+        message: t(`${PS}.try_again`),
       });
     } finally {
       setIsSubmitting(false);
@@ -108,8 +112,7 @@ const ProjectStatesPage = observer(function ProjectStatesPage() {
         });
         setToast({
           type: TOAST_TYPE.SUCCESS,
-          title: "Success",
-          message: "State created successfully.",
+          title: t(`${PS}.toast.state_created`),
         });
         return {
           id: res.id,
@@ -135,8 +138,7 @@ const ProjectStatesPage = observer(function ProjectStatesPage() {
         });
         setToast({
           type: TOAST_TYPE.SUCCESS,
-          title: "Success",
-          message: "State updated successfully.",
+          title: t(`${PS}.toast.state_updated`),
         });
         return {
           id: res.id,
@@ -156,8 +158,7 @@ const ProjectStatesPage = observer(function ProjectStatesPage() {
         await store.deleteState(workspaceSlug, stateId);
         setToast({
           type: TOAST_TYPE.SUCCESS,
-          title: "Success",
-          message: "State deleted successfully.",
+          title: t(`${PS}.toast.state_deleted`),
         });
       },
       markStateAsDefault: async (stateId: string) => {
@@ -165,8 +166,7 @@ const ProjectStatesPage = observer(function ProjectStatesPage() {
         await store.updateState(workspaceSlug, stateId, { default: true });
         setToast({
           type: TOAST_TYPE.SUCCESS,
-          title: "Success",
-          message: "Default state updated successfully.",
+          title: t(`${PS}.toast.default_set`),
         });
       },
       moveStatePosition: async (stateId: string, data: any) => {
@@ -176,14 +176,14 @@ const ProjectStatesPage = observer(function ProjectStatesPage() {
         });
       },
     }),
-    [workspaceSlug, store]
+    [workspaceSlug, store, t]
   );
 
   if (isLoading) {
     return (
       <SettingsContentWrapper header={<ProjectStatesWorkspaceSettingsHeader />}>
         <div className="text-custom-text-300 flex h-full w-full items-center justify-center py-20">
-          Loading settings...
+          {t(`${PS}.loading`)}
         </div>
       </SettingsContentWrapper>
     );
@@ -191,14 +191,12 @@ const ProjectStatesPage = observer(function ProjectStatesPage() {
 
   return (
     <SettingsContentWrapper header={<ProjectStatesWorkspaceSettingsHeader />}>
-      <PageHead title="Workspace Project States" />
+      <PageHead title={t(`${PS}.list_heading`)} />
       <div className="flex max-w-4xl flex-col gap-6 p-6">
         <div className="flex items-center justify-between border-b border-subtle pb-6">
           <div>
-            <h3 className="text-xl text-custom-text-100 font-medium">Project States</h3>
-            <p className="text-sm text-custom-text-300">
-              Enable project states to classify and track project lifecycles consistently across the workspace.
-            </p>
+            <h3 className="text-xl text-custom-text-100 font-medium">{t(`${PS}.heading`)}</h3>
+            <p className="text-sm text-custom-text-300">{t(`${PS}.description`)}</p>
           </div>
           <ToggleSwitch value={store.settings?.is_enabled || false} onChange={handleToggle} size="lg" />
         </div>
@@ -206,7 +204,7 @@ const ProjectStatesPage = observer(function ProjectStatesPage() {
         {store.settings?.is_enabled && (
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-lg text-custom-text-200 font-medium font-semibold">Workspace Project States</h4>
+              <h4 className="text-lg text-custom-text-200 font-medium font-semibold">{t(`${PS}.list_heading`)}</h4>
             </div>
 
             <div className="mt-2">
@@ -226,12 +224,12 @@ const ProjectStatesPage = observer(function ProjectStatesPage() {
           handleClose={() => setIsConfirmationModalOpen(false)}
           handleSubmit={handleConfirmToggle}
           isSubmitting={isSubmitting}
-          title="Confirm Toggle Project States"
-          content={`Are you sure you want to ${store.settings?.is_enabled ? "disable" : "enable"} workspace project states? This will change how states are managed across all projects. Work items in projects might have their states aligned or modified.`}
+          title={t(store.settings?.is_enabled ? `${PS}.confirm.disable_title` : `${PS}.confirm.enable_title`)}
+          content={t(store.settings?.is_enabled ? `${PS}.confirm.disable_content` : `${PS}.confirm.enable_content`)}
           variant="primary"
           primaryButtonText={{
-            loading: "Updating...",
-            default: "Confirm",
+            loading: t("common.updating"),
+            default: t("common.confirm"),
           }}
         />
       )}

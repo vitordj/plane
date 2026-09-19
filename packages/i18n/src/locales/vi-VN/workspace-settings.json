@@ -257,9 +257,50 @@
       },
       "project_states": {
         "title": "Trạng thái dự án",
-        "heading": "Xem tổng quan tiến độ cho tất cả dự án.",
-        "description": "Trạng thái Dự án là tính năng chỉ có trong Plane để theo dõi tiến độ của tất cả các dự án của bạn theo bất kỳ thuộc tính dự án nào.",
-        "go_to_settings": "Đi đến cài đặt"
+        "heading": "Trạng thái dự án",
+        "description": "Phân loại và theo dõi vòng đời dự án một cách nhất quán trong toàn bộ không gian làm việc.",
+        "go_to_settings": "Đi đến cài đặt",
+        "loading": "Đang tải cài đặt",
+        "list_heading": "Trạng thái dự án của không gian làm việc",
+        "try_again": "Vui lòng thử lại sau giây lát.",
+        "toast": {
+          "enabled": "Đã bật trạng thái dự án",
+          "disabled": "Đã tắt trạng thái dự án",
+          "not_saved": "Chưa lưu",
+          "state_created": "Đã tạo trạng thái",
+          "state_updated": "Đã cập nhật trạng thái",
+          "state_deleted": "Đã xóa trạng thái",
+          "default_set": "Đã cập nhật trạng thái mặc định"
+        },
+        "confirm": {
+          "enable_title": "Bật trạng thái dự án của không gian làm việc?",
+          "disable_title": "Tắt trạng thái dự án của không gian làm việc?",
+          "enable_content": "Trạng thái sẽ được quản lý từ không gian làm việc, trên mọi dự án. Các mục công việc có thể được điều chỉnh trạng thái theo bộ của không gian làm việc.",
+          "disable_content": "Mỗi dự án quản lý lại trạng thái của riêng mình. Các mục công việc có thể được điều chỉnh trạng thái theo bộ của dự án."
+        }
+      },
+      "project_labels": {
+        "title": "Nhãn dự án",
+        "heading": "Nhãn dự án",
+        "description": "Tạo và quản lý nhãn dự án ở cấp không gian làm việc để phân loại và nhóm trong chế độ xem bảng và danh sách.",
+        "go_to_settings": "Đi đến cài đặt",
+        "loading": "Đang tải cài đặt",
+        "list_heading": "Nhãn dự án của không gian làm việc",
+        "try_again": "Vui lòng thử lại sau giây lát.",
+        "toast": {
+          "enabled": "Đã bật nhãn dự án",
+          "disabled": "Đã tắt nhãn dự án",
+          "not_saved": "Chưa lưu",
+          "label_created": "Đã tạo nhãn",
+          "label_updated": "Đã cập nhật nhãn",
+          "label_deleted": "Đã xóa nhãn"
+        },
+        "confirm": {
+          "enable_title": "Bật nhãn dự án của không gian làm việc?",
+          "disable_title": "Tắt nhãn dự án của không gian làm việc?",
+          "enable_content": "Nhãn sẽ được quản lý từ không gian làm việc, trên mọi dự án.",
+          "disable_content": "Mỗi dự án quản lý lại nhãn của riêng mình."
+        }
       },
       "projects": {
         "title": "Dự án",
@@ -484,6 +525,392 @@
         "heading": "Script",
         "new_script": "Script mới",
         "description": "Tự động hóa quy trình làm việc của bạn với các script và quy tắc tự động hóa tùy chỉnh."
+      },
+      "organizational_units": {
+        "title": "Khu vực",
+        "heading": "Khu vực",
+        "description": "Nhóm mọi người vào các khu vực và cấp cho mỗi khu vực quyền truy cập vào các dự án của nó trong một bước.",
+        "add": "Khu vực mới",
+        "disabled": "Khu vực đã bị tắt trên phiên bản này. Quản trị viên có thể bật bằng cách đặt ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Vui lòng thử lại sau một lát.",
+        "toast": {
+          "saved": "Đã lưu",
+          "not_saved": "Chưa lưu",
+          "role_unchanged": "Vai trò không thay đổi"
+        },
+        "list": {
+          "empty_title": "Chưa có khu vực nào.",
+          "empty_description": "Khu vực nhóm những người cùng làm việc với nhau — Pháp chế, Kinh doanh, Hành chính — và cấp cho họ quyền truy cập vào các dự án của khu vực trong một bước.",
+          "synced_badge": "Đã đồng bộ",
+          "counts": "{members, plural, one {# người} other {# người}} · {projects, plural, one {# dự án} other {# dự án}}",
+          "delete_aria": "Xóa {name}",
+          "delete_title": "Xóa {name}?",
+          "delete_content": "Mọi người trong khu vực này sẽ mất quyền truy cập dự án mà khu vực đã cấp cho họ. Quyền truy cập do khu vực khác cấp hoặc được thiết lập thủ công trên dự án vẫn được giữ lại.",
+          "delete_content_synced": "Mọi người trong khu vực này sẽ mất quyền truy cập dự án mà khu vực đã cấp cho họ. Khu vực này được đồng bộ từ thư mục của bạn, nên lần đồng bộ tiếp theo sẽ tạo lại nó — nếu muốn xóa vĩnh viễn, hãy xóa nhóm trong thư mục.",
+          "delete_loading": "Đang xóa...",
+          "delete_confirm": "Xóa khu vực",
+          "toast": {
+            "deleted_title": "Đã xóa khu vực",
+            "deleted_message": "Quyền truy cập dự án do {name} cấp đã bị thu hồi. Quyền truy cập được cấp từ nơi khác vẫn được giữ lại.",
+            "not_deleted": "Chưa xóa"
+          }
+        },
+        "form": {
+          "edit_title": "Chỉnh sửa khu vực",
+          "name_placeholder": "Pháp chế",
+          "description_placeholder": "Khu vực này chịu trách nhiệm về việc gì",
+          "create": "Tạo khu vực",
+          "toast": {
+            "updated": "{name} đã được cập nhật.",
+            "created_title": "Đã tạo",
+            "created": "{name} đã sẵn sàng để sử dụng.",
+            "name_taken": "Đã có khu vực với tên này. Vui lòng chọn tên khác."
+          }
+        },
+        "detail": {
+          "tab_people": "Mọi người",
+          "back_aria": "Quay lại tất cả khu vực"
+        },
+        "members": {
+          "select_person": "Chọn một người",
+          "no_addable": "Mọi người trong không gian làm việc này đều đã ở trong khu vực này",
+          "add": "Thêm vào khu vực",
+          "empty": "Chưa có ai trong khu vực này. Thêm người để cấp cho họ quyền truy cập vào các dự án của khu vực.",
+          "directory_badge": "Thư mục",
+          "remove_aria": "Xóa {name} khỏi khu vực này",
+          "lead_note": "Trưởng khu vực quản lý chính khu vực đó. Quyền quản trị dự án được cấp riêng, trên từng dự án.",
+          "directory_note": "Những người được đánh dấu {badge} đến từ nhà cung cấp danh tính của bạn. Việc xóa họ ở đây chỉ có hiệu lực đến lần đồng bộ tiếp theo — hãy xóa họ khỏi nhóm ở phía nguồn. Những người bạn thêm thủ công sẽ không bao giờ bị đồng bộ xóa.",
+          "toast": {
+            "added_title": "Đã thêm thành viên",
+            "added": "Giờ họ có quyền truy cập vào các dự án của khu vực này.",
+            "not_added": "Chưa thêm",
+            "one_lead": "Một khu vực chỉ có thể có một trưởng khu vực tại một thời điểm.",
+            "removed_title": "Đã xóa thành viên",
+            "removed": "{name} vẫn giữ mọi quyền truy cập dự án được cấp ngoài khu vực này.",
+            "not_removed": "Chưa xóa"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Có thể thay đổi cài đặt và thành viên của dự án",
+          "role_member_hint": "Có thể tạo và chỉnh sửa mục công việc",
+          "role_guest_hint": "Quyền truy cập hạn chế",
+          "select_project": "Chọn một dự án",
+          "no_linkable": "Mọi dự án đều đã được liên kết với khu vực này",
+          "link": "Liên kết dự án",
+          "empty": "Chưa có dự án nào được liên kết. Liên kết một dự án để cấp cho thành viên của khu vực này quyền truy cập vào nó.",
+          "unlink_aria": "Hủy liên kết {name} khỏi khu vực này",
+          "role_note": "Vai trò của một người là vai trò cao nhất mà các khu vực của họ cấp, nhưng không vượt quá vai trò của họ trong không gian làm việc. Vai trò được thiết lập thủ công trên dự án sẽ không bao giờ bị hạ thấp ở đây.",
+          "toast": {
+            "linked_title": "Đã liên kết dự án",
+            "linked": "Giờ mọi người trong khu vực này đều có quyền truy cập vào dự án đó.",
+            "not_linked": "Chưa liên kết",
+            "unlinked_title": "Đã hủy liên kết dự án",
+            "unlinked": "Quyền truy cập vào {name} được cấp ngoài khu vực này vẫn được giữ lại.",
+            "not_unlinked": "Chưa hủy liên kết"
+          }
+        },
+        "directory_sync": {
+          "heading": "Đồng bộ thư mục",
+          "description": "Cho phép Microsoft Entra ID giữ cho thành viên khu vực luôn được cập nhật. Entra quyết định ai thuộc khu vực nào; còn khu vực cấp quyền cho những dự án nào và với vai trò gì vẫn được thiết lập tại đây.",
+          "never": "Chưa bao giờ",
+          "copy": "Sao chép",
+          "provisioning_on": "Cấp phát đang bật.",
+          "provisioning_off": "Cấp phát đang tắt.",
+          "no_token_warning": "Hãy phát hành token trước khi bật cấp phát — Entra không thể xác thực nếu không có token.",
+          "tenant_url": "URL của tenant",
+          "tenant_url_hint": "Dán giá trị này vào Provisioning → Admin Credentials trong ứng dụng doanh nghiệp Entra.",
+          "secret_token": "Token bí mật",
+          "token_installed": "Một token bắt đầu bằng {prefix}… đã được cài đặt. Sử dụng lần cuối {last_used}.",
+          "no_token": "Chưa có token nào được cài đặt.",
+          "rotate_token": "Xoay vòng token",
+          "issue_token": "Phát hành token",
+          "revoke": "Thu hồi",
+          "rotate_hint": "Xoay vòng có hiệu lực ngay lập tức, nên cấp phát sẽ thất bại cho đến khi Entra được cung cấp token mới.",
+          "last_sync": "Đồng bộ lần cuối",
+          "resync_now": "Đồng bộ lại ngay",
+          "summary_added": "{count, plural, one {# đã thêm} other {# đã thêm}}",
+          "summary_restored": "{count, plural, one {# đã khôi phục} other {# đã khôi phục}}",
+          "summary_withdrawn": "{count, plural, one {# đã thu hồi} other {# đã thu hồi}}",
+          "resync_hint": "Đồng bộ lại chỉ phát lại những gì thư mục đã gửi — không gọi đến Entra. Dùng sau khi mời một người mà thư mục đã đẩy sang.",
+          "unresolved_heading": "Được thư mục đẩy sang nhưng không có trong không gian làm việc này ({count})",
+          "unresolved_empty": "Mọi người mà thư mục đã gửi đều là thành viên đang hoạt động của không gian làm việc này.",
+          "not_workspace_member": "Không phải thành viên không gian làm việc",
+          "inactive_in_directory": "Không hoạt động trong thư mục",
+          "unresolved_hint": "Mời những người này vào không gian làm việc và họ sẽ tự động tham gia khu vực của mình, hoặc xóa họ khỏi nhóm trong Entra.",
+          "auto_create_title": "Tạo khu vực cho nhóm mới",
+          "auto_create_hint": "Khi tắt, thư mục chỉ có thể điền vào những khu vực bạn đã tạo và đặt tên trùng khớp.",
+          "auto_create_saved": "Đã lưu cách xử lý nhóm thư mục mới.",
+          "deprovision_title": "Cho phép thư mục xóa người",
+          "deprovision_hint": "Khi tắt, đồng bộ chỉ thêm. Dù thế nào, những người bạn thêm thủ công sẽ không bao giờ bị xóa.",
+          "deprovision_saved": "Đã lưu cách xử lý việc xóa từ thư mục.",
+          "toast": {
+            "copied_title": "Đã sao chép",
+            "copied": "Đã sao chép {label} vào bảng tạm của bạn.",
+            "not_copied_title": "Không thể sao chép",
+            "not_copied": "Hãy chọn và sao chép {label} theo cách thủ công.",
+            "load_failed_title": "Không thể tải kết nối thư mục",
+            "load_failed": "Vui lòng thử lại sau một lát.",
+            "save_failed": "Không thể lưu thay đổi. Vui lòng thử lại.",
+            "token_issued_title": "Đã phát hành token",
+            "token_issued": "Hãy sao chép ngay — token chỉ được hiển thị một lần này.",
+            "token_not_issued_title": "Chưa phát hành",
+            "token_not_issued": "Không thể tạo token.",
+            "token_revoked_title": "Đã thu hồi token",
+            "token_revoked": "Cấp phát sẽ tắt cho đến khi token mới được phát hành.",
+            "token_not_revoked_title": "Chưa thu hồi",
+            "token_not_revoked": "Không thể thu hồi token.",
+            "resynced_title": "Đã đồng bộ lại",
+            "resynced": "{added, plural, one {# đã thêm} other {# đã thêm}}, {withdrawn, plural, one {# đã thu hồi} other {# đã thu hồi}}.",
+            "not_resynced_title": "Chưa đồng bộ lại",
+            "not_resynced": "Không thể hoàn tất đồng bộ lại."
+          }
+        },
+        "work": {
+          "tab": "Công việc",
+          "inbox": "Hộp thư đến",
+          "in_progress": "Đang thực hiện",
+          "empty_inbox": "Không có gì đang chờ. Các mục công việc mà khu vực này tiếp nhận sẽ hiện ở đây cho đến khi có người nhận.",
+          "empty_in_progress": "Hiện không có ai đang làm việc gì cho khu vực này.",
+          "claim": "Nhận việc",
+          "assign": "Giao cho…",
+          "return_to_queue": "Trả lại hàng đợi",
+          "overdue": "Quá hạn",
+          "unassigned": "Chưa giao cho ai",
+          "executor_count": "{count, plural, one {# mục công việc} other {# mục công việc}}",
+          "age": {
+            "just_now": "Vừa xong",
+            "minutes": "{count, plural, one {# phút} other {# phút}}",
+            "hours": "{count, plural, one {# giờ} other {# giờ}}",
+            "days": "{count, plural, one {# ngày} other {# ngày}}"
+          },
+          "reason": {
+            "new_item": "Vừa được tiếp nhận",
+            "awaiting_coordinator": "Đang chờ một điều phối viên",
+            "awaiting_claim": "Đang chờ ai đó nhận",
+            "no_eligible_member": "Không ai trong khu vực này có thể nhận",
+            "executor_unavailable": "Người thực hiện không sẵn sàng",
+            "manually_returned": "Đã trả lại hàng đợi"
+          },
+          "assign_modal": {
+            "title": "Giao mục công việc này",
+            "search": "Tìm theo tên hoặc email",
+            "no_candidates": "Chưa có ai trong khu vực này có thể nhận việc. Bạn hãy thêm người vào khu vực trước.",
+            "assigning": "Đang giao…",
+            "open_items": "{count, plural, one {# mục đang mở} other {# mục đang mở}}",
+            "unavailable": "Vắng",
+            "opted_out": "Không nhận việc mới"
+          },
+          "toast": {
+            "claimed_title": "Đã nhận mục công việc",
+            "claimed": "Nó thuộc về bạn và đã rời hộp thư đến của khu vực này.",
+            "not_claimed": "Chưa nhận",
+            "assigned_title": "Đã giao mục công việc",
+            "assigned": "{name} đang phụ trách.",
+            "not_assigned": "Chưa giao",
+            "returned_title": "Đã trả lại hàng đợi",
+            "returned": "Nó lại đang chờ người nhận.",
+            "not_returned": "Chưa trả lại",
+            "transferred_title": "Đã chuyển sang khu vực khác",
+            "transferred": "{name} chịu trách nhiệm về mục này.",
+            "not_transferred": "Không chuyển"
+          },
+          "attention": "Cần chú ý",
+          "attention_overdue_date": "Quá hạn",
+          "attention_suspended": "Tạm dừng",
+          "attention_unavailable": "Người thực hiện không sẵn sàng",
+          "attention_no_date": "Không có hạn",
+          "empty_attention": "Hiện không có gì cần chú ý.",
+          "decisions": "Quyết định",
+          "empty_decisions": "Chưa có quyết định phân công.",
+          "decision_supersedes": "Đã thay thế một quyết định trước đó",
+          "decision_outcome": {
+            "assigned": "Đã phân công",
+            "queued": "Trong hàng đợi",
+            "allocation_failed": "Không thể phân công",
+            "rejected": "Từ chối"
+          },
+          "transfer": "Chuyển sang khu vực khác",
+          "transfer_modal": {
+            "title": "Chuyển sang khu vực khác",
+            "search": "Tìm khu vực",
+            "no_units": "Không có khu vực nào khác bao phủ dự án này.",
+            "transferring": "Đang chuyển…"
+          },
+          "suggestion": "Gợi ý: {name}",
+          "unavailable_until": "Vắng đến {until}",
+          "unavailable_open": "Vắng",
+          "executor_away": "Vắng",
+          "process_progress": "{done}/{total}"
+        },
+        "executive": {
+          "title": "Góc nhìn điều hành",
+          "heading": "Công việc theo khu vực",
+          "description": "Công việc đang diễn ra như thế nào ở từng khu vực và trong các quy trình đang chạy.",
+          "link": "Góc nhìn điều hành",
+          "load_failed": "Không thể tải góc nhìn điều hành.",
+          "empty": "Chưa có khu vực nào.",
+          "hidden_count": "{count, plural, one {# mục công việc nằm trong dự án bạn không thể mở} other {# mục công việc nằm trong các dự án bạn không thể mở}}",
+          "period": {
+            "label": "Kỳ",
+            "7d": "7 ngày qua",
+            "30d": "30 ngày qua",
+            "90d": "90 ngày qua"
+          },
+          "indicators": {
+            "area": "Khu vực",
+            "backlog": "Backlog",
+            "queued": "Trong hàng đợi",
+            "assignment_overdue": "Gán việc quá hạn",
+            "target_overdue": "Quá ngày mục tiêu",
+            "queue_age_p50": "Tuổi hàng đợi p50",
+            "queue_age_p90": "Tuổi hàng đợi p90",
+            "throughput": "Sản lượng",
+            "cycle_time_p50": "Thời gian chu kỳ p50",
+            "cycle_time_p90": "Thời gian chu kỳ p90",
+            "concentration_top3": "Tập trung top 3",
+            "auto_assign_kept_ratio": "Gán tự động được giữ"
+          },
+          "processes": {
+            "heading": "Quy trình",
+            "running": "Đang chạy",
+            "completed": "Hoàn thành trong kỳ",
+            "lead_time_p50": "Lead time p50",
+            "lead_time_p90": "Lead time p90",
+            "empty": "Không có quy trình đang chạy hoặc hoàn thành trong kỳ này.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Không có gì để hiển thị. Mục trong dự án bạn không mở được được tính, không được liệt kê.",
+            "close": "Đóng"
+          }
+        },
+        "errors": {
+          "unit_not_found": "Khu vực đó không còn tồn tại.",
+          "name_required": "Khu vực cần có tên.",
+          "slug_taken": "Đã có một khu vực mang tên này.",
+          "members_not_in_workspace": "Mọi người bạn thêm phải là thành viên đang hoạt động của không gian làm việc này.",
+          "membership_not_found": "Người đó không còn trong khu vực này.",
+          "lead_already_set": "Khu vực này đã có người phụ trách.",
+          "unit_not_in_workspace": "Khu vực đó không thuộc không gian làm việc này.",
+          "project_required": "Hãy chọn một dự án để liên kết.",
+          "invalid_role": "Khu vực không thể cấp vai trò đó.",
+          "project_not_in_workspace": "Dự án đó không thuộc không gian làm việc này.",
+          "link_not_found": "Dự án đó không còn liên kết với khu vực này.",
+          "work_item_not_found": "Mục công việc đó không còn tồn tại.",
+          "work_item_has_no_unit": "Không có khu vực nào phụ trách mục công việc này.",
+          "invalid_assignment_mode": "Đó không phải là chế độ phân công.",
+          "unit_not_covering_project": "Khu vực đó không được liên kết với dự án này.",
+          "assignment_mode_not_allowed": "Khu vực đó không cho phép cách giao việc này.",
+          "executor_not_eligible": "Người đó không thể nhận mục công việc này.",
+          "work_item_already_claimed": "Người khác đã nhận mục công việc này trước.",
+          "decision_stale": "Mục công việc này đã thay đổi trong lúc bạn xem. Vui lòng tải lại và thử lại.",
+          "invalid_routing_transition": "Mục công việc này không thể chuyển sang trạng thái đó từ trạng thái hiện tại.",
+          "directory_workspace_not_found": "Không gian làm việc đó không còn tồn tại.",
+          "directory_token_required": "Hãy cấp token SCIM trước khi bật cấp phát từ thư mục.",
+          "not_unit_coordinator": "Chỉ điều phối viên của khu vực này hoặc quản trị viên không gian làm việc mới có thể làm việc này.",
+          "coordinator_already_set": "Người này đã điều phối khu vực này rồi.",
+          "coordinator_not_found": "Không tìm thấy điều phối viên.",
+          "not_the_executor": "Chỉ người thực hiện hiện tại, điều phối viên của khu vực này, hoặc quản trị viên không gian làm việc mới có thể làm việc này.",
+          "coordinator_must_be_member": "Điều phối viên phải là thành viên đang hoạt động hoặc quản trị viên của không gian làm việc.",
+          "invalid_queue_filter": "Bộ lọc hàng đợi đó không được nhận dạng.",
+          "public_api_disabled": "API tự động hóa đang tắt trên phiên bản này.",
+          "idempotency_key_required": "Yêu cầu này cần tiêu đề Idempotency-Key.",
+          "idempotency_payload_mismatch": "Khóa đó đã được dùng cho một yêu cầu khác.",
+          "operation_in_progress": "Một yêu cầu giống hệt vẫn đang chạy. Vui lòng thử lại sau giây lát.",
+          "external_binding_conflict": "Khóa bên ngoài đó đã trỏ tới một mục công việc khác.",
+          "assignees_not_allowed_here": "Khu vực quyết định ai nhận mục công việc này, nên yêu cầu này không thể đặt người phụ trách.",
+          "if_match_required": "Yêu cầu này cần tiêu đề If-Match kèm quyết định hiện hành.",
+          "process_projection_disabled": "Phép chiếu quy trình đang tắt trên phiên bản này.",
+          "completion_manual_only": "Mục công việc này chỉ có thể do một người hoàn tất.",
+          "internal_error": "Đã xảy ra lỗi. Thao tác được ghi nhận là thất bại.",
+          "availability_window_not_found": "Không tìm thấy khoảng thời gian không sẵn sàng đó.",
+          "availability_invalid_interval": "Thời điểm kết thúc của khoảng không sẵn sàng phải sau thời điểm bắt đầu.",
+          "availability_from_required": "Khoảng không sẵn sàng cần có ngày bắt đầu.",
+          "workspace_member_not_found": "Người đó không phải thành viên của workspace này.",
+          "allocation_limit_forbidden": "Chỉ điều phối viên hoặc quản trị viên workspace mới được đặt giới hạn công việc cá nhân.",
+          "not_availability_manager": "Chỉ điều phối viên của một trong các khu vực của người này, hoặc quản trị viên workspace, mới được làm việc này."
+        },
+        "coordinators": {
+          "tab": "Điều phối viên",
+          "select_person": "Chọn một người",
+          "no_addable": "Mọi người có thể điều phối khu vực này đều đã làm vậy",
+          "add": "Thêm điều phối viên",
+          "empty": "Khu vực này chưa có người điều phối. Điều phối viên vận hành hàng đợi mà không cần thuộc khu vực.",
+          "remove_aria": "Ngừng để {name} điều phối khu vực này",
+          "note": "Điều phối viên vận hành hàng đợi của khu vực. Họ không cần thuộc khu vực. Khách của không gian làm việc không thể làm điều phối viên.",
+          "toast": {
+            "added_title": "Đã thêm điều phối viên",
+            "added": "Họ có thể vận hành hàng đợi của khu vực này.",
+            "not_added": "Không thêm được",
+            "removed_title": "Đã gỡ điều phối viên",
+            "removed": "{name} không còn điều phối khu vực này.",
+            "not_removed": "Không gỡ được"
+          }
+        },
+        "policy": {
+          "tab": "Chính sách",
+          "heading": "Khu vực này phân công công việc như thế nào",
+          "description": "Giá trị mặc định của khu vực, dự án có thể ghi đè.",
+          "scope_area": "Mặc định của khu vực",
+          "scope_project": "Ngoại lệ cho {name}",
+          "default_mode": "Chế độ mặc định",
+          "allowed_modes": "Các chế độ được phép",
+          "sla_seconds": "SLA phân công (giây)",
+          "sla_hint": "Một mục có thể chờ chưa được phân công bao lâu trước khi cảnh báo điều phối viên. Để trống nếu không có hạn.",
+          "max_open": "Số mục đang mở tối đa mỗi người",
+          "max_open_hint": "Để trống nếu không giới hạn.",
+          "save": "Lưu chính sách",
+          "mode": {
+            "manual": "Điều phối viên phân công",
+            "self_claim": "Mọi người tự nhận việc",
+            "least_loaded": "Thành viên ít việc nhất",
+            "explicit": "Người được chỉ định"
+          },
+          "toast": {
+            "saved_title": "Đã lưu chính sách",
+            "saved": "Công việc mới sẽ theo các quy tắc này.",
+            "not_saved": "Không lưu được"
+          }
+        },
+        "my_areas": {
+          "title": "Khu vực của tôi",
+          "heading": "Khu vực của tôi",
+          "description": "Các khu vực bạn thuộc về và công việc đang chờ ở mỗi khu vực.",
+          "empty": "Bạn chưa thuộc khu vực nào.",
+          "select": "Chọn một khu vực"
+        },
+        "availability": {
+          "title": "Thời gian vắng",
+          "help": "Vắng mặt khiến phân công tự động không chọn bạn. Việc bạn đang mang không bị lấy lại.",
+          "empty": "Chưa có ghi nhận.",
+          "from": "Từ",
+          "until": "Đến",
+          "add": "Thêm",
+          "added": "Đã ghi nhận",
+          "not_added": "Không ghi nhận được",
+          "removed": "Đã xóa",
+          "not_removed": "Không xóa được",
+          "remove_aria": "Xóa khoảng vắng này",
+          "range": "{from} đến {until}",
+          "open_ended": "Từ {from}, chưa có ngày trở lại",
+          "reason": {
+            "vacation": "Nghỉ phép",
+            "leave": "Nghỉ",
+            "other": "Khác"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Nhận việc mới từ khu vực này",
+          "accepts_new_work_help": "Tắt nghĩa là phân công tự động bỏ qua họ ở đây. Họ giữ việc đang có và vẫn có thể được giao theo tên.",
+          "max_open_items": "Nhiều mục đang mở nhất cùng lúc",
+          "max_open_items_help": "Phân công tự động dừng ở số này. Để trống thì dùng giới hạn của khu vực.",
+          "no_limit": "Không giới hạn",
+          "saved": "Đã lưu",
+          "not_saved": "Không lưu được",
+          "limit_invalid": "Phải là số nguyên từ một trở lên.",
+          "open_aria": "Cài đặt công việc của {name}"
+        }
       }
     },
     "empty_state": {

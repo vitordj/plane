@@ -257,9 +257,50 @@
       },
       "project_states": {
         "title": "專案狀態",
-        "heading": "查看所有專案的進度概覽。",
-        "description": "專案狀態是 Plane 獨有的功能，可依任何專案屬性追蹤所有專案的進度。",
-        "go_to_settings": "前往設定"
+        "heading": "專案狀態",
+        "description": "在整個工作區中以一致的方式為專案生命週期分類並追蹤。",
+        "go_to_settings": "前往設定",
+        "loading": "正在載入設定",
+        "list_heading": "工作區專案狀態",
+        "try_again": "請稍後再試。",
+        "toast": {
+          "enabled": "專案狀態已開啟",
+          "disabled": "專案狀態已關閉",
+          "not_saved": "未儲存",
+          "state_created": "已建立狀態",
+          "state_updated": "已更新狀態",
+          "state_deleted": "已刪除狀態",
+          "default_set": "已更新預設狀態"
+        },
+        "confirm": {
+          "enable_title": "開啟工作區專案狀態？",
+          "disable_title": "關閉工作區專案狀態？",
+          "enable_content": "今後狀態將由工作區統一管理，適用於所有專案。工作事項的狀態可能會與工作區的狀態集對齊。",
+          "disable_content": "各專案重新管理自己的狀態。工作事項的狀態可能會與專案的狀態集對齊。"
+        }
+      },
+      "project_labels": {
+        "title": "專案標籤",
+        "heading": "專案標籤",
+        "description": "建立和管理工作區層級的專案標籤，用於分類以及看板和清單檢視中的分組。",
+        "go_to_settings": "前往設定",
+        "loading": "正在載入設定",
+        "list_heading": "工作區專案標籤",
+        "try_again": "請稍後再試。",
+        "toast": {
+          "enabled": "專案標籤已開啟",
+          "disabled": "專案標籤已關閉",
+          "not_saved": "未儲存",
+          "label_created": "已建立標籤",
+          "label_updated": "已更新標籤",
+          "label_deleted": "已刪除標籤"
+        },
+        "confirm": {
+          "enable_title": "開啟工作區專案標籤？",
+          "disable_title": "關閉工作區專案標籤？",
+          "enable_content": "今後標籤將由工作區統一管理，適用於所有專案。",
+          "disable_content": "各專案重新管理自己的標籤。"
+        }
       },
       "projects": {
         "title": "專案",
@@ -484,6 +525,392 @@
         "heading": "指令碼",
         "new_script": "新指令碼",
         "description": "使用自訂指令碼和自動化規則，自動化您的工作流程。"
+      },
+      "organizational_units": {
+        "title": "區域",
+        "heading": "區域",
+        "description": "將成員分組到區域，並一步為每個區域授予其專案的存取權限。",
+        "add": "新增區域",
+        "disabled": "本執行個體已關閉區域功能。管理員可以透過設定 ORCA_ORG_UNITS_ENABLED=1 來啟用。",
+        "try_again": "請稍後再試。",
+        "toast": {
+          "saved": "已儲存",
+          "not_saved": "未儲存",
+          "role_unchanged": "角色未變更"
+        },
+        "list": {
+          "empty_title": "尚無區域。",
+          "empty_description": "區域將共同工作的人員分為一組（例如法遵、業務、行政），並一步授予他們其專案的存取權限。",
+          "synced_badge": "已同步",
+          "counts": "{members, plural, one {# 人} other {# 人}} · {projects, plural, one {# 個專案} other {# 個專案}}",
+          "delete_aria": "刪除 {name}",
+          "delete_title": "要刪除 {name} 嗎？",
+          "delete_content": "此區域中的所有人都將失去它授予的專案存取權限。由其他區域授予或在專案中手動設定的存取權限將會保留。",
+          "delete_content_synced": "此區域中的所有人都將失去它授予的專案存取權限。此區域是從您的目錄同步而來，因此下次同步時會再次建立它——若要永久移除，請改為在目錄中移除該群組。",
+          "delete_loading": "刪除中...",
+          "delete_confirm": "刪除區域",
+          "toast": {
+            "deleted_title": "區域已刪除",
+            "deleted_message": "{name} 授予的專案存取權限已撤銷。其他來源授予的存取權限將會保留。",
+            "not_deleted": "未刪除"
+          }
+        },
+        "form": {
+          "edit_title": "編輯區域",
+          "name_placeholder": "法遵",
+          "description_placeholder": "此區域負責的事項",
+          "create": "建立區域",
+          "toast": {
+            "updated": "{name} 已更新。",
+            "created_title": "已建立",
+            "created": "{name} 已可使用。",
+            "name_taken": "已有同名的區域。請選擇其他名稱。"
+          }
+        },
+        "detail": {
+          "tab_people": "人員",
+          "back_aria": "返回所有區域"
+        },
+        "members": {
+          "select_person": "選擇人員",
+          "no_addable": "此工作區中的所有人都已在此區域中",
+          "add": "加入區域",
+          "empty": "此區域中尚無任何人。新增人員以授予他們其專案的存取權限。",
+          "directory_badge": "目錄",
+          "remove_aria": "將 {name} 從此區域移除",
+          "lead_note": "區域負責人負責管理區域本身。專案管理員權限需在專案中另行授予。",
+          "directory_note": "標示為 {badge} 的人員來自您的身份提供者。在此移除他們僅在下次同步前有效——請改為在上游群組中移除他們。您手動新增的人員絕不會被同步移除。",
+          "toast": {
+            "added_title": "成員已新增",
+            "added": "他們現在可以存取此區域的專案。",
+            "not_added": "未新增",
+            "one_lead": "一個區域一次只能有一位負責人。",
+            "removed_title": "成員已移除",
+            "removed": "{name} 保留在此區域之外授予的所有專案存取權限。",
+            "not_removed": "未移除"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "可以變更專案設定和成員",
+          "role_member_hint": "可以建立和編輯工作事項",
+          "role_guest_hint": "有限的存取權限",
+          "select_project": "選擇專案",
+          "no_linkable": "所有專案都已連結至此區域",
+          "link": "連結專案",
+          "empty": "尚未連結任何專案。連結一個專案，讓此區域的成員可以存取它。",
+          "unlink_aria": "將 {name} 從此區域取消連結",
+          "role_note": "人員的角色是其所屬區域授予的最高角色，且不超過其工作區角色。在專案中手動設定的角色絕不會在此被降低。",
+          "toast": {
+            "linked_title": "專案已連結",
+            "linked": "此區域中的所有人現在都可以存取它。",
+            "not_linked": "未連結",
+            "unlinked_title": "專案已取消連結",
+            "unlinked": "在此區域之外授予的 {name} 存取權限將會保留。",
+            "not_unlinked": "未取消連結"
+          }
+        },
+        "directory_sync": {
+          "heading": "目錄同步",
+          "description": "讓 Microsoft Entra ID 保持區域成員資格為最新。Entra 決定誰屬於哪個區域；區域授予哪些專案及其角色，仍在此設定。",
+          "never": "從未",
+          "copy": "複製",
+          "provisioning_on": "佈建已開啟。",
+          "provisioning_off": "佈建已關閉。",
+          "no_token_warning": "開啟佈建前請先核發權杖——沒有權杖，Entra 無法進行驗證。",
+          "tenant_url": "租用戶 URL",
+          "tenant_url_hint": "將此貼到 Entra 企業應用程式的「佈建」→「管理員認證」中。",
+          "secret_token": "秘密權杖",
+          "token_installed": "已安裝以 {prefix}… 開頭的權杖。上次使用時間：{last_used}。",
+          "no_token": "尚未安裝權杖。",
+          "rotate_token": "輪替權杖",
+          "issue_token": "核發權杖",
+          "revoke": "撤銷",
+          "rotate_hint": "輪替會立即生效，因此在 Entra 取得新權杖之前，佈建將會失敗。",
+          "last_sync": "上次同步",
+          "resync_now": "立即重新同步",
+          "summary_added": "{count, plural, one {已新增 # 人} other {已新增 # 人}}",
+          "summary_restored": "{count, plural, one {已還原 # 人} other {已還原 # 人}}",
+          "summary_withdrawn": "{count, plural, one {已撤銷 # 人} other {已撤銷 # 人}}",
+          "resync_hint": "重新同步只會重播目錄已傳送的內容——不會呼叫 Entra。請在邀請目錄已推送的人員之後使用。",
+          "unresolved_heading": "由目錄推送但不在此工作區中（{count}）",
+          "unresolved_empty": "目錄傳送的所有人都是此工作區的有效成員。",
+          "not_workspace_member": "不是工作區成員",
+          "inactive_in_directory": "在目錄中非使用中",
+          "unresolved_hint": "邀請這些人員加入工作區，他們就會自動加入所屬區域；或在 Entra 中將他們從群組移除。",
+          "auto_create_title": "為新群組建立區域",
+          "auto_create_hint": "關閉時，目錄只能填入您已建立且名稱相符的區域。",
+          "auto_create_saved": "已儲存新目錄群組的處理方式。",
+          "deprovision_title": "允許目錄移除人員",
+          "deprovision_hint": "關閉時，同步只會新增。無論如何，您手動新增的人員絕不會被移除。",
+          "deprovision_saved": "已儲存目錄移除作業的處理方式。",
+          "toast": {
+            "copied_title": "已複製",
+            "copied": "{label} 已複製到您的剪貼簿。",
+            "not_copied_title": "無法複製",
+            "not_copied": "請手動選取並複製 {label}。",
+            "load_failed_title": "無法載入目錄連線",
+            "load_failed": "請稍後再試。",
+            "save_failed": "無法儲存變更。請再試一次。",
+            "token_issued_title": "權杖已核發",
+            "token_issued": "請立即複製——它只會顯示這一次。",
+            "token_not_issued_title": "未核發",
+            "token_not_issued": "無法建立權杖。",
+            "token_revoked_title": "權杖已撤銷",
+            "token_revoked": "在核發新權杖之前，佈建將保持關閉。",
+            "token_not_revoked_title": "未撤銷",
+            "token_not_revoked": "無法撤銷權杖。",
+            "resynced_title": "已重新同步",
+            "resynced": "{added, plural, one {已新增 # 人} other {已新增 # 人}}，{withdrawn, plural, one {已撤銷 # 人} other {已撤銷 # 人}}。",
+            "not_resynced_title": "未重新同步",
+            "not_resynced": "無法完成重新同步。"
+          }
+        },
+        "work": {
+          "tab": "工作",
+          "inbox": "收件匣",
+          "in_progress": "進行中",
+          "empty_inbox": "沒有等待中的項目。此區域承接的工作事項會顯示在這裡，直到有人接手。",
+          "empty_in_progress": "目前沒有人在為此區域處理任何工作。",
+          "claim": "接手",
+          "assign": "指派給…",
+          "return_to_queue": "退回佇列",
+          "overdue": "已逾期",
+          "unassigned": "無負責人",
+          "executor_count": "{count, plural, one {# 個工作事項} other {# 個工作事項}}",
+          "age": {
+            "just_now": "剛剛",
+            "minutes": "{count, plural, one {# 分鐘} other {# 分鐘}}",
+            "hours": "{count, plural, one {# 小時} other {# 小時}}",
+            "days": "{count, plural, one {# 天} other {# 天}}"
+          },
+          "reason": {
+            "new_item": "剛剛承接",
+            "awaiting_coordinator": "等待協調人員",
+            "awaiting_claim": "等待有人接手",
+            "no_eligible_member": "此區域中沒有人可以接手",
+            "executor_unavailable": "執行人目前無法處理",
+            "manually_returned": "已退回佇列"
+          },
+          "assign_modal": {
+            "title": "指派此工作事項",
+            "search": "依姓名或電子郵件搜尋",
+            "no_candidates": "此區域中尚無人可以承接工作。請先將成員加入該區域。",
+            "assigning": "正在指派…",
+            "open_items": "{count, plural, one {# 項未完成} other {# 項未完成}}",
+            "unavailable": "離開",
+            "opted_out": "不接受新工作"
+          },
+          "toast": {
+            "claimed_title": "已接手工作事項",
+            "claimed": "它現在屬於您，並已離開此區域的收件匣。",
+            "not_claimed": "未接手",
+            "assigned_title": "已指派工作事項",
+            "assigned": "現在由 {name} 負責。",
+            "not_assigned": "未指派",
+            "returned_title": "已退回佇列",
+            "returned": "它再次在等待有人接手。",
+            "not_returned": "未退回",
+            "transferred_title": "已移至其他區域",
+            "transferred": "現在由 {name} 負責。",
+            "not_transferred": "未能移動"
+          },
+          "attention": "需要關注",
+          "attention_overdue_date": "已過截止日期",
+          "attention_suspended": "已暫停",
+          "attention_unavailable": "執行人無法使用",
+          "attention_no_date": "沒有截止日期",
+          "empty_attention": "目前沒有需要關注的事項。",
+          "decisions": "決策",
+          "empty_decisions": "尚無分配決策。",
+          "decision_supersedes": "已取代先前的決策",
+          "decision_outcome": {
+            "assigned": "已指派",
+            "queued": "排隊中",
+            "allocation_failed": "無法指派",
+            "rejected": "已拒絕"
+          },
+          "transfer": "移至其他區域",
+          "transfer_modal": {
+            "title": "移至其他區域",
+            "search": "搜尋區域",
+            "no_units": "沒有其他區域涵蓋此專案。",
+            "transferring": "正在移動…"
+          },
+          "suggestion": "建議：{name}",
+          "unavailable_until": "離開至 {until}",
+          "unavailable_open": "離開",
+          "executor_away": "離開",
+          "process_progress": "{done}/{total}"
+        },
+        "executive": {
+          "title": "管理檢視",
+          "heading": "依區域查看工作",
+          "description": "各區域以及正在執行的流程中，工作進展如何。",
+          "link": "管理檢視",
+          "load_failed": "無法載入管理檢視。",
+          "empty": "還沒有區域。",
+          "hidden_count": "{count, plural, one {# 個工作事項位於您無法開啟的專案中} other {# 個工作事項位於您無法開啟的專案中}}",
+          "period": {
+            "label": "期間",
+            "7d": "最近 7 天",
+            "30d": "最近 30 天",
+            "90d": "最近 90 天"
+          },
+          "indicators": {
+            "area": "區域",
+            "backlog": "待辦",
+            "queued": "排隊中",
+            "assignment_overdue": "指派逾期",
+            "target_overdue": "目標日期已過",
+            "queue_age_p50": "佇列時長 p50",
+            "queue_age_p90": "佇列時長 p90",
+            "throughput": "吞吐",
+            "cycle_time_p50": "週期時間 p50",
+            "cycle_time_p90": "週期時間 p90",
+            "concentration_top3": "前 3 名集中度",
+            "auto_assign_kept_ratio": "自動指派保留率"
+          },
+          "processes": {
+            "heading": "流程",
+            "running": "進行中",
+            "completed": "本期間完成",
+            "lead_time_p50": "前置時間 p50",
+            "lead_time_p90": "前置時間 p90",
+            "empty": "本期間沒有進行中或已完成的流程。",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "沒有可顯示的內容。您無法開啟的專案中的工作事項會計入總數，但不會列出。",
+            "close": "關閉"
+          }
+        },
+        "errors": {
+          "unit_not_found": "該區域已不存在。",
+          "name_required": "區域需要一個名稱。",
+          "slug_taken": "已有同名的區域。",
+          "members_not_in_workspace": "加入的每個人都必須是本工作區的有效成員。",
+          "membership_not_found": "此人已不在該區域中。",
+          "lead_already_set": "該區域已有負責人。",
+          "unit_not_in_workspace": "該區域不屬於本工作區。",
+          "project_required": "請選擇要關聯的專案。",
+          "invalid_role": "區域無法授予該角色。",
+          "project_not_in_workspace": "該專案不屬於本工作區。",
+          "link_not_found": "該專案已不再關聯到此區域。",
+          "work_item_not_found": "該工作事項已不存在。",
+          "work_item_has_no_unit": "沒有區域負責此工作事項。",
+          "invalid_assignment_mode": "這不是一種指派模式。",
+          "unit_not_covering_project": "該區域未連結至本專案。",
+          "assignment_mode_not_allowed": "該區域不允許這種指派方式。",
+          "executor_not_eligible": "該成員無法承接此工作事項。",
+          "work_item_already_claimed": "此工作事項已被他人搶先認領。",
+          "decision_stale": "此工作事項在您檢視期間已變更。請重新載入後再試。",
+          "invalid_routing_transition": "此工作事項無法從目前狀態轉為該狀態。",
+          "directory_workspace_not_found": "該工作區已不存在。",
+          "directory_token_required": "請先簽發 SCIM 權杖，再開啟目錄佈建。",
+          "not_unit_coordinator": "只有該區域的協調員或工作區管理員才能執行此操作。",
+          "coordinator_already_set": "此人已經在協調該區域。",
+          "coordinator_not_found": "找不到協調員。",
+          "not_the_executor": "只有目前的執行者、該區域的協調員或工作區管理員才能執行此操作。",
+          "coordinator_must_be_member": "協調員必須是工作區的有效成員或管理員。",
+          "invalid_queue_filter": "無法辨識該佇列篩選條件。",
+          "public_api_disabled": "此執行個體已關閉自動化 API。",
+          "idempotency_key_required": "此請求需要 Idempotency-Key 標頭。",
+          "idempotency_payload_mismatch": "該金鑰已用於另一個請求。",
+          "operation_in_progress": "相同的請求仍在處理中。請稍後再試。",
+          "external_binding_conflict": "該外部索引鍵已指向另一個工作事項。",
+          "assignees_not_allowed_here": "由區域決定誰承接此工作事項，因此此請求無法設定負責人。",
+          "if_match_required": "此請求需要帶有目前決定的 If-Match 標頭。",
+          "process_projection_disabled": "此執行個體已關閉流程投影。",
+          "completion_manual_only": "此工作事項只能由人完成。",
+          "internal_error": "發生問題。該操作已記錄為失敗。",
+          "availability_window_not_found": "找不到該不可用時段。",
+          "availability_invalid_interval": "不可用時段的結束時間必須晚於開始時間。",
+          "availability_from_required": "不可用時段需要開始時間。",
+          "workspace_member_not_found": "該使用者不是此工作區的成員。",
+          "allocation_limit_forbidden": "只有協調員或工作區管理員可以設定個人工作上限。",
+          "not_availability_manager": "只有該使用者所屬某個區域的協調員，或工作區管理員，才能執行此操作。"
+        },
+        "coordinators": {
+          "tab": "協調人",
+          "select_person": "選取人員",
+          "no_addable": "可以協調此區域的人已經都在其中",
+          "add": "新增協調人",
+          "empty": "還沒有人協調此區域。協調人可以操作佇列，不必屬於該區域。",
+          "remove_aria": "停止讓 {name} 協調此區域",
+          "note": "協調人操作區域的佇列。不必屬於該區域。工作區訪客不能擔任協調人。",
+          "toast": {
+            "added_title": "已新增協調人",
+            "added": "現在可以操作此區域的佇列。",
+            "not_added": "未能新增",
+            "removed_title": "已移除協調人",
+            "removed": "{name} 不再協調此區域。",
+            "not_removed": "未能移除"
+          }
+        },
+        "policy": {
+          "tab": "原則",
+          "heading": "此區域如何指派工作",
+          "description": "區域的預設設定，專案可以覆寫。",
+          "scope_area": "區域預設",
+          "scope_project": "{name} 的覆寫",
+          "default_mode": "預設模式",
+          "allowed_modes": "允許的模式",
+          "sla_seconds": "指派 SLA（秒）",
+          "sla_hint": "工作項目無人認領多久後提醒協調人。留空表示沒有時限。",
+          "max_open": "每人最多未完成工作項目",
+          "max_open_hint": "留空表示沒有上限。",
+          "save": "儲存原則",
+          "mode": {
+            "manual": "由協調人指派",
+            "self_claim": "由成員自行領取",
+            "least_loaded": "負載最低的成員",
+            "explicit": "指定人員"
+          },
+          "toast": {
+            "saved_title": "已儲存原則",
+            "saved": "新工作將遵循這些規則。",
+            "not_saved": "未能儲存"
+          }
+        },
+        "my_areas": {
+          "title": "我的區域",
+          "heading": "我的區域",
+          "description": "你所屬的區域，以及每個區域中等待處理的工作。",
+          "empty": "你還不屬於任何區域。",
+          "select": "選取區域"
+        },
+        "availability": {
+          "title": "離開時間",
+          "help": "離開期間，自動分配不會選擇您。已經在您手上的工作不會被收回。",
+          "empty": "尚無記錄。",
+          "from": "開始",
+          "until": "結束",
+          "add": "新增",
+          "added": "已記錄",
+          "not_added": "無法記錄",
+          "removed": "已刪除",
+          "not_removed": "無法刪除",
+          "remove_aria": "刪除此離開紀錄",
+          "range": "{from} 至 {until}",
+          "open_ended": "自 {from} 起，無返回日期",
+          "reason": {
+            "vacation": "假期",
+            "leave": "請假",
+            "other": "其他"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "接受此區域的新工作",
+          "accepts_new_work_help": "關閉後，自動分配會在此處跳過該成員。既有工作保留，仍可依姓名指派。",
+          "max_open_items": "同時開啟的工作上限",
+          "max_open_items_help": "自動分配在此數量處停止。留空則使用該區域自己的上限。",
+          "no_limit": "無上限",
+          "saved": "已儲存",
+          "not_saved": "無法儲存",
+          "limit_invalid": "必須是大於或等於 1 的整數。",
+          "open_aria": "{name} 的工作設定"
+        }
       }
     },
     "empty_state": {

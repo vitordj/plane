@@ -161,7 +161,15 @@ def get_model_data(event: str, event_id: Union[str, List[str]], many: bool = Fal
                 issue_id = queryset.id
                 queryset = model.objects.filter(pk=issue_id).prefetch_related(*issue_prefetches).first()
 
-            return serializer(queryset, many=many, context={"expand": ["labels", "assignees"]}).data
+            data = serializer(queryset, many=many, context={"expand": ["labels", "assignees"]}).data
+            # Orca sidecar (item 4.5): area, routing, primary executor. The
+            # native serializer is untouched; this only copies the dict and
+            # attaches `orca`. See services/orca/webhook_payload.py.
+            from plane.app.services.orca.webhook_payload import attach_orca_issue_sidecar
+
+            if many:
+                return [attach_orca_issue_sidecar(item) for item in data]
+            return attach_orca_issue_sidecar(data)
         else:
             return serializer(queryset, many=many).data
     except ObjectDoesNotExist:

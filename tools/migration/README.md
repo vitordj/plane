@@ -53,7 +53,51 @@ If you are already inside the container shell (`docker exec -it <container> sh`)
 4. Run `python3 create_users.py`.
 5. Remove the temp file when done: `rm create_users.py`.
 
-_Note: Pre-created users are set with a temporary password `TemporaryOrca123!`. They can change this password under their profile settings upon logging in._
+### First access for pre-created accounts
+
+Pre-created accounts have **no password at all**: they are created with an unusable password and the `is_password_autoset` flag, the same state accounts created by an OAuth provider are in. There is nothing to hand out and nothing to rotate.
+
+Users get in one of two ways:
+
+- **Entra ID (recommended):** they sign in with the corporate identity provider; the account is matched by email and adopted on first login. See [`docs/entra-directory-sync.md`](../../docs/entra-directory-sync.md).
+- **Magic link:** on the sign-in screen they enter the same email and receive a one-time link. Requires SMTP configured on the instance (`EMAIL_HOST` and friends).
+
+A user who wants a password of their own can set one from **Profile → Security** after that first login; because the account is flagged `is_password_autoset`, no old password is asked for.
+
+### If you ran this script before September 2026
+
+Earlier versions of `create_users.py` set the **same hard-coded password on every account it created**, and never forced a change. Any account created by such a run is openable by anyone who has read this repository. Invalidate them:
+
+```bash
+# The literal is in this repository's git history: look at create_users.py
+# before the commit that removed DEFAULT_PASSWORD. Read it into a variable
+# instead of typing it inline, so it does not land in your shell history.
+read -rs OLD_MIGRATION_PASSWORD && export OLD_MIGRATION_PASSWORD
+
+docker exec -i -e OLD_MIGRATION_PASSWORD "<new-plane-api-container-name>" python3 manage.py shell <<'SHELL_SCRIPT'
+import os
+
+from plane.db.models import User
+
+old = os.environ["OLD_MIGRATION_PASSWORD"]
+# check_password hashes once per account, so this is slow on a large
+# instance — minutes for tens of thousands of users. It is a one-off.
+affected = [u for u in User.objects.all().only("id", "email", "password") if u.password and u.check_password(old)]
+
+for user in affected:
+    user.set_unusable_password()
+    user.is_password_autoset = True
+    user.save(update_fields=["password", "is_password_autoset"])
+
+print(f"invalidated {len(affected)} account(s)")
+for user in affected:
+    print(" -", user.email)
+SHELL_SCRIPT
+
+unset OLD_MIGRATION_PASSWORD
+```
+
+Then review the authentication logs for sign-ins on those accounts before the invalidation, and record the environment and date in the P0 gate of [`docs/plans/orca-work-management/P0-platform-hardening.md`](../../docs/plans/orca-work-management/P0-platform-hardening.md).
 
 ---
 

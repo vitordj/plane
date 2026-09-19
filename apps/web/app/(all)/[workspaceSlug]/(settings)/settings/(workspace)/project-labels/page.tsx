@@ -28,6 +28,8 @@ const ProjectLabelsPage = observer(function ProjectLabelsPage() {
   const store = useCustomProjectLabel();
   const { t } = useTranslation();
 
+  const PL = "workspace_settings.settings.project_labels";
+
   const [isLoading, setIsLoading] = useState(true);
 
   // Toggle settings states
@@ -70,14 +72,14 @@ const ProjectLabelsPage = observer(function ProjectLabelsPage() {
       });
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Success",
-        message: `Project Labels feature ${nextValue ? "enabled" : "disabled"} successfully.`,
+        title: t(nextValue ? `${PL}.toast.enabled` : `${PL}.toast.disabled`),
+        message: t(nextValue ? `${PL}.confirm.enable_content` : `${PL}.confirm.disable_content`),
       });
     } catch (_e) {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error",
-        message: "Failed to update project label settings.",
+        title: t(`${PL}.toast.not_saved`),
+        message: t(`${PL}.try_again`),
       });
     } finally {
       setIsSubmittingToggle(false);
@@ -89,7 +91,7 @@ const ProjectLabelsPage = observer(function ProjectLabelsPage() {
     return (
       <SettingsContentWrapper header={<ProjectLabelsWorkspaceSettingsHeader />}>
         <div className="text-custom-text-300 flex h-full w-full items-center justify-center py-20">
-          Loading settings...
+          {t(`${PL}.loading`)}
         </div>
       </SettingsContentWrapper>
     );
@@ -100,8 +102,7 @@ const ProjectLabelsPage = observer(function ProjectLabelsPage() {
       const res = await store.createLabel(workspaceSlug!.toString(), data);
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Success",
-        message: "Project label created successfully.",
+        title: t(`${PL}.toast.label_created`),
       });
       return res;
     },
@@ -109,8 +110,7 @@ const ProjectLabelsPage = observer(function ProjectLabelsPage() {
       const res = await store.updateLabel(workspaceSlug!.toString(), id, data);
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Success",
-        message: "Project label updated successfully.",
+        title: t(`${PL}.toast.label_updated`),
       });
       return res;
     },
@@ -121,8 +121,7 @@ const ProjectLabelsPage = observer(function ProjectLabelsPage() {
     await store.deleteLabel(workspaceSlug.toString(), label.id);
     setToast({
       type: TOAST_TYPE.SUCCESS,
-      title: "Success",
-      message: "Project label deleted successfully.",
+      title: t(`${PL}.toast.label_deleted`),
     });
   };
 
@@ -145,31 +144,12 @@ const ProjectLabelsPage = observer(function ProjectLabelsPage() {
 
   return (
     <SettingsContentWrapper header={<ProjectLabelsWorkspaceSettingsHeader />}>
-      <PageHead
-        title={
-          !t("workspace_settings.settings.project_labels.title") ||
-          t("workspace_settings.settings.project_labels.title") === "workspace_settings.settings.project_labels.title"
-            ? "Workspace Project Labels"
-            : t("workspace_settings.settings.project_labels.title")
-        }
-      />
+      <PageHead title={t(`${PL}.list_heading`)} />
       <div className="flex max-w-4xl flex-col gap-6 p-6">
         <div className="flex items-center justify-between border-b border-subtle pb-6">
           <div>
-            <h3 className="text-xl text-custom-text-100 font-medium">
-              {!t("workspace_settings.settings.project_labels.heading") ||
-              t("workspace_settings.settings.project_labels.heading") ===
-                "workspace_settings.settings.project_labels.heading"
-                ? "Project Labels"
-                : t("workspace_settings.settings.project_labels.heading")}
-            </h3>
-            <p className="text-sm text-custom-text-300">
-              {!t("workspace_settings.settings.project_labels.description") ||
-              t("workspace_settings.settings.project_labels.description") ===
-                "workspace_settings.settings.project_labels.description"
-                ? "Create and manage workspace-level project labels for categorization and board/list grouping."
-                : t("workspace_settings.settings.project_labels.description")}
-            </p>
+            <h3 className="text-xl text-custom-text-100 font-medium">{t(`${PL}.heading`)}</h3>
+            <p className="text-sm text-custom-text-300">{t(`${PL}.description`)}</p>
           </div>
           <ToggleSwitch value={store.settings?.is_enabled || false} onChange={handleToggle} size="lg" />
         </div>
@@ -177,7 +157,7 @@ const ProjectLabelsPage = observer(function ProjectLabelsPage() {
         {store.settings?.is_enabled && (
           <div ref={scrollableContainerRef} className="size-full">
             <ProjectSettingsLabelList
-              title="Workspace Project Labels"
+              title={t(`${PL}.list_heading`)}
               description={null}
               labels={store.labels || []}
               labelsTree={store.labelsTree || []}
@@ -196,12 +176,12 @@ const ProjectLabelsPage = observer(function ProjectLabelsPage() {
           handleClose={() => setIsConfirmationModalOpen(false)}
           handleSubmit={handleConfirmToggle}
           isSubmitting={isSubmittingToggle}
-          title="Confirm Toggle Project Labels"
-          content={`Are you sure you want to ${store.settings?.is_enabled ? "disable" : "enable"} workspace project labels? This will change how labels are managed across all projects.`}
+          title={t(store.settings?.is_enabled ? `${PL}.confirm.disable_title` : `${PL}.confirm.enable_title`)}
+          content={t(store.settings?.is_enabled ? `${PL}.confirm.disable_content` : `${PL}.confirm.enable_content`)}
           variant="primary"
           primaryButtonText={{
-            loading: "Updating...",
-            default: "Confirm",
+            loading: t("common.updating"),
+            default: t("common.confirm"),
           }}
         />
       )}

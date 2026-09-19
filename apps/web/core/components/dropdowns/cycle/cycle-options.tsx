@@ -265,7 +265,7 @@ export const CycleOptions = observer(function CycleOptions(props: CycleOptionsPr
                   }}
                   className="w-full cursor-pointer rounded-sm px-1.5 py-1 text-left text-secondary hover:bg-layer-1"
                 >
-                  + Add <span className="text-primary">&quot;{query.trim()}&quot;</span> to cycles
+                  {t("cycle.add_named", { name: query.trim() })}
                 </button>
               )}
             </>

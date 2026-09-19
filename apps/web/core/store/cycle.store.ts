@@ -684,7 +684,10 @@ export class CycleStore implements ICycleStore {
     }
     const res = await this.updateCycleDetails(workspaceSlug, projectId, cycleId, payload);
     if (options?.set_in_progress) {
-      this.rootStore.issue.issues.fetchIssues(workspaceSlug, projectId, "PROJECT");
+      // Refresh whichever work item list is currently loaded so the moved states show without a reload.
+      // Both calls no-op when that list has no pagination state, i.e. when the user is not looking at it.
+      this.rootStore.issue.projectIssues.fetchIssuesWithExistingPagination(workspaceSlug, projectId, "mutation");
+      this.rootStore.issue.cycleIssues.fetchIssuesWithExistingPagination(workspaceSlug, projectId, "mutation", cycleId);
     }
     return res;
   };
@@ -713,7 +716,10 @@ export class CycleStore implements ICycleStore {
     }
     const res = await this.updateCycleDetails(workspaceSlug, projectId, cycleId, payload);
     if (options?.mark_completed) {
-      this.rootStore.issue.issues.fetchIssues(workspaceSlug, projectId, "PROJECT");
+      // Refresh whichever work item list is currently loaded so the moved states show without a reload.
+      // Both calls no-op when that list has no pagination state, i.e. when the user is not looking at it.
+      this.rootStore.issue.projectIssues.fetchIssuesWithExistingPagination(workspaceSlug, projectId, "mutation");
+      this.rootStore.issue.cycleIssues.fetchIssuesWithExistingPagination(workspaceSlug, projectId, "mutation", cycleId);
     }
     return res;
   };

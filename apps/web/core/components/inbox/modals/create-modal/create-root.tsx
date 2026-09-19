@@ -171,15 +171,15 @@ export const InboxIssueCreateRoot = observer(function InboxIssueCreateRoot(props
       }
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: `Success!`,
-        message: "Work item created successfully.",
+        title: t("common.success"),
+        message: t("issue_created_successfully"),
       });
     } catch (error) {
       console.error(error);
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: `Error!`,
-        message: "Some error occurred. Please try again.",
+        title: t("toast.error"),
+        message: t("something_went_wrong_please_try_again"),
       });
     } finally {
       setFormSubmitting(false);

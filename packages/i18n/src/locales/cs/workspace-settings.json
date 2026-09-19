@@ -257,9 +257,50 @@
       },
       "project_states": {
         "title": "Stavy projektů",
-        "heading": "Zobrazit přehled pokroku pro všechny projekty.",
-        "description": "Stavy projektů jsou funkce výhradně Plane pro sledování pokroku všech vašich projektů podle libovolné vlastnosti projektu.",
-        "go_to_settings": "Přejít do nastavení"
+        "heading": "Stavy projektů",
+        "description": "Zařazujte a sledujte životní cyklus projektů jednotně v celém pracovním prostoru.",
+        "go_to_settings": "Přejít do nastavení",
+        "loading": "Načítání nastavení",
+        "list_heading": "Stavy projektů pracovního prostoru",
+        "try_again": "Zkuste to prosím za okamžik znovu.",
+        "toast": {
+          "enabled": "Stavy projektů jsou zapnuté",
+          "disabled": "Stavy projektů jsou vypnuté",
+          "not_saved": "Neuloženo",
+          "state_created": "Stav vytvořen",
+          "state_updated": "Stav aktualizován",
+          "state_deleted": "Stav smazán",
+          "default_set": "Výchozí stav aktualizován"
+        },
+        "confirm": {
+          "enable_title": "Zapnout stavy projektů pracovního prostoru?",
+          "disable_title": "Vypnout stavy projektů pracovního prostoru?",
+          "enable_content": "Stavy se budou spravovat z pracovního prostoru, napříč všemi projekty. U pracovních položek se stav může srovnat se sadou pracovního prostoru.",
+          "disable_content": "Každý projekt si opět spravuje vlastní stavy. U pracovních položek se stav může srovnat se sadou projektu."
+        }
+      },
+      "project_labels": {
+        "title": "Štítky projektů",
+        "heading": "Štítky projektů",
+        "description": "Vytvářejte a spravujte štítky projektů na úrovni pracovního prostoru pro kategorizaci a seskupování v nástěnce a seznamu.",
+        "go_to_settings": "Přejít do nastavení",
+        "loading": "Načítání nastavení",
+        "list_heading": "Štítky projektů pracovního prostoru",
+        "try_again": "Zkuste to prosím za okamžik znovu.",
+        "toast": {
+          "enabled": "Štítky projektů jsou zapnuté",
+          "disabled": "Štítky projektů jsou vypnuté",
+          "not_saved": "Neuloženo",
+          "label_created": "Štítek vytvořen",
+          "label_updated": "Štítek aktualizován",
+          "label_deleted": "Štítek smazán"
+        },
+        "confirm": {
+          "enable_title": "Zapnout štítky projektů pracovního prostoru?",
+          "disable_title": "Vypnout štítky projektů pracovního prostoru?",
+          "enable_content": "Štítky se budou spravovat z pracovního prostoru, napříč všemi projekty.",
+          "disable_content": "Každý projekt si opět spravuje vlastní štítky."
+        }
       },
       "projects": {
         "title": "Projekty",
@@ -484,6 +525,392 @@
         "heading": "Skripty",
         "new_script": "Nový skript",
         "description": "Automatizujte své pracovní postupy pomocí vlastních skriptů a pravidel automatizace."
+      },
+      "organizational_units": {
+        "title": "Oblasti",
+        "heading": "Oblasti",
+        "description": "Seskupte lidi do oblastí a dejte každé oblasti přístup k jejím projektům v jednom kroku.",
+        "add": "Nová oblast",
+        "disabled": "Oblasti jsou v této instanci vypnuté. Správce je může zapnout nastavením ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Zkuste to za chvíli znovu.",
+        "toast": {
+          "saved": "Uloženo",
+          "not_saved": "Neuloženo",
+          "role_unchanged": "Role beze změny"
+        },
+        "list": {
+          "empty_title": "Zatím žádné oblasti.",
+          "empty_description": "Oblast seskupuje lidi, kteří spolupracují — Účetnictví, Obchod, Provoz — a v jednom kroku jim dává přístup k jejím projektům.",
+          "synced_badge": "Synchronizováno",
+          "counts": "{members, plural, one {# osoba} few {# osoby} many {# osoby} other {# osob}} · {projects, plural, one {# projekt} few {# projekty} many {# projektu} other {# projektů}}",
+          "delete_aria": "Odstranit {name}",
+          "delete_title": "Odstranit {name}?",
+          "delete_content": "Všichni v této oblasti ztratí přístup k projektům, který jim udělila. Přístup udělený jinou oblastí nebo nastavený ručně v projektu zůstane zachován.",
+          "delete_content_synced": "Všichni v této oblasti ztratí přístup k projektům, který jim udělila. Tato oblast je synchronizována z adresáře, takže ji příští synchronizace znovu vytvoří — pokud ji chcete odstranit natrvalo, odstraňte místo toho skupinu v adresáři.",
+          "delete_loading": "Odstraňování...",
+          "delete_confirm": "Odstranit oblast",
+          "toast": {
+            "deleted_title": "Oblast odstraněna",
+            "deleted_message": "Přístup k projektům udělený oblastí {name} byl odebrán. Přístup udělený jinde zůstává zachován.",
+            "not_deleted": "Neodstraněno"
+          }
+        },
+        "form": {
+          "edit_title": "Upravit oblast",
+          "name_placeholder": "Účetnictví",
+          "description_placeholder": "Za co tato oblast odpovídá",
+          "create": "Vytvořit oblast",
+          "toast": {
+            "updated": "Oblast {name} byla aktualizována.",
+            "created_title": "Vytvořeno",
+            "created": "Oblast {name} je připravena k použití.",
+            "name_taken": "Oblast s tímto názvem již existuje. Zvolte jiný název."
+          }
+        },
+        "detail": {
+          "tab_people": "Lidé",
+          "back_aria": "Zpět na všechny oblasti"
+        },
+        "members": {
+          "select_person": "Vyberte osobu",
+          "no_addable": "Všichni v tomto pracovním prostoru již v této oblasti jsou",
+          "add": "Přidat do oblasti",
+          "empty": "V této oblasti zatím nikdo není. Přidejte lidi, aby získali přístup k jejím projektům.",
+          "directory_badge": "Adresář",
+          "remove_aria": "Odebrat {name} z této oblasti",
+          "lead_note": "Vedoucí oblasti spravuje pouze samotnou oblast. Správce projektu se uděluje samostatně, v projektu.",
+          "directory_note": "Lidé označení {badge} pocházejí od vašeho poskytovatele identity. Jejich odebrání zde platí jen do příští synchronizace — místo toho je odeberte ze skupiny u zdroje. Lidé přidaní ručně nejsou synchronizací nikdy odebráni.",
+          "toast": {
+            "added_title": "Člen přidán",
+            "added": "Nyní má přístup k projektům této oblasti.",
+            "not_added": "Nepřidáno",
+            "one_lead": "Oblast může mít v jednu chvíli jen jednoho vedoucího.",
+            "removed_title": "Člen odebrán",
+            "removed": "{name} si ponechává přístup k projektům udělený mimo tuto oblast.",
+            "not_removed": "Neodebráno"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Může měnit nastavení a členy projektu",
+          "role_member_hint": "Může vytvářet a upravovat pracovní položky",
+          "role_guest_hint": "Omezený přístup",
+          "select_project": "Vyberte projekt",
+          "no_linkable": "Všechny projekty jsou již s touto oblastí propojeny",
+          "link": "Propojit projekt",
+          "empty": "Zatím nejsou propojeny žádné projekty. Propojte projekt, aby k němu členové této oblasti získali přístup.",
+          "unlink_aria": "Odpojit {name} od této oblasti",
+          "role_note": "Role osoby je nejvyšší z rolí, které jí udělují její oblasti, omezená její rolí v pracovním prostoru. Role nastavené ručně v projektu se zde nikdy nesnižují.",
+          "toast": {
+            "linked_title": "Projekt propojen",
+            "linked": "Všichni v této oblasti k němu nyní mají přístup.",
+            "not_linked": "Nepropojeno",
+            "unlinked_title": "Projekt odpojen",
+            "unlinked": "Přístup k projektu {name} udělený mimo tuto oblast zůstává zachován.",
+            "not_unlinked": "Neodpojeno"
+          }
+        },
+        "directory_sync": {
+          "heading": "Synchronizace adresáře",
+          "description": "Nechte Microsoft Entra ID udržovat členství v oblastech aktuální. Entra rozhoduje, kdo do oblasti patří; které projekty a s jakou rolí oblast zpřístupňuje, se nadále nastavuje zde.",
+          "never": "Nikdy",
+          "copy": "Kopírovat",
+          "provisioning_on": "Zřizování je zapnuté.",
+          "provisioning_off": "Zřizování je vypnuté.",
+          "no_token_warning": "Před zapnutím zřizování vydejte token — bez něj se Entra nemůže ověřit.",
+          "tenant_url": "Adresa URL tenanta",
+          "tenant_url_hint": "Vložte ji do části Zřizování → Přihlašovací údaje správce v podnikové aplikaci Entra.",
+          "secret_token": "Tajný token",
+          "token_installed": "Token začínající na {prefix}… je nainstalován. Naposledy použit {last_used}.",
+          "no_token": "Není nainstalován žádný token.",
+          "rotate_token": "Obměnit token",
+          "issue_token": "Vydat token",
+          "revoke": "Odvolat",
+          "rotate_hint": "Obměna se projeví okamžitě, takže zřizování selhává, dokud Entra nedostane nový token.",
+          "last_sync": "Poslední synchronizace",
+          "resync_now": "Synchronizovat znovu",
+          "summary_added": "{count, plural, one {# přidaná} few {# přidané} many {# přidané} other {# přidaných}}",
+          "summary_restored": "{count, plural, one {# obnovená} few {# obnovené} many {# obnovené} other {# obnovených}}",
+          "summary_withdrawn": "{count, plural, one {# odebraná} few {# odebrané} many {# odebrané} other {# odebraných}}",
+          "resync_hint": "Opětovná synchronizace znovu přehraje to, co adresář již odeslal — nevolá Entra. Použijte ji po pozvání někoho, koho adresář již dříve odeslal.",
+          "unresolved_heading": "Odesláno adresářem, ale není v tomto pracovním prostoru ({count})",
+          "unresolved_empty": "Všichni, které adresář odeslal, jsou aktivními členy tohoto pracovního prostoru.",
+          "not_workspace_member": "Není členem pracovního prostoru",
+          "inactive_in_directory": "Neaktivní v adresáři",
+          "unresolved_hint": "Pozvěte tyto lidi do pracovního prostoru a automaticky se připojí ke svým oblastem, nebo je odeberte ze skupiny v Entra.",
+          "auto_create_title": "Vytvářet oblasti pro nové skupiny",
+          "auto_create_hint": "Když je vypnuto, adresář může plnit jen oblasti, které jste vytvořili a pojmenovali shodně.",
+          "auto_create_saved": "Uloženo, jak se zachází s novými skupinami z adresáře.",
+          "deprovision_title": "Povolit adresáři odebírat lidi",
+          "deprovision_hint": "Když je vypnuto, synchronizace pouze přidává. Lidé přidaní ručně nejsou odebráni v žádném případě.",
+          "deprovision_saved": "Uloženo, jak se zachází s odebráními z adresáře.",
+          "toast": {
+            "copied_title": "Zkopírováno",
+            "copied": "{label} zkopírováno do schránky.",
+            "not_copied_title": "Nepodařilo se zkopírovat",
+            "not_copied": "Vyberte a zkopírujte {label} ručně.",
+            "load_failed_title": "Nepodařilo se načíst připojení k adresáři",
+            "load_failed": "Zkuste to prosím za chvíli znovu.",
+            "save_failed": "Změnu se nepodařilo uložit. Zkuste to prosím znovu.",
+            "token_issued_title": "Token vydán",
+            "token_issued": "Zkopírujte ho teď — zobrazí se pouze tentokrát.",
+            "token_not_issued_title": "Nevydáno",
+            "token_not_issued": "Token se nepodařilo vytvořit.",
+            "token_revoked_title": "Token odvolán",
+            "token_revoked": "Zřizování je vypnuté, dokud nebude vydán nový token.",
+            "token_not_revoked_title": "Neodvoláno",
+            "token_not_revoked": "Token se nepodařilo odvolat.",
+            "resynced_title": "Znovu synchronizováno",
+            "resynced": "{added, plural, one {# přidaná} few {# přidané} many {# přidané} other {# přidaných}}, {withdrawn, plural, one {# odebraná} few {# odebrané} many {# odebrané} other {# odebraných}}.",
+            "not_resynced_title": "Nesynchronizováno",
+            "not_resynced": "Opětovnou synchronizaci se nepodařilo dokončit."
+          }
+        },
+        "work": {
+          "tab": "Práce",
+          "inbox": "Doručená pošta",
+          "in_progress": "Probíhá",
+          "empty_inbox": "Nic nečeká. Pracovní položky, které tato oblast přebírá, se zde zobrazují, dokud se jich někdo neujme.",
+          "empty_in_progress": "Nikdo právě nepracuje na ničem pro tuto oblast.",
+          "claim": "Převzít",
+          "assign": "Přiřadit uživateli…",
+          "return_to_queue": "Vrátit do fronty",
+          "overdue": "Po termínu",
+          "unassigned": "Nikdo nepřiřazen",
+          "executor_count": "{count, plural, one {# pracovní položka} few {# pracovní položky} many {# pracovní položky} other {# pracovních položek}}",
+          "age": {
+            "just_now": "Právě teď",
+            "minutes": "{count, plural, one {# minuta} few {# minuty} many {# minuty} other {# minut}}",
+            "hours": "{count, plural, one {# hodina} few {# hodiny} many {# hodiny} other {# hodin}}",
+            "days": "{count, plural, one {# den} few {# dny} many {# dne} other {# dní}}"
+          },
+          "reason": {
+            "new_item": "Nově převzato",
+            "awaiting_coordinator": "Čeká na koordinátora",
+            "awaiting_claim": "Čeká, až si to někdo převezme",
+            "no_eligible_member": "Nikdo v této oblasti to nemůže převzít",
+            "executor_unavailable": "Vykonavatel není k dispozici",
+            "manually_returned": "Vráceno do fronty"
+          },
+          "assign_modal": {
+            "title": "Přiřadit tuto pracovní položku",
+            "search": "Hledat podle jména nebo e-mailu",
+            "no_candidates": "Nikdo v této oblasti zatím nemůže převzít práci. Přidejte prosím nejprve osoby do oblasti.",
+            "assigning": "Přiřazování…",
+            "open_items": "{count, plural, one {# otevřená položka} few {# otevřené položky} many {# otevřené položky} other {# otevřených položek}}",
+            "unavailable": "Nepřítomen",
+            "opted_out": "Nepřijímá novou práci"
+          },
+          "toast": {
+            "claimed_title": "Pracovní položka převzata",
+            "claimed": "Nyní patří Vám a opustila doručenou poštu této oblasti.",
+            "not_claimed": "Nepřevzato",
+            "assigned_title": "Pracovní položka přiřazena",
+            "assigned": "Nyní se o ni stará {name}.",
+            "not_assigned": "Nepřiřazeno",
+            "returned_title": "Vráceno do fronty",
+            "returned": "Znovu čeká na někoho.",
+            "not_returned": "Nevráceno",
+            "transferred_title": "Přesunuto do jiné oblasti",
+            "transferred": "{name} je za to nyní odpovědný.",
+            "not_transferred": "Nepřesunuto"
+          },
+          "attention": "Vyžaduje pozornost",
+          "attention_overdue_date": "Po termínu",
+          "attention_suspended": "Pozastaveno",
+          "attention_unavailable": "Vykonavatel není k dispozici",
+          "attention_no_date": "Bez termínu",
+          "empty_attention": "Teď nic nevyžaduje pozornost.",
+          "decisions": "Rozhodnutí",
+          "empty_decisions": "Zatím žádná rozhodnutí o přidělení.",
+          "decision_supersedes": "Nahradilo dřívější rozhodnutí",
+          "decision_outcome": {
+            "assigned": "Přiřazeno",
+            "queued": "Ve frontě",
+            "allocation_failed": "Nelze přiřadit",
+            "rejected": "Odmítnuto"
+          },
+          "transfer": "Přesunout do jiné oblasti",
+          "transfer_modal": {
+            "title": "Přesunout do jiné oblasti",
+            "search": "Hledat oblasti",
+            "no_units": "Žádná jiná oblast nepokrývá tento projekt.",
+            "transferring": "Přesouvání…"
+          },
+          "suggestion": "Návrh: {name}",
+          "unavailable_until": "Nepřítomen do {until}",
+          "unavailable_open": "Nepřítomen",
+          "executor_away": "Nepřítomen",
+          "process_progress": "{done}/{total}"
+        },
+        "executive": {
+          "title": "Manažerský přehled",
+          "heading": "Práce podle oblasti",
+          "description": "Jak práce postupuje v každé oblasti a v běžících procesech.",
+          "link": "Manažerský přehled",
+          "load_failed": "Manažerský přehled se nepodařilo načíst.",
+          "empty": "Zatím žádné oblasti.",
+          "hidden_count": "{count, plural, one {# pracovní položka je v projektu, který nemůžete otevřít} few {# pracovní položky jsou v projektech, které nemůžete otevřít} many {# pracovní položky je v projektech, které nemůžete otevřít} other {# pracovních položek je v projektech, které nemůžete otevřít}}",
+          "period": {
+            "label": "Období",
+            "7d": "Posledních 7 dní",
+            "30d": "Posledních 30 dní",
+            "90d": "Posledních 90 dní"
+          },
+          "indicators": {
+            "area": "Oblast",
+            "backlog": "Backlog",
+            "queued": "Ve frontě",
+            "assignment_overdue": "Přiřazení po termínu",
+            "target_overdue": "Cílové datum po termínu",
+            "queue_age_p50": "Stáří fronty p50",
+            "queue_age_p90": "Stáří fronty p90",
+            "throughput": "Průtok",
+            "cycle_time_p50": "Čas cyklu p50",
+            "cycle_time_p90": "Čas cyklu p90",
+            "concentration_top3": "Koncentrace top 3",
+            "auto_assign_kept_ratio": "Zachované automatické přiřazení"
+          },
+          "processes": {
+            "heading": "Procesy",
+            "running": "Běžící",
+            "completed": "Dokončené v období",
+            "lead_time_p50": "Průběžná doba p50",
+            "lead_time_p90": "Průběžná doba p90",
+            "empty": "V tomto období neběží ani neskončil žádný proces.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Není co zobrazit. Položky v projektech, které nemůžete otevřít, se počítají, ne vypisují.",
+            "close": "Zavřít"
+          }
+        },
+        "errors": {
+          "unit_not_found": "Tato oblast už neexistuje.",
+          "name_required": "Oblast potřebuje název.",
+          "slug_taken": "Oblast s tímto názvem už existuje.",
+          "members_not_in_workspace": "Každý přidaný člověk musí být aktivním členem tohoto pracovního prostoru.",
+          "membership_not_found": "Tento člověk už v této oblasti není.",
+          "lead_already_set": "Tato oblast už má vedoucího.",
+          "unit_not_in_workspace": "Tato oblast do tohoto pracovního prostoru nepatří.",
+          "project_required": "Vyberte projekt, který chcete připojit.",
+          "invalid_role": "Tuto roli oblast udělit nemůže.",
+          "project_not_in_workspace": "Tento projekt do tohoto pracovního prostoru nepatří.",
+          "link_not_found": "Tento projekt už není k této oblasti připojen.",
+          "work_item_not_found": "Tato pracovní položka už neexistuje.",
+          "work_item_has_no_unit": "Za tuto pracovní položku neodpovídá žádná oblast.",
+          "invalid_assignment_mode": "To není režim přidělování.",
+          "unit_not_covering_project": "Tato oblast není propojena s tímto projektem.",
+          "assignment_mode_not_allowed": "Tato oblast tento způsob přidělování práce nepovoluje.",
+          "executor_not_eligible": "Tato osoba tuto pracovní položku převzít nemůže.",
+          "work_item_already_claimed": "Tuto pracovní položku si už převzal někdo jiný.",
+          "decision_stale": "Tato pracovní položka se mezitím změnila. Načtěte ji znovu a zkuste to znovu.",
+          "invalid_routing_transition": "Tato pracovní položka se ze svého stavu do toho přejít nemůže.",
+          "directory_workspace_not_found": "Tento pracovní prostor už neexistuje.",
+          "directory_token_required": "Před zapnutím provisioningu z adresáře vydejte token SCIM.",
+          "not_unit_coordinator": "Toto může udělat pouze koordinátor této oblasti nebo správce pracovního prostoru.",
+          "coordinator_already_set": "Tato osoba již tuto oblast koordinuje.",
+          "coordinator_not_found": "Koordinátor nenalezen.",
+          "not_the_executor": "Toto může udělat pouze aktuální vykonavatel, koordinátor této oblasti nebo správce pracovního prostoru.",
+          "coordinator_must_be_member": "Koordinátor musí být aktivním členem nebo správcem pracovního prostoru.",
+          "invalid_queue_filter": "Tento filtr fronty není rozpoznán.",
+          "public_api_disabled": "Automatizační API je v této instanci vypnuté.",
+          "idempotency_key_required": "Tento požadavek vyžaduje hlavičku Idempotency-Key.",
+          "idempotency_payload_mismatch": "Tento klíč už byl použit pro jiný požadavek.",
+          "operation_in_progress": "Shodný požadavek stále probíhá. Zkuste to prosím za chvíli znovu.",
+          "external_binding_conflict": "Tento externí klíč už odkazuje na jinou pracovní položku.",
+          "assignees_not_allowed_here": "O tom, kdo tuto pracovní položku převezme, rozhoduje oblast, takže tento požadavek nemůže nastavit přiřazené osoby.",
+          "if_match_required": "Tento požadavek vyžaduje hlavičku If-Match s aktuálním rozhodnutím.",
+          "process_projection_disabled": "Projekce procesů je v této instanci vypnutá.",
+          "completion_manual_only": "Tuto pracovní položku může dokončit jen člověk.",
+          "internal_error": "Něco se pokazilo. Operace byla zaznamenána jako neúspěšná.",
+          "availability_window_not_found": "Toto období nedostupnosti se nenašlo.",
+          "availability_invalid_interval": "Konec období nedostupnosti musí být po jeho začátku.",
+          "availability_from_required": "Období nedostupnosti potřebuje začátek.",
+          "workspace_member_not_found": "Tato osoba není členem tohoto workspace.",
+          "allocation_limit_forbidden": "Osobní limit práce může nastavit jen koordinátor nebo správce workspace.",
+          "not_availability_manager": "Toto může udělat jen koordinátor jedné z oblastí této osoby, nebo správce workspace."
+        },
+        "coordinators": {
+          "tab": "Koordinátoři",
+          "select_person": "Vyberte osobu",
+          "no_addable": "Každý, kdo může tuto oblast koordinovat, to už dělá",
+          "add": "Přidat koordinátora",
+          "empty": "Tuto oblast zatím nikdo nekoordinuje. Koordinátor obsluhuje frontu, aniž by do oblasti musel patřit.",
+          "remove_aria": "Přestat, aby {name} koordinoval tuto oblast",
+          "note": "Koordinátor obsluhuje frontu oblasti. Nemusí do ní patřit. Hosté workspace nemohou být koordinátory.",
+          "toast": {
+            "added_title": "Koordinátor přidán",
+            "added": "Nyní může obsluhovat frontu této oblasti.",
+            "not_added": "Nepřidáno",
+            "removed_title": "Koordinátor odebrán",
+            "removed": "{name} už tuto oblast nekoordinuje.",
+            "not_removed": "Neodebráno"
+          }
+        },
+        "policy": {
+          "tab": "Pravidla",
+          "heading": "Jak tato oblast přiděluje práci",
+          "description": "Výchozí nastavení oblasti, které projekt může přepsat.",
+          "scope_area": "Výchozí oblasti",
+          "scope_project": "Výjimka pro {name}",
+          "default_mode": "Výchozí režim",
+          "allowed_modes": "Povolené režimy",
+          "sla_seconds": "SLA přidělení (sekundy)",
+          "sla_hint": "Jak dlouho může položka zůstat nepřiřazená, než se upozorní koordinátoři. Nechte prázdné, pokud nechcete lhůtu.",
+          "max_open": "Maximum otevřených položek na osobu",
+          "max_open_hint": "Nechte prázdné, pokud nechcete strop.",
+          "save": "Uložit pravidla",
+          "mode": {
+            "manual": "Koordinátor přiděluje",
+            "self_claim": "Lidé si práci berou sami",
+            "least_loaded": "Člen s nejmenší zátěží",
+            "explicit": "Jmenovaná osoba"
+          },
+          "toast": {
+            "saved_title": "Pravidla uložena",
+            "saved": "Nová práce se bude řídit těmito pravidly.",
+            "not_saved": "Neuloženo"
+          }
+        },
+        "my_areas": {
+          "title": "Moje oblasti",
+          "heading": "Moje oblasti",
+          "description": "Oblasti, do kterých patříte, a práce čekající v každé z nich.",
+          "empty": "Zatím nepatříte do žádné oblasti.",
+          "select": "Vyberte oblast"
+        },
+        "availability": {
+          "title": "Nepřítomnost",
+          "help": "Nepřítomnost zabrání automatickému přidělení, aby vás vybralo. Neodebere to, co už nesete.",
+          "empty": "Nic není zaznamenáno.",
+          "from": "Od",
+          "until": "Do",
+          "add": "Přidat",
+          "added": "Zaznamenáno",
+          "not_added": "Nepodařilo se zaznamenat",
+          "removed": "Odebráno",
+          "not_removed": "Nepodařilo se odebrat",
+          "remove_aria": "Odebrat tuto nepřítomnost",
+          "range": "{from} až {until}",
+          "open_ended": "Od {from}, bez data návratu",
+          "reason": {
+            "vacation": "Dovolená",
+            "leave": "Volno",
+            "other": "Jiné"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Přijímá novou práci z této oblasti",
+          "accepts_new_work_help": "Vypnuto znamená, že automatické přidělení je tady přeskočí. Co už nesou, zůstává a stále jim lze něco přidělit jménem.",
+          "max_open_items": "Nejvíce otevřených položek najednou",
+          "max_open_items_help": "Automatické přidělení se zastaví na tomto čísle. Prázdné pole znamená limit oblasti.",
+          "no_limit": "Bez limitu",
+          "saved": "Uloženo",
+          "not_saved": "Nepodařilo se uložit",
+          "limit_invalid": "Musí to být celé číslo jedna nebo více.",
+          "open_aria": "Nastavení práce pro {name}"
+        }
       }
     },
     "empty_state": {

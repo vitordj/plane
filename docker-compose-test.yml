@@ -72,7 +72,9 @@ services:
       retries: 10
 
   test-minio:
-    image: minio/minio
+    # Pinned for the same reason as the deployment compose: a moving :latest
+    # makes a test run's verdict depend on the day it ran.
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
     networks:
       - test_env
     env_file:
@@ -119,9 +121,13 @@ services:
       # Magic-link tests mock the celery delay but the view first checks that
       # EMAIL_HOST is configured. Set a placeholder so the check passes.
       EMAIL_HOST: test-smtp.invalid
+    # The whole repository, not just apps/api: four Orca test modules resolve
+    # REPO_ROOT as parents[6] of their own file to read packages/ and the i18n
+    # catalogue, and with apps/api mounted at /code that index does not exist,
+    # so collection aborts before a single test runs.
     volumes:
-      - ./apps/api:/code
-    working_dir: /code
+      - .:/repo
+    working_dir: /repo/apps/api
     depends_on:
       test-db:
         condition: service_healthy

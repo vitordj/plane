@@ -40,6 +40,8 @@ function LabelsSettingsPage() {
   const labelStore = useCustomProjectLabel();
   const { t } = useTranslation();
 
+  const WS_LABELS = "project_settings.labels.workspace_labels";
+
   const [loadingProperty, setLoadingProperty] = useState(true);
 
   useEffect(() => {
@@ -107,14 +109,13 @@ function LabelsSettingsPage() {
       });
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Success",
-        message: `Workspace Project Labels ${!isProjectUsingWorkspaceLabels ? "enabled" : "disabled"} successfully for this project.`,
+        title: t(!isProjectUsingWorkspaceLabels ? `${WS_LABELS}.toast.enabled` : `${WS_LABELS}.toast.disabled`),
       });
     } catch (_e) {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error",
-        message: "Failed to update project labels setting.",
+        title: t(`${WS_LABELS}.toast.not_saved`),
+        message: t(`${WS_LABELS}.try_again`),
       });
     }
   };
@@ -125,20 +126,16 @@ function LabelsSettingsPage() {
       <div className="flex w-full flex-col gap-6">
         {isLocalEditDisabled && (
           <SettingsHeading
-            title={t("project_settings.labels.heading") || "Labels"}
-            description={
-              t("project_settings.labels.description") || "Define and customize labels to categorize your work items."
-            }
+            title={t("project_settings.labels.heading")}
+            description={t("project_settings.labels.description")}
           />
         )}
 
         {isWorkspaceLabelsEnabled && (
           <div className="bg-custom-background-90 flex items-center justify-between rounded-xl border border-subtle p-4">
             <div>
-              <h4 className="text-sm text-custom-text-100 font-semibold">Use Workspace Project Labels</h4>
-              <p className="text-xs text-custom-text-300">
-                When enabled, workspace-level project labels will be assigned and shown on this project card.
-              </p>
+              <h4 className="text-sm text-custom-text-100 font-semibold">{t(`${WS_LABELS}.title`)}</h4>
+              <p className="text-xs text-custom-text-300">{t(`${WS_LABELS}.description`)}</p>
             </div>
             {!loadingProperty && (
               <ToggleSwitch
@@ -155,11 +152,8 @@ function LabelsSettingsPage() {
             <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 text-sm mb-6 flex items-start gap-2.5 rounded-md p-3">
               <AlertTriangle className="mt-0.5 size-4 shrink-0" />
               <div className="flex flex-col gap-0.5">
-                <span className="font-semibold">Workspace Project Labels Active</span>
-                <span className="text-xs opacity-90">
-                  This project is currently using workspace-level project labels. Editing is disabled. Turn off the
-                  toggle above to customize labels locally.
-                </span>
+                <span className="font-semibold">{t(`${WS_LABELS}.active_title`)}</span>
+                <span className="text-xs opacity-90">{t(`${WS_LABELS}.active_description`)}</span>
               </div>
             </div>
           )}

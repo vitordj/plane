@@ -257,9 +257,50 @@
       },
       "project_states": {
         "title": "États du projet",
-        "heading": "Consultez la vue d’ensemble de la progression pour tous les projets.",
-        "description": "Les États de projet sont une fonctionnalité exclusive à Plane pour suivre la progression de tous vos projets par n’importe quelle propriété de projet.",
-        "go_to_settings": "Aller aux paramètres"
+        "heading": "États de projet",
+        "description": "Classez et suivez le cycle de vie des projets de façon cohérente dans tout l’espace de travail.",
+        "go_to_settings": "Aller aux paramètres",
+        "loading": "Chargement des paramètres",
+        "list_heading": "États de projet de l’espace de travail",
+        "try_again": "Réessayez dans un instant.",
+        "toast": {
+          "enabled": "États de projet activés",
+          "disabled": "États de projet désactivés",
+          "not_saved": "Non enregistré",
+          "state_created": "État créé",
+          "state_updated": "État mis à jour",
+          "state_deleted": "État supprimé",
+          "default_set": "État par défaut mis à jour"
+        },
+        "confirm": {
+          "enable_title": "Activer les états de projet de l’espace de travail ?",
+          "disable_title": "Désactiver les états de projet de l’espace de travail ?",
+          "enable_content": "Les états seront gérés depuis l’espace de travail, pour tous les projets. Les éléments de travail peuvent voir leur état aligné sur celui de l’espace de travail.",
+          "disable_content": "Chaque projet gère de nouveau ses propres états. Les éléments de travail peuvent voir leur état aligné sur celui du projet."
+        }
+      },
+      "project_labels": {
+        "title": "Étiquettes de projet",
+        "heading": "Étiquettes de projet",
+        "description": "Créez et gérez des étiquettes de projet au niveau de l’espace de travail pour la catégorisation et le regroupement dans les vues tableau et liste.",
+        "go_to_settings": "Aller aux paramètres",
+        "loading": "Chargement des paramètres",
+        "list_heading": "Étiquettes de projet de l’espace de travail",
+        "try_again": "Réessayez dans un instant.",
+        "toast": {
+          "enabled": "Étiquettes de projet activées",
+          "disabled": "Étiquettes de projet désactivées",
+          "not_saved": "Non enregistré",
+          "label_created": "Étiquette créée",
+          "label_updated": "Étiquette mise à jour",
+          "label_deleted": "Étiquette supprimée"
+        },
+        "confirm": {
+          "enable_title": "Activer les étiquettes de projet de l’espace de travail ?",
+          "disable_title": "Désactiver les étiquettes de projet de l’espace de travail ?",
+          "enable_content": "Les étiquettes seront gérées depuis l’espace de travail, pour tous les projets.",
+          "disable_content": "Chaque projet gère de nouveau ses propres étiquettes."
+        }
       },
       "projects": {
         "title": "Projets",
@@ -484,6 +525,392 @@
         "heading": "Scripts",
         "new_script": "Nouveau script",
         "description": "Automatisez vos flux de travail avec des scripts personnalisés et des règles d’automatisation."
+      },
+      "organizational_units": {
+        "title": "Domaines",
+        "heading": "Domaines",
+        "description": "Regroupez les personnes en domaines et donnez à chaque domaine l'accès à ses projets en une seule étape.",
+        "add": "Nouveau domaine",
+        "disabled": "Les domaines sont désactivés sur cette instance. Un administrateur peut les activer en définissant ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Réessayez dans un instant.",
+        "toast": {
+          "saved": "Enregistré",
+          "not_saved": "Non enregistré",
+          "role_unchanged": "Rôle inchangé"
+        },
+        "list": {
+          "empty_title": "Aucun domaine pour le moment.",
+          "empty_description": "Un domaine regroupe des personnes qui travaillent ensemble — Conformité, Ventes, Back-office — et leur donne accès à ses projets en une seule étape.",
+          "synced_badge": "Synchronisé",
+          "counts": "{members, plural, one {# personne} many {# personnes} other {# personnes}} · {projects, plural, one {# projet} many {# projets} other {# projets}}",
+          "delete_aria": "Supprimer {name}",
+          "delete_title": "Supprimer {name} ?",
+          "delete_content": "Toutes les personnes de ce domaine perdent l’accès aux projets qu’il leur accordait. L’accès accordé par un autre domaine, ou défini manuellement sur un projet, est conservé.",
+          "delete_content_synced": "Toutes les personnes de ce domaine perdent l’accès aux projets qu’il leur accordait. Ce domaine est synchronisé depuis votre annuaire : la prochaine synchronisation le recréera. Pour le supprimer définitivement, supprimez plutôt le groupe dans l’annuaire.",
+          "delete_loading": "Suppression...",
+          "delete_confirm": "Supprimer le domaine",
+          "toast": {
+            "deleted_title": "Domaine supprimé",
+            "deleted_message": "L’accès aux projets accordé par {name} a été retiré. L’accès accordé ailleurs est conservé.",
+            "not_deleted": "Non supprimé"
+          }
+        },
+        "form": {
+          "edit_title": "Modifier le domaine",
+          "name_placeholder": "Conformité",
+          "description_placeholder": "Ce dont ce domaine est responsable",
+          "create": "Créer le domaine",
+          "toast": {
+            "updated": "{name} a été mis à jour.",
+            "created_title": "Créé",
+            "created": "{name} est prêt à l’emploi.",
+            "name_taken": "Un domaine portant ce nom existe déjà. Choisissez un autre nom."
+          }
+        },
+        "detail": {
+          "tab_people": "Personnes",
+          "back_aria": "Retour à tous les domaines"
+        },
+        "members": {
+          "select_person": "Sélectionner une personne",
+          "no_addable": "Tout le monde dans cet espace de travail fait déjà partie de ce domaine",
+          "add": "Ajouter au domaine",
+          "empty": "Personne ne fait encore partie de ce domaine. Ajoutez des personnes pour leur donner accès à ses projets.",
+          "directory_badge": "Annuaire",
+          "remove_aria": "Retirer {name} de ce domaine",
+          "lead_note": "Le responsable d’un domaine gère le domaine lui-même. Le rôle d’administrateur de projet est accordé séparément, sur le projet.",
+          "directory_note": "Les personnes marquées {badge} proviennent de votre fournisseur d’identité. Les retirer ici ne dure que jusqu’à la prochaine synchronisation — retirez-les plutôt du groupe en amont. Les personnes que vous ajoutez manuellement ne sont jamais retirées par une synchronisation.",
+          "toast": {
+            "added_title": "Membre ajouté",
+            "added": "Cette personne a désormais accès aux projets de ce domaine.",
+            "not_added": "Non ajouté",
+            "one_lead": "Un domaine ne peut avoir qu’un seul responsable à la fois.",
+            "removed_title": "Membre retiré",
+            "removed": "{name} conserve tout accès aux projets accordé en dehors de ce domaine.",
+            "not_removed": "Non retiré"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Peut modifier les paramètres et les membres du projet",
+          "role_member_hint": "Peut créer et modifier des éléments de travail",
+          "role_guest_hint": "Accès limité",
+          "select_project": "Sélectionner un projet",
+          "no_linkable": "Tous les projets sont déjà liés à ce domaine",
+          "link": "Lier un projet",
+          "empty": "Aucun projet lié pour le moment. Liez-en un pour donner aux membres de ce domaine l’accès à celui-ci.",
+          "unlink_aria": "Délier {name} de ce domaine",
+          "role_note": "Le rôle d’une personne est le plus élevé accordé par ses domaines, plafonné par son rôle dans l’espace de travail. Les rôles définis manuellement sur un projet ne sont jamais abaissés ici.",
+          "toast": {
+            "linked_title": "Projet lié",
+            "linked": "Toutes les personnes de ce domaine y ont désormais accès.",
+            "not_linked": "Non lié",
+            "unlinked_title": "Projet délié",
+            "unlinked": "L’accès à {name} accordé en dehors de ce domaine est conservé.",
+            "not_unlinked": "Non délié"
+          }
+        },
+        "directory_sync": {
+          "heading": "Synchronisation de l’annuaire",
+          "description": "Laissez Microsoft Entra ID tenir à jour la composition des domaines. Entra décide qui appartient à un domaine ; les projets qu’un domaine accorde, et avec quel rôle, restent définis ici.",
+          "never": "Jamais",
+          "copy": "Copier",
+          "provisioning_on": "L’approvisionnement est activé.",
+          "provisioning_off": "L’approvisionnement est désactivé.",
+          "no_token_warning": "Émettez un jeton avant d’activer l’approvisionnement — Entra ne peut pas s’authentifier sans jeton.",
+          "tenant_url": "URL du locataire",
+          "tenant_url_hint": "Collez cette valeur dans Approvisionnement → Informations d’identification d’administrateur dans l’application d’entreprise Entra.",
+          "secret_token": "Jeton secret",
+          "token_installed": "Un jeton commençant par {prefix}… est installé. Dernière utilisation : {last_used}.",
+          "no_token": "Aucun jeton n’est installé.",
+          "rotate_token": "Renouveler le jeton",
+          "issue_token": "Émettre un jeton",
+          "revoke": "Révoquer",
+          "rotate_hint": "Le renouvellement prend effet immédiatement : l’approvisionnement échoue donc jusqu’à ce qu’Entra reçoive le nouveau jeton.",
+          "last_sync": "Dernière synchronisation",
+          "resync_now": "Resynchroniser maintenant",
+          "summary_added": "{count, plural, one {# ajouté} many {# ajoutés} other {# ajoutés}}",
+          "summary_restored": "{count, plural, one {# rétabli} many {# rétablis} other {# rétablis}}",
+          "summary_withdrawn": "{count, plural, one {# retiré} many {# retirés} other {# retirés}}",
+          "resync_hint": "La resynchronisation rejoue ce que l’annuaire a déjà envoyé — elle n’appelle pas Entra. Utilisez-la après avoir invité une personne que l’annuaire avait déjà transmise.",
+          "unresolved_heading": "Transmis par l’annuaire, absents de cet espace de travail ({count})",
+          "unresolved_empty": "Toutes les personnes envoyées par l’annuaire sont des membres actifs de cet espace de travail.",
+          "not_workspace_member": "Pas membre de l’espace de travail",
+          "inactive_in_directory": "Inactif dans l’annuaire",
+          "unresolved_hint": "Invitez ces personnes dans l’espace de travail et elles rejoindront automatiquement leurs domaines, ou retirez-les du groupe dans Entra.",
+          "auto_create_title": "Créer des domaines pour les nouveaux groupes",
+          "auto_create_hint": "Si cette option est désactivée, l’annuaire ne peut remplir que les domaines que vous avez créés et nommés à l’identique.",
+          "auto_create_saved": "Le traitement des nouveaux groupes de l’annuaire a été enregistré.",
+          "deprovision_title": "Laisser l’annuaire retirer des personnes",
+          "deprovision_hint": "Si cette option est désactivée, la synchronisation ne fait qu’ajouter. Les personnes que vous avez ajoutées manuellement ne sont jamais retirées, dans un cas comme dans l’autre.",
+          "deprovision_saved": "Le traitement des retraits provenant de l’annuaire a été enregistré.",
+          "toast": {
+            "copied_title": "Copié",
+            "copied": "{label} copié dans le presse-papiers.",
+            "not_copied_title": "Copie impossible",
+            "not_copied": "Sélectionnez et copiez manuellement le champ {label}.",
+            "load_failed_title": "Impossible de charger la connexion à l’annuaire",
+            "load_failed": "Veuillez réessayer dans un instant.",
+            "save_failed": "La modification n’a pas pu être enregistrée. Veuillez réessayer.",
+            "token_issued_title": "Jeton émis",
+            "token_issued": "Copiez-le maintenant — il ne sera affiché qu’une seule fois.",
+            "token_not_issued_title": "Non émis",
+            "token_not_issued": "Le jeton n’a pas pu être créé.",
+            "token_revoked_title": "Jeton révoqué",
+            "token_revoked": "L’approvisionnement est désactivé jusqu’à l’émission d’un nouveau jeton.",
+            "token_not_revoked_title": "Non révoqué",
+            "token_not_revoked": "Le jeton n’a pas pu être révoqué.",
+            "resynced_title": "Resynchronisé",
+            "resynced": "{added, plural, one {# ajouté} many {# ajoutés} other {# ajoutés}}, {withdrawn, plural, one {# retiré} many {# retirés} other {# retirés}}.",
+            "not_resynced_title": "Non resynchronisé",
+            "not_resynced": "La resynchronisation n’a pas pu être effectuée."
+          }
+        },
+        "work": {
+          "tab": "Travail",
+          "inbox": "Boîte de réception",
+          "in_progress": "En cours",
+          "empty_inbox": "Rien n’est en attente. Les éléments de travail pris en charge par ce domaine apparaissent ici jusqu’à ce que quelqu’un s’en occupe.",
+          "empty_in_progress": "Personne ne travaille sur quoi que ce soit pour ce domaine actuellement.",
+          "claim": "Le prendre",
+          "assign": "Attribuer à…",
+          "return_to_queue": "Remettre dans la file",
+          "overdue": "En retard",
+          "unassigned": "Sans responsable",
+          "executor_count": "{count, plural, one {# élément de travail} many {# élément de travail} other {# éléments de travail}}",
+          "age": {
+            "just_now": "À l’instant",
+            "minutes": "{count, plural, one {# minute} many {# minute} other {# minutes}}",
+            "hours": "{count, plural, one {# heure} many {# heure} other {# heures}}",
+            "days": "{count, plural, one {# jour} many {# jour} other {# jours}}"
+          },
+          "reason": {
+            "new_item": "Nouvellement pris en charge",
+            "awaiting_coordinator": "En attente d’un coordinateur",
+            "awaiting_claim": "En attente que quelqu’un le prenne",
+            "no_eligible_member": "Personne de ce domaine ne peut le prendre",
+            "executor_unavailable": "Son exécutant n’est pas disponible",
+            "manually_returned": "Remis dans la file"
+          },
+          "assign_modal": {
+            "title": "Attribuer cet élément de travail",
+            "search": "Rechercher par nom ou adresse e-mail",
+            "no_candidates": "Personne de ce domaine ne peut encore prendre de travail. Ajoutez d’abord des personnes au domaine.",
+            "assigning": "Attribution en cours…",
+            "open_items": "{count, plural, one {# élément ouvert} many {# élément ouvert} other {# éléments ouverts}}",
+            "unavailable": "Absent",
+            "opted_out": "N’accepte plus de nouveau travail"
+          },
+          "toast": {
+            "claimed_title": "Élément de travail pris",
+            "claimed": "Il est à vous désormais et a quitté la boîte de réception de ce domaine.",
+            "not_claimed": "Non pris",
+            "assigned_title": "Élément de travail attribué",
+            "assigned": "{name} s’en occupe désormais.",
+            "not_assigned": "Non attribué",
+            "returned_title": "Remis dans la file",
+            "returned": "Il attend de nouveau quelqu’un.",
+            "not_returned": "Non remis",
+            "transferred_title": "Déplacé vers une autre zone",
+            "transferred": "{name} en est désormais responsable.",
+            "not_transferred": "Non déplacé"
+          },
+          "attention": "À traiter",
+          "attention_overdue_date": "Date d’échéance dépassée",
+          "attention_suspended": "En pause",
+          "attention_unavailable": "Exécutant indisponible",
+          "attention_no_date": "Sans date d’échéance",
+          "empty_attention": "Rien ne demande d’attention pour le moment.",
+          "decisions": "Décisions",
+          "empty_decisions": "Aucune décision d’affectation pour le moment.",
+          "decision_supersedes": "A remplacé une décision précédente",
+          "decision_outcome": {
+            "assigned": "Attribué",
+            "queued": "En file",
+            "allocation_failed": "Attribution impossible",
+            "rejected": "Refusé"
+          },
+          "transfer": "Déplacer vers une autre zone",
+          "transfer_modal": {
+            "title": "Déplacer vers une autre zone",
+            "search": "Rechercher des zones",
+            "no_units": "Aucune autre zone ne couvre ce projet.",
+            "transferring": "Déplacement…"
+          },
+          "suggestion": "Suggestion : {name}",
+          "unavailable_until": "Absent jusqu’au {until}",
+          "unavailable_open": "Absent",
+          "executor_away": "Absent",
+          "process_progress": "{done}/{total}"
+        },
+        "executive": {
+          "title": "Vue exécutive",
+          "heading": "Travail par domaine",
+          "description": "Comment le travail avance dans chaque domaine et dans les processus en cours.",
+          "link": "Vue exécutive",
+          "load_failed": "Impossible de charger la vue exécutive.",
+          "empty": "Aucun domaine pour le moment.",
+          "hidden_count": "{count, plural, one {# élément de travail se trouve dans un projet que vous ne pouvez pas ouvrir} many {# éléments de travail se trouvent dans des projets que vous ne pouvez pas ouvrir} other {# éléments de travail se trouvent dans des projets que vous ne pouvez pas ouvrir}}",
+          "period": {
+            "label": "Période",
+            "7d": "7 derniers jours",
+            "30d": "30 derniers jours",
+            "90d": "90 derniers jours"
+          },
+          "indicators": {
+            "area": "Domaine",
+            "backlog": "Backlog",
+            "queued": "En file",
+            "assignment_overdue": "Attribution en retard",
+            "target_overdue": "Date cible dépassée",
+            "queue_age_p50": "Ancienneté de la file p50",
+            "queue_age_p90": "Ancienneté de la file p90",
+            "throughput": "Débit",
+            "cycle_time_p50": "Temps de cycle p50",
+            "cycle_time_p90": "Temps de cycle p90",
+            "concentration_top3": "Concentration des 3 premiers",
+            "auto_assign_kept_ratio": "Attribution automatique conservée"
+          },
+          "processes": {
+            "heading": "Processus",
+            "running": "En cours",
+            "completed": "Terminés sur la période",
+            "lead_time_p50": "Délai d'exécution p50",
+            "lead_time_p90": "Délai d'exécution p90",
+            "empty": "Aucun processus en cours ou terminé sur cette période.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Rien à afficher. Les éléments des projets que vous ne pouvez pas ouvrir sont comptés, pas listés.",
+            "close": "Fermer"
+          }
+        },
+        "errors": {
+          "unit_not_found": "Cette zone n’existe plus.",
+          "name_required": "Une zone doit avoir un nom.",
+          "slug_taken": "Une zone porte déjà ce nom.",
+          "members_not_in_workspace": "Chaque personne ajoutée doit être un membre actif de cet espace de travail.",
+          "membership_not_found": "Cette personne n’est plus dans cette zone.",
+          "lead_already_set": "Cette zone a déjà un responsable.",
+          "unit_not_in_workspace": "Cette zone n’appartient pas à cet espace de travail.",
+          "project_required": "Choisissez un projet à lier.",
+          "invalid_role": "Une zone ne peut pas accorder ce rôle.",
+          "project_not_in_workspace": "Ce projet n’appartient pas à cet espace de travail.",
+          "link_not_found": "Ce projet n’est plus lié à cette zone.",
+          "work_item_not_found": "Cet élément de travail n’existe plus.",
+          "work_item_has_no_unit": "Aucune zone n’est responsable de cet élément de travail.",
+          "invalid_assignment_mode": "Ce n’est pas un mode d’attribution.",
+          "unit_not_covering_project": "Cette zone n’est pas liée à ce projet.",
+          "assignment_mode_not_allowed": "Cette zone n’autorise pas ce mode d’attribution du travail.",
+          "executor_not_eligible": "Cette personne ne peut pas prendre en charge cet élément de travail.",
+          "work_item_already_claimed": "Quelqu’un d’autre a pris cet élément de travail avant vous.",
+          "decision_stale": "Cet élément de travail a changé entre-temps. Rechargez et réessayez.",
+          "invalid_routing_transition": "Cet élément de travail ne peut pas passer à cet état depuis son état actuel.",
+          "directory_workspace_not_found": "Cet espace de travail n’existe plus.",
+          "directory_token_required": "Émettez un jeton SCIM avant d’activer le provisionnement par annuaire.",
+          "not_unit_coordinator": "Seul le coordinateur de cette zone ou un administrateur de l’espace de travail peut faire cela.",
+          "coordinator_already_set": "Cette personne coordonne déjà cette zone.",
+          "coordinator_not_found": "Coordinateur introuvable.",
+          "not_the_executor": "Seule la personne exécutante actuelle, le coordinateur de cette zone ou un administrateur de l’espace de travail peut faire cela.",
+          "coordinator_must_be_member": "Un coordinateur doit être membre actif ou administrateur de l’espace de travail.",
+          "invalid_queue_filter": "Ce filtre de file n'est pas reconnu.",
+          "public_api_disabled": "L’API d’automatisation est désactivée sur cette instance.",
+          "idempotency_key_required": "Cette requête nécessite un en-tête Idempotency-Key.",
+          "idempotency_payload_mismatch": "Cette clé a déjà été utilisée pour une autre requête.",
+          "operation_in_progress": "Une requête identique est encore en cours. Réessayez dans un instant.",
+          "external_binding_conflict": "Cette clé externe pointe déjà vers un autre élément de travail.",
+          "assignees_not_allowed_here": "C’est la zone qui décide qui prend cet élément de travail, cette requête ne peut donc pas définir d’assignés.",
+          "if_match_required": "Cette requête nécessite un en-tête If-Match portant la décision en cours.",
+          "process_projection_disabled": "La projection de processus est désactivée sur cette instance.",
+          "completion_manual_only": "Cet élément de travail ne peut être terminé que par une personne.",
+          "internal_error": "Une erreur est survenue. L’opération a été enregistrée comme échouée.",
+          "availability_window_not_found": "Cette période d’indisponibilité est introuvable.",
+          "availability_invalid_interval": "La fin d’une période d’indisponibilité doit être postérieure au début.",
+          "availability_from_required": "Une période d’indisponibilité a besoin d’un début.",
+          "workspace_member_not_found": "Cette personne n’est pas membre de cet espace de travail.",
+          "allocation_limit_forbidden": "Seul un coordinateur ou un administrateur de l’espace de travail peut fixer une limite personnelle de travail.",
+          "not_availability_manager": "Seul un coordinateur d’une des zones de cette personne, ou un administrateur de l’espace de travail, peut le faire."
+        },
+        "coordinators": {
+          "tab": "Coordinateurs",
+          "select_person": "Sélectionner une personne",
+          "no_addable": "Toutes les personnes qui peuvent coordonner cette zone le font déjà",
+          "add": "Ajouter un coordinateur",
+          "empty": "Personne ne coordonne encore cette zone. Un coordinateur gère la file sans avoir à en faire partie.",
+          "remove_aria": "Arrêter la coordination de cette zone par {name}",
+          "note": "Un coordinateur gère la file de la zone. Il n’a pas à en faire partie. Les invités de l’espace de travail ne peuvent pas être coordinateurs.",
+          "toast": {
+            "added_title": "Coordinateur ajouté",
+            "added": "Cette personne peut désormais gérer la file de cette zone.",
+            "not_added": "Non ajouté",
+            "removed_title": "Coordinateur retiré",
+            "removed": "{name} ne coordonne plus cette zone.",
+            "not_removed": "Non retiré"
+          }
+        },
+        "policy": {
+          "tab": "Politique",
+          "heading": "Comment cette zone attribue le travail",
+          "description": "La valeur par défaut de la zone, qu’un projet peut remplacer.",
+          "scope_area": "Valeur par défaut de la zone",
+          "scope_project": "Exception pour {name}",
+          "default_mode": "Mode par défaut",
+          "allowed_modes": "Modes autorisés",
+          "sla_seconds": "SLA d’attribution (secondes)",
+          "sla_hint": "Combien de temps un élément peut rester non attribué avant d’alerter les coordinateurs. Laissez vide pour n’imposer aucun délai.",
+          "max_open": "Nombre max. d’éléments ouverts par personne",
+          "max_open_hint": "Laissez vide pour n’imposer aucun plafond.",
+          "save": "Enregistrer la politique",
+          "mode": {
+            "manual": "Le coordinateur attribue",
+            "self_claim": "Les personnes prennent le travail",
+            "least_loaded": "Membre le moins chargé",
+            "explicit": "Personne nommée"
+          },
+          "toast": {
+            "saved_title": "Politique enregistrée",
+            "saved": "Le nouveau travail suivra ces règles.",
+            "not_saved": "Non enregistrée"
+          }
+        },
+        "my_areas": {
+          "title": "Mes zones",
+          "heading": "Mes zones",
+          "description": "Les zones auxquelles vous appartenez et le travail en attente dans chacune.",
+          "empty": "Vous n’appartenez encore à aucune zone.",
+          "select": "Sélectionner une zone"
+        },
+        "availability": {
+          "title": "Absences",
+          "help": "Être absent empêche l’attribution automatique de vous choisir. Cela ne reprend jamais ce que vous portez déjà.",
+          "empty": "Rien n’est enregistré.",
+          "from": "Du",
+          "until": "Au",
+          "add": "Ajouter",
+          "added": "Enregistré",
+          "not_added": "Impossible de l’enregistrer",
+          "removed": "Supprimé",
+          "not_removed": "Impossible de le supprimer",
+          "remove_aria": "Supprimer cette absence",
+          "range": "Du {from} au {until}",
+          "open_ended": "À partir du {from}, sans date de retour",
+          "reason": {
+            "vacation": "Congés",
+            "leave": "Absence",
+            "other": "Autre"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Accepte du nouveau travail de cette zone",
+          "accepts_new_work_help": "Désactivé, l’attribution automatique les ignore ici. Ils gardent ce qu’ils ont et peuvent encore recevoir quelque chose nommément.",
+          "max_open_items": "Nombre maximal d’éléments ouverts à la fois",
+          "max_open_items_help": "L’attribution automatique s’arrête à ce nombre. Vide, c’est la limite de la zone qui s’applique.",
+          "no_limit": "Aucune limite",
+          "saved": "Enregistré",
+          "not_saved": "Impossible d’enregistrer",
+          "limit_invalid": "Cela doit être un nombre entier d’au moins un.",
+          "open_aria": "Paramètres de travail de {name}"
+        }
       }
     },
     "empty_state": {

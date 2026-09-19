@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArchiveRestoreIcon, Settings, UserPlus } from "lucide-react";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import { EUserPermissions, EUserPermissionsLevel, IS_FAVORITE_MENU_OPEN } from "@plane/constants";
 import { useLocalStorage } from "@plane/hooks";
 import { Button } from "@plane/propel/button";
@@ -43,6 +44,8 @@ type Props = {
 
 export const ProjectCard = observer(function ProjectCard(props: Props) {
   const { project } = props;
+  // translation
+  const { t } = useTranslation();
   // states
   const [deleteProjectModalOpen, setDeleteProjectModal] = useState(false);
   const [joinProjectModalOpen, setJoinProjectModal] = useState(false);
@@ -370,7 +373,7 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
                     <CustomMenu
                       customButton={
                         <button className="text-11 text-placeholder transition-colors hover:text-secondary">
-                          Set State
+                          {t("workspace_projects.card.set_state")}
                         </button>
                       }
                       placement="bottom-start"
@@ -419,7 +422,7 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
                       <CustomMenu
                         customButton={
                           <button className="px-1 text-11 text-placeholder transition-colors hover:text-secondary">
-                            + Label
+                            {t("workspace_projects.card.add_label")}
                           </button>
                         }
                         placement="bottom-start"

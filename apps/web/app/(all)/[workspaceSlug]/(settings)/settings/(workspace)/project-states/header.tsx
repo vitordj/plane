@@ -27,7 +27,7 @@ export const ProjectStatesWorkspaceSettingsHeader = observer(function ProjectSta
             <Breadcrumbs.Item
               component={
                 <BreadcrumbLink
-                  label={t(settingsDetails.i18n_label) || "Project States"}
+                  label={t(settingsDetails.i18n_label)}
                   icon={<Icon className="size-4 text-tertiary" />}
                 />
               }

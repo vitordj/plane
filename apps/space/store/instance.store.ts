@@ -7,6 +7,8 @@
 import { set } from "lodash-es";
 import { observable, action, makeObservable, runInAction } from "mobx";
 // plane imports
+import { applyDefaultLanguage } from "@plane/i18n";
+import type { TLanguage } from "@plane/i18n";
 import { InstanceService } from "@plane/services";
 import type { IInstance, IInstanceConfig } from "@plane/types";
 // store
@@ -70,6 +72,10 @@ export class InstanceStore implements IInstanceStore {
         this.instance = instanceInfo.instance;
         this.config = instanceInfo.config;
       });
+      // Orca (fork): published pages have no signed-in viewer to read a
+      // preference from, so the organization's default is the only signal
+      // there is. Mirrors the web app's instance store.
+      void applyDefaultLanguage(instanceInfo.config?.default_language as TLanguage | undefined);
     } catch (_error) {
       runInAction(() => {
         this.isLoading = false;

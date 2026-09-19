@@ -6,6 +6,7 @@
 
 import { Link } from "react-router";
 // helpers
+import { translate } from "@plane/i18n";
 import { SUPPORT_EMAIL } from "@plane/constants";
 
 export enum EPageTypes {
@@ -65,6 +66,12 @@ export enum EAuthenticationErrorCodes {
   GOOGLE_OAUTH_PROVIDER_ERROR = "5115",
   GITHUB_OAUTH_PROVIDER_ERROR = "5120",
   GITLAB_OAUTH_PROVIDER_ERROR = "5121",
+  // Orca: Microsoft Entra ID sign-in. Numbered above the upstream block so a
+  // provider upstream adds later cannot collide.
+  ENTRA_NOT_CONFIGURED = "5113",
+  ENTRA_OAUTH_PROVIDER_ERROR = "5126",
+  ENTRA_ID_TOKEN_INVALID = "5127",
+  ENTRA_NONCE_MISMATCH = "5128",
   // Reset Password
   INVALID_PASSWORD_TOKEN = "5125",
   EXPIRED_PASSWORD_TOKEN = "5130",
@@ -261,6 +268,34 @@ const errorCodeMessages: {
     title: `GitLab OAuth provider error`,
     message: () => `GitLab OAuth provider error. Please try again.`,
   },
+  // Orca (fork). `title` is a getter so the lookup happens when
+  // authErrorHandler reads it, not when this module is first imported —
+  // at import time i18next has not resolved a language yet. The rest of this
+  // map is still English; see the TODO above.
+  [EAuthenticationErrorCodes.ENTRA_NOT_CONFIGURED]: {
+    get title() {
+      return translate("auth.errors.entra.not_configured.title");
+    },
+    message: () => translate("auth.errors.entra.not_configured.message"),
+  },
+  [EAuthenticationErrorCodes.ENTRA_OAUTH_PROVIDER_ERROR]: {
+    get title() {
+      return translate("auth.errors.entra.sign_in_failed.title");
+    },
+    message: () => translate("auth.errors.entra.sign_in_failed.message"),
+  },
+  [EAuthenticationErrorCodes.ENTRA_ID_TOKEN_INVALID]: {
+    get title() {
+      return translate("auth.errors.entra.token_invalid.title");
+    },
+    message: () => translate("auth.errors.entra.token_invalid.message"),
+  },
+  [EAuthenticationErrorCodes.ENTRA_NONCE_MISMATCH]: {
+    get title() {
+      return translate("auth.errors.entra.nonce_mismatch.title");
+    },
+    message: () => translate("auth.errors.entra.nonce_mismatch.message"),
+  },
 
   // Reset Password
   [EAuthenticationErrorCodes.INVALID_PASSWORD_TOKEN]: {
@@ -376,6 +411,10 @@ export const authErrorHandler = (errorCode: EAuthenticationErrorCodes, email?: s
     EAuthenticationErrorCodes.GOOGLE_OAUTH_PROVIDER_ERROR,
     EAuthenticationErrorCodes.GITHUB_OAUTH_PROVIDER_ERROR,
     EAuthenticationErrorCodes.GITLAB_OAUTH_PROVIDER_ERROR,
+    EAuthenticationErrorCodes.ENTRA_NOT_CONFIGURED,
+    EAuthenticationErrorCodes.ENTRA_OAUTH_PROVIDER_ERROR,
+    EAuthenticationErrorCodes.ENTRA_ID_TOKEN_INVALID,
+    EAuthenticationErrorCodes.ENTRA_NONCE_MISMATCH,
     EAuthenticationErrorCodes.INVALID_PASSWORD_TOKEN,
     EAuthenticationErrorCodes.EXPIRED_PASSWORD_TOKEN,
     EAuthenticationErrorCodes.INCORRECT_OLD_PASSWORD,

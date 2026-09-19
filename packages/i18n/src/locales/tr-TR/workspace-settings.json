@@ -257,9 +257,50 @@
       },
       "project_states": {
         "title": "Proje durumları",
-        "heading": "Tüm projeler için ilerleme özetini görün.",
-        "description": "Proje Durumları, herhangi bir proje özelliğine göre tüm projelerinizin ilerlemesini takip etmek için Plane'e özgü bir özelliktir.",
-        "go_to_settings": "Ayarlara git"
+        "heading": "Proje durumları",
+        "description": "Proje yaşam döngülerini çalışma alanı genelinde tutarlı biçimde sınıflandırın ve izleyin.",
+        "go_to_settings": "Ayarlara git",
+        "loading": "Ayarlar yükleniyor",
+        "list_heading": "Çalışma alanı proje durumları",
+        "try_again": "Birazdan tekrar deneyin.",
+        "toast": {
+          "enabled": "Proje durumları açık",
+          "disabled": "Proje durumları kapalı",
+          "not_saved": "Kaydedilmedi",
+          "state_created": "Durum oluşturuldu",
+          "state_updated": "Durum güncellendi",
+          "state_deleted": "Durum silindi",
+          "default_set": "Varsayılan durum güncellendi"
+        },
+        "confirm": {
+          "enable_title": "Çalışma alanı proje durumları açılsın mı?",
+          "disable_title": "Çalışma alanı proje durumları kapatılsın mı?",
+          "enable_content": "Durumlar bundan sonra tüm projelerde çalışma alanından yönetilir. İş öğelerinin durumu çalışma alanı kümesine hizalanabilir.",
+          "disable_content": "Her proje yeniden kendi durumlarını yönetir. İş öğelerinin durumu proje kümesine hizalanabilir."
+        }
+      },
+      "project_labels": {
+        "title": "Proje etiketleri",
+        "heading": "Proje etiketleri",
+        "description": "Kategorilendirme ve pano/liste gruplaması için çalışma alanı düzeyinde proje etiketleri oluşturun ve yönetin.",
+        "go_to_settings": "Ayarlara git",
+        "loading": "Ayarlar yükleniyor",
+        "list_heading": "Çalışma alanı proje etiketleri",
+        "try_again": "Birazdan tekrar deneyin.",
+        "toast": {
+          "enabled": "Proje etiketleri açık",
+          "disabled": "Proje etiketleri kapalı",
+          "not_saved": "Kaydedilmedi",
+          "label_created": "Etiket oluşturuldu",
+          "label_updated": "Etiket güncellendi",
+          "label_deleted": "Etiket silindi"
+        },
+        "confirm": {
+          "enable_title": "Çalışma alanı proje etiketleri açılsın mı?",
+          "disable_title": "Çalışma alanı proje etiketleri kapatılsın mı?",
+          "enable_content": "Etiketler bundan sonra tüm projelerde çalışma alanından yönetilir.",
+          "disable_content": "Her proje yeniden kendi etiketlerini yönetir."
+        }
       },
       "projects": {
         "title": "Projeler",
@@ -484,6 +525,392 @@
         "heading": "Komut Dosyaları",
         "new_script": "Yeni Komut Dosyası",
         "description": "İş akışlarınızı özel komut dosyaları ve otomasyon kurallarıyla otomatikleştirin."
+      },
+      "organizational_units": {
+        "title": "Alanlar",
+        "heading": "Alanlar",
+        "description": "Kişileri alanlar halinde gruplayın ve her alana projelerine tek adımda erişim verin.",
+        "add": "Yeni alan",
+        "disabled": "Alanlar bu örnekte kapalıdır. Bir yönetici ORCA_ORG_UNITS_ENABLED=1 ayarını yaparak alanları etkinleştirebilir.",
+        "try_again": "Kısa bir süre sonra yeniden deneyin.",
+        "toast": {
+          "saved": "Kaydedildi",
+          "not_saved": "Kaydedilmedi",
+          "role_unchanged": "Rol değişmedi"
+        },
+        "list": {
+          "empty_title": "Henüz alan yok.",
+          "empty_description": "Bir alan, birlikte çalışan kişileri — Uyum, Satış, Arka ofis — bir arada gruplar ve onlara alanın projelerine tek adımda erişim verir.",
+          "synced_badge": "Senkronize",
+          "counts": "{members, plural, one {# kişi} other {# kişi}} · {projects, plural, one {# proje} other {# proje}}",
+          "delete_aria": "{name} alanını sil",
+          "delete_title": "{name} silinsin mi?",
+          "delete_content": "Bu alandaki herkes, alanın kendilerine verdiği proje erişimini kaybeder. Başka bir alanın verdiği veya bir projede elle ayarlanan erişim korunur.",
+          "delete_content_synced": "Bu alandaki herkes, alanın kendilerine verdiği proje erişimini kaybeder. Bu alan dizininizden senkronize edilir; bu nedenle bir sonraki senkronizasyon alanı yeniden oluşturur. Kalıcı olarak kaldırmak istiyorsanız bunun yerine grubu dizinden silin.",
+          "delete_loading": "Siliniyor...",
+          "delete_confirm": "Alanı sil",
+          "toast": {
+            "deleted_title": "Alan silindi",
+            "deleted_message": "{name} alanının verdiği proje erişimi geri alındı. Başka yerden verilen erişim korunur.",
+            "not_deleted": "Silinmedi"
+          }
+        },
+        "form": {
+          "edit_title": "Alanı düzenle",
+          "name_placeholder": "Uyum",
+          "description_placeholder": "Bu alanın sorumlu olduğu işler",
+          "create": "Alan oluştur",
+          "toast": {
+            "updated": "{name} güncellendi.",
+            "created_title": "Oluşturuldu",
+            "created": "{name} kullanıma hazır.",
+            "name_taken": "Bu ada sahip bir alan zaten var. Farklı bir ad seçin."
+          }
+        },
+        "detail": {
+          "tab_people": "Kişiler",
+          "back_aria": "Tüm alanlara dön"
+        },
+        "members": {
+          "select_person": "Bir kişi seçin",
+          "no_addable": "Bu çalışma alanındaki herkes zaten bu alanda",
+          "add": "Alana ekle",
+          "empty": "Bu alanda henüz kimse yok. Projelerine erişim vermek için kişiler ekleyin.",
+          "directory_badge": "Dizin",
+          "remove_aria": "{name} adlı kişiyi bu alandan kaldır",
+          "lead_note": "Bir alana liderlik etmek yalnızca alanın kendisini yönetmeyi sağlar. Proje yöneticiliği ayrıca, projede verilir.",
+          "directory_note": "{badge} olarak işaretlenen kişiler kimlik sağlayıcınızdan gelir. Buradan kaldırmak yalnızca bir sonraki senkronizasyona kadar geçerlidir; bunun yerine onları kaynaktaki gruptan çıkarın. Elle eklediğiniz kişiler senkronizasyonla hiçbir zaman kaldırılmaz.",
+          "toast": {
+            "added_title": "Üye eklendi",
+            "added": "Artık bu alanın projelerine erişebilir.",
+            "not_added": "Eklenmedi",
+            "one_lead": "Bir alanın aynı anda yalnızca bir lideri olabilir.",
+            "removed_title": "Üye kaldırıldı",
+            "removed": "{name}, bu alan dışında verilen proje erişimini korur.",
+            "not_removed": "Kaldırılmadı"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Proje ayarlarını ve üyelerini değiştirebilir",
+          "role_member_hint": "İş öğeleri oluşturabilir ve düzenleyebilir",
+          "role_guest_hint": "Sınırlı erişim",
+          "select_project": "Bir proje seçin",
+          "no_linkable": "Her proje zaten bu alana bağlı",
+          "link": "Proje bağla",
+          "empty": "Henüz bağlı proje yok. Bu alanın üyelerine erişim vermek için bir proje bağlayın.",
+          "unlink_aria": "{name} projesinin bu alanla bağlantısını kaldır",
+          "role_note": "Bir kişinin rolü, alanlarının verdiği en yüksek roldür ve çalışma alanı rolüyle sınırlıdır. Bir projede elle ayarlanan roller burada hiçbir zaman düşürülmez.",
+          "toast": {
+            "linked_title": "Proje bağlandı",
+            "linked": "Artık bu alandaki herkes projeye erişebilir.",
+            "not_linked": "Bağlanmadı",
+            "unlinked_title": "Proje bağlantısı kaldırıldı",
+            "unlinked": "{name} projesine bu alan dışında verilen erişim korunur.",
+            "not_unlinked": "Bağlantı kaldırılmadı"
+          }
+        },
+        "directory_sync": {
+          "heading": "Dizin senkronizasyonu",
+          "description": "Alan üyeliğini Microsoft Entra ID'nin güncel tutmasına izin verin. Bir alana kimin ait olduğuna Entra karar verir; alanın hangi projelere hangi rolle erişim verdiği burada ayarlanmaya devam eder.",
+          "never": "Hiç",
+          "copy": "Kopyala",
+          "provisioning_on": "Sağlama açık.",
+          "provisioning_off": "Sağlama kapalı.",
+          "no_token_warning": "Sağlamayı açmadan önce bir token oluşturun; Entra token olmadan kimlik doğrulaması yapamaz.",
+          "tenant_url": "Kiracı URL'si",
+          "tenant_url_hint": "Bunu Entra kurumsal uygulamasında Sağlama → Yönetici Kimlik Bilgileri bölümüne yapıştırın.",
+          "secret_token": "Gizli token",
+          "token_installed": "{prefix}… ile başlayan bir token yüklü. Son kullanım: {last_used}.",
+          "no_token": "Yüklü token yok.",
+          "rotate_token": "Token'ı yenile",
+          "issue_token": "Token oluştur",
+          "revoke": "İptal et",
+          "rotate_hint": "Yenileme hemen geçerli olur; bu nedenle Entra'ya yeni token verilene kadar sağlama başarısız olur.",
+          "last_sync": "Son senkronizasyon",
+          "resync_now": "Şimdi yeniden senkronize et",
+          "summary_added": "{count, plural, one {# eklendi} other {# eklendi}}",
+          "summary_restored": "{count, plural, one {# geri yüklendi} other {# geri yüklendi}}",
+          "summary_withdrawn": "{count, plural, one {# kaldırıldı} other {# kaldırıldı}}",
+          "resync_hint": "Yeniden senkronizasyon, dizinin zaten gönderdiği verileri yeniden uygular; Entra'yı çağırmaz. Dizinin zaten gönderdiği birini davet ettikten sonra kullanın.",
+          "unresolved_heading": "Dizin tarafından gönderilen, bu çalışma alanında olmayan kişiler ({count})",
+          "unresolved_empty": "Dizinin gönderdiği herkes bu çalışma alanının etkin bir üyesi.",
+          "not_workspace_member": "Çalışma alanı üyesi değil",
+          "inactive_in_directory": "Dizinde etkin değil",
+          "unresolved_hint": "Bu kişileri çalışma alanına davet edin; alanlarına otomatik olarak katılırlar. Ya da onları Entra'daki gruptan çıkarın.",
+          "auto_create_title": "Yeni gruplar için alan oluştur",
+          "auto_create_hint": "Kapalıyken dizin yalnızca sizin oluşturup eşleşen adı verdiğiniz alanları doldurabilir.",
+          "auto_create_saved": "Yeni dizin gruplarının nasıl işleneceği kaydedildi.",
+          "deprovision_title": "Dizinin kişileri kaldırmasına izin ver",
+          "deprovision_hint": "Kapalıyken senkronizasyon yalnızca ekler. Elle eklediğiniz kişiler her iki durumda da kaldırılmaz.",
+          "deprovision_saved": "Dizinden kaldırmaların nasıl işleneceği kaydedildi.",
+          "toast": {
+            "copied_title": "Kopyalandı",
+            "copied": "{label} panonuza kopyalandı.",
+            "not_copied_title": "Kopyalanamadı",
+            "not_copied": "{label} değerini seçip elle kopyalayın.",
+            "load_failed_title": "Dizin bağlantısı yüklenemedi",
+            "load_failed": "Lütfen kısa bir süre sonra yeniden deneyin.",
+            "save_failed": "Değişiklik kaydedilemedi. Lütfen yeniden deneyin.",
+            "token_issued_title": "Token oluşturuldu",
+            "token_issued": "Şimdi kopyalayın; yalnızca bu kez gösterilir.",
+            "token_not_issued_title": "Oluşturulmadı",
+            "token_not_issued": "Token oluşturulamadı.",
+            "token_revoked_title": "Token iptal edildi",
+            "token_revoked": "Yeni bir token oluşturulana kadar sağlama kapalı.",
+            "token_not_revoked_title": "İptal edilmedi",
+            "token_not_revoked": "Token iptal edilemedi.",
+            "resynced_title": "Yeniden senkronize edildi",
+            "resynced": "{added, plural, one {# eklendi} other {# eklendi}}, {withdrawn, plural, one {# kaldırıldı} other {# kaldırıldı}}.",
+            "not_resynced_title": "Yeniden senkronize edilmedi",
+            "not_resynced": "Yeniden senkronizasyon tamamlanamadı."
+          }
+        },
+        "work": {
+          "tab": "Çalışma",
+          "inbox": "Gelen kutusu",
+          "in_progress": "Devam ediyor",
+          "empty_inbox": "Bekleyen bir şey yok. Bu alanın üstlendiği iş öğeleri, biri onlarla ilgilenene kadar burada görünür.",
+          "empty_in_progress": "Şu anda bu alan için kimse bir şey üzerinde çalışmıyor.",
+          "claim": "Üstlenin",
+          "assign": "Şu kişiye atayın…",
+          "return_to_queue": "Kuyruğa geri gönderin",
+          "overdue": "Gecikmiş",
+          "unassigned": "Kimse atanmadı",
+          "executor_count": "{count, plural, one {# iş öğesi} other {# iş öğesi}}",
+          "age": {
+            "just_now": "Az önce",
+            "minutes": "{count, plural, one {# dakika} other {# dakika}}",
+            "hours": "{count, plural, one {# saat} other {# saat}}",
+            "days": "{count, plural, one {# gün} other {# gün}}"
+          },
+          "reason": {
+            "new_item": "Yeni üstlenildi",
+            "awaiting_coordinator": "Bir koordinatör bekliyor",
+            "awaiting_claim": "Birinin üstlenmesini bekliyor",
+            "no_eligible_member": "Bu alandaki kimse bunu üstlenemez",
+            "executor_unavailable": "Yürütücüsü müsait değil",
+            "manually_returned": "Kuyruğa geri gönderildi"
+          },
+          "assign_modal": {
+            "title": "Bu iş öğesini atayın",
+            "search": "Ada veya e-posta adresine göre arayın",
+            "no_candidates": "Bu alandaki kimse henüz iş üstlenemez. Önce alana kişi ekleyin.",
+            "assigning": "Atanıyor…",
+            "open_items": "{count, plural, one {# açık öğe} other {# açık öğe}}",
+            "unavailable": "Uzak",
+            "opted_out": "Yeni iş almıyor"
+          },
+          "toast": {
+            "claimed_title": "İş öğesi üstlenildi",
+            "claimed": "Artık sizin ve bu alanın gelen kutusundan çıktı.",
+            "not_claimed": "Üstlenilmedi",
+            "assigned_title": "İş öğesi atandı",
+            "assigned": "Artık {name} ilgileniyor.",
+            "not_assigned": "Atanmadı",
+            "returned_title": "Kuyruğa geri gönderildi",
+            "returned": "Yeniden birini bekliyor.",
+            "not_returned": "Geri gönderilmedi",
+            "transferred_title": "Başka bir alana taşındı",
+            "transferred": "Artık {name} sorumlu.",
+            "not_transferred": "Taşınmadı"
+          },
+          "attention": "İlgi gerektiriyor",
+          "attention_overdue_date": "Bitiş tarihi geçti",
+          "attention_suspended": "Duraklatıldı",
+          "attention_unavailable": "Yürüten kişi müsait değil",
+          "attention_no_date": "Bitiş tarihi yok",
+          "empty_attention": "Şu anda ilgi gerektiren bir şey yok.",
+          "decisions": "Kararlar",
+          "empty_decisions": "Henüz tahsis kararı yok.",
+          "decision_supersedes": "Önceki bir kararın yerini aldı",
+          "decision_outcome": {
+            "assigned": "Atandı",
+            "queued": "Kuyrukta",
+            "allocation_failed": "Atanamadı",
+            "rejected": "Reddedildi"
+          },
+          "transfer": "Başka bir alana taşı",
+          "transfer_modal": {
+            "title": "Başka bir alana taşı",
+            "search": "Alan ara",
+            "no_units": "Bu projeyi kapsayan başka alan yok.",
+            "transferring": "Taşınıyor…"
+          },
+          "suggestion": "Öneri: {name}",
+          "unavailable_until": "{until} tarihine kadar uzak",
+          "unavailable_open": "Uzak",
+          "executor_away": "Uzak",
+          "process_progress": "{done}/{total}"
+        },
+        "executive": {
+          "title": "Yönetici görünümü",
+          "heading": "Alana göre iş",
+          "description": "İşin her alanda ve yürüyen süreçlerde nasıl ilerlediği.",
+          "link": "Yönetici görünümü",
+          "load_failed": "Yönetici görünümü yüklenemedi.",
+          "empty": "Henüz alan yok.",
+          "hidden_count": "{count, plural, one {# iş öğesi, açamadığınız bir projede} other {# iş öğesi, açamadığınız projelerde}}",
+          "period": {
+            "label": "Dönem",
+            "7d": "Son 7 gün",
+            "30d": "Son 30 gün",
+            "90d": "Son 90 gün"
+          },
+          "indicators": {
+            "area": "Alan",
+            "backlog": "Backlog",
+            "queued": "Kuyrukta",
+            "assignment_overdue": "Atama gecikmiş",
+            "target_overdue": "Hedef tarihi geçmiş",
+            "queue_age_p50": "Kuyruk yaşı p50",
+            "queue_age_p90": "Kuyruk yaşı p90",
+            "throughput": "İş hacmi",
+            "cycle_time_p50": "Çevrim süresi p50",
+            "cycle_time_p90": "Çevrim süresi p90",
+            "concentration_top3": "İlk 3 yoğunluğu",
+            "auto_assign_kept_ratio": "Otomatik atama korundu"
+          },
+          "processes": {
+            "heading": "Süreçler",
+            "running": "Çalışıyor",
+            "completed": "Dönemde tamamlanan",
+            "lead_time_p50": "Teslim süresi p50",
+            "lead_time_p90": "Teslim süresi p90",
+            "empty": "Bu dönemde çalışan veya tamamlanmış süreç yok.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Gösterilecek bir şey yok. Açamadığınız projelerdeki öğeler sayıya girer, listeye girmez.",
+            "close": "Kapat"
+          }
+        },
+        "errors": {
+          "unit_not_found": "Bu alan artık yok.",
+          "name_required": "Bir alanın adı olmalı.",
+          "slug_taken": "Bu adı taşıyan bir alan zaten var.",
+          "members_not_in_workspace": "Eklediğiniz herkes bu çalışma alanının etkin üyesi olmalı.",
+          "membership_not_found": "Bu kişi artık bu alanda değil.",
+          "lead_already_set": "Bu alanın zaten bir lideri var.",
+          "unit_not_in_workspace": "Bu alan bu çalışma alanına ait değil.",
+          "project_required": "Bağlanacak bir proje seçin.",
+          "invalid_role": "Bir alan bu rolü veremez.",
+          "project_not_in_workspace": "Bu proje bu çalışma alanına ait değil.",
+          "link_not_found": "Bu proje artık bu alana bağlı değil.",
+          "work_item_not_found": "Bu iş öğesi artık yok.",
+          "work_item_has_no_unit": "Bu iş öğesinden sorumlu bir alan yok.",
+          "invalid_assignment_mode": "Bu bir atama modu değil.",
+          "unit_not_covering_project": "Bu alan bu projeye bağlı değil.",
+          "assignment_mode_not_allowed": "Bu alan işi bu şekilde atamaya izin vermiyor.",
+          "executor_not_eligible": "Bu kişi bu iş öğesini üstlenemez.",
+          "work_item_already_claimed": "Bu iş öğesini önce başkası aldı.",
+          "decision_stale": "Bu iş öğesi siz bakarken değişti. Sayfayı yenileyip tekrar deneyin.",
+          "invalid_routing_transition": "Bu iş öğesi mevcut durumundan o duruma geçemez.",
+          "directory_workspace_not_found": "Bu çalışma alanı artık yok.",
+          "directory_token_required": "Dizin sağlamayı açmadan önce bir SCIM belirteci oluşturun.",
+          "not_unit_coordinator": "Bunu yalnızca bu alanın koordinatörü veya bir çalışma alanı yöneticisi yapabilir.",
+          "coordinator_already_set": "Bu kişi bu alanı zaten koordine ediyor.",
+          "coordinator_not_found": "Koordinatör bulunamadı.",
+          "not_the_executor": "Bunu yalnızca geçerli sorumlu kişi, bu alanın koordinatörü veya bir çalışma alanı yöneticisi yapabilir.",
+          "coordinator_must_be_member": "Bir koordinatör, çalışma alanının etkin bir üyesi veya yöneticisi olmalıdır.",
+          "invalid_queue_filter": "Bu kuyruk filtresi tanınmıyor.",
+          "public_api_disabled": "Otomasyon API’si bu örnekte kapalı.",
+          "idempotency_key_required": "Bu istek bir Idempotency-Key başlığı gerektiriyor.",
+          "idempotency_payload_mismatch": "Bu anahtar daha önce başka bir istek için kullanıldı.",
+          "operation_in_progress": "Aynı istek hâlâ sürüyor. Birazdan tekrar deneyin.",
+          "external_binding_conflict": "Bu dış anahtar zaten başka bir iş öğesine işaret ediyor.",
+          "assignees_not_allowed_here": "Bu iş öğesini kimin üstleneceğine alan karar verir, bu nedenle bu istek atanan kişileri belirleyemez.",
+          "if_match_required": "Bu istek, geçerli kararı taşıyan bir If-Match başlığı gerektiriyor.",
+          "process_projection_disabled": "Süreç izdüşümü bu örnekte kapalı.",
+          "completion_manual_only": "Bu iş öğesi yalnızca bir kişi tarafından tamamlanabilir.",
+          "internal_error": "Bir şeyler ters gitti. İşlem başarısız olarak kaydedildi.",
+          "availability_window_not_found": "Bu müsait olmama dönemi bulunamadı.",
+          "availability_invalid_interval": "Müsait olmama döneminin bitişi başlangıcından sonra olmalıdır.",
+          "availability_from_required": "Bir müsait olmama döneminin başlangıcı olmalıdır.",
+          "workspace_member_not_found": "Bu kişi bu çalışma alanının üyesi değil.",
+          "allocation_limit_forbidden": "Kişisel iş sınırını yalnızca bir koordinatör veya çalışma alanı yöneticisi belirleyebilir.",
+          "not_availability_manager": "Bunu yalnızca bu kişinin alanlarından birinin koordinatörü veya bir çalışma alanı yöneticisi yapabilir."
+        },
+        "coordinators": {
+          "tab": "Koordinatörler",
+          "select_person": "Bir kişi seçin",
+          "no_addable": "Bu alanı koordine edebilecek herkes zaten yapıyor",
+          "add": "Koordinatör ekle",
+          "empty": "Bu alanı henüz kimse koordine etmiyor. Bir koordinatör, alana ait olmadan kuyruğu yönetir.",
+          "remove_aria": "{name} kişisinin bu alanı koordine etmesini durdur",
+          "note": "Koordinatör alanın kuyruğunu yönetir. Alana ait olmak zorunda değildir. Çalışma alanı konukları koordinatör olamaz.",
+          "toast": {
+            "added_title": "Koordinatör eklendi",
+            "added": "Artık bu alanın kuyruğunu yönetebilir.",
+            "not_added": "Eklenmedi",
+            "removed_title": "Koordinatör kaldırıldı",
+            "removed": "{name} artık bu alanı koordine etmiyor.",
+            "not_removed": "Kaldırılmadı"
+          }
+        },
+        "policy": {
+          "tab": "Politika",
+          "heading": "Bu alan işi nasıl atar",
+          "description": "Alan varsayılanı; bir proje bunu geçersiz kılabilir.",
+          "scope_area": "Alan varsayılanı",
+          "scope_project": "{name} için istisna",
+          "default_mode": "Varsayılan mod",
+          "allowed_modes": "İzin verilen modlar",
+          "sla_seconds": "Atama SLA’sı (saniye)",
+          "sla_hint": "Koordinatörler uyarılmadan önce bir öğenin ne kadar atanmadan bekleyebileceği. Süre yoksa boş bırakın.",
+          "max_open": "Kişi başına en fazla açık öğe",
+          "max_open_hint": "Üst sınır yoksa boş bırakın.",
+          "save": "Politikayı kaydet",
+          "mode": {
+            "manual": "Koordinatör atar",
+            "self_claim": "Kişiler işi kendileri alır",
+            "least_loaded": "En az yüklü üye",
+            "explicit": "Adı verilen kişi"
+          },
+          "toast": {
+            "saved_title": "Politika kaydedildi",
+            "saved": "Yeni iş bu kuralları izleyecek.",
+            "not_saved": "Kaydedilmedi"
+          }
+        },
+        "my_areas": {
+          "title": "Alanlarım",
+          "heading": "Alanlarım",
+          "description": "Üyesi olduğunuz alanlar ve her birinde bekleyen iş.",
+          "empty": "Henüz hiçbir alana üye değilsiniz.",
+          "select": "Bir alan seçin"
+        },
+        "availability": {
+          "title": "Uzak kalma",
+          "help": "Uzak olmak, otomatik atamanın sizi seçmesini engeller. Üzerinizdeki işi geri almaz.",
+          "empty": "Kayıt yok.",
+          "from": "Başlangıç",
+          "until": "Bitiş",
+          "add": "Ekle",
+          "added": "Kaydedildi",
+          "not_added": "Kaydedilemedi",
+          "removed": "Kaldırıldı",
+          "not_removed": "Kaldırılamadı",
+          "remove_aria": "Bu yokluğu kaldır",
+          "range": "{from} – {until}",
+          "open_ended": "{from} tarihinden itibaren, dönüş tarihi yok",
+          "reason": {
+            "vacation": "Tatil",
+            "leave": "İzin",
+            "other": "Diğer"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Bu alandan yeni iş alır",
+          "accepts_new_work_help": "Kapalıysa otomatik atama onları burada atlar. Üzerlerindeki iş kalır ve adla yine iş verilebilir.",
+          "max_open_items": "Aynı anda en fazla açık öğe",
+          "max_open_items_help": "Otomatik atama bu sayıda durur. Boş bırakılırsa alanın kendi sınırı geçerlidir.",
+          "no_limit": "Sınır yok",
+          "saved": "Kaydedildi",
+          "not_saved": "Kaydedilemedi",
+          "limit_invalid": "Bu, bir veya daha fazla tam sayı olmalıdır.",
+          "open_aria": "{name} için iş ayarları"
+        }
       }
     },
     "empty_state": {

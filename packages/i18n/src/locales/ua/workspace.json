@@ -223,6 +223,14 @@
       "search": {
         "description": "Не знайдено проєктів, що відповідають критеріям.\nСтворіть новий."
       }
+    },
+    "group_by_button": "Групувати за: {value}",
+    "group": {
+      "no_label": "Без мітки"
+    },
+    "card": {
+      "set_state": "Задати стан",
+      "add_label": "+ Мітка"
     }
   },
   "workspace_views": {

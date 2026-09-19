@@ -8,6 +8,7 @@ import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import type { IProject } from "@plane/types";
 import { ToggleSwitch } from "@plane/ui";
@@ -22,6 +23,8 @@ type Props = {
 };
 
 export const AutoCycleCompleteAutomation = observer(function AutoCycleCompleteAutomation(props: Props) {
+  // translation
+  const { t } = useTranslation();
   const { handleChange } = props;
   // router
   const { workspaceSlug } = useParams();
@@ -49,8 +52,8 @@ export const AutoCycleCompleteAutomation = observer(function AutoCycleCompleteAu
           <CheckCircle2 className="size-4 shrink-0 text-success-primary" />
         </div>
         <SettingsControlItem
-          title="Auto-complete cycles"
-          description="Automatically complete cycles after their end date passes. If disabled, cycles will remain active/current until manually closed or archived."
+          title={t("project_settings.automations.auto-cycle-complete.title")}
+          description={t("project_settings.automations.auto-cycle-complete.description")}
           control={<ToggleSwitch value={autoCompleteStatus} onChange={handleToggle} size="sm" disabled={!isAdmin} />}
         />
       </div>

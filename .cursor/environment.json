@@ -1,0 +1,42 @@
+{
+  "name": "Plane (Orca) — full dev stack",
+  "user": "ubuntu",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "install": "./.cursor/install.sh",
+  "start": "./.cursor/start.sh",
+  "terminals": [
+    {
+      "name": "api",
+      "command": "./.cursor/run.sh api",
+      "description": "Django REST API (http://localhost:8000)"
+    },
+    {
+      "name": "worker",
+      "command": "./.cursor/run.sh worker",
+      "description": "Celery worker for background jobs"
+    },
+    {
+      "name": "beat",
+      "command": "./.cursor/run.sh beat",
+      "description": "Celery beat scheduler"
+    },
+    {
+      "name": "web",
+      "command": "./.cursor/run.sh web",
+      "description": "Main web app (http://localhost:3000)"
+    },
+    {
+      "name": "admin",
+      "command": "./.cursor/run.sh admin",
+      "description": "God-mode admin app (http://localhost:3001/god-mode)"
+    }
+  ],
+  "ports": [
+    { "name": "web", "port": 3000 },
+    { "name": "admin", "port": 3001 },
+    { "name": "api", "port": 8000 },
+    { "name": "minio", "port": 9000 }
+  ]
+}

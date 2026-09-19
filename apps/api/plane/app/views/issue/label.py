@@ -27,20 +27,25 @@ class LabelViewSet(BaseViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset().filter(workspace__slug=self.kwargs.get("slug"))
-        
+
         ws_slug = self.kwargs.get("slug")
         proj_id = self.kwargs.get("project_id")
-        
-        is_workspace_labels_enabled = WorkspaceProjectLabelSettings.objects.filter(workspace__slug=ws_slug, is_enabled=True).exists()
-        is_project_using_workspace_labels = ProjectLabelProperty.objects.filter(project_id=proj_id, is_enabled=True).exists()
-        
+
+        is_workspace_labels_enabled = WorkspaceProjectLabelSettings.objects.filter(
+            workspace__slug=ws_slug, is_enabled=True
+        ).exists()
+        is_project_using_workspace_labels = ProjectLabelProperty.objects.filter(
+            project_id=proj_id, is_enabled=True
+        ).exists()
+
         if is_workspace_labels_enabled and is_project_using_workspace_labels:
-            workspace_label_names = Label.objects.filter(workspace__slug=ws_slug, project__isnull=True).values_list("name", flat=True)
+            workspace_label_names = Label.objects.filter(workspace__slug=ws_slug, project__isnull=True).values_list(
+                "name", flat=True
+            )
             queryset = queryset.filter(name__in=workspace_label_names)
 
         return self.filter_queryset(
-            queryset
-            .filter(project_id=proj_id)
+            queryset.filter(project_id=proj_id)
             .filter(project__project_projectmember__member=self.request.user)
             .select_related("project")
             .select_related("workspace")

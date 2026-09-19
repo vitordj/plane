@@ -20,7 +20,70 @@
   },
   "cycle": {
     "label": "{count, plural, one {Cycle} other {Cycles}}",
-    "no_cycle": "No cycle"
+    "no_cycle": "No cycle",
+    "start_stop": {
+      "start": {
+        "title": "Start cycle",
+        "loading": "Starting",
+        "question": "Start “{name}”? This sets {date} as the start date and moves the cycle to active."
+      },
+      "end": {
+        "title": "Complete cycle",
+        "loading": "Completing",
+        "question": "Complete “{name}”? This sets {date} as the end date and marks the cycle complete."
+      },
+      "move_unstarted": {
+        "label": "Move unstarted work items to In Progress",
+        "hint": "Every backlog and unstarted work item in this cycle moves to the In Progress state."
+      },
+      "no_in_progress": {
+        "title": "This project has no In Progress state.",
+        "hint": "Work items in this cycle keep the state they already have."
+      },
+      "mark_completed": {
+        "label": "Mark every unfinished work item as Completed",
+        "hint": "{count, plural, one {The # unfinished work item in this cycle moves to the Completed state.} other {All # unfinished work items in this cycle move to the Completed state.}}"
+      },
+      "no_completed": {
+        "title": "{count, plural, one {# work item is not done yet.} other {# work items are not done yet.}}",
+        "hint": "This project has no Completed state to move them to."
+      },
+      "toast": {
+        "started": "Cycle started",
+        "started_message": "“{name}” is active.",
+        "started_moved": "“{name}” is active. Unstarted work items moved to In Progress.",
+        "completed": "Cycle completed",
+        "completed_message": "“{name}” is complete.",
+        "completed_moved": "“{name}” is complete. Unfinished work items moved to Completed.",
+        "failed": "Something went wrong"
+      },
+      "try_again": "Try again in a moment."
+    },
+    "actions": {
+      "start": "Start cycle",
+      "complete": "Complete cycle"
+    },
+    "toast": {
+      "created": "Cycle created",
+      "not_created": "Cycle not created",
+      "updated": "Cycle updated",
+      "not_updated": "Cycle not updated",
+      "try_again": "Try again in a moment.",
+      "dates_taken": "Another cycle already covers those dates. Clear the dates to create a draft cycle instead."
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "Work items transferred",
+        "not_transferred": "Work items not transferred",
+        "not_loaded": "Could not load the cycle"
+      },
+      "search_placeholder": "Search for a cycle",
+      "notice": "Completed cycles stay editable until they are archived. Unfinished work items can be moved to another cycle.",
+      "action": "Transfer unfinished work items",
+      "heading": "Transfer unfinished work items"
+    },
+    "drop_archived_error": "A work item cannot be moved into an archived cycle",
+    "add_named": "Add “{name}” to cycles"
   },
   "active_cycle_analytics": {
     "empty_state": {

@@ -6,7 +6,8 @@
 
 import { enableStaticRendering } from "mobx-react";
 // plane imports
-import { FALLBACK_LANGUAGE, setLanguage } from "@plane/i18n";
+import { clearLanguagePreference, FALLBACK_LANGUAGE } from "@plane/i18n";
+import type { TLanguage } from "@plane/i18n";
 import type { IWorkItemFilterStore } from "@plane/shared-state";
 import { WorkItemFilterStore } from "@plane/shared-state";
 // plane web store
@@ -68,6 +69,8 @@ import type { ICustomProjectStateStore } from "./project/custom-project-state.st
 import { CustomProjectStateStore } from "./project/custom-project-state.store";
 import type { ICustomProjectLabelStore } from "./project/custom-project-label.store";
 import { CustomProjectLabelStore } from "./project/custom-project-label.store";
+import type { IOrganizationalUnitStore } from "./orca/organizational-unit.store";
+import { OrganizationalUnitStore } from "./orca/organizational-unit.store";
 import type { IThemeStore } from "./theme.store";
 import { ThemeStore } from "./theme.store";
 import type { IUserStore } from "./user";
@@ -108,6 +111,7 @@ export class CoreRootStore {
   powerK: IPowerKStore;
   customProjectState: ICustomProjectStateStore;
   customProjectLabel: ICustomProjectLabelStore;
+  organizationalUnit: IOrganizationalUnitStore;
   timelineStore: ITimelineStore;
 
   constructor() {
@@ -142,13 +146,21 @@ export class CoreRootStore {
     this.powerK = new PowerKStore();
     this.customProjectState = new CustomProjectStateStore(this);
     this.customProjectLabel = new CustomProjectLabelStore(this);
+    this.organizationalUnit = new OrganizationalUnitStore(this);
     this.timelineStore = new TimeLineStore(this);
   }
 
   resetOnSignOut() {
     // handling the system theme when user logged out from the app
     localStorage.setItem("theme", "system");
-    void setLanguage(FALLBACK_LANGUAGE);
+    // Orca (fork): drop the language that belonged to the account signing out
+    // and land on the organization's default, not on English. Read before the
+    // instance store is replaced below, since that is where the default lives.
+    // Forgetting the stored preference is the point: the next person to reach
+    // this browser is not the one who just left, and a leftover preference
+    // would outrank the organization's default on the sign-in screen forever.
+    const organizationDefault = (this.instance.config?.default_language ?? FALLBACK_LANGUAGE) as TLanguage;
+    void clearLanguagePreference(organizationDefault);
     this.router = new RouterStore();
     this.commandPalette = new CommandPaletteStore();
     this.instance = new InstanceStore();
@@ -178,6 +190,7 @@ export class CoreRootStore {
     this.powerK = new PowerKStore();
     this.customProjectState = new CustomProjectStateStore(this);
     this.customProjectLabel = new CustomProjectLabelStore(this);
+    this.organizationalUnit = new OrganizationalUnitStore(this);
     this.timelineStore = new TimeLineStore(this);
   }
 }

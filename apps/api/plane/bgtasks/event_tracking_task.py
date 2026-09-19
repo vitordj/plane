@@ -3,7 +3,6 @@
 # See the LICENSE file for details.
 
 import logging
-import os
 import uuid
 from typing import Dict, Any
 
@@ -12,7 +11,6 @@ from celery import shared_task
 from posthog import Posthog
 
 # module imports
-from plane.license.utils.instance_value import get_configuration_value
 from plane.utils.exception_logger import log_exception
 from plane.db.models import Workspace
 from plane.utils.analytics_events import USER_INVITED_TO_WORKSPACE, WORKSPACE_DELETED

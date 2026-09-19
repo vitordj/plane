@@ -257,9 +257,50 @@
       },
       "project_states": {
         "title": "プロジェクトの状態",
-        "heading": "すべてのプロジェクトの進捗概要を確認します。",
-        "description": "プロジェクトステータスは、任意のプロジェクトプロパティでプロジェクトの進捗を追跡するためのPlane専用の機能です。",
-        "go_to_settings": "設定へ移動"
+        "heading": "プロジェクトステータス",
+        "description": "ワークスペース全体で一貫した基準でプロジェクトのライフサイクルを分類し、追跡します。",
+        "go_to_settings": "設定へ移動",
+        "loading": "設定を読み込んでいます",
+        "list_heading": "ワークスペースのプロジェクトステータス",
+        "try_again": "少し時間をおいて、もう一度お試しください。",
+        "toast": {
+          "enabled": "プロジェクトステータスをオンにしました",
+          "disabled": "プロジェクトステータスをオフにしました",
+          "not_saved": "保存されていません",
+          "state_created": "ステータスを作成しました",
+          "state_updated": "ステータスを更新しました",
+          "state_deleted": "ステータスを削除しました",
+          "default_set": "既定のステータスを更新しました"
+        },
+        "confirm": {
+          "enable_title": "ワークスペースのプロジェクトステータスをオンにしますか？",
+          "disable_title": "ワークスペースのプロジェクトステータスをオフにしますか？",
+          "enable_content": "今後、ステータスはすべてのプロジェクトを通じてワークスペースで管理されます。作業項目のステータスがワークスペースのセットに合わせて変更される場合があります。",
+          "disable_content": "各プロジェクトが再び自身のステータスを管理します。作業項目のステータスがプロジェクトのセットに合わせて変更される場合があります。"
+        }
+      },
+      "project_labels": {
+        "title": "プロジェクトラベル",
+        "heading": "プロジェクトラベル",
+        "description": "ワークスペース全体のプロジェクトラベルを作成・管理し、分類やボード・リストでのグループ化に使用します。",
+        "go_to_settings": "設定へ移動",
+        "loading": "設定を読み込んでいます",
+        "list_heading": "ワークスペースのプロジェクトラベル",
+        "try_again": "少し時間をおいて、もう一度お試しください。",
+        "toast": {
+          "enabled": "プロジェクトラベルをオンにしました",
+          "disabled": "プロジェクトラベルをオフにしました",
+          "not_saved": "保存されていません",
+          "label_created": "ラベルを作成しました",
+          "label_updated": "ラベルを更新しました",
+          "label_deleted": "ラベルを削除しました"
+        },
+        "confirm": {
+          "enable_title": "ワークスペースのプロジェクトラベルをオンにしますか？",
+          "disable_title": "ワークスペースのプロジェクトラベルをオフにしますか？",
+          "enable_content": "今後、ラベルはすべてのプロジェクトを通じてワークスペースで管理されます。",
+          "disable_content": "各プロジェクトが再び自身のラベルを管理します。"
+        }
       },
       "projects": {
         "title": "プロジェクト",
@@ -484,6 +525,392 @@
         "heading": "スクリプト",
         "new_script": "新しいスクリプト",
         "description": "カスタムスクリプトと自動化ルールでワークフローを自動化します。"
+      },
+      "organizational_units": {
+        "title": "エリア",
+        "heading": "エリア",
+        "description": "メンバーをエリアにまとめ、各エリアにプロジェクトへのアクセス権を一度に付与します。",
+        "add": "新しいエリア",
+        "disabled": "このインスタンスではエリアが無効になっています。管理者が ORCA_ORG_UNITS_ENABLED=1 を設定すると有効になります。",
+        "try_again": "しばらくしてからもう一度お試しください。",
+        "toast": {
+          "saved": "保存しました",
+          "not_saved": "保存できませんでした",
+          "role_unchanged": "ロールは変更されていません"
+        },
+        "list": {
+          "empty_title": "エリアはまだありません。",
+          "empty_description": "エリアは、コンプライアンス、営業、バックオフィスなど、一緒に働くメンバーをまとめ、そのプロジェクトへのアクセス権を一度に付与します。",
+          "synced_badge": "同期済み",
+          "counts": "{members, plural, one {# 人} other {# 人}} · {projects, plural, one {# 件のプロジェクト} other {# 件のプロジェクト}}",
+          "delete_aria": "{name}を削除",
+          "delete_title": "{name}を削除しますか？",
+          "delete_content": "このエリアのメンバー全員が、このエリアによって付与されていたプロジェクトへのアクセス権を失います。他のエリアから付与されたアクセス権や、プロジェクトで手動で設定したアクセス権は維持されます。",
+          "delete_content_synced": "このエリアのメンバー全員が、このエリアによって付与されていたプロジェクトへのアクセス権を失います。このエリアはディレクトリから同期されているため、次回の同期で再び作成されます。完全に削除したい場合は、代わりにディレクトリ側でグループを削除してください。",
+          "delete_loading": "削除中...",
+          "delete_confirm": "エリアを削除",
+          "toast": {
+            "deleted_title": "エリアを削除しました",
+            "deleted_message": "{name}が付与していたプロジェクトへのアクセス権を取り消しました。他で付与されたアクセス権は維持されます。",
+            "not_deleted": "削除できませんでした"
+          }
+        },
+        "form": {
+          "edit_title": "エリアを編集",
+          "name_placeholder": "コンプライアンス",
+          "description_placeholder": "このエリアの担当範囲",
+          "create": "エリアを作成",
+          "toast": {
+            "updated": "{name}を更新しました。",
+            "created_title": "作成しました",
+            "created": "{name}を使用できるようになりました。",
+            "name_taken": "この名前のエリアはすでに存在します。別の名前を指定してください。"
+          }
+        },
+        "detail": {
+          "tab_people": "メンバー",
+          "back_aria": "すべてのエリアに戻る"
+        },
+        "members": {
+          "select_person": "メンバーを選択",
+          "no_addable": "このワークスペースの全員がすでにこのエリアに所属しています",
+          "add": "エリアに追加",
+          "empty": "このエリアにはまだ誰もいません。メンバーを追加すると、そのプロジェクトへのアクセス権が付与されます。",
+          "directory_badge": "ディレクトリ",
+          "remove_aria": "{name}をこのエリアから削除",
+          "lead_note": "エリアのリードは、エリア自体を管理します。プロジェクトの管理者権限は、プロジェクト側で別途付与されます。",
+          "directory_note": "{badge}と表示されているメンバーは、IDプロバイダーから同期されています。ここで削除しても次回の同期までしか有効ではないため、代わりに上流のグループから削除してください。手動で追加したメンバーが同期によって削除されることはありません。",
+          "toast": {
+            "added_title": "メンバーを追加しました",
+            "added": "このエリアのプロジェクトにアクセスできるようになりました。",
+            "not_added": "追加できませんでした",
+            "one_lead": "エリアに設定できるリードは一度に 1 人だけです。",
+            "removed_title": "メンバーを削除しました",
+            "removed": "{name}は、このエリア以外で付与されたプロジェクトへのアクセス権を引き続き保持します。",
+            "not_removed": "削除できませんでした"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "プロジェクトの設定とメンバーを変更できます",
+          "role_member_hint": "作業項目を作成・編集できます",
+          "role_guest_hint": "限定的なアクセス",
+          "select_project": "プロジェクトを選択",
+          "no_linkable": "すべてのプロジェクトがすでにこのエリアにリンクされています",
+          "link": "プロジェクトをリンク",
+          "empty": "リンクされたプロジェクトはまだありません。プロジェクトをリンクすると、このエリアのメンバーがアクセスできるようになります。",
+          "unlink_aria": "{name}をこのエリアからリンク解除",
+          "role_note": "メンバーのロールは、所属するエリアが付与するロールのうち最も高いものになり、ワークスペースのロールが上限となります。プロジェクトで手動で設定したロールがここで下げられることはありません。",
+          "toast": {
+            "linked_title": "プロジェクトをリンクしました",
+            "linked": "このエリアの全員がアクセスできるようになりました。",
+            "not_linked": "リンクできませんでした",
+            "unlinked_title": "プロジェクトのリンクを解除しました",
+            "unlinked": "このエリア以外で付与された{name}へのアクセス権は維持されます。",
+            "not_unlinked": "リンクを解除できませんでした"
+          }
+        },
+        "directory_sync": {
+          "heading": "ディレクトリ同期",
+          "description": "Microsoft Entra ID でエリアのメンバーシップを最新の状態に保ちます。誰がどのエリアに所属するかは Entra が決定し、エリアがどのプロジェクトにどのロールでアクセス権を付与するかは、引き続きここで設定します。",
+          "never": "なし",
+          "copy": "コピー",
+          "provisioning_on": "プロビジョニングは有効です。",
+          "provisioning_off": "プロビジョニングは無効です。",
+          "no_token_warning": "プロビジョニングを有効にする前にトークンを発行してください。トークンがないと Entra は認証できません。",
+          "tenant_url": "テナント URL",
+          "tenant_url_hint": "Entra のエンタープライズ アプリケーションで、プロビジョニング → 管理者資格情報にこの値を貼り付けてください。",
+          "secret_token": "シークレット トークン",
+          "token_installed": "{prefix}……で始まるトークンが登録されています。最終使用：{last_used}。",
+          "no_token": "トークンは登録されていません。",
+          "rotate_token": "トークンをローテーション",
+          "issue_token": "トークンを発行",
+          "revoke": "取り消す",
+          "rotate_hint": "ローテーションは即時に反映されるため、Entra に新しいトークンを設定するまでプロビジョニングは失敗します。",
+          "last_sync": "最終同期",
+          "resync_now": "今すぐ再同期",
+          "summary_added": "{count, plural, one {# 件追加} other {# 件追加}}",
+          "summary_restored": "{count, plural, one {# 件復元} other {# 件復元}}",
+          "summary_withdrawn": "{count, plural, one {# 件取り消し} other {# 件取り消し}}",
+          "resync_hint": "再同期は、ディレクトリからすでに送信された内容を再適用するだけで、Entra を呼び出すことはありません。ディレクトリからすでに送られていたメンバーを招待した後に使用してください。",
+          "unresolved_heading": "ディレクトリから送信されたが、このワークスペースにいないメンバー（{count}）",
+          "unresolved_empty": "ディレクトリから送信された全員が、このワークスペースのアクティブなメンバーです。",
+          "not_workspace_member": "ワークスペースのメンバーではありません",
+          "inactive_in_directory": "ディレクトリで非アクティブ",
+          "unresolved_hint": "これらのメンバーをワークスペースに招待すると、自動的に所属エリアに参加します。または、Entra のグループから削除してください。",
+          "auto_create_title": "新しいグループのエリアを作成",
+          "auto_create_hint": "無効の場合、ディレクトリは、名前が一致するように作成済みのエリアにのみメンバーを追加します。",
+          "auto_create_saved": "新しいディレクトリ グループの処理方法を保存しました。",
+          "deprovision_title": "ディレクトリによるメンバーの削除を許可",
+          "deprovision_hint": "無効の場合、同期はメンバーの追加のみを行います。手動で追加したメンバーは、いずれの場合も削除されません。",
+          "deprovision_saved": "ディレクトリからの削除の処理方法を保存しました。",
+          "toast": {
+            "copied_title": "コピーしました",
+            "copied": "{label}をクリップボードにコピーしました。",
+            "not_copied_title": "コピーできませんでした",
+            "not_copied": "{label}を選択して手動でコピーしてください。",
+            "load_failed_title": "ディレクトリ接続を読み込めませんでした",
+            "load_failed": "しばらくしてからもう一度お試しください。",
+            "save_failed": "変更を保存できませんでした。もう一度お試しください。",
+            "token_issued_title": "トークンを発行しました",
+            "token_issued": "今すぐコピーしてください。表示されるのはこの一度だけです。",
+            "token_not_issued_title": "発行できませんでした",
+            "token_not_issued": "トークンを作成できませんでした。",
+            "token_revoked_title": "トークンを取り消しました",
+            "token_revoked": "新しいトークンが発行されるまで、プロビジョニングは無効になります。",
+            "token_not_revoked_title": "取り消せませんでした",
+            "token_not_revoked": "トークンを取り消せませんでした。",
+            "resynced_title": "再同期しました",
+            "resynced": "{added, plural, one {# 件追加} other {# 件追加}}、{withdrawn, plural, one {# 件取り消し} other {# 件取り消し}}。",
+            "not_resynced_title": "再同期できませんでした",
+            "not_resynced": "再同期を完了できませんでした。"
+          }
+        },
+        "work": {
+          "tab": "作業",
+          "inbox": "受信トレイ",
+          "in_progress": "進行中",
+          "empty_inbox": "待機中のものはありません。このエリアが引き受けた作業項目は、誰かが着手するまでここに表示されます。",
+          "empty_in_progress": "現在、このエリアのために作業している人はいません。",
+          "claim": "引き受ける",
+          "assign": "担当者を指定…",
+          "return_to_queue": "キューに戻す",
+          "overdue": "期限超過",
+          "unassigned": "担当者なし",
+          "executor_count": "{count, plural, one {作業項目 #件} other {作業項目 #件}}",
+          "age": {
+            "just_now": "たった今",
+            "minutes": "{count, plural, one {#分} other {#分}}",
+            "hours": "{count, plural, one {#時間} other {#時間}}",
+            "days": "{count, plural, one {#日} other {#日}}"
+          },
+          "reason": {
+            "new_item": "引き受けたばかり",
+            "awaiting_coordinator": "コーディネーターを待っています",
+            "awaiting_claim": "誰かが引き受けるのを待っています",
+            "no_eligible_member": "このエリアには引き受けられる人がいません",
+            "executor_unavailable": "実行者が対応できません",
+            "manually_returned": "キューに戻されました"
+          },
+          "assign_modal": {
+            "title": "この作業項目を割り当てる",
+            "search": "名前またはメールアドレスで検索",
+            "no_candidates": "このエリアにはまだ作業を引き受けられる人がいません。先にエリアにメンバーを追加してください。",
+            "assigning": "割り当てています…",
+            "open_items": "{count, plural, one {未完了 #件} other {未完了 #件}}",
+            "unavailable": "不在",
+            "opted_out": "新規の作業を受けません"
+          },
+          "toast": {
+            "claimed_title": "作業項目を引き受けました",
+            "claimed": "この作業項目はあなたのものになり、このエリアの受信トレイから外れました。",
+            "not_claimed": "引き受けられませんでした",
+            "assigned_title": "作業項目を割り当てました",
+            "assigned": "現在は{name}さんが担当しています。",
+            "not_assigned": "割り当てられませんでした",
+            "returned_title": "キューに戻しました",
+            "returned": "再び担当者を待っています。",
+            "not_returned": "戻せませんでした",
+            "transferred_title": "別のエリアに移動しました",
+            "transferred": "これから {name} が担当します。",
+            "not_transferred": "移動できませんでした"
+          },
+          "attention": "要対応",
+          "attention_overdue_date": "期限超過",
+          "attention_suspended": "一時停止",
+          "attention_unavailable": "担当者が不在",
+          "attention_no_date": "期限なし",
+          "empty_attention": "今すぐ対応が必要なものはありません。",
+          "decisions": "決定",
+          "empty_decisions": "まだ割り当て決定はありません。",
+          "decision_supersedes": "以前の決定を置き換えました",
+          "decision_outcome": {
+            "assigned": "割り当て済み",
+            "queued": "キュー待ち",
+            "allocation_failed": "割り当てできませんでした",
+            "rejected": "拒否"
+          },
+          "transfer": "別のエリアに移動",
+          "transfer_modal": {
+            "title": "別のエリアに移動",
+            "search": "エリアを検索",
+            "no_units": "このプロジェクトを担当する他のエリアはありません。",
+            "transferring": "移動中…"
+          },
+          "suggestion": "提案: {name}",
+          "unavailable_until": "{until}まで不在",
+          "unavailable_open": "不在",
+          "executor_away": "不在",
+          "process_progress": "{done}/{total}"
+        },
+        "executive": {
+          "title": "エグゼクティブビュー",
+          "heading": "エリア別の作業",
+          "description": "各エリアと実行中のプロセスで、作業がどのように進んでいるか。",
+          "link": "エグゼクティブビュー",
+          "load_failed": "エグゼクティブビューを読み込めませんでした。",
+          "empty": "エリアはまだありません。",
+          "hidden_count": "{count, plural, one {開けないプロジェクトに作業項目が #件 あります} other {開けないプロジェクトに作業項目が #件 あります}}",
+          "period": {
+            "label": "期間",
+            "7d": "過去7日",
+            "30d": "過去30日",
+            "90d": "過去90日"
+          },
+          "indicators": {
+            "area": "エリア",
+            "backlog": "バックログ",
+            "queued": "キュー待ち",
+            "assignment_overdue": "割り当て期限超過",
+            "target_overdue": "目標日超過",
+            "queue_age_p50": "キュー経過 p50",
+            "queue_age_p90": "キュー経過 p90",
+            "throughput": "スループット",
+            "cycle_time_p50": "サイクルタイム p50",
+            "cycle_time_p90": "サイクルタイム p90",
+            "concentration_top3": "上位3人の集中度",
+            "auto_assign_kept_ratio": "自動割り当ての維持率"
+          },
+          "processes": {
+            "heading": "プロセス",
+            "running": "実行中",
+            "completed": "期間内に完了",
+            "lead_time_p50": "リードタイム p50",
+            "lead_time_p90": "リードタイム p90",
+            "empty": "この期間に実行中または完了したプロセスはありません。",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "表示するものがありません。開けないプロジェクトの項目は件数に含まれ、一覧には出ません。",
+            "close": "閉じる"
+          }
+        },
+        "errors": {
+          "unit_not_found": "そのエリアは存在しません。",
+          "name_required": "エリアには名前が必要です。",
+          "slug_taken": "この名前のエリアはすでにあります。",
+          "members_not_in_workspace": "追加できるのは、このワークスペースの有効なメンバーだけです。",
+          "membership_not_found": "その方はこのエリアにはいません。",
+          "lead_already_set": "このエリアにはすでにリードがいます。",
+          "unit_not_in_workspace": "そのエリアはこのワークスペースのものではありません。",
+          "project_required": "紐付けるプロジェクトを選んでください。",
+          "invalid_role": "エリアはそのロールを付与できません。",
+          "project_not_in_workspace": "そのプロジェクトはこのワークスペースのものではありません。",
+          "link_not_found": "そのプロジェクトはこのエリアに紐付いていません。",
+          "work_item_not_found": "その作業項目は存在しません。",
+          "work_item_has_no_unit": "この作業項目を担当するエリアがありません。",
+          "invalid_assignment_mode": "それは割り当てモードではありません。",
+          "unit_not_covering_project": "そのエリアはこのプロジェクトに紐づいていません。",
+          "assignment_mode_not_allowed": "このエリアではその割り当て方法は許可されていません。",
+          "executor_not_eligible": "この方はこの作業項目を担当できません。",
+          "work_item_already_claimed": "この作業項目は先に他の方が引き受けました。",
+          "decision_stale": "この作業項目は表示中に変更されました。再読み込みしてからもう一度お試しください。",
+          "invalid_routing_transition": "この作業項目は現在の状態からその状態へは移行できません。",
+          "directory_workspace_not_found": "そのワークスペースは存在しません。",
+          "directory_token_required": "ディレクトリからのプロビジョニングを有効にする前に、SCIM トークンを発行してください。",
+          "not_unit_coordinator": "このエリアのコーディネーターかワークスペース管理者のみ実行できます。",
+          "coordinator_already_set": "この方はすでにこのエリアのコーディネーターです。",
+          "coordinator_not_found": "コーディネーターが見つかりません。",
+          "not_the_executor": "現在の担当者、このエリアのコーディネーター、またはワークスペース管理者のみ実行できます。",
+          "coordinator_must_be_member": "コーディネーターはワークスペースの有効なメンバーまたは管理者である必要があります。",
+          "invalid_queue_filter": "そのキューのフィルターは認識されません。",
+          "public_api_disabled": "自動化 API はこのインスタンスでは無効です。",
+          "idempotency_key_required": "このリクエストには Idempotency-Key ヘッダーが必要です。",
+          "idempotency_payload_mismatch": "このキーは別のリクエストですでに使用されています。",
+          "operation_in_progress": "同じリクエストがまだ実行中です。少し待ってからもう一度お試しください。",
+          "external_binding_conflict": "この外部キーはすでに別の作業項目を指しています。",
+          "assignees_not_allowed_here": "この作業項目を誰が担当するかはエリアが決めるため、このリクエストで担当者を指定することはできません。",
+          "if_match_required": "このリクエストには、現在の決定を含む If-Match ヘッダーが必要です。",
+          "process_projection_disabled": "プロセス投影はこのインスタンスでは無効です。",
+          "completion_manual_only": "この作業項目は人によってのみ完了できます。",
+          "internal_error": "問題が発生しました。この操作は失敗として記録されました。",
+          "availability_window_not_found": "その不在期間は見つかりませんでした。",
+          "availability_invalid_interval": "不在期間の終了は開始より後である必要があります。",
+          "availability_from_required": "不在期間には開始日が必要です。",
+          "workspace_member_not_found": "その人はこのワークスペースのメンバーではありません。",
+          "allocation_limit_forbidden": "個人の作業上限を設定できるのは、コーディネーターまたはワークスペース管理者だけです。",
+          "not_availability_manager": "この操作ができるのは、その人のいずれかのエリアのコーディネーター、またはワークスペース管理者だけです。"
+        },
+        "coordinators": {
+          "tab": "コーディネーター",
+          "select_person": "人を選択",
+          "no_addable": "このエリアをコーディネートできる人はすでに登録されています",
+          "add": "コーディネーターを追加",
+          "empty": "まだこのエリアをコーディネートしている人はいません。コーディネーターはエリアのメンバーでなくてもキューを運用できます。",
+          "remove_aria": "{name} のこのエリアのコーディネートを解除",
+          "note": "コーディネーターはエリアのキューを運用します。エリアのメンバーである必要はありません。ワークスペースのゲストはコーディネーターになれません。",
+          "toast": {
+            "added_title": "コーディネーターを追加しました",
+            "added": "このエリアのキューを運用できるようになりました。",
+            "not_added": "追加できませんでした",
+            "removed_title": "コーディネーターを削除しました",
+            "removed": "{name} はこのエリアをコーディネートしなくなりました。",
+            "not_removed": "削除できませんでした"
+          }
+        },
+        "policy": {
+          "tab": "ポリシー",
+          "heading": "このエリアの割り当て方法",
+          "description": "エリアの既定値です。プロジェクトごとに上書きできます。",
+          "scope_area": "エリアの既定",
+          "scope_project": "{name} の上書き",
+          "default_mode": "既定のモード",
+          "allowed_modes": "許可するモード",
+          "sla_seconds": "割り当て SLA（秒）",
+          "sla_hint": "未割り当てのままコーディネーターに通知するまでの秒数です。期限なしの場合は空のままにしてください。",
+          "max_open": "1人あたりの未完了上限",
+          "max_open_hint": "上限なしの場合は空のままにしてください。",
+          "save": "ポリシーを保存",
+          "mode": {
+            "manual": "コーディネーターが割り当て",
+            "self_claim": "自分で仕事を取る",
+            "least_loaded": "負荷が最も少ないメンバー",
+            "explicit": "指定した人"
+          },
+          "toast": {
+            "saved_title": "ポリシーを保存しました",
+            "saved": "新しい仕事はこのルールに従います。",
+            "not_saved": "保存できませんでした"
+          }
+        },
+        "my_areas": {
+          "title": "自分のエリア",
+          "heading": "自分のエリア",
+          "description": "所属しているエリアと、それぞれの待ち仕事です。",
+          "empty": "まだどのエリアにも所属していません。",
+          "select": "エリアを選択"
+        },
+        "availability": {
+          "title": "不在期間",
+          "help": "不在にすると自動割り当てはあなたを選びません。すでに持っている作業は取り上げません。",
+          "empty": "記録はありません。",
+          "from": "開始",
+          "until": "終了",
+          "add": "追加",
+          "added": "記録しました",
+          "not_added": "記録できませんでした",
+          "removed": "削除しました",
+          "not_removed": "削除できませんでした",
+          "remove_aria": "この不在を削除",
+          "range": "{from}から{until}",
+          "open_ended": "{from}から、復帰日なし",
+          "reason": {
+            "vacation": "休暇",
+            "leave": "休業",
+            "other": "その他"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "このエリアから新しい作業を受け取る",
+          "accepts_new_work_help": "オフにすると、ここでの自動割り当てはその人を選びません。持っている作業は残り、名前を指定して渡すこともできます。",
+          "max_open_items": "同時に開ける作業の上限",
+          "max_open_items_help": "自動割り当てはこの数で止まります。空欄ならエリア自身の上限が使われます。",
+          "no_limit": "上限なし",
+          "saved": "保存しました",
+          "not_saved": "保存できませんでした",
+          "limit_invalid": "1以上の整数である必要があります。",
+          "open_aria": "{name}の作業設定"
+        }
       }
     },
     "empty_state": {

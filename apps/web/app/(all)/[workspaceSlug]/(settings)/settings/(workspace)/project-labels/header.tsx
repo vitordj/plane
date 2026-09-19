@@ -27,11 +27,7 @@ export const ProjectLabelsWorkspaceSettingsHeader = observer(function ProjectLab
             <Breadcrumbs.Item
               component={
                 <BreadcrumbLink
-                  label={
-                    !t(settingsDetails.i18n_label) || t(settingsDetails.i18n_label) === settingsDetails.i18n_label
-                      ? "Project Labels"
-                      : t(settingsDetails.i18n_label)
-                  }
+                  label={t(settingsDetails.i18n_label)}
                   icon={<Icon className="size-4 text-tertiary" />}
                 />
               }

@@ -82,6 +82,12 @@ export const coreRoutes: RouteConfigEntry[] = [
           route(":workspaceSlug/drafts", "./(all)/[workspaceSlug]/(projects)/drafts/page.tsx"),
         ]),
 
+        // My areas (Orca) — injected here rather than in WORKSPACE_SIDEBAR_STATIC
+        // so an upstream sync does not have to resolve a constants conflict.
+        layout("./(all)/[workspaceSlug]/(projects)/my-areas/layout.tsx", [
+          route(":workspaceSlug/my-areas", "./(all)/[workspaceSlug]/(projects)/my-areas/page.tsx"),
+        ]),
+
         // Notifications
         layout("./(all)/[workspaceSlug]/(projects)/notifications/layout.tsx", [
           route(":workspaceSlug/notifications", "./(all)/[workspaceSlug]/(projects)/notifications/page.tsx"),
@@ -289,6 +295,14 @@ export const coreRoutes: RouteConfigEntry[] = [
           route(
             ":workspaceSlug/settings/project-labels",
             "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/project-labels/page.tsx"
+          ),
+          route(
+            ":workspaceSlug/settings/organizational-units",
+            "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/organizational-units/page.tsx"
+          ),
+          route(
+            ":workspaceSlug/settings/organizational-units/executive",
+            "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/organizational-units/executive/page.tsx"
           ),
         ]),
 

@@ -22,6 +22,7 @@ from plane.app.serializers import (
     ProjectListSerializer,
     ProjectSerializer,
 )
+from plane.app.services.orca import dispatch_reconciliation
 from plane.app.views.base import BaseAPIView, BaseViewSet
 from plane.bgtasks.recent_visited_task import recent_visited_task
 from plane.bgtasks.webhook_task import model_activity, webhook_activity
@@ -466,6 +467,12 @@ class ProjectArchiveUnarchiveEndpoint(BaseAPIView):
         project.archived_at = timezone.now()
         project.save()
         UserFavorite.objects.filter(workspace__slug=slug, project=project_id).delete()
+        # An archived project is not a source of inherited access any more (the
+        # Orca resolver skips it), but nothing recomputes that on its own — the
+        # inherited ProjectMember rows would stay active until somebody
+        # reconciled this project by hand. Reconciling here is what withdraws
+        # them; access granted outside the layer is untouched, as always.
+        dispatch_reconciliation(project.workspace_id, project_ids=[project.id])
         return Response({"archived_at": str(project.archived_at)}, status=status.HTTP_200_OK)
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
@@ -473,6 +480,8 @@ class ProjectArchiveUnarchiveEndpoint(BaseAPIView):
         project = Project.objects.get(pk=project_id, workspace__slug=slug)
         project.archived_at = None
         project.save()
+        # And the areas that link to it grant access again.
+        dispatch_reconciliation(project.workspace_id, project_ids=[project.id])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

@@ -141,7 +141,7 @@ export const ProjectCardList = observer(function ProjectCardList(props: TProject
       })),
       {
         id: "no-label",
-        name: "No Label",
+        name: t("workspace_projects.group.no_label"),
         color: "#6b7280",
         projectIds: grouped["no-label"] || [],
       },

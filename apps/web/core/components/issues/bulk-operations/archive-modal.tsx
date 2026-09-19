@@ -8,6 +8,7 @@ import { useState } from "react";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { AlertModalCore, EModalWidth } from "@plane/ui";
 // hooks
@@ -22,6 +23,9 @@ type Props = {
 
 export const BulkArchiveConfirmModal = observer(function BulkArchiveConfirmModal(props: Props) {
   const { isOpen, issueIds, onClose, onSuccess } = props;
+  // translation
+  const { t } = useTranslation();
+  const K = "issue.bulk_operations.archive_modal";
   // router
   const { workspaceSlug, projectId } = useParams();
   // store
@@ -40,16 +44,16 @@ export const BulkArchiveConfirmModal = observer(function BulkArchiveConfirmModal
       }
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Archived!",
-        message: `${issueIds.length} work item${issueIds.length > 1 ? "s" : ""} archived successfully.`,
+        title: t(`${K}.toast.archived_title`),
+        message: t(`${K}.toast.archived`, { count: issueIds.length }),
       });
       onSuccess();
       onClose();
     } catch {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error",
-        message: "Something went wrong while archiving. Please try again.",
+        title: t(`${K}.toast.not_archived`),
+        message: t("issue.bulk_operations.try_again"),
       });
     } finally {
       setIsArchiving(false);
@@ -62,22 +66,14 @@ export const BulkArchiveConfirmModal = observer(function BulkArchiveConfirmModal
       handleClose={onClose}
       handleSubmit={handleArchive}
       isSubmitting={isArchiving}
-      title="Archive work items"
+      title={t(`${K}.title`)}
       variant="primary"
       width={EModalWidth.SM}
       primaryButtonText={{
-        loading: "Archiving...",
-        default: `Archive ${issueIds.length} item${issueIds.length > 1 ? "s" : ""}`,
+        loading: t(`${K}.loading`),
+        default: t(`${K}.confirm`, { count: issueIds.length }),
       }}
-      content={
-        <>
-          Are you sure you want to archive{" "}
-          <span className="font-medium break-words text-primary">
-            {issueIds.length} work item{issueIds.length > 1 ? "s" : ""}
-          </span>
-          ? You can view and restore them from the project archives later.
-        </>
-      }
+      content={t(`${K}.content`, { count: issueIds.length })}
     />
   );
 });

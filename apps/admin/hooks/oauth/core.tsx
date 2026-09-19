@@ -13,12 +13,14 @@ import type {
 } from "@plane/types";
 // assets
 import giteaLogo from "@/app/assets/logos/gitea-logo.svg?url";
+import microsoftLogo from "@/app/assets/logos/microsoft-logo.svg?url";
 import githubLightModeImage from "@/app/assets/logos/github-black.png?url";
 import githubDarkModeImage from "@/app/assets/logos/github-white.png?url";
 import gitlabLogo from "@/app/assets/logos/gitlab-logo.svg?url";
 import googleLogo from "@/app/assets/logos/google-logo.svg?url";
 // components
 import { EmailCodesConfiguration } from "@/components/authentication/email-config-switch";
+import { EntraConfiguration } from "@/components/authentication/entra-config";
 import { GiteaConfiguration } from "@/components/authentication/gitea-config";
 import { GithubConfiguration } from "@/components/authentication/github-config";
 import { GitlabConfiguration } from "@/components/authentication/gitlab-config";
@@ -88,5 +90,14 @@ export const getCoreAuthenticationModesMap: (
     icon: <img src={giteaLogo} height={20} width={20} alt="Gitea Logo" />,
     config: <GiteaConfiguration disabled={disabled} updateConfig={updateConfig} />,
     enabledConfigKey: "IS_GITEA_ENABLED",
+  },
+  // Microsoft Entra ID, added by the fork (see FORK.md).
+  entra: {
+    key: "entra",
+    name: "Microsoft Entra ID",
+    description: "Allow members to sign in with their corporate Microsoft accounts.",
+    icon: <img src={microsoftLogo} height={20} width={20} alt="Microsoft Logo" />,
+    config: <EntraConfiguration disabled={disabled} updateConfig={updateConfig} />,
+    enabledConfigKey: "IS_ENTRA_ENABLED",
   },
 });

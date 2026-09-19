@@ -20,7 +20,70 @@
   },
   "cycle": {
     "label": "{count, plural, one {Ciclu} other {Cicluri}}",
-    "no_cycle": "Niciun ciclu"
+    "no_cycle": "Niciun ciclu",
+    "start_stop": {
+      "start": {
+        "title": "Începeți ciclul",
+        "loading": "Se începe",
+        "question": "Începeți „{name}”? Aceasta setează {date} ca dată de început și face ciclul activ."
+      },
+      "end": {
+        "title": "Finalizați ciclul",
+        "loading": "Se finalizează",
+        "question": "Finalizați „{name}”? Aceasta setează {date} ca dată de sfârșit și marchează ciclul ca finalizat."
+      },
+      "move_unstarted": {
+        "label": "Mutați activitățile neîncepute în starea În desfășurare",
+        "hint": "Fiecare activitate din restanțe sau neîncepută din acest ciclu trece în starea În desfășurare."
+      },
+      "no_in_progress": {
+        "title": "Acest proiect nu are o stare În desfășurare.",
+        "hint": "Activitățile din acest ciclu își păstrează starea actuală."
+      },
+      "mark_completed": {
+        "label": "Marcați toate activitățile nefinalizate ca Finalizat",
+        "hint": "{count, plural, one {Singura activitate nefinalizată din acest ciclu trece în starea Finalizat.} few {Cele # activități nefinalizate din acest ciclu trec în starea Finalizat.} other {Cele # de activități nefinalizate din acest ciclu trec în starea Finalizat.}}"
+      },
+      "no_completed": {
+        "hint": "Acest proiect nu are o stare Finalizat în care să fie mutate.",
+        "title": "{count, plural, one {# activitate nu este încă gata.} few {# activități nu sunt încă gata.} other {# de activități nu sunt încă gata.}}"
+      },
+      "toast": {
+        "started": "Ciclu început",
+        "started_message": "„{name}” este activ.",
+        "started_moved": "„{name}” este activ. Activitățile neîncepute au trecut în În desfășurare.",
+        "completed": "Ciclu finalizat",
+        "completed_message": "„{name}” este finalizat.",
+        "completed_moved": "„{name}” este finalizat. Activitățile nefinalizate au trecut în Finalizat.",
+        "failed": "Ceva nu a mers bine"
+      },
+      "try_again": "Încercați din nou peste o clipă."
+    },
+    "actions": {
+      "start": "Începeți ciclul",
+      "complete": "Finalizați ciclul"
+    },
+    "toast": {
+      "created": "Ciclu creat",
+      "not_created": "Ciclul nu a fost creat",
+      "updated": "Ciclu actualizat",
+      "not_updated": "Ciclul nu a fost actualizat",
+      "try_again": "Încercați din nou peste o clipă.",
+      "dates_taken": "Un alt ciclu ocupă deja acele date. Ștergeți datele pentru a crea o ciornă de ciclu."
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "Activități transferate",
+        "not_transferred": "Activitățile nu au fost transferate",
+        "not_loaded": "Ciclul nu a putut fi încărcat"
+      },
+      "search_placeholder": "Căutați un ciclu",
+      "notice": "Un ciclu finalizat rămâne editabil până este arhivat. Activitățile nefinalizate pot fi mutate în alt ciclu.",
+      "action": "Transferați activitățile nefinalizate",
+      "heading": "Transferați activitățile nefinalizate"
+    },
+    "drop_archived_error": "O activitate nu poate fi mutată într-un ciclu arhivat",
+    "add_named": "Adăugați „{name}” la cicluri"
   },
   "active_cycle_analytics": {
     "empty_state": {

@@ -21,6 +21,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "plane.settings.production")
 
 ri = redis_instance()
 
+
 # Configurable metrics push interval (in minutes)
 # Default: 360 (6 hours), set to 5 for development/testing
 def _get_metrics_push_interval_minutes() -> int:
@@ -32,6 +33,7 @@ def _get_metrics_push_interval_minutes() -> int:
         return value if 0 < value <= 10_000_000 else 360
     except (ValueError, OverflowError):
         return 360
+
 
 METRICS_PUSH_INTERVAL_MINUTES = _get_metrics_push_interval_minutes()
 
@@ -91,6 +93,37 @@ app.conf.beat_schedule = {
     "check-every-day-to-delete-exporter-history": {
         "task": "plane.bgtasks.exporter_expired_task.delete_old_s3_link",
         "schedule": crontab(hour=3, minute=45),  # UTC 03:45
+    },
+    # Orca: turn directory identities that were parked as unresolved into real
+    # unit memberships once those people become workspace members. Hourly is a
+    # deliberate compromise — SCIM already delivers directory changes within
+    # minutes, so this only covers the Plane-side event nothing notifies us of.
+    "check-every-hour-to-resolve-directory-identities": {
+        "task": "plane.bgtasks.organizational_directory_task.resolve_directory_identities",
+        "schedule": crontab(minute=20),  # Every hour at :20
+    },
+    # Orca: expire the automation API's idempotency receipts. Daily, in the same
+    # small hours as the cleanup tasks above, and after the last of them: the
+    # table only grows while an integration is calling, so the exact minute
+    # does not matter -- having a window at all does.
+    "check-every-day-to-delete-orca-automation-operations": {
+        "task": "plane.bgtasks.orca_automation_cleanup_task.delete_orca_automation_operations",
+        "schedule": crontab(hour=4, minute=0),  # UTC 04:00
+    },
+    # Orca: notice items whose assignment SLA has passed. Fifteen minutes is
+    # the same cadence as the rest of the intra-day schedule; last_alerted_at
+    # (four-hour cooldown) is what stops the same people being told about the
+    # same item on every tick.
+    "check-every-fifteen-minutes-to-sweep-assignment-sla": {
+        "task": "plane.bgtasks.organizational_queue_task.sweep_assignment_sla",
+        "schedule": crontab(minute="*/15"),
+    },
+    # Orca: return work whose executor went away, left the area, the
+    # workspace, or the project. Hourly; the command is the dry-run. :40
+    # keeps it clear of the directory resolve at :20.
+    "check-every-hour-for-unavailable-executors": {
+        "task": "plane.bgtasks.organizational_availability_task.sweep_unavailable_executors",
+        "schedule": crontab(minute=40),
     },
 }
 

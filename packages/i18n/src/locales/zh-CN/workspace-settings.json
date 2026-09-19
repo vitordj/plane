@@ -257,9 +257,50 @@
       },
       "project_states": {
         "title": "项目状态",
-        "heading": "查看所有项目的进度概览。",
-        "description": "项目状态是 Plane 独有的功能，用于按任何项目属性跟踪您所有项目的进度。",
-        "go_to_settings": "前往设置"
+        "heading": "项目状态",
+        "description": "在整个工作区中以一致的方式对项目生命周期进行分类和跟踪。",
+        "go_to_settings": "前往设置",
+        "loading": "正在加载设置",
+        "list_heading": "工作区项目状态",
+        "try_again": "请稍后重试。",
+        "toast": {
+          "enabled": "项目状态已开启",
+          "disabled": "项目状态已关闭",
+          "not_saved": "未保存",
+          "state_created": "已创建状态",
+          "state_updated": "已更新状态",
+          "state_deleted": "已删除状态",
+          "default_set": "已更新默认状态"
+        },
+        "confirm": {
+          "enable_title": "开启工作区项目状态？",
+          "disable_title": "关闭工作区项目状态？",
+          "enable_content": "今后状态将由工作区统一管理，适用于所有项目。工作项的状态可能会与工作区的状态集对齐。",
+          "disable_content": "各项目重新管理自己的状态。工作项的状态可能会与项目的状态集对齐。"
+        }
+      },
+      "project_labels": {
+        "title": "项目标签",
+        "heading": "项目标签",
+        "description": "创建和管理工作区级别的项目标签，用于分类以及看板和列表视图中的分组。",
+        "go_to_settings": "前往设置",
+        "loading": "正在加载设置",
+        "list_heading": "工作区项目标签",
+        "try_again": "请稍后重试。",
+        "toast": {
+          "enabled": "项目标签已开启",
+          "disabled": "项目标签已关闭",
+          "not_saved": "未保存",
+          "label_created": "已创建标签",
+          "label_updated": "已更新标签",
+          "label_deleted": "已删除标签"
+        },
+        "confirm": {
+          "enable_title": "开启工作区项目标签？",
+          "disable_title": "关闭工作区项目标签？",
+          "enable_content": "今后标签将由工作区统一管理，适用于所有项目。",
+          "disable_content": "各项目重新管理自己的标签。"
+        }
       },
       "projects": {
         "title": "项目",
@@ -484,6 +525,392 @@
         "heading": "脚本",
         "new_script": "新建脚本",
         "description": "使用自定义脚本和自动化规则自动化您的工作流程。"
+      },
+      "organizational_units": {
+        "title": "区域",
+        "heading": "区域",
+        "description": "将成员分组到区域，并一步为每个区域授予其项目的访问权限。",
+        "add": "新建区域",
+        "disabled": "本实例已关闭区域功能。管理员可以通过设置 ORCA_ORG_UNITS_ENABLED=1 来启用。",
+        "try_again": "请稍后再试。",
+        "toast": {
+          "saved": "已保存",
+          "not_saved": "未保存",
+          "role_unchanged": "角色未更改"
+        },
+        "list": {
+          "empty_title": "还没有区域。",
+          "empty_description": "区域将一起工作的成员分组（例如合规、销售、后台运营），并一步为他们授予其项目的访问权限。",
+          "synced_badge": "已同步",
+          "counts": "{members, plural, one {# 人} other {# 人}} · {projects, plural, one {# 个项目} other {# 个项目}}",
+          "delete_aria": "删除 {name}",
+          "delete_title": "删除 {name}？",
+          "delete_content": "此区域中的所有成员都将失去由该区域授予的项目访问权限。由其他区域授予或在项目中手动设置的访问权限将保留。",
+          "delete_content_synced": "此区域中的所有成员都将失去由该区域授予的项目访问权限。此区域从您的目录同步而来，下次同步时会再次创建。如果您希望彻底删除，请改为在目录中移除该组。",
+          "delete_loading": "正在删除...",
+          "delete_confirm": "删除区域",
+          "toast": {
+            "deleted_title": "区域已删除",
+            "deleted_message": "由 {name} 授予的项目访问权限已撤销。其他途径授予的访问权限将保留。",
+            "not_deleted": "未删除"
+          }
+        },
+        "form": {
+          "edit_title": "编辑区域",
+          "name_placeholder": "合规",
+          "description_placeholder": "此区域负责的工作",
+          "create": "创建区域",
+          "toast": {
+            "updated": "{name} 已更新。",
+            "created_title": "已创建",
+            "created": "{name} 已可以使用。",
+            "name_taken": "已存在同名区域。请换一个名称。"
+          }
+        },
+        "detail": {
+          "tab_people": "成员",
+          "back_aria": "返回所有区域"
+        },
+        "members": {
+          "select_person": "选择成员",
+          "no_addable": "此工作区的所有成员都已在此区域中",
+          "add": "添加到区域",
+          "empty": "此区域中还没有成员。添加成员以授予他们对其项目的访问权限。",
+          "directory_badge": "目录",
+          "remove_aria": "将 {name} 从此区域中移除",
+          "lead_note": "担任区域负责人只管理区域本身。项目管理员权限需在项目中单独授予。",
+          "directory_note": "标记为 {badge} 的成员来自您的身份提供者。在此处移除只在下次同步前有效，请改为在上游的组中将其移除。手动添加的成员不会被同步移除。",
+          "toast": {
+            "added_title": "成员已添加",
+            "added": "他们现在可以访问此区域的项目。",
+            "not_added": "未添加",
+            "one_lead": "一个区域同时只能有一位负责人。",
+            "removed_title": "成员已移除",
+            "removed": "{name} 将保留在此区域之外授予的项目访问权限。",
+            "not_removed": "未移除"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "可以更改项目设置和成员",
+          "role_member_hint": "可以创建和编辑工作项",
+          "role_guest_hint": "有限访问",
+          "select_project": "选择项目",
+          "no_linkable": "所有项目都已关联到此区域",
+          "link": "关联项目",
+          "empty": "还没有关联的项目。关联一个项目以授予此区域成员访问权限。",
+          "unlink_aria": "取消 {name} 与此区域的关联",
+          "role_note": "成员的角色取其所属区域授予的最高角色，且不超过其工作区角色。在项目中手动设置的角色不会在此被降低。",
+          "toast": {
+            "linked_title": "项目已关联",
+            "linked": "此区域的所有成员现在都可以访问该项目。",
+            "not_linked": "未关联",
+            "unlinked_title": "已取消项目关联",
+            "unlinked": "在此区域之外授予的 {name} 访问权限将保留。",
+            "not_unlinked": "未取消关联"
+          }
+        },
+        "directory_sync": {
+          "heading": "目录同步",
+          "description": "让 Microsoft Entra ID 保持区域成员身份最新。由 Entra 决定谁属于哪个区域；区域授予哪些项目的访问权限以及对应的角色，仍在此处设置。",
+          "never": "从未",
+          "copy": "复制",
+          "provisioning_on": "预配已开启。",
+          "provisioning_off": "预配已关闭。",
+          "no_token_warning": "请在开启预配之前先颁发令牌，否则 Entra 无法进行身份验证。",
+          "tenant_url": "租户 URL",
+          "tenant_url_hint": "在 Entra 企业应用程序中，将此值粘贴到预配 → 管理员凭据。",
+          "secret_token": "机密令牌",
+          "token_installed": "已安装以 {prefix}… 开头的令牌。上次使用：{last_used}。",
+          "no_token": "未安装令牌。",
+          "rotate_token": "轮换令牌",
+          "issue_token": "颁发令牌",
+          "revoke": "吊销",
+          "rotate_hint": "轮换会立即生效，因此在向 Entra 提供新令牌之前，预配将会失败。",
+          "last_sync": "上次同步",
+          "resync_now": "立即重新同步",
+          "summary_added": "{count, plural, one {新增 # 项} other {新增 # 项}}",
+          "summary_restored": "{count, plural, one {恢复 # 项} other {恢复 # 项}}",
+          "summary_withdrawn": "{count, plural, one {撤销 # 项} other {撤销 # 项}}",
+          "resync_hint": "重新同步只会重放目录已发送的内容，不会调用 Entra。请在邀请了目录已推送过的人员之后使用。",
+          "unresolved_heading": "由目录推送但不在此工作区中（{count}）",
+          "unresolved_empty": "目录发送的所有人员都是此工作区的活跃成员。",
+          "not_workspace_member": "不是工作区成员",
+          "inactive_in_directory": "在目录中处于非活跃状态",
+          "unresolved_hint": "邀请这些人员加入工作区，他们将自动加入各自的区域；或者在 Entra 的组中将其移除。",
+          "auto_create_title": "为新组创建区域",
+          "auto_create_hint": "关闭时，目录只能填充您已创建且名称匹配的区域。",
+          "auto_create_saved": "已保存新目录组的处理方式。",
+          "deprovision_title": "允许目录移除成员",
+          "deprovision_hint": "关闭时，同步只会添加成员。无论如何，手动添加的成员都不会被移除。",
+          "deprovision_saved": "已保存目录移除操作的处理方式。",
+          "toast": {
+            "copied_title": "已复制",
+            "copied": "{label} 已复制到剪贴板。",
+            "not_copied_title": "无法复制",
+            "not_copied": "请手动选择并复制 {label}。",
+            "load_failed_title": "无法加载目录连接",
+            "load_failed": "请稍后再试。",
+            "save_failed": "无法保存更改。请重试。",
+            "token_issued_title": "令牌已颁发",
+            "token_issued": "请立即复制，它只会显示这一次。",
+            "token_not_issued_title": "未颁发",
+            "token_not_issued": "无法创建令牌。",
+            "token_revoked_title": "令牌已吊销",
+            "token_revoked": "在颁发新令牌之前，预配将保持关闭。",
+            "token_not_revoked_title": "未吊销",
+            "token_not_revoked": "无法吊销令牌。",
+            "resynced_title": "已重新同步",
+            "resynced": "{added, plural, one {新增 # 项} other {新增 # 项}}，{withdrawn, plural, one {撤销 # 项} other {撤销 # 项}}。",
+            "not_resynced_title": "未重新同步",
+            "not_resynced": "无法完成重新同步。"
+          }
+        },
+        "work": {
+          "tab": "工作",
+          "inbox": "收件箱",
+          "in_progress": "进行中",
+          "empty_inbox": "没有等待中的内容。此区域承接的工作项会显示在这里，直到有人接手。",
+          "empty_in_progress": "目前没有人在为此区域处理任何工作。",
+          "claim": "接手",
+          "assign": "指派给…",
+          "return_to_queue": "退回队列",
+          "overdue": "已逾期",
+          "unassigned": "无负责人",
+          "executor_count": "{count, plural, one {# 个工作项} other {# 个工作项}}",
+          "age": {
+            "just_now": "刚刚",
+            "minutes": "{count, plural, one {# 分钟} other {# 分钟}}",
+            "hours": "{count, plural, one {# 小时} other {# 小时}}",
+            "days": "{count, plural, one {# 天} other {# 天}}"
+          },
+          "reason": {
+            "new_item": "刚刚承接",
+            "awaiting_coordinator": "等待协调员",
+            "awaiting_claim": "等待有人接手",
+            "no_eligible_member": "此区域中没有人可以接手",
+            "executor_unavailable": "执行人当前不可用",
+            "manually_returned": "已退回队列"
+          },
+          "assign_modal": {
+            "title": "指派此工作项",
+            "search": "按姓名或邮箱搜索",
+            "no_candidates": "此区域中尚无人可以承接工作。请先向该区域添加成员。",
+            "assigning": "正在指派…",
+            "open_items": "{count, plural, one {# 项未完成} other {# 项未完成}}",
+            "unavailable": "离开",
+            "opted_out": "不接受新工作"
+          },
+          "toast": {
+            "claimed_title": "已接手工作项",
+            "claimed": "它现在属于您，并已离开此区域的收件箱。",
+            "not_claimed": "未接手",
+            "assigned_title": "已指派工作项",
+            "assigned": "现在由 {name} 负责。",
+            "not_assigned": "未指派",
+            "returned_title": "已退回队列",
+            "returned": "它再次在等待有人接手。",
+            "not_returned": "未退回",
+            "transferred_title": "已移至其他区域",
+            "transferred": "现在由 {name} 负责。",
+            "not_transferred": "未能移动"
+          },
+          "attention": "需要关注",
+          "attention_overdue_date": "已过截止日期",
+          "attention_suspended": "已暂停",
+          "attention_unavailable": "执行人不可用",
+          "attention_no_date": "没有截止日期",
+          "empty_attention": "目前没有需要关注的事项。",
+          "decisions": "决策",
+          "empty_decisions": "尚无分配决策。",
+          "decision_supersedes": "已取代先前的决策",
+          "decision_outcome": {
+            "assigned": "已分配",
+            "queued": "排队中",
+            "allocation_failed": "无法分配",
+            "rejected": "已拒绝"
+          },
+          "transfer": "移至其他区域",
+          "transfer_modal": {
+            "title": "移至其他区域",
+            "search": "搜索区域",
+            "no_units": "没有其他区域覆盖此项目。",
+            "transferring": "正在移动…"
+          },
+          "suggestion": "建议：{name}",
+          "unavailable_until": "离开至 {until}",
+          "unavailable_open": "离开",
+          "executor_away": "离开",
+          "process_progress": "{done}/{total}"
+        },
+        "executive": {
+          "title": "管理视图",
+          "heading": "按区域查看工作",
+          "description": "各区域以及正在运行的流程中，工作进展如何。",
+          "link": "管理视图",
+          "load_failed": "无法加载管理视图。",
+          "empty": "还没有区域。",
+          "hidden_count": "{count, plural, one {# 个工作项位于您无法打开的项目中} other {# 个工作项位于您无法打开的项目中}}",
+          "period": {
+            "label": "周期",
+            "7d": "最近 7 天",
+            "30d": "最近 30 天",
+            "90d": "最近 90 天"
+          },
+          "indicators": {
+            "area": "区域",
+            "backlog": "待办",
+            "queued": "排队中",
+            "assignment_overdue": "分配逾期",
+            "target_overdue": "目标日期已过",
+            "queue_age_p50": "队列时长 p50",
+            "queue_age_p90": "队列时长 p90",
+            "throughput": "吞吐",
+            "cycle_time_p50": "周期时间 p50",
+            "cycle_time_p90": "周期时间 p90",
+            "concentration_top3": "前 3 名集中度",
+            "auto_assign_kept_ratio": "自动分配保留率"
+          },
+          "processes": {
+            "heading": "流程",
+            "running": "进行中",
+            "completed": "本期内完成",
+            "lead_time_p50": "前置时间 p50",
+            "lead_time_p90": "前置时间 p90",
+            "empty": "本期内没有进行中或已完成的流程。",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "没有可显示的内容。您无法打开的项目中的工作项会计入总数，但不会列出。",
+            "close": "关闭"
+          }
+        },
+        "errors": {
+          "unit_not_found": "该区域已不存在。",
+          "name_required": "区域需要一个名称。",
+          "slug_taken": "已有同名的区域。",
+          "members_not_in_workspace": "添加的每个人都必须是本工作区的有效成员。",
+          "membership_not_found": "此人已不在该区域中。",
+          "lead_already_set": "该区域已有负责人。",
+          "unit_not_in_workspace": "该区域不属于本工作区。",
+          "project_required": "请选择要关联的项目。",
+          "invalid_role": "区域无法授予该角色。",
+          "project_not_in_workspace": "该项目不属于本工作区。",
+          "link_not_found": "该项目已不再关联到此区域。",
+          "work_item_not_found": "该工作项已不存在。",
+          "work_item_has_no_unit": "没有区域负责此工作项。",
+          "invalid_assignment_mode": "这不是一种分配模式。",
+          "unit_not_covering_project": "该区域未关联到本项目。",
+          "assignment_mode_not_allowed": "该区域不允许这种分配方式。",
+          "executor_not_eligible": "该成员无法承接此工作项。",
+          "work_item_already_claimed": "此工作项已被他人先行认领。",
+          "decision_stale": "此工作项在您查看期间已变更。请重新加载后再试。",
+          "invalid_routing_transition": "此工作项无法从当前状态转到该状态。",
+          "directory_workspace_not_found": "该工作区已不存在。",
+          "directory_token_required": "请先签发 SCIM 令牌，再开启目录预配。",
+          "not_unit_coordinator": "只有该区域的协调员或工作区管理员才能执行此操作。",
+          "coordinator_already_set": "此人已经在协调该区域。",
+          "coordinator_not_found": "未找到协调员。",
+          "not_the_executor": "只有当前执行者、该区域的协调员或工作区管理员才能执行此操作。",
+          "coordinator_must_be_member": "协调员必须是工作区的有效成员或管理员。",
+          "invalid_queue_filter": "无法识别该队列筛选条件。",
+          "public_api_disabled": "此实例已关闭自动化 API。",
+          "idempotency_key_required": "此请求需要 Idempotency-Key 标头。",
+          "idempotency_payload_mismatch": "该密钥已用于另一个请求。",
+          "operation_in_progress": "相同的请求仍在处理中。请稍后再试。",
+          "external_binding_conflict": "该外部键已指向另一个工作项。",
+          "assignees_not_allowed_here": "由区域决定谁承接此工作项，因此此请求无法设置负责人。",
+          "if_match_required": "此请求需要携带当前决定的 If-Match 标头。",
+          "process_projection_disabled": "此实例已关闭流程投影。",
+          "completion_manual_only": "此工作项只能由人完成。",
+          "internal_error": "出现问题。该操作已记录为失败。",
+          "availability_window_not_found": "未找到该不可用时段。",
+          "availability_invalid_interval": "不可用时段的结束时间必须晚于开始时间。",
+          "availability_from_required": "不可用时段需要开始时间。",
+          "workspace_member_not_found": "该用户不是此工作区的成员。",
+          "allocation_limit_forbidden": "只有协调员或工作区管理员可以设置个人工作上限。",
+          "not_availability_manager": "只有该用户所属某个区域的协调员，或工作区管理员，才能执行此操作。"
+        },
+        "coordinators": {
+          "tab": "协调人",
+          "select_person": "选择人员",
+          "no_addable": "可以协调此区域的人已经都在其中",
+          "add": "添加协调人",
+          "empty": "还没有人协调此区域。协调人可以操作队列，不必属于该区域。",
+          "remove_aria": "停止让 {name} 协调此区域",
+          "note": "协调人操作区域的队列。不必属于该区域。工作区访客不能担任协调人。",
+          "toast": {
+            "added_title": "已添加协调人",
+            "added": "现在可以操作此区域的队列。",
+            "not_added": "未能添加",
+            "removed_title": "已移除协调人",
+            "removed": "{name} 不再协调此区域。",
+            "not_removed": "未能移除"
+          }
+        },
+        "policy": {
+          "tab": "策略",
+          "heading": "此区域如何分配工作",
+          "description": "区域的默认设置，项目可以覆盖。",
+          "scope_area": "区域默认",
+          "scope_project": "{name} 的覆盖",
+          "default_mode": "默认模式",
+          "allowed_modes": "允许的模式",
+          "sla_seconds": "分配 SLA（秒）",
+          "sla_hint": "工作项无人认领多久后提醒协调人。留空表示没有时限。",
+          "max_open": "每人最多未完成工作项",
+          "max_open_hint": "留空表示没有上限。",
+          "save": "保存策略",
+          "mode": {
+            "manual": "由协调人分配",
+            "self_claim": "由成员自行领取",
+            "least_loaded": "负载最低的成员",
+            "explicit": "指定人员"
+          },
+          "toast": {
+            "saved_title": "已保存策略",
+            "saved": "新工作将遵循这些规则。",
+            "not_saved": "未能保存"
+          }
+        },
+        "my_areas": {
+          "title": "我的区域",
+          "heading": "我的区域",
+          "description": "你所属的区域，以及每个区域中等待处理的工作。",
+          "empty": "你还不属于任何区域。",
+          "select": "选择区域"
+        },
+        "availability": {
+          "title": "离开时间",
+          "help": "离开期间，自动分配不会选择您。已经在您手上的工作不会被收回。",
+          "empty": "暂无记录。",
+          "from": "开始",
+          "until": "结束",
+          "add": "添加",
+          "added": "已记录",
+          "not_added": "无法记录",
+          "removed": "已删除",
+          "not_removed": "无法删除",
+          "remove_aria": "删除此离开记录",
+          "range": "{from} 至 {until}",
+          "open_ended": "自 {from} 起，无返回日期",
+          "reason": {
+            "vacation": "假期",
+            "leave": "请假",
+            "other": "其他"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "接受该区域的新工作",
+          "accepts_new_work_help": "关闭后，自动分配会在此处跳过该成员。已有工作保留，仍可按姓名指派。",
+          "max_open_items": "同时打开的工作上限",
+          "max_open_items_help": "自动分配在此数量处停止。留空则使用该区域自己的上限。",
+          "no_limit": "无上限",
+          "saved": "已保存",
+          "not_saved": "无法保存",
+          "limit_invalid": "必须是大于或等于 1 的整数。",
+          "open_aria": "{name} 的工作设置"
+        }
       }
     },
     "empty_state": {

@@ -93,7 +93,9 @@ class ProjectState(BaseModel):
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
         if self._state.adding:
-            last_id = ProjectState.objects.filter(workspace=self.workspace).aggregate(largest=models.Max("sequence"))["largest"]
+            last_id = ProjectState.objects.filter(workspace=self.workspace).aggregate(largest=models.Max("sequence"))[
+                "largest"
+            ]
             if last_id is not None:
                 self.sequence = last_id + 10000
         return super().save(*args, **kwargs)

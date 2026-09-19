@@ -7,43 +7,69 @@
 
 Plane Orca enhances official Plane Community Edition with extended workflow capabilities, automations, and streamlined self-hosting:
 
-| Category               | Feature                            | Description                                                                                                                                              |
-| :--------------------- | :--------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **🔄 Parallel Cycles** | Multi-Active Cycles                | Run multiple active cycles simultaneously in a single project with manual start, pause, and complete controls.                                           |
-|                        | Auto-Complete & Transfer           | Automatically finish cycles on their end date and easily transfer unfinished work items between cycles.                                                  |
-| **🏷️ Global Taxonomy** | Shared Workspace Labels & States   | Create and maintain standardized issue states and labels at the workspace level across all team projects.                                                |
-| **⚡ Automations**     | Conventional Commits Auto-Labeling | Automatically assigns conventional labels (`feat`, `fix`, `docs`, `refactor`, `chore`, etc.) based on title prefixes, with on-activation backfill.       |
-| **🚀 Productivity**    | Quick Copy Details                 | Copy work item title and clean, single-spaced formatted description from context menus in one action.                                                    |
-|                        | Form Value Retention               | Preserves user input across creation forms when using "Create More".                                                                                     |
-|                        | Enhanced Bulk Operations           | Multi-select and update work item properties with clear, streamlined multi-value dropdowns.                                                              |
-| **🛠️ Data Migration**  | Plane-to-Plane Migration Tool      | Built-in CLI migration utility ([tools/migration](./tools/migration/README.md)) to migrate issues, cycles, labels, and projects between Plane instances. |
-| **🎨 UI & Privacy**    | Clean & Distraction-Free UI        | Removed telemetry trackers and promotional ads for a faster, clutter-free workspace.                                                                     |
-| **🐳 Self-Hosting**    | VPS & Coolify Ready                | Optimized low-memory footprint stack ([docker-compose-orca.yml](./docker-compose-orca.yml)) running smoothly under 3GB RAM.                              |
+| Category               | Feature                            | Description                                                                                                                                                                                           |
+| :--------------------- | :--------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **🔄 Parallel Cycles** | Multi-Active Cycles                | Run multiple active cycles simultaneously in a single project with manual start, pause, and complete controls.                                                                                        |
+|                        | Auto-Complete & Transfer           | Automatically finish cycles on their end date and easily transfer unfinished work items between cycles.                                                                                               |
+| **🏷️ Global Taxonomy** | Shared Workspace Labels & States   | Create and maintain standardized issue states and labels at the workspace level across all team projects.                                                                                             |
+| **⚡ Automations**     | Conventional Commits Auto-Labeling | Automatically assigns conventional labels (`feat`, `fix`, `docs`, `refactor`, `chore`, etc.) based on title prefixes, with on-activation backfill.                                                    |
+| **🚀 Productivity**    | Quick Copy Details                 | Copy work item title and clean, single-spaced formatted description from context menus in one action.                                                                                                 |
+|                        | Form Value Retention               | Preserves user input across creation forms when using "Create More".                                                                                                                                  |
+|                        | Enhanced Bulk Operations           | Multi-select and update work item properties with clear, streamlined multi-value dropdowns.                                                                                                           |
+| **🤖 Automation API**  | Work by area over an API key       | Composed, idempotent `/api/v1/orca/` endpoints that create work and let an **area** decide who does it ([guide](./docs/orca-public-api.md), [client](./tools/orca-client/README.md)). Off by default. |
+| **🛠️ Data Migration**  | Plane-to-Plane Migration Tool      | Built-in CLI migration utility ([tools/migration](./tools/migration/README.md)) to migrate issues, cycles, labels, and projects between Plane instances.                                              |
+| **🎨 UI & Privacy**    | Clean & Distraction-Free UI        | Removed telemetry trackers and promotional ads for a faster, clutter-free workspace.                                                                                                                  |
+| **🐳 Self-Hosting**    | VPS & PaaS Ready                   | Optimized low-memory footprint stack ([docker-compose-orca.yml](./docker-compose-orca.yml)) running smoothly under 3GB RAM.                                                                           |
 
 ### 🐳 Self-Hosted Deployment (`docker-compose-orca.yml`)
 
-Plane Orca is pre-configured for self-hosting on low-spec VPS instances (<3GB RAM) and PaaS platforms like **Coolify** using [docker-compose-orca.yml](./docker-compose-orca.yml).
+Plane Orca is pre-configured for self-hosting on low-spec VPS instances (<3GB RAM) using [docker-compose-orca.yml](./docker-compose-orca.yml). It is a plain Compose file: anything that runs Compose runs it — `docker compose up` on a VPS, or a PaaS that consumes a Compose file, such as Coolify.
 
-#### ⚡ Quick Start (Coolify)
+#### ⚡ Quick Start
 
-1. **Create Application**: Add a new **Docker Compose** resource in Coolify pointing to this repository (`stage` or `prod` branch) with file path `docker-compose-orca.yml`.
-2. **Assign Domain**: In **Domains**, route your URL (e.g. `https://plane.example.com`) to the **`proxy`** service on container port `80`.
-3. **Configure Secrets & Deploy**: Add required secrets in **Environment Variables** and click **Deploy**.
+Whatever runs the stack, three things have to be true:
+
+1. **The Compose file is the deployment unit**: point the platform (or `docker compose -f`) at `docker-compose-orca.yml` on the `stage` or `prod` branch. The images come from GHCR; see `ORCA_IMAGE_REPOSITORY` and `TAG` below.
+2. **Public traffic reaches the `proxy` service on container port `80`**: route your domain (e.g. `https://plane.example.com`) there, and set `TRUSTED_PROXIES` to the CIDR of whatever sits in front of it — the stack refuses to start without it, on purpose, so that client IPs in logs and rate limits cannot be forged.
+3. **Secrets are set as environment variables** before the first boot, not after.
+
+<details>
+<summary>Worked example: Coolify</summary>
+
+1. **Create Application**: Add a new **Docker Compose** resource pointing to this repository (`stage` or `prod` branch) with file path `docker-compose-orca.yml`.
+2. **Assign Domain**: In **Domains**, route your URL to the **`proxy`** service on container port `80`. Coolify is also what supplies `SERVICE_FQDN_PROXY` and `SERVICE_URL_PROXY`, which `DOMAIN_NAME` and `WEB_URL` fall back to — set those two explicitly anywhere else, or the stack comes up on `localhost`.
+3. **Configure Secrets & Deploy**: Add the required secrets in **Environment Variables** and click **Deploy**.
+
+</details>
+
+> [!NOTE]
+> The deploy jobs in `.github/workflows/{stage,prod}.yml` call the Coolify API and are opt-in through the `COOLIFY_DEPLOY_ENABLED` variable; leave it unset and the workflows still lint, test, build and publish, while the deploy step is skipped. The 4UM deployment target is not yet decided (P0.17 in [the platform hardening plan](./docs/plans/orca-work-management/P0-platform-hardening.md)) — record it here once it is.
 
 > [!TIP]
 > **Generate Secret Keys**: Run `openssl rand -hex 32` in your terminal to generate 64-character secret keys.
 
 #### ⚙️ Configuration Variables
 
-| Variable                                      | Required | Description                     | Default                                    |
-| :-------------------------------------------- | :------: | :------------------------------ | :----------------------------------------- |
-| `SECRET_KEY`                                  | **Yes**  | Django session cryptography key | _User-provided (64-char hex)_              |
-| `LIVE_SERVER_SECRET_KEY`                      | **Yes**  | WebSocket encryption key        | _User-provided (64-char hex)_              |
-| `DOMAIN_NAME`                                 |    No    | Public application domain       | Auto-resolved from `${SERVICE_FQDN_PROXY}` |
-| `POSTGRES_USER` / `POSTGRES_PASSWORD`         |    No    | PostgreSQL credentials          | `plane` / `plane123`                       |
-| `POSTGRES_DB`                                 |    No    | PostgreSQL database schema      | `plane`                                    |
-| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` |    No    | MinIO / S3 storage credentials  | `plane-access-key` / `plane-secret-key`    |
-| `AWS_S3_BUCKET_NAME`                          |    No    | File upload storage bucket      | `uploads`                                  |
+| Variable                                              | Required | Description                                                                                                                                                                             | Default                                              |
+| :---------------------------------------------------- | :------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------- |
+| `SERVICE_HEX_64_DJANGO`                               | **Yes**  | Django session cryptography key; reaches the containers as `SECRET_KEY`. No default, so the stack refuses to start without it                                                           | _User-provided (64-char hex)_                        |
+| `SERVICE_HEX_64_LIVE`                                 | **Yes**  | WebSocket encryption key; reaches the containers as `LIVE_SERVER_SECRET_KEY`                                                                                                            | _User-provided (64-char hex)_                        |
+| `DOMAIN_NAME`                                         |    No    | Public application domain. Set it explicitly on any platform that does not supply `SERVICE_FQDN_PROXY`; an explicit value wins over it                                                  | `${SERVICE_FQDN_PROXY}`, else `localhost`            |
+| `WEB_URL`                                             |    No    | Absolute public URL, scheme included. Django builds CSRF/CORS origins, attachment URLs and the automation API's `web_url` from it, so `localhost` here leaks into links a robot sends   | `${SERVICE_URL_PROXY}`, else `http://localhost:8000` |
+| `SERVICE_USER_DATABASE` / `SERVICE_PASSWORD_DATABASE` | **Yes**  | PostgreSQL credentials. Deliberately without a default: a fallback would boot the stack on a password published in this repository, and nothing in the deployment would say so          | _User-provided; Coolify generates both_              |
+| `POSTGRES_DB`                                         |    No    | PostgreSQL database schema (a name, not a credential)                                                                                                                                   | `plane`                                              |
+| `SERVICE_USER_RABBITMQ` / `SERVICE_PASSWORD_RABBITMQ` | **Yes**  | RabbitMQ credentials, on the same terms as the database ones                                                                                                                            | _User-provided; Coolify generates both_              |
+| `SERVICE_USER_AWS` / `SERVICE_PASSWORD_AWS`           | **Yes**  | MinIO / S3 storage credentials; reach the containers as `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, and MinIO as its root user                                                       | _User-provided; Coolify generates both_              |
+| `AWS_S3_BUCKET_NAME`                                  |    No    | File upload storage bucket                                                                                                                                                              | `uploads`                                            |
+| `ORCA_IMAGE_REPOSITORY`                               |    No    | Registry namespace the images are pulled from. Must be the namespace `stage.yml` publishes to (`ghcr.io/<owner>/<repo>`); CI fails when they drift                                      | `ghcr.io/vitordj/plane`                              |
+| `TAG`                                                 |    No    | Image tag for all six services; prefer an immutable `sha-<commit>` for production                                                                                                       | `stage`                                              |
+| `TRUSTED_PROXIES`                                     | **Yes**  | CIDR range(s) of the ingress or reverse proxy in front of Caddy, **space-separated** (Caddy rejects a comma). Only these sources may set the client IP via `X-Forwarded-For`; the stack refuses to start without it | _User-provided (e.g. `10.0.0.0/8`)_                  |
+| `ORCA_ORG_UNITS_ENABLED`                              |    No    | Kill switch of the organizational layer (Areas); forwarded to api, worker, beat and migrator. `1/true/yes/on` or `0/false/no/off`                                                       | `1`                                                  |
+| `ORCA_PUBLIC_API_ENABLED`                             |    No    | Second switch, in front of the automation API at `/api/v1/orca/`. Requires `ORCA_ORG_UNITS_ENABLED` as well; the namespace answers 404 while it is off                                  | `0`                                                  |
+| `ORCA_PUBLIC_API_RATE_LIMIT`                          |    No    | Budget per API token for the automation API. Read at process start, so a change needs a restart                                                                                         | `300/minute`                                         |
+| `ORCA_AUTOMATION_OPERATION_RETENTION_DAYS`            |    No    | Days the automation API remembers an `Idempotency-Key`. Expired daily by the beat; `0` expires every receipt, it does not disable the expiry                                            | `30`                                                 |
+| `ORCA_AVAILABILITY_ENABLED`                           |    No    | Leave, opt-out and personal caps in ranking and the unavailability sweep. Default off so the tables can exist without changing who gets work until Phase 3 is switched on               | `0`                                                  |
+| `ORCA_PROCESS_PROJECTION_ENABLED`                     |    No    | Process runs projected onto work items (`process` block, `complete/`, instance read). Default off so the tables can exist without an orchestrator attaching steps until Phase 4 is on   | `0`                                                  |
 
 ### 🚀 Fork Workflow & Git Strategy
 

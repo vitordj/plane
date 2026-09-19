@@ -257,9 +257,50 @@
       },
       "project_states": {
         "title": "Stări de proiect",
-        "heading": "Vezi prezentarea progresului pentru toate proiectele.",
-        "description": "Stările proiectelor sunt o funcție exclusivă Plane pentru urmărirea progresului tuturor proiectelor tale după orice proprietate a proiectului.",
-        "go_to_settings": "Mergi la setări"
+        "heading": "Stări de proiect",
+        "description": "Clasificați și urmăriți ciclul de viață al proiectelor în mod unitar în tot spațiul de lucru.",
+        "go_to_settings": "Mergi la setări",
+        "loading": "Se încarcă setările",
+        "list_heading": "Stări de proiect ale spațiului de lucru",
+        "try_again": "Încercați din nou peste o clipă.",
+        "toast": {
+          "enabled": "Stările de proiect sunt active",
+          "disabled": "Stările de proiect sunt dezactivate",
+          "not_saved": "Nu s-a salvat",
+          "state_created": "Stare creată",
+          "state_updated": "Stare actualizată",
+          "state_deleted": "Stare ștearsă",
+          "default_set": "Stare implicită actualizată"
+        },
+        "confirm": {
+          "enable_title": "Activați stările de proiect ale spațiului de lucru?",
+          "disable_title": "Dezactivați stările de proiect ale spațiului de lucru?",
+          "enable_content": "Stările vor fi gestionate din spațiul de lucru, în toate proiectele. Activitățile pot avea starea aliniată la setul spațiului de lucru.",
+          "disable_content": "Fiecare proiect își gestionează din nou propriile stări. Activitățile pot avea starea aliniată la setul proiectului."
+        }
+      },
+      "project_labels": {
+        "title": "Etichete de proiect",
+        "heading": "Etichete de proiect",
+        "description": "Creează și gestionează etichete de proiect la nivel de spațiu de lucru pentru categorizare și grupare în vizualizările tablou și listă.",
+        "go_to_settings": "Mergi la setări",
+        "loading": "Se încarcă setările",
+        "list_heading": "Etichete de proiect ale spațiului de lucru",
+        "try_again": "Încercați din nou peste o clipă.",
+        "toast": {
+          "enabled": "Etichetele de proiect sunt active",
+          "disabled": "Etichetele de proiect sunt dezactivate",
+          "not_saved": "Nu s-a salvat",
+          "label_created": "Etichetă creată",
+          "label_updated": "Etichetă actualizată",
+          "label_deleted": "Etichetă ștearsă"
+        },
+        "confirm": {
+          "enable_title": "Activați etichetele de proiect ale spațiului de lucru?",
+          "disable_title": "Dezactivați etichetele de proiect ale spațiului de lucru?",
+          "enable_content": "Etichetele vor fi gestionate din spațiul de lucru, în toate proiectele.",
+          "disable_content": "Fiecare proiect își gestionează din nou propriile etichete."
+        }
       },
       "projects": {
         "title": "Proiecte",
@@ -484,6 +525,392 @@
         "heading": "Script-uri",
         "new_script": "Script nou",
         "description": "Automatizează fluxurile tale de lucru cu scripturi personalizate și reguli de automatizare."
+      },
+      "organizational_units": {
+        "title": "Zone",
+        "heading": "Zone",
+        "description": "Grupați persoanele în zone și acordați fiecărei zone acces la proiectele sale într-un singur pas.",
+        "add": "Zonă nouă",
+        "disabled": "Zonele sunt dezactivate în această instanță. Un administrator le poate activa setând ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Încercați din nou peste câteva momente.",
+        "toast": {
+          "saved": "Salvat",
+          "not_saved": "Nu s-a salvat",
+          "role_unchanged": "Rol neschimbat"
+        },
+        "list": {
+          "empty_title": "Nicio zonă încă.",
+          "empty_description": "O zonă grupează persoanele care lucrează împreună — Conformitate, Vânzări, Back-office — și le acordă acces la proiectele sale într-un singur pas.",
+          "synced_badge": "Sincronizat",
+          "counts": "{members, plural, one {# persoană} few {# persoane} other {# de persoane}} · {projects, plural, one {# proiect} few {# proiecte} other {# de proiecte}}",
+          "delete_aria": "Ștergeți {name}",
+          "delete_title": "Ștergeți {name}?",
+          "delete_content": "Toate persoanele din această zonă pierd accesul la proiecte pe care ea li l-a acordat. Accesul acordat de o altă zonă sau setat manual pe un proiect se păstrează.",
+          "delete_content_synced": "Toate persoanele din această zonă pierd accesul la proiecte pe care ea li l-a acordat. Această zonă este sincronizată din directorul dumneavoastră, așa că următoarea sincronizare o va crea din nou — eliminați în schimb grupul din director dacă doriți să dispară definitiv.",
+          "delete_loading": "Se șterge...",
+          "delete_confirm": "Ștergeți zona",
+          "toast": {
+            "deleted_title": "Zonă ștearsă",
+            "deleted_message": "Accesul la proiecte acordat de {name} a fost retras. Accesul acordat în alt mod se păstrează.",
+            "not_deleted": "Nu s-a șters"
+          }
+        },
+        "form": {
+          "edit_title": "Editați zona",
+          "name_placeholder": "Conformitate",
+          "description_placeholder": "De ce este responsabilă această zonă",
+          "create": "Creați zona",
+          "toast": {
+            "updated": "{name} a fost actualizată.",
+            "created_title": "Creată",
+            "created": "{name} este gata de utilizare.",
+            "name_taken": "Există deja o zonă cu acest nume. Alegeți un alt nume."
+          }
+        },
+        "detail": {
+          "tab_people": "Persoane",
+          "back_aria": "Înapoi la toate zonele"
+        },
+        "members": {
+          "select_person": "Selectați o persoană",
+          "no_addable": "Toate persoanele din acest spațiu de lucru fac deja parte din această zonă",
+          "add": "Adăugați în zonă",
+          "empty": "Nimeni nu face încă parte din această zonă. Adăugați persoane pentru a le acorda acces la proiectele sale.",
+          "directory_badge": "Director",
+          "remove_aria": "Eliminați {name} din această zonă",
+          "lead_note": "Liderul unei zone gestionează doar zona în sine. Rolul de administrator de proiect se acordă separat, pe proiect.",
+          "directory_note": "Persoanele marcate {badge} provin de la furnizorul dumneavoastră de identitate. Eliminarea lor de aici durează doar până la următoarea sincronizare — scoateți-le în schimb din grupul de la sursă. Persoanele adăugate manual nu sunt niciodată eliminate de o sincronizare.",
+          "toast": {
+            "added_title": "Membru adăugat",
+            "added": "Persoana are acum acces la proiectele acestei zone.",
+            "not_added": "Nu s-a adăugat",
+            "one_lead": "O zonă poate avea un singur lider la un moment dat.",
+            "removed_title": "Membru eliminat",
+            "removed": "{name} păstrează orice acces la proiecte acordat în afara acestei zone.",
+            "not_removed": "Nu s-a eliminat"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Poate modifica setările și membrii proiectului",
+          "role_member_hint": "Poate crea și edita activități",
+          "role_guest_hint": "Acces limitat",
+          "select_project": "Selectați un proiect",
+          "no_linkable": "Toate proiectele sunt deja asociate acestei zone",
+          "link": "Asociați un proiect",
+          "empty": "Niciun proiect asociat încă. Asociați unul pentru a acorda membrilor acestei zone acces la el.",
+          "unlink_aria": "Anulați asocierea proiectului {name} cu această zonă",
+          "role_note": "Rolul unei persoane este cel mai înalt acordat de zonele sale, limitat de rolul său în spațiul de lucru. Rolurile setate manual pe un proiect nu sunt niciodată coborâte aici.",
+          "toast": {
+            "linked_title": "Proiect asociat",
+            "linked": "Toate persoanele din această zonă au acum acces la el.",
+            "not_linked": "Nu s-a asociat",
+            "unlinked_title": "Asociere anulată",
+            "unlinked": "Accesul la {name} acordat în afara acestei zone se păstrează.",
+            "not_unlinked": "Asocierea nu s-a anulat"
+          }
+        },
+        "directory_sync": {
+          "heading": "Sincronizare cu directorul",
+          "description": "Lăsați Microsoft Entra ID să mențină actualizată componența zonelor. Entra decide cine aparține unei zone; proiectele pe care le acordă o zonă, și cu ce rol, rămân setate aici.",
+          "never": "Niciodată",
+          "copy": "Copiați",
+          "provisioning_on": "Provizionarea este activată.",
+          "provisioning_off": "Provizionarea este dezactivată.",
+          "no_token_warning": "Emiteți un token înainte de a activa provizionarea — fără el, Entra nu se poate autentifica.",
+          "tenant_url": "URL tenant",
+          "tenant_url_hint": "Lipiți această valoare în Provisioning → Admin Credentials din aplicația de întreprindere Entra.",
+          "secret_token": "Token secret",
+          "token_installed": "Un token care începe cu {prefix}… este instalat. Ultima utilizare: {last_used}.",
+          "no_token": "Nu este instalat niciun token.",
+          "rotate_token": "Rotiți tokenul",
+          "issue_token": "Emiteți token",
+          "revoke": "Revocați",
+          "rotate_hint": "Rotirea intră în vigoare imediat, așa că provizionarea eșuează până când Entra primește noul token.",
+          "last_sync": "Ultima sincronizare",
+          "resync_now": "Resincronizați acum",
+          "summary_added": "{count, plural, one {# adăugare} few {# adăugări} other {# de adăugări}}",
+          "summary_restored": "{count, plural, one {# restaurare} few {# restaurări} other {# de restaurări}}",
+          "summary_withdrawn": "{count, plural, one {# retragere} few {# retrageri} other {# de retrageri}}",
+          "resync_hint": "Resincronizarea reia ce a trimis deja directorul — nu apelează Entra. Folosiți-o după ce ați invitat o persoană pe care directorul o transmisese deja.",
+          "unresolved_heading": "Transmise de director, dar nu în acest spațiu de lucru ({count})",
+          "unresolved_empty": "Toate persoanele trimise de director sunt membri activi ai acestui spațiu de lucru.",
+          "not_workspace_member": "Nu este membru al spațiului de lucru",
+          "inactive_in_directory": "Inactiv în director",
+          "unresolved_hint": "Invitați aceste persoane în spațiul de lucru și se vor alătura automat zonelor lor, sau eliminați-le din grupul din Entra.",
+          "auto_create_title": "Creați zone pentru grupurile noi",
+          "auto_create_hint": "Când este dezactivată, directorul poate completa doar zonele pe care le-ați creat și denumit corespunzător.",
+          "auto_create_saved": "S-a salvat modul de tratare a grupurilor noi din director.",
+          "deprovision_title": "Permiteți directorului să elimine persoane",
+          "deprovision_hint": "Când este dezactivată, sincronizarea doar adaugă. Persoanele adăugate manual nu sunt eliminate în niciun caz.",
+          "deprovision_saved": "S-a salvat modul de tratare a eliminărilor din director.",
+          "toast": {
+            "copied_title": "Copiat",
+            "copied": "{label} a fost copiat în clipboard.",
+            "not_copied_title": "Nu s-a putut copia",
+            "not_copied": "Selectați și copiați manual {label}.",
+            "load_failed_title": "Nu s-a putut încărca conexiunea cu directorul",
+            "load_failed": "Încercați din nou peste câteva momente.",
+            "save_failed": "Modificarea nu a putut fi salvată. Încercați din nou.",
+            "token_issued_title": "Token emis",
+            "token_issued": "Copiați-l acum — este afișat doar de această dată.",
+            "token_not_issued_title": "Nu s-a emis",
+            "token_not_issued": "Tokenul nu a putut fi creat.",
+            "token_revoked_title": "Token revocat",
+            "token_revoked": "Provizionarea este dezactivată până la emiterea unui nou token.",
+            "token_not_revoked_title": "Nu s-a revocat",
+            "token_not_revoked": "Tokenul nu a putut fi revocat.",
+            "resynced_title": "Resincronizat",
+            "resynced": "{added, plural, one {# adăugare} few {# adăugări} other {# de adăugări}}, {withdrawn, plural, one {# retragere} few {# retrageri} other {# de retrageri}}.",
+            "not_resynced_title": "Nu s-a resincronizat",
+            "not_resynced": "Resincronizarea nu a putut fi finalizată."
+          }
+        },
+        "work": {
+          "tab": "Lucru",
+          "inbox": "Căsuță de intrare",
+          "in_progress": "În desfășurare",
+          "empty_inbox": "Nimic nu așteaptă. Activitățile preluate de această zonă apar aici până când cineva se ocupă de ele.",
+          "empty_in_progress": "Nimeni nu lucrează la nimic pentru această zonă în acest moment.",
+          "claim": "Preluați",
+          "assign": "Atribuiți lui…",
+          "return_to_queue": "Returnați în coadă",
+          "overdue": "Întârziat",
+          "unassigned": "Nimeni atribuit",
+          "executor_count": "{count, plural, one {# activitate} few {# activități} other {# de activități}}",
+          "age": {
+            "just_now": "Chiar acum",
+            "minutes": "{count, plural, one {# minut} few {# minute} other {# de minute}}",
+            "hours": "{count, plural, one {# oră} few {# ore} other {# de ore}}",
+            "days": "{count, plural, one {# zi} few {# zile} other {# de zile}}"
+          },
+          "reason": {
+            "new_item": "Preluat recent",
+            "awaiting_coordinator": "Așteaptă un coordonator",
+            "awaiting_claim": "Așteaptă ca cineva să îl preia",
+            "no_eligible_member": "Nimeni din această zonă nu îl poate prelua",
+            "executor_unavailable": "Executantul nu este disponibil",
+            "manually_returned": "Returnat în coadă"
+          },
+          "assign_modal": {
+            "title": "Atribuiți această activitate",
+            "search": "Căutați după nume sau adresă de e-mail",
+            "no_candidates": "Nimeni din această zonă nu poate prelua încă lucru. Adăugați mai întâi persoane în zonă.",
+            "assigning": "Se atribuie…",
+            "open_items": "{count, plural, one {# element deschis} few {# elemente deschise} other {# de elemente deschise}}",
+            "unavailable": "Absent",
+            "opted_out": "Nu preia lucru nou"
+          },
+          "toast": {
+            "claimed_title": "Activitate preluată",
+            "claimed": "Acum vă aparține și a părăsit căsuța de intrare a acestei zone.",
+            "not_claimed": "Nepreluat",
+            "assigned_title": "Activitate atribuită",
+            "assigned": "{name} se ocupă acum de ea.",
+            "not_assigned": "Neatribuit",
+            "returned_title": "Returnat în coadă",
+            "returned": "Așteaptă din nou pe cineva.",
+            "not_returned": "Nereturnat",
+            "transferred_title": "Mutat în altă zonă",
+            "transferred": "{name} este responsabil acum.",
+            "not_transferred": "Nu a fost mutat"
+          },
+          "attention": "Necesită atenție",
+          "attention_overdue_date": "Termen depășit",
+          "attention_suspended": "Întrerupt",
+          "attention_unavailable": "Executor indisponibil",
+          "attention_no_date": "Fără termen",
+          "empty_attention": "Nimic nu necesită atenție acum.",
+          "decisions": "Decizii",
+          "empty_decisions": "Nu există încă decizii de alocare.",
+          "decision_supersedes": "A înlocuit o decizie anterioară",
+          "decision_outcome": {
+            "assigned": "Atribuit",
+            "queued": "În coadă",
+            "allocation_failed": "Nu s-a putut atribui",
+            "rejected": "Refuzat"
+          },
+          "transfer": "Mută în altă zonă",
+          "transfer_modal": {
+            "title": "Mută în altă zonă",
+            "search": "Caută zone",
+            "no_units": "Nicio altă zonă nu acoperă acest proiect.",
+            "transferring": "Se mută…"
+          },
+          "suggestion": "Sugestie: {name}",
+          "unavailable_until": "Absent până la {until}",
+          "unavailable_open": "Absent",
+          "executor_away": "Absent",
+          "process_progress": "{done}/{total}"
+        },
+        "executive": {
+          "title": "Vizualizare executivă",
+          "heading": "Lucru pe zonă",
+          "description": "Cum avansează lucrul în fiecare zonă și în procesele în derulare.",
+          "link": "Vizualizare executivă",
+          "load_failed": "Vizualizarea executivă nu a putut fi încărcată.",
+          "empty": "Nu există încă zone.",
+          "hidden_count": "{count, plural, one {# activitate se află într-un proiect pe care nu îl puteți deschide} few {# activități se află în proiecte pe care nu le puteți deschide} other {# de activități se află în proiecte pe care nu le puteți deschide}}",
+          "period": {
+            "label": "Perioadă",
+            "7d": "Ultimele 7 zile",
+            "30d": "Ultimele 30 de zile",
+            "90d": "Ultimele 90 de zile"
+          },
+          "indicators": {
+            "area": "Zonă",
+            "backlog": "Backlog",
+            "queued": "În coadă",
+            "assignment_overdue": "Alocare restantă",
+            "target_overdue": "Dată țintă depășită",
+            "queue_age_p50": "Vârsta cozii p50",
+            "queue_age_p90": "Vârsta cozii p90",
+            "throughput": "Debit",
+            "cycle_time_p50": "Timp de ciclu p50",
+            "cycle_time_p90": "Timp de ciclu p90",
+            "concentration_top3": "Concentrarea primilor 3",
+            "auto_assign_kept_ratio": "Alocare automată păstrată"
+          },
+          "processes": {
+            "heading": "Procese",
+            "running": "În derulare",
+            "completed": "Finalizate în perioadă",
+            "lead_time_p50": "Timp de execuție p50",
+            "lead_time_p90": "Timp de execuție p90",
+            "empty": "Niciun proces în derulare sau finalizat în această perioadă.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Nimic de afișat. Activitățile din proiectele pe care nu le puteți deschide sunt numărate, nu listate.",
+            "close": "Închideți"
+          }
+        },
+        "errors": {
+          "unit_not_found": "Această zonă nu mai există.",
+          "name_required": "O zonă are nevoie de un nume.",
+          "slug_taken": "Există deja o zonă cu acest nume.",
+          "members_not_in_workspace": "Fiecare persoană adăugată trebuie să fie membru activ al acestui spațiu de lucru.",
+          "membership_not_found": "Această persoană nu mai este în această zonă.",
+          "lead_already_set": "Această zonă are deja un responsabil.",
+          "unit_not_in_workspace": "Această zonă nu aparține acestui spațiu de lucru.",
+          "project_required": "Alegeți un proiect de asociat.",
+          "invalid_role": "O zonă nu poate acorda acest rol.",
+          "project_not_in_workspace": "Acest proiect nu aparține acestui spațiu de lucru.",
+          "link_not_found": "Acest proiect nu mai este asociat acestei zone.",
+          "work_item_not_found": "Această activitate nu mai există.",
+          "work_item_has_no_unit": "Nicio zonă nu răspunde de această activitate.",
+          "invalid_assignment_mode": "Acesta nu este un mod de atribuire.",
+          "unit_not_covering_project": "Această zonă nu este asociată acestui proiect.",
+          "assignment_mode_not_allowed": "Această zonă nu permite acest mod de repartizare a muncii.",
+          "executor_not_eligible": "Această persoană nu poate prelua această activitate.",
+          "work_item_already_claimed": "Altcineva a preluat această activitate înaintea dumneavoastră.",
+          "decision_stale": "Această activitate s-a schimbat între timp. Reîncărcați și încercați din nou.",
+          "invalid_routing_transition": "Această activitate nu poate trece în acea stare din cea curentă.",
+          "directory_workspace_not_found": "Acest spațiu de lucru nu mai există.",
+          "directory_token_required": "Emiteți un token SCIM înainte de a activa provizionarea din director.",
+          "not_unit_coordinator": "Doar coordonatorul acestei zone sau un administrator al spațiului de lucru poate face asta.",
+          "coordinator_already_set": "Această persoană coordonează deja această zonă.",
+          "coordinator_not_found": "Coordonator negăsit.",
+          "not_the_executor": "Doar executantul actual, coordonatorul acestei zone sau un administrator al spațiului de lucru poate face asta.",
+          "coordinator_must_be_member": "Un coordonator trebuie să fie membru activ sau administrator al spațiului de lucru.",
+          "invalid_queue_filter": "Filtrul de coadă nu este recunoscut.",
+          "public_api_disabled": "API-ul de automatizare este dezactivat pe această instanță.",
+          "idempotency_key_required": "Această cerere necesită antetul Idempotency-Key.",
+          "idempotency_payload_mismatch": "Această cheie a fost deja folosită pentru altă cerere.",
+          "operation_in_progress": "O cerere identică este încă în curs. Încercați din nou peste un moment.",
+          "external_binding_conflict": "Această cheie externă indică deja altă activitate.",
+          "assignees_not_allowed_here": "Zona decide cine preia această activitate, așa că această cerere nu poate stabili responsabili.",
+          "if_match_required": "Această cerere necesită antetul If-Match cu decizia în vigoare.",
+          "process_projection_disabled": "Proiecția proceselor este dezactivată pe această instanță.",
+          "completion_manual_only": "Această activitate poate fi finalizată doar de o persoană.",
+          "internal_error": "Ceva nu a funcționat. Operațiunea a fost înregistrată ca eșuată.",
+          "availability_window_not_found": "Această perioadă de indisponibilitate nu a fost găsită.",
+          "availability_invalid_interval": "Sfârșitul unei perioade de indisponibilitate trebuie să fie după început.",
+          "availability_from_required": "O perioadă de indisponibilitate are nevoie de o dată de început.",
+          "workspace_member_not_found": "Această persoană nu este membru al acestui workspace.",
+          "allocation_limit_forbidden": "Doar un coordonator sau un administrator al workspace-ului poate seta o limită personală de lucru.",
+          "not_availability_manager": "Doar un coordonator al uneia dintre zonele acestei persoane, sau un administrator al workspace-ului, poate face acest lucru."
+        },
+        "coordinators": {
+          "tab": "Coordonatori",
+          "select_person": "Selectează o persoană",
+          "no_addable": "Toți cei care pot coordona această zonă o fac deja",
+          "add": "Adaugă coordonator",
+          "empty": "Nimeni nu coordonează încă această zonă. Un coordonator gestionează coada fără a trebui să facă parte din ea.",
+          "remove_aria": "Oprește coordonarea acestei zone de către {name}",
+          "note": "Un coordonator gestionează coada zonei. Nu trebuie să facă parte din ea. Invitații spațiului de lucru nu pot fi coordonatori.",
+          "toast": {
+            "added_title": "Coordonator adăugat",
+            "added": "Poate gestiona acum coada acestei zone.",
+            "not_added": "Nu a fost adăugat",
+            "removed_title": "Coordonator eliminat",
+            "removed": "{name} nu mai coordonează această zonă.",
+            "not_removed": "Nu a fost eliminat"
+          }
+        },
+        "policy": {
+          "tab": "Politică",
+          "heading": "Cum atribuie această zonă munca",
+          "description": "Valoarea implicită a zonei, pe care un proiect o poate înlocui.",
+          "scope_area": "Implicitul zonei",
+          "scope_project": "Excepție pentru {name}",
+          "default_mode": "Mod implicit",
+          "allowed_modes": "Moduri permise",
+          "sla_seconds": "SLA de atribuire (secunde)",
+          "sla_hint": "Cât poate sta un element neatribuit înainte de a alerta coordonatorii. Lasă gol pentru niciun termen.",
+          "max_open": "Maximum de elemente deschise per persoană",
+          "max_open_hint": "Lasă gol pentru nicio limită.",
+          "save": "Salvează politica",
+          "mode": {
+            "manual": "Coordonatorul atribuie",
+            "self_claim": "Oamenii iau munca singuri",
+            "least_loaded": "Membrul cu cea mai mică sarcină",
+            "explicit": "Persoană numită"
+          },
+          "toast": {
+            "saved_title": "Politică salvată",
+            "saved": "Munca nouă va urma aceste reguli.",
+            "not_saved": "Nu a fost salvată"
+          }
+        },
+        "my_areas": {
+          "title": "Zonele mele",
+          "heading": "Zonele mele",
+          "description": "Zonele din care faci parte și munca care așteaptă în fiecare.",
+          "empty": "Nu faci parte încă din nicio zonă.",
+          "select": "Selectează o zonă"
+        },
+        "availability": {
+          "title": "Absențe",
+          "help": "Absența împiedică atribuirea automată să vă aleagă. Nu retrage ceea ce duceți deja.",
+          "empty": "Nimic înregistrat.",
+          "from": "De la",
+          "until": "Până la",
+          "add": "Adaugă",
+          "added": "Înregistrat",
+          "not_added": "Nu s-a putut înregistra",
+          "removed": "Eliminat",
+          "not_removed": "Nu s-a putut elimina",
+          "remove_aria": "Elimină această absență",
+          "range": "{from} – {until}",
+          "open_ended": "De la {from}, fără dată de revenire",
+          "reason": {
+            "vacation": "Concediu",
+            "leave": "Absență",
+            "other": "Altul"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Preia lucru nou din această zonă",
+          "accepts_new_work_help": "Dezactivat, atribuirea automată îi ocolește aici. Păstrează ce au și li se poate da ceva pe nume.",
+          "max_open_items": "Cele mai multe elemente deschise odată",
+          "max_open_items_help": "Atribuirea automată se oprește la acest număr. Gol înseamnă limita zonei.",
+          "no_limit": "Fără limită",
+          "saved": "Salvat",
+          "not_saved": "Nu s-a putut salva",
+          "limit_invalid": "Trebuie să fie un număr întreg de unu sau mai mult.",
+          "open_aria": "Setări de lucru pentru {name}"
+        }
       }
     },
     "empty_state": {

@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
+# Python imports
+import logging
+
 # Django imports
 from django.utils import timezone
 from django.apps import apps
@@ -12,6 +15,8 @@ from django.db.models.fields.related import OneToOneRel
 
 # Third party imports
 from celery import shared_task
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task
@@ -94,9 +99,18 @@ def soft_delete_related_objects(app_label, model_name, instance_pk, using=None):
                                     related_obj.pk,
                                     using,
                                 )
-            except Exception as e:
-                # Log the error or handle as needed
-                print(f"Error handling relation {related_name}: {str(e)}")
+            except ValueError as exc:
+                # Orca append-only rows (AssignmentDecision, IssueResponsibilityEvent)
+                # refuse the cascade write on purpose. Swallowing that ValueError
+                # is what keeps the audit trail after a work item is deleted
+                # (R1.A14). Anything else is still a real cascade failure.
+                if "append-only" in str(exc):
+                    logger.info("Skipping append-only relation %s during soft-delete cascade", related_name)
+                    continue
+                logger.exception("Error handling relation %s", related_name)
+                continue
+            except Exception:
+                logger.exception("Error handling relation %s", related_name)
                 continue
 
     # Finally, soft delete the instance itself if it hasn't been deleted yet

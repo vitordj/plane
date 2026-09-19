@@ -257,9 +257,50 @@
       },
       "project_states": {
         "title": "Stati del progetto",
-        "heading": "Visualizza una panoramica dei progressi per tutti i progetti.",
-        "description": "Gli stati dei progetti sono una funzionalità esclusiva di Plane per tracciare i progressi di tutti i tuoi progetti in base a qualsiasi proprietà del progetto.",
-        "go_to_settings": "Vai alle impostazioni"
+        "heading": "Stati di progetto",
+        "description": "Classifica e monitora il ciclo di vita dei progetti in modo coerente in tutto lo spazio di lavoro.",
+        "go_to_settings": "Vai alle impostazioni",
+        "loading": "Caricamento delle impostazioni",
+        "list_heading": "Stati di progetto dello spazio di lavoro",
+        "try_again": "Riprovi tra un istante.",
+        "toast": {
+          "enabled": "Stati di progetto attivi",
+          "disabled": "Stati di progetto disattivati",
+          "not_saved": "Non salvato",
+          "state_created": "Stato creato",
+          "state_updated": "Stato aggiornato",
+          "state_deleted": "Stato eliminato",
+          "default_set": "Stato predefinito aggiornato"
+        },
+        "confirm": {
+          "enable_title": "Attivare gli stati di progetto dello spazio di lavoro?",
+          "disable_title": "Disattivare gli stati di progetto dello spazio di lavoro?",
+          "enable_content": "Gli stati saranno gestiti dallo spazio di lavoro, in tutti i progetti. Gli elementi di lavoro potrebbero vedere il proprio stato allineato a quello dello spazio di lavoro.",
+          "disable_content": "Ogni progetto torna a gestire i propri stati. Gli elementi di lavoro potrebbero vedere il proprio stato allineato a quello del progetto."
+        }
+      },
+      "project_labels": {
+        "title": "Etichette di progetto",
+        "heading": "Etichette di progetto",
+        "description": "Crea e gestisci le etichette di progetto a livello di spazio di lavoro per la categorizzazione e il raggruppamento nelle viste bacheca ed elenco.",
+        "go_to_settings": "Vai alle impostazioni",
+        "loading": "Caricamento delle impostazioni",
+        "list_heading": "Etichette di progetto dello spazio di lavoro",
+        "try_again": "Riprovi tra un istante.",
+        "toast": {
+          "enabled": "Etichette di progetto attive",
+          "disabled": "Etichette di progetto disattivate",
+          "not_saved": "Non salvato",
+          "label_created": "Etichetta creata",
+          "label_updated": "Etichetta aggiornata",
+          "label_deleted": "Etichetta eliminata"
+        },
+        "confirm": {
+          "enable_title": "Attivare le etichette di progetto dello spazio di lavoro?",
+          "disable_title": "Disattivare le etichette di progetto dello spazio di lavoro?",
+          "enable_content": "Le etichette saranno gestite dallo spazio di lavoro, in tutti i progetti.",
+          "disable_content": "Ogni progetto torna a gestire le proprie etichette."
+        }
       },
       "projects": {
         "title": "Progetti",
@@ -484,6 +525,392 @@
         "heading": "Script",
         "new_script": "Nuovo script",
         "description": "Automatizza i tuoi flussi di lavoro con script personalizzati e regole di automazione."
+      },
+      "organizational_units": {
+        "title": "Aree",
+        "heading": "Aree",
+        "description": "Raggruppi le persone in aree e conceda a ogni area l'accesso ai suoi progetti in un solo passaggio.",
+        "add": "Nuova area",
+        "disabled": "Le aree sono disattivate in questa istanza. Un amministratore può attivarle impostando ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Riprovi tra qualche istante.",
+        "toast": {
+          "saved": "Salvato",
+          "not_saved": "Non salvato",
+          "role_unchanged": "Ruolo non modificato"
+        },
+        "list": {
+          "empty_title": "Ancora nessuna area.",
+          "empty_description": "Un'area raggruppa le persone che lavorano insieme — Finanza, Vendite, Amministrazione — e concede loro l'accesso ai suoi progetti in un solo passaggio.",
+          "synced_badge": "Sincronizzata",
+          "counts": "{members, plural, one {# persona} many {# persone} other {# persone}} · {projects, plural, one {# progetto} many {# progetti} other {# progetti}}",
+          "delete_aria": "Elimina {name}",
+          "delete_title": "Eliminare {name}?",
+          "delete_content": "Tutte le persone di quest'area perdono l'accesso ai progetti che essa ha concesso loro. L'accesso concesso da un'altra area, o impostato manualmente su un progetto, viene mantenuto.",
+          "delete_content_synced": "Tutte le persone di quest'area perdono l'accesso ai progetti che essa ha concesso loro. Quest'area è sincronizzata dalla sua directory, quindi la prossima sincronizzazione la creerà di nuovo — se vuole eliminarla definitivamente, rimuova invece il gruppo nella directory.",
+          "delete_loading": "Eliminazione in corso...",
+          "delete_confirm": "Elimina area",
+          "toast": {
+            "deleted_title": "Area eliminata",
+            "deleted_message": "L'accesso ai progetti concesso da {name} è stato revocato. L'accesso concesso altrove viene mantenuto.",
+            "not_deleted": "Non eliminata"
+          }
+        },
+        "form": {
+          "edit_title": "Modifica area",
+          "name_placeholder": "Finanza",
+          "description_placeholder": "Di cosa si occupa quest'area",
+          "create": "Crea area",
+          "toast": {
+            "updated": "{name} è stata aggiornata.",
+            "created_title": "Creata",
+            "created": "{name} è pronta all'uso.",
+            "name_taken": "Esiste già un'area con questo nome. Scelga un nome diverso."
+          }
+        },
+        "detail": {
+          "tab_people": "Persone",
+          "back_aria": "Torna a tutte le aree"
+        },
+        "members": {
+          "select_person": "Selezioni una persona",
+          "no_addable": "Tutte le persone di questo spazio di lavoro sono già in quest'area",
+          "add": "Aggiungi all'area",
+          "empty": "Non c'è ancora nessuno in quest'area. Aggiunga persone per dare loro l'accesso ai suoi progetti.",
+          "directory_badge": "Directory",
+          "remove_aria": "Rimuovi {name} da quest'area",
+          "lead_note": "Essere responsabile di un'area dà controllo sull'area stessa. L'amministrazione del progetto viene concessa separatamente, sul progetto.",
+          "directory_note": "Le persone contrassegnate con {badge} provengono dal suo provider di identità. Rimuoverle qui vale solo fino alla prossima sincronizzazione — le tolga invece dal gruppo all'origine. Le persone che aggiunge manualmente non vengono mai rimosse da una sincronizzazione.",
+          "toast": {
+            "added_title": "Membro aggiunto",
+            "added": "Ora ha accesso ai progetti di quest'area.",
+            "not_added": "Non aggiunto",
+            "one_lead": "Un'area può avere un solo responsabile alla volta.",
+            "removed_title": "Membro rimosso",
+            "removed": "{name} mantiene qualsiasi accesso ai progetti concesso al di fuori di quest'area.",
+            "not_removed": "Non rimosso"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Può modificare le impostazioni e i membri del progetto",
+          "role_member_hint": "Può creare e modificare elementi di lavoro",
+          "role_guest_hint": "Accesso limitato",
+          "select_project": "Selezioni un progetto",
+          "no_linkable": "Tutti i progetti sono già collegati a quest'area",
+          "link": "Collega progetto",
+          "empty": "Nessun progetto collegato ancora. Ne colleghi uno per dare accesso ai membri di quest'area.",
+          "unlink_aria": "Scollega {name} da quest'area",
+          "role_note": "Il ruolo di una persona è il più alto concesso dalle sue aree, limitato dal suo ruolo nello spazio di lavoro. I ruoli impostati manualmente su un progetto non vengono mai abbassati qui.",
+          "toast": {
+            "linked_title": "Progetto collegato",
+            "linked": "Ora tutte le persone di quest'area vi hanno accesso.",
+            "not_linked": "Non collegato",
+            "unlinked_title": "Progetto scollegato",
+            "unlinked": "L'accesso a {name} concesso al di fuori di quest'area viene mantenuto.",
+            "not_unlinked": "Non scollegato"
+          }
+        },
+        "directory_sync": {
+          "heading": "Sincronizzazione directory",
+          "description": "Lasci che Microsoft Entra ID mantenga aggiornata la composizione delle aree. Entra decide chi appartiene a un'area; quali progetti concede un'area, e con quale ruolo, resta impostato qui.",
+          "never": "Mai",
+          "copy": "Copia",
+          "provisioning_on": "Il provisioning è attivo.",
+          "provisioning_off": "Il provisioning è disattivato.",
+          "no_token_warning": "Emetta un token prima di attivare il provisioning — senza di esso Entra non può autenticarsi.",
+          "tenant_url": "URL del tenant",
+          "tenant_url_hint": "Incolli questo valore in Provisioning → Credenziali amministratore nell'applicazione aziendale di Entra.",
+          "secret_token": "Token segreto",
+          "token_installed": "È installato un token che inizia con {prefix}… ed è stato usato l'ultima volta {last_used}.",
+          "no_token": "Nessun token installato.",
+          "rotate_token": "Ruota token",
+          "issue_token": "Emetti token",
+          "revoke": "Revoca",
+          "rotate_hint": "La rotazione ha effetto immediato, quindi il provisioning fallisce finché Entra non riceve il nuovo token.",
+          "last_sync": "Ultima sincronizzazione",
+          "resync_now": "Risincronizza ora",
+          "summary_added": "{count, plural, one {# aggiunta} many {# aggiunte} other {# aggiunte}}",
+          "summary_restored": "{count, plural, one {# ripristinata} many {# ripristinate} other {# ripristinate}}",
+          "summary_withdrawn": "{count, plural, one {# rimossa} many {# rimosse} other {# rimosse}}",
+          "resync_hint": "La risincronizzazione riapplica ciò che la directory ha già inviato — non contatta Entra. La usi dopo aver invitato qualcuno che la directory aveva già inviato.",
+          "unresolved_heading": "Inviati dalla directory, ma non in questo spazio di lavoro ({count})",
+          "unresolved_empty": "Tutte le persone inviate dalla directory sono membri attivi di questo spazio di lavoro.",
+          "not_workspace_member": "Non è membro dello spazio di lavoro",
+          "inactive_in_directory": "Inattivo nella directory",
+          "unresolved_hint": "Inviti queste persone nello spazio di lavoro e si uniranno automaticamente alle loro aree, oppure le rimuova dal gruppo in Entra.",
+          "auto_create_title": "Crea aree per i nuovi gruppi",
+          "auto_create_hint": "Se disattivato, la directory può popolare solo le aree che Lei ha creato e a cui ha dato un nome corrispondente.",
+          "auto_create_saved": "Salvato come vengono gestiti i nuovi gruppi della directory.",
+          "deprovision_title": "Consenti alla directory di rimuovere persone",
+          "deprovision_hint": "Se disattivato, la sincronizzazione aggiunge soltanto. Le persone aggiunte manualmente non vengono mai rimosse, in nessun caso.",
+          "deprovision_saved": "Salvato come vengono gestite le rimozioni dalla directory.",
+          "toast": {
+            "copied_title": "Copiato",
+            "copied": "Il valore di {label} è stato copiato negli appunti.",
+            "not_copied_title": "Impossibile copiare",
+            "not_copied": "Selezioni e copi manualmente il valore di {label}.",
+            "load_failed_title": "Impossibile caricare la connessione alla directory",
+            "load_failed": "Riprovi tra qualche istante.",
+            "save_failed": "Impossibile salvare la modifica. Riprovi.",
+            "token_issued_title": "Token emesso",
+            "token_issued": "Lo copi adesso — viene mostrato solo questa volta.",
+            "token_not_issued_title": "Non emesso",
+            "token_not_issued": "Impossibile creare il token.",
+            "token_revoked_title": "Token revocato",
+            "token_revoked": "Il provisioning resta disattivato finché non viene emesso un nuovo token.",
+            "token_not_revoked_title": "Non revocato",
+            "token_not_revoked": "Impossibile revocare il token.",
+            "resynced_title": "Risincronizzato",
+            "resynced": "{added, plural, one {# aggiunta} many {# aggiunte} other {# aggiunte}}, {withdrawn, plural, one {# rimossa} many {# rimosse} other {# rimosse}}.",
+            "not_resynced_title": "Non risincronizzato",
+            "not_resynced": "Impossibile completare la risincronizzazione."
+          }
+        },
+        "work": {
+          "tab": "Lavoro",
+          "inbox": "Posta in arrivo",
+          "in_progress": "In corso",
+          "empty_inbox": "Non c’è nulla in attesa. Gli elementi di lavoro presi in carico da quest’area compaiono qui finché qualcuno non se ne occupa.",
+          "empty_in_progress": "Al momento nessuno sta lavorando a qualcosa per quest’area.",
+          "claim": "Prenderlo",
+          "assign": "Assegnare a…",
+          "return_to_queue": "Rimettere in coda",
+          "overdue": "In ritardo",
+          "unassigned": "Nessun responsabile",
+          "executor_count": "{count, plural, one {# elemento di lavoro} many {# elemento di lavoro} other {# elementi di lavoro}}",
+          "age": {
+            "just_now": "Proprio ora",
+            "minutes": "{count, plural, one {# minuto} many {# minuto} other {# minuti}}",
+            "hours": "{count, plural, one {# ora} many {# ora} other {# ore}}",
+            "days": "{count, plural, one {# giorno} many {# giorno} other {# giorni}}"
+          },
+          "reason": {
+            "new_item": "Appena preso in carico",
+            "awaiting_coordinator": "In attesa di un coordinatore",
+            "awaiting_claim": "In attesa che qualcuno lo prenda",
+            "no_eligible_member": "Nessuno di quest’area può prenderlo",
+            "executor_unavailable": "L’esecutore non è disponibile",
+            "manually_returned": "Rimesso in coda"
+          },
+          "assign_modal": {
+            "title": "Assegnare questo elemento di lavoro",
+            "search": "Cercare per nome o indirizzo e-mail",
+            "no_candidates": "Nessuno di quest’area può ancora prendere lavoro. Aggiunga prima delle persone all’area.",
+            "assigning": "Assegnazione in corso…",
+            "open_items": "{count, plural, one {# elemento aperto} many {# elemento aperto} other {# elementi aperti}}",
+            "unavailable": "Assente",
+            "opted_out": "Non accetta nuovo lavoro"
+          },
+          "toast": {
+            "claimed_title": "Elemento di lavoro preso",
+            "claimed": "Ora è suo ed è uscito dalla posta in arrivo di quest’area.",
+            "not_claimed": "Non preso",
+            "assigned_title": "Elemento di lavoro assegnato",
+            "assigned": "Ora se ne occupa {name}.",
+            "not_assigned": "Non assegnato",
+            "returned_title": "Rimesso in coda",
+            "returned": "È di nuovo in attesa di qualcuno.",
+            "not_returned": "Non rimesso in coda",
+            "transferred_title": "Spostato in un’altra area",
+            "transferred": "{name} ne è ora responsabile.",
+            "not_transferred": "Non spostato"
+          },
+          "attention": "Richiede attenzione",
+          "attention_overdue_date": "Data di scadenza superata",
+          "attention_suspended": "In pausa",
+          "attention_unavailable": "Esecutore non disponibile",
+          "attention_no_date": "Nessuna data di scadenza",
+          "empty_attention": "Al momento nulla richiede attenzione.",
+          "decisions": "Decisioni",
+          "empty_decisions": "Nessuna decisione di assegnazione ancora.",
+          "decision_supersedes": "Ha sostituito una decisione precedente",
+          "decision_outcome": {
+            "assigned": "Assegnato",
+            "queued": "In coda",
+            "allocation_failed": "Impossibile assegnare",
+            "rejected": "Rifiutato"
+          },
+          "transfer": "Sposta in un’altra area",
+          "transfer_modal": {
+            "title": "Sposta in un’altra area",
+            "search": "Cerca aree",
+            "no_units": "Nessun’altra area copre questo progetto.",
+            "transferring": "Spostamento…"
+          },
+          "suggestion": "Suggerito: {name}",
+          "unavailable_until": "Assente fino al {until}",
+          "unavailable_open": "Assente",
+          "executor_away": "Assente",
+          "process_progress": "{done}/{total}"
+        },
+        "executive": {
+          "title": "Vista esecutiva",
+          "heading": "Lavoro per area",
+          "description": "Come procede il lavoro in ogni area e nei processi in corso.",
+          "link": "Vista esecutiva",
+          "load_failed": "Impossibile caricare la vista esecutiva.",
+          "empty": "Nessuna area al momento.",
+          "hidden_count": "{count, plural, one {# elemento di lavoro si trova in un progetto che Lei non può aprire} many {# elementi di lavoro si trovano in progetti che Lei non può aprire} other {# elementi di lavoro si trovano in progetti che Lei non può aprire}}",
+          "period": {
+            "label": "Periodo",
+            "7d": "Ultimi 7 giorni",
+            "30d": "Ultimi 30 giorni",
+            "90d": "Ultimi 90 giorni"
+          },
+          "indicators": {
+            "area": "Area",
+            "backlog": "Backlog",
+            "queued": "In coda",
+            "assignment_overdue": "Assegnazione in ritardo",
+            "target_overdue": "Data obiettivo scaduta",
+            "queue_age_p50": "Età della coda p50",
+            "queue_age_p90": "Età della coda p90",
+            "throughput": "Throughput",
+            "cycle_time_p50": "Tempo di ciclo p50",
+            "cycle_time_p90": "Tempo di ciclo p90",
+            "concentration_top3": "Concentrazione dei primi 3",
+            "auto_assign_kept_ratio": "Assegnazione automatica mantenuta"
+          },
+          "processes": {
+            "heading": "Processi",
+            "running": "In corso",
+            "completed": "Completati nel periodo",
+            "lead_time_p50": "Lead time p50",
+            "lead_time_p90": "Lead time p90",
+            "empty": "Nessun processo in corso o completato in questo periodo.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Niente da mostrare. Gli elementi dei progetti che Lei non può aprire sono conteggiati, non elencati.",
+            "close": "Chiudi"
+          }
+        },
+        "errors": {
+          "unit_not_found": "Quell’area non esiste più.",
+          "name_required": "Un’area deve avere un nome.",
+          "slug_taken": "Esiste già un’area con questo nome.",
+          "members_not_in_workspace": "Ogni persona aggiunta deve essere un membro attivo di questo spazio di lavoro.",
+          "membership_not_found": "Quella persona non è più in quest’area.",
+          "lead_already_set": "Quest’area ha già un responsabile.",
+          "unit_not_in_workspace": "Quell’area non appartiene a questo spazio di lavoro.",
+          "project_required": "Scelga un progetto da collegare.",
+          "invalid_role": "Un’area non può concedere quel ruolo.",
+          "project_not_in_workspace": "Quel progetto non appartiene a questo spazio di lavoro.",
+          "link_not_found": "Quel progetto non è più collegato a quest’area.",
+          "work_item_not_found": "Quell’elemento di lavoro non esiste più.",
+          "work_item_has_no_unit": "Nessuna area è responsabile di questo elemento di lavoro.",
+          "invalid_assignment_mode": "Quella non è una modalità di assegnazione.",
+          "unit_not_covering_project": "Quell’area non è collegata a questo progetto.",
+          "assignment_mode_not_allowed": "Quell’area non consente quel modo di assegnare il lavoro.",
+          "executor_not_eligible": "Quella persona non può prendere in carico questo elemento di lavoro.",
+          "work_item_already_claimed": "Qualcun altro ha preso questo elemento di lavoro prima.",
+          "decision_stale": "Questo elemento di lavoro è cambiato nel frattempo. Ricarichi e riprovi.",
+          "invalid_routing_transition": "Questo elemento di lavoro non può passare a quello stato da quello attuale.",
+          "directory_workspace_not_found": "Quello spazio di lavoro non esiste più.",
+          "directory_token_required": "Emetta un token SCIM prima di attivare il provisioning da directory.",
+          "not_unit_coordinator": "Solo il coordinatore di quest’area o un amministratore dello spazio di lavoro può farlo.",
+          "coordinator_already_set": "Questa persona coordina già quest’area.",
+          "coordinator_not_found": "Coordinatore non trovato.",
+          "not_the_executor": "Solo l’esecutore attuale, il coordinatore di quest’area o un amministratore dello spazio di lavoro può farlo.",
+          "coordinator_must_be_member": "Un coordinatore deve essere un membro attivo o un amministratore dello spazio di lavoro.",
+          "invalid_queue_filter": "Quel filtro della coda non è riconosciuto.",
+          "public_api_disabled": "L’API di automazione è disattivata su questa istanza.",
+          "idempotency_key_required": "Questa richiesta richiede un’intestazione Idempotency-Key.",
+          "idempotency_payload_mismatch": "Quella chiave è già stata usata per un’altra richiesta.",
+          "operation_in_progress": "Una richiesta identica è ancora in corso. Riprovi tra un momento.",
+          "external_binding_conflict": "Quella chiave esterna punta già a un altro elemento di lavoro.",
+          "assignees_not_allowed_here": "È l’area a decidere chi prende in carico questo elemento di lavoro, quindi questa richiesta non può impostare gli assegnatari.",
+          "if_match_required": "Questa richiesta richiede un’intestazione If-Match con la decisione in vigore.",
+          "process_projection_disabled": "La proiezione dei processi è disattivata su questa istanza.",
+          "completion_manual_only": "Questo elemento di lavoro può essere completato solo da una persona.",
+          "internal_error": "Qualcosa è andato storto. L’operazione è stata registrata come fallita.",
+          "availability_window_not_found": "Questo periodo di indisponibilità non è stato trovato.",
+          "availability_invalid_interval": "La fine di un periodo di indisponibilità deve essere successiva all’inizio.",
+          "availability_from_required": "Un periodo di indisponibilità richiede una data di inizio.",
+          "workspace_member_not_found": "Questa persona non è un membro di questo workspace.",
+          "allocation_limit_forbidden": "Solo un coordinatore o un amministratore del workspace può impostare un limite personale di lavoro.",
+          "not_availability_manager": "Solo un coordinatore di una delle aree di questa persona, o un amministratore del workspace, può farlo."
+        },
+        "coordinators": {
+          "tab": "Coordinatori",
+          "select_person": "Seleziona una persona",
+          "no_addable": "Chi può coordinare quest’area lo fa già",
+          "add": "Aggiungi coordinatore",
+          "empty": "Nessuno coordina ancora quest’area. Un coordinatore gestisce la coda senza doverne far parte.",
+          "remove_aria": "Smetti di far coordinare quest’area a {name}",
+          "note": "Un coordinatore gestisce la coda dell’area. Non deve farne parte. Gli ospiti dello spazio di lavoro non possono essere coordinatori.",
+          "toast": {
+            "added_title": "Coordinatore aggiunto",
+            "added": "Ora può gestire la coda di quest’area.",
+            "not_added": "Non aggiunto",
+            "removed_title": "Coordinatore rimosso",
+            "removed": "{name} non coordina più quest’area.",
+            "not_removed": "Non rimosso"
+          }
+        },
+        "policy": {
+          "tab": "Politica",
+          "heading": "Come quest’area assegna il lavoro",
+          "description": "Il valore predefinito dell’area, che un progetto può sostituire.",
+          "scope_area": "Predefinito dell’area",
+          "scope_project": "Eccezione per {name}",
+          "default_mode": "Modalità predefinita",
+          "allowed_modes": "Modalità consentite",
+          "sla_seconds": "SLA di assegnazione (secondi)",
+          "sla_hint": "Quanto un elemento può restare non assegnato prima di avvisare i coordinatori. Lascia vuoto per nessun termine.",
+          "max_open": "Massimo di elementi aperti per persona",
+          "max_open_hint": "Lascia vuoto per nessun tetto.",
+          "save": "Salva policy",
+          "mode": {
+            "manual": "Il coordinatore assegna",
+            "self_claim": "Le persone prendono il lavoro",
+            "least_loaded": "Membro con meno carico",
+            "explicit": "Persona nominata"
+          },
+          "toast": {
+            "saved_title": "Policy salvata",
+            "saved": "Il nuovo lavoro seguirà queste regole.",
+            "not_saved": "Non salvata"
+          }
+        },
+        "my_areas": {
+          "title": "Le mie aree",
+          "heading": "Le mie aree",
+          "description": "Aree a cui appartieni e il lavoro in attesa in ciascuna.",
+          "empty": "Non appartieni ancora a nessuna area.",
+          "select": "Seleziona un’area"
+        },
+        "availability": {
+          "title": "Assenze",
+          "help": "Essere assenti impedisce all’assegnazione automatica di sceglierti. Non toglie ciò che stai già portando.",
+          "empty": "Niente registrato.",
+          "from": "Dal",
+          "until": "Al",
+          "add": "Aggiungi",
+          "added": "Registrato",
+          "not_added": "Impossibile registrarlo",
+          "removed": "Rimosso",
+          "not_removed": "Impossibile rimuoverlo",
+          "remove_aria": "Rimuovi questa assenza",
+          "range": "Dal {from} al {until}",
+          "open_ended": "Dal {from}, senza data di rientro",
+          "reason": {
+            "vacation": "Ferie",
+            "leave": "Congedo",
+            "other": "Altro"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Accetta nuovo lavoro da quest’area",
+          "accepts_new_work_help": "Disattivato, l’assegnazione automatica li ignora qui. Tengono ciò che hanno e possono ancora ricevere qualcosa per nome.",
+          "max_open_items": "Massimo di elementi aperti contemporaneamente",
+          "max_open_items_help": "L’assegnazione automatica si ferma a questo numero. Vuoto, vale il limite dell’area.",
+          "no_limit": "Nessun limite",
+          "saved": "Salvato",
+          "not_saved": "Impossibile salvare",
+          "limit_invalid": "Deve essere un numero intero di uno o più.",
+          "open_aria": "Impostazioni di lavoro di {name}"
+        }
       }
     },
     "empty_state": {

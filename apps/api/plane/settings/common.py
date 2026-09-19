@@ -20,6 +20,7 @@ from corsheaders.defaults import default_headers
 
 
 # Module imports
+from plane.utils.orca_env import env_flag, env_rate
 from plane.utils.url import is_valid_url
 
 
@@ -44,7 +45,7 @@ if SECRET_KEY in _INSECURE_SECRET_KEYS:
         "This makes your installation vulnerable to session forgery, CSRF bypass, and "
         "password-reset token forging. Set a unique SECRET_KEY before deploying to production. "
         "Generate one with: "
-        "python3 -c \"from django.utils.crypto import get_random_secret_key; print(get_random_secret_key())\""
+        'python3 -c "from django.utils.crypto import get_random_secret_key; print(get_random_secret_key())"'
     )
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -74,9 +75,7 @@ for _cidr in _webhook_allowed_ips_raw.split(","):
 # Example: "silo,silo.namespace.svc.cluster.local,internal-api.lan"
 _webhook_allowed_hosts_raw = os.environ.get("WEBHOOK_ALLOWED_HOSTS", "")
 WEBHOOK_ALLOWED_HOSTS = [
-    _host.strip().rstrip(".").lower()
-    for _host in _webhook_allowed_hosts_raw.split(",")
-    if _host.strip()
+    _host.strip().rstrip(".").lower() for _host in _webhook_allowed_hosts_raw.split(",") if _host.strip()
 ]
 
 # Webhook disallowed domains — comma-separated hostnames. Webhooks targeting
@@ -85,9 +84,7 @@ WEBHOOK_ALLOWED_HOSTS = [
 # for self-hosted deployments; set to e.g. "plane.so" to block specific domains.
 _webhook_disallowed_domains_raw = os.environ.get("WEBHOOK_DISALLOWED_DOMAINS", "")
 WEBHOOK_DISALLOWED_DOMAINS = [
-    _d.strip().rstrip(".").lower()
-    for _d in _webhook_disallowed_domains_raw.split(",")
-    if _d.strip()
+    _d.strip().rstrip(".").lower() for _d in _webhook_disallowed_domains_raw.split(",") if _d.strip()
 ]
 
 # Allowed Hosts
@@ -135,12 +132,27 @@ MIDDLEWARE = [
 ]
 
 # Rest Framework settings
+# SCIM provisioning throttle rate (DRF SimpleRateThrottle format). Sized for
+# batch provisioning: Entra sends one request per user and per membership
+# change, so a first sync of a few hundred people is a few hundred requests in
+# a row. Keyed per workspace — see plane/throttles/scim.py. Defined above
+# REST_FRAMEWORK because the throttle-rates table below reads it.
+SCIM_RATE_LIMIT = os.environ.get("SCIM_RATE_LIMIT", "600/minute")
+
+# Ceiling on SCIM calls that fail to authenticate, keyed by caller address
+# rather than by workspace. A correctly configured tenant never reaches it;
+# it exists so a caller with no valid token cannot spend a workspace's
+# provisioning budget or grind at the token.
+SCIM_AUTH_FAILURE_RATE_LIMIT = os.environ.get("SCIM_AUTH_FAILURE_RATE_LIMIT", "30/minute")
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.SessionAuthentication",),
     "DEFAULT_THROTTLE_CLASSES": ("rest_framework.throttling.AnonRateThrottle",),
     "DEFAULT_THROTTLE_RATES": {
         "anon": "30/minute",
         "asset_id": "5/minute",
+        "scim": SCIM_RATE_LIMIT,
+        "scim_auth_failure": SCIM_AUTH_FAILURE_RATE_LIMIT,
     },
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
@@ -348,6 +360,26 @@ CELERY_IMPORTS = (
     # issue version tasks
     "plane.bgtasks.issue_version_sync",
     "plane.bgtasks.issue_description_version_sync",
+    # orca organizational layer
+    # Celery's autodiscovery only picks up modules named ``tasks``, so this
+    # module has to be imported explicitly or the worker answers a queued
+    # reconciliation with "Received unregistered task".
+    "plane.bgtasks.organizational_unit_task",
+    # The hourly beat entry in plane/celery.py names this module's task; the
+    # worker can only run it if it imported the module at startup.
+    "plane.bgtasks.organizational_directory_task",
+    # Same for the daily receipt retention: beat hands the worker a name, and a
+    # worker that never imported the module answers it with "Received
+    # unregistered task" once a day, silently.
+    "plane.bgtasks.orca_automation_cleanup_task",
+    # Same for the assignment-SLA sweep: beat hands the worker a name every
+    # 15 minutes, and a worker that never imported the module answers it with
+    # "Received unregistered task", silently, for as long as the queue exists.
+    "plane.bgtasks.organizational_queue_task",
+    # Same for the hourly availability sweep: beat hands the worker a name,
+    # and a worker that never imported the module answers it with "Received
+    # unregistered task", silently, every hour.
+    "plane.bgtasks.organizational_availability_task",
 )
 
 FILE_SIZE_LIMIT = int(os.environ.get("FILE_SIZE_LIMIT", 5242880))
@@ -561,6 +593,64 @@ SCRIPT_CAPABLE_MIME_TYPES: frozenset[str] = frozenset(
 
 # Seed directory path
 SEED_DIR = os.path.join(BASE_DIR, "seeds")
+
+# Orca organizational layer (see FORK.md): feature toggle and reconciliation
+# fan-out threshold. Mutations affecting up to ORCA_ORG_SYNC_MAX_EDGES
+# (members x projects) reconcile synchronously; wider ones go to Celery.
+# Strict parser (plane.utils.orca_env): "true"/"yes"/"on" enable, "false"/"no"/
+# "off" disable, anything else fails at boot. The upstream `== "1"` idiom read
+# ORCA_ORG_UNITS_ENABLED=true as *disabled*, which is not a kill switch an
+# operator can trust.
+ORCA_ORG_UNITS_ENABLED = env_flag("ORCA_ORG_UNITS_ENABLED", default=True)
+ORCA_ORG_SYNC_MAX_EDGES = int(os.environ.get("ORCA_ORG_SYNC_MAX_EDGES", 100))
+
+# Second switch, in front of /api/v1/orca/ only. The organizational layer can
+# be on for the UI while the automation API stays shut: an outside system
+# creating work items and allocating people is a wider blast radius than a
+# person doing the same thing in the app, and it is reached with a long-lived
+# API key rather than a session. Default off, and it stays off in production
+# until Gate 2-minimum (RFC §9).
+#
+# Same strict parser as the kill switch above, not upstream's `== "1"`: P0.14
+# closed exactly that defect, where ORCA_ORG_UNITS_ENABLED=true read as
+# *disabled*. A second switch spelled the old way would reintroduce it.
+ORCA_PUBLIC_API_ENABLED = env_flag("ORCA_PUBLIC_API_ENABLED", default=False)
+
+# Leave, vacation, and "I am not taking more from this area". Default off so
+# the tables can exist (item 3.1) without changing who rank_candidates picks
+# until an operator turns Phase 3 on. Same strict parser as the two switches
+# above. The helpers in services/orca/availability.py return the permissive
+# answer while this is off, which is what makes the default safe.
+ORCA_AVAILABILITY_ENABLED = env_flag("ORCA_AVAILABILITY_ENABLED", default=False)
+
+# Recurring processes projected into Plane (Phase 4). Default off so the
+# tables can exist and the assignment service can fill IssueServiceLevel
+# without an orchestrator being able to attach a `process` block. Same
+# strict parser as the three switches above.
+ORCA_PROCESS_PROJECTION_ENABLED = env_flag("ORCA_PROCESS_PROJECTION_ENABLED", default=False)
+
+# Per-token budget for the automation API. Keyed on the API token rather than
+# the address, because every call from one integration arrives from the same
+# host and an address-keyed limit would let one workspace's automation
+# throttle another's. Validated at boot (R1.A13): a typo such as ``300``
+# used to 500 every request instead of failing the process.
+ORCA_PUBLIC_API_RATE_LIMIT = env_rate("ORCA_PUBLIC_API_RATE_LIMIT", "300/minute")
+
+# Registered here rather than in the REST_FRAMEWORK literal above, which is
+# defined before this block: keeping every Orca setting together is worth more
+# than the literal's tidiness, and the file already extends REST_FRAMEWORK
+# after the fact for drf-spectacular below.
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["orca_public"] = ORCA_PUBLIC_API_RATE_LIMIT
+
+# Retention for the automation API's idempotency receipts (RFC §6.7). One row
+# per accepted mutation, each holding the whole response body, and nothing
+# removed them: the table had no ceiling. Far longer than the log windows above
+# (14 and 7 days) rather than shorter, because deleting a receipt un-spends its
+# key — see plane/bgtasks/orca_automation_cleanup_task.py for what a key
+# arriving after its receipt is gone actually does, per operation. Note that 0
+# expires everything rather than keeping it, same as the windows above -- to
+# stop the task instead, drop its beat entry.
+ORCA_AUTOMATION_OPERATION_RETENTION_DAYS = _retention_days("ORCA_AUTOMATION_OPERATION_RETENTION_DAYS", 30)
 
 ENABLE_DRF_SPECTACULAR = os.environ.get("ENABLE_DRF_SPECTACULAR", "0") == "1"
 

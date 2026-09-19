@@ -257,9 +257,50 @@
       },
       "project_states": {
         "title": "Stany projektu",
-        "heading": "Zobacz przegląd postępu dla wszystkich projektów.",
-        "description": "Stany projektów to funkcja Plane służąca do śledzenia postępu wszystkich projektów według dowolnej właściwości projektu.",
-        "go_to_settings": "Przejdź do ustawień"
+        "heading": "Stany projektów",
+        "description": "Klasyfikuj i śledź cykl życia projektów spójnie w całej przestrzeni roboczej.",
+        "go_to_settings": "Przejdź do ustawień",
+        "loading": "Wczytywanie ustawień",
+        "list_heading": "Stany projektów przestrzeni roboczej",
+        "try_again": "Spróbuj ponownie za chwilę.",
+        "toast": {
+          "enabled": "Stany projektów są włączone",
+          "disabled": "Stany projektów są wyłączone",
+          "not_saved": "Nie zapisano",
+          "state_created": "Stan utworzony",
+          "state_updated": "Stan zaktualizowany",
+          "state_deleted": "Stan usunięty",
+          "default_set": "Stan domyślny zaktualizowany"
+        },
+        "confirm": {
+          "enable_title": "Włączyć stany projektów przestrzeni roboczej?",
+          "disable_title": "Wyłączyć stany projektów przestrzeni roboczej?",
+          "enable_content": "Stanami będzie zarządzać przestrzeń robocza, we wszystkich projektach. Elementy pracy mogą mieć stan dopasowany do zestawu przestrzeni roboczej.",
+          "disable_content": "Każdy projekt znów zarządza własnymi stanami. Elementy pracy mogą mieć stan dopasowany do zestawu projektu."
+        }
+      },
+      "project_labels": {
+        "title": "Etykiety projektów",
+        "heading": "Etykiety projektów",
+        "description": "Twórz etykiety projektów na poziomie przestrzeni roboczej i zarządzaj nimi, aby kategoryzować i grupować projekty w widokach tablicy i listy.",
+        "go_to_settings": "Przejdź do ustawień",
+        "loading": "Wczytywanie ustawień",
+        "list_heading": "Etykiety projektów przestrzeni roboczej",
+        "try_again": "Spróbuj ponownie za chwilę.",
+        "toast": {
+          "enabled": "Etykiety projektów są włączone",
+          "disabled": "Etykiety projektów są wyłączone",
+          "not_saved": "Nie zapisano",
+          "label_created": "Etykieta utworzona",
+          "label_updated": "Etykieta zaktualizowana",
+          "label_deleted": "Etykieta usunięta"
+        },
+        "confirm": {
+          "enable_title": "Włączyć etykiety projektów przestrzeni roboczej?",
+          "disable_title": "Wyłączyć etykiety projektów przestrzeni roboczej?",
+          "enable_content": "Etykietami będzie zarządzać przestrzeń robocza, we wszystkich projektach.",
+          "disable_content": "Każdy projekt znów zarządza własnymi etykietami."
+        }
       },
       "projects": {
         "title": "Projekty",
@@ -484,6 +525,392 @@
         "heading": "Skrypty",
         "new_script": "Nowy skrypt",
         "description": "Automatyzuj swoje przepływy pracy za pomocą niestandardowych skryptów i reguł automatyzacji."
+      },
+      "organizational_units": {
+        "title": "Obszary",
+        "heading": "Obszary",
+        "description": "Grupowanie osób w obszary i przyznawanie każdemu obszarowi dostępu do jego projektów w jednym kroku.",
+        "add": "Nowy obszar",
+        "disabled": "Obszary są wyłączone w tej instancji. Administrator może je włączyć, ustawiając ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Proszę spróbować ponownie za chwilę.",
+        "toast": {
+          "saved": "Zapisano",
+          "not_saved": "Nie zapisano",
+          "role_unchanged": "Rola bez zmian"
+        },
+        "list": {
+          "empty_title": "Brak obszarów.",
+          "empty_description": "Obszar grupuje osoby, które ze sobą pracują — Księgowość, Sprzedaż, Administracja — i w jednym kroku daje im dostęp do swoich projektów.",
+          "synced_badge": "Zsynchronizowano",
+          "counts": "{members, plural, one {# osoba} few {# osoby} many {# osób} other {# osoby}} · {projects, plural, one {# projekt} few {# projekty} many {# projektów} other {# projektu}}",
+          "delete_aria": "Usuń {name}",
+          "delete_title": "Usunąć {name}?",
+          "delete_content": "Wszyscy w tym obszarze stracą dostęp do projektów, który im przyznał. Dostęp przyznany przez inny obszar lub ustawiony ręcznie w projekcie zostanie zachowany.",
+          "delete_content_synced": "Wszyscy w tym obszarze stracą dostęp do projektów, który im przyznał. Ten obszar jest synchronizowany z katalogu, więc następna synchronizacja utworzy go ponownie — aby usunąć go na stałe, należy zamiast tego usunąć grupę w katalogu.",
+          "delete_loading": "Usuwanie...",
+          "delete_confirm": "Usuń obszar",
+          "toast": {
+            "deleted_title": "Obszar usunięty",
+            "deleted_message": "Dostęp do projektów przyznany przez {name} został cofnięty. Dostęp przyznany w innym miejscu zostaje zachowany.",
+            "not_deleted": "Nie usunięto"
+          }
+        },
+        "form": {
+          "edit_title": "Edytuj obszar",
+          "name_placeholder": "Księgowość",
+          "description_placeholder": "Za co odpowiada ten obszar",
+          "create": "Utwórz obszar",
+          "toast": {
+            "updated": "Zaktualizowano {name}.",
+            "created_title": "Utworzono",
+            "created": "Obszar {name} jest gotowy do użycia.",
+            "name_taken": "Obszar o tej nazwie już istnieje. Proszę wybrać inną nazwę."
+          }
+        },
+        "detail": {
+          "tab_people": "Osoby",
+          "back_aria": "Powrót do wszystkich obszarów"
+        },
+        "members": {
+          "select_person": "Wybierz osobę",
+          "no_addable": "Wszyscy z tej przestrzeni roboczej należą już do tego obszaru",
+          "add": "Dodaj do obszaru",
+          "empty": "W tym obszarze nie ma jeszcze nikogo. Dodane osoby otrzymają dostęp do jego projektów.",
+          "directory_badge": "Katalog",
+          "remove_aria": "Usuń {name} z tego obszaru",
+          "lead_note": "Lider obszaru zarządza tylko samym obszarem. Rola administratora projektu jest przyznawana osobno, w projekcie.",
+          "directory_note": "Osoby oznaczone jako {badge} pochodzą z dostawcy tożsamości. Usunięcie ich tutaj obowiązuje tylko do następnej synchronizacji — zamiast tego należy usunąć je z grupy u źródła. Osoby dodane ręcznie nigdy nie są usuwane przez synchronizację.",
+          "toast": {
+            "added_title": "Członek dodany",
+            "added": "Ta osoba ma teraz dostęp do projektów tego obszaru.",
+            "not_added": "Nie dodano",
+            "one_lead": "Obszar może mieć tylko jednego lidera naraz.",
+            "removed_title": "Członek usunięty",
+            "removed": "{name} zachowuje dostęp do projektów przyznany poza tym obszarem.",
+            "not_removed": "Nie usunięto"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Może zmieniać ustawienia i członków projektu",
+          "role_member_hint": "Może tworzyć i edytować elementy pracy",
+          "role_guest_hint": "Ograniczony dostęp",
+          "select_project": "Wybierz projekt",
+          "no_linkable": "Każdy projekt jest już połączony z tym obszarem",
+          "link": "Połącz projekt",
+          "empty": "Nie połączono jeszcze żadnych projektów. Po połączeniu projektu członkowie tego obszaru uzyskają do niego dostęp.",
+          "unlink_aria": "Odłącz {name} od tego obszaru",
+          "role_note": "Rola osoby to najwyższa rola przyznana przez jej obszary, ograniczona jej rolą w przestrzeni roboczej. Role ustawione ręcznie w projekcie nigdy nie są tutaj obniżane.",
+          "toast": {
+            "linked_title": "Projekt połączony",
+            "linked": "Wszyscy w tym obszarze mają teraz do niego dostęp.",
+            "not_linked": "Nie połączono",
+            "unlinked_title": "Projekt odłączony",
+            "unlinked": "Dostęp do {name} przyznany poza tym obszarem zostaje zachowany.",
+            "not_unlinked": "Nie odłączono"
+          }
+        },
+        "directory_sync": {
+          "heading": "Synchronizacja katalogu",
+          "description": "Microsoft Entra ID może na bieżąco aktualizować członkostwo w obszarach. Entra decyduje, kto należy do obszaru; to, do których projektów obszar daje dostęp i z jaką rolą, nadal ustawia się tutaj.",
+          "never": "Nigdy",
+          "copy": "Kopiuj",
+          "provisioning_on": "Aprowizacja jest włączona.",
+          "provisioning_off": "Aprowizacja jest wyłączona.",
+          "no_token_warning": "Przed włączeniem aprowizacji należy wystawić token — bez niego Entra nie może się uwierzytelnić.",
+          "tenant_url": "Adres URL dzierżawy",
+          "tenant_url_hint": "Ten adres należy wkleić w sekcji Aprowizacja → Poświadczenia administratora w aplikacji dla przedsiębiorstw Entra.",
+          "secret_token": "Tajny token",
+          "token_installed": "Token zaczynający się od {prefix}… jest zainstalowany. Ostatnio użyty: {last_used}.",
+          "no_token": "Nie zainstalowano żadnego tokenu.",
+          "rotate_token": "Wymień token",
+          "issue_token": "Wystaw token",
+          "revoke": "Unieważnij",
+          "rotate_hint": "Wymiana tokenu działa natychmiast, więc aprowizacja nie będzie działać, dopóki Entra nie otrzyma nowego tokenu.",
+          "last_sync": "Ostatnia synchronizacja",
+          "resync_now": "Synchronizuj ponownie",
+          "summary_added": "{count, plural, one {# dodana} few {# dodane} many {# dodanych} other {# dodanej}}",
+          "summary_restored": "{count, plural, one {# przywrócona} few {# przywrócone} many {# przywróconych} other {# przywróconej}}",
+          "summary_withdrawn": "{count, plural, one {# usunięta} few {# usunięte} many {# usuniętych} other {# usuniętej}}",
+          "resync_hint": "Ponowna synchronizacja odtwarza to, co katalog już wysłał — nie łączy się z Entra. Przydaje się po zaproszeniu osoby, którą katalog już wcześniej przesłał.",
+          "unresolved_heading": "Przesłane przez katalog, ale nie w tej przestrzeni roboczej ({count})",
+          "unresolved_empty": "Wszyscy przesłani przez katalog są aktywnymi członkami tej przestrzeni roboczej.",
+          "not_workspace_member": "Nie jest członkiem przestrzeni roboczej",
+          "inactive_in_directory": "Nieaktywny w katalogu",
+          "unresolved_hint": "Po zaproszeniu do przestrzeni roboczej te osoby automatycznie dołączą do swoich obszarów; można je też usunąć z grupy w Entra.",
+          "auto_create_title": "Tworzenie obszarów dla nowych grup",
+          "auto_create_hint": "Gdy wyłączone, katalog może wypełniać tylko obszary utworzone i nazwane tak, aby pasowały do grup.",
+          "auto_create_saved": "Zapisano sposób obsługi nowych grup z katalogu.",
+          "deprovision_title": "Usuwanie osób przez katalog",
+          "deprovision_hint": "Gdy wyłączone, synchronizacja tylko dodaje. Osoby dodane ręcznie nie są usuwane w żadnym przypadku.",
+          "deprovision_saved": "Zapisano sposób obsługi usunięć z katalogu.",
+          "toast": {
+            "copied_title": "Skopiowano",
+            "copied": "{label} skopiowano do schowka.",
+            "not_copied_title": "Nie udało się skopiować",
+            "not_copied": "{label} należy zaznaczyć i skopiować ręcznie.",
+            "load_failed_title": "Nie udało się wczytać połączenia z katalogiem",
+            "load_failed": "Proszę spróbować ponownie za chwilę.",
+            "save_failed": "Nie udało się zapisać zmiany. Proszę spróbować ponownie.",
+            "token_issued_title": "Token wystawiony",
+            "token_issued": "Należy go teraz skopiować — jest wyświetlany tylko ten jeden raz.",
+            "token_not_issued_title": "Nie wystawiono",
+            "token_not_issued": "Nie udało się utworzyć tokenu.",
+            "token_revoked_title": "Token unieważniony",
+            "token_revoked": "Aprowizacja jest wyłączona do czasu wystawienia nowego tokenu.",
+            "token_not_revoked_title": "Nie unieważniono",
+            "token_not_revoked": "Nie udało się unieważnić tokenu.",
+            "resynced_title": "Zsynchronizowano ponownie",
+            "resynced": "{added, plural, one {# dodana} few {# dodane} many {# dodanych} other {# dodanej}}, {withdrawn, plural, one {# usunięta} few {# usunięte} many {# usuniętych} other {# usuniętej}}.",
+            "not_resynced_title": "Nie zsynchronizowano",
+            "not_resynced": "Nie udało się ukończyć ponownej synchronizacji."
+          }
+        },
+        "work": {
+          "tab": "Praca",
+          "inbox": "Skrzynka odbiorcza",
+          "in_progress": "W toku",
+          "empty_inbox": "Nic nie czeka. Elementy pracy przejmowane przez ten obszar pojawiają się tutaj, dopóki ktoś się nimi nie zajmie.",
+          "empty_in_progress": "Obecnie nikt nie pracuje nad niczym dla tego obszaru.",
+          "claim": "Przejmij",
+          "assign": "Przypisz do…",
+          "return_to_queue": "Zwróć do kolejki",
+          "overdue": "Po terminie",
+          "unassigned": "Brak osoby odpowiedzialnej",
+          "executor_count": "{count, plural, one {# element pracy} few {# elementy pracy} many {# elementów pracy} other {# elementu pracy}}",
+          "age": {
+            "just_now": "Przed chwilą",
+            "minutes": "{count, plural, one {# minuta} few {# minuty} many {# minut} other {# minuty}}",
+            "hours": "{count, plural, one {# godzina} few {# godziny} many {# godzin} other {# godziny}}",
+            "days": "{count, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}"
+          },
+          "reason": {
+            "new_item": "Nowo przejęty",
+            "awaiting_coordinator": "Oczekuje na koordynatora",
+            "awaiting_claim": "Oczekuje, aż ktoś go przejmie",
+            "no_eligible_member": "Nikt w tym obszarze nie może go przejąć",
+            "executor_unavailable": "Osoba wykonująca jest niedostępna",
+            "manually_returned": "Zwrócony do kolejki"
+          },
+          "assign_modal": {
+            "title": "Przypisz ten element pracy",
+            "search": "Szukaj według nazwy lub adresu e-mail",
+            "no_candidates": "Nikt w tym obszarze nie może jeszcze przejąć pracy. Proszę najpierw dodać osoby do obszaru.",
+            "assigning": "Przypisywanie…",
+            "open_items": "{count, plural, one {# otwarty element} few {# otwarte elementy} many {# otwartych elementów} other {# otwartego elementu}}",
+            "unavailable": "Nieobecny",
+            "opted_out": "Nie przyjmuje nowej pracy"
+          },
+          "toast": {
+            "claimed_title": "Element pracy przejęty",
+            "claimed": "Należy teraz do Pana/Pani i opuścił skrzynkę odbiorczą tego obszaru.",
+            "not_claimed": "Nie przejęto",
+            "assigned_title": "Element pracy przypisany",
+            "assigned": "Teraz zajmuje się nim {name}.",
+            "not_assigned": "Nie przypisano",
+            "returned_title": "Zwrócony do kolejki",
+            "returned": "Ponownie oczekuje na kogoś.",
+            "not_returned": "Nie zwrócono",
+            "transferred_title": "Przeniesiono do innego obszaru",
+            "transferred": "{name} jest teraz za to odpowiedzialny.",
+            "not_transferred": "Nie przeniesiono"
+          },
+          "attention": "Wymaga uwagi",
+          "attention_overdue_date": "Po terminie",
+          "attention_suspended": "Wstrzymane",
+          "attention_unavailable": "Wykonawca niedostępny",
+          "attention_no_date": "Brak terminu",
+          "empty_attention": "Nic teraz nie wymaga uwagi.",
+          "decisions": "Decyzje",
+          "empty_decisions": "Nie ma jeszcze decyzji o przydziale.",
+          "decision_supersedes": "Zastąpiło wcześniejszą decyzję",
+          "decision_outcome": {
+            "assigned": "Przydzielono",
+            "queued": "W kolejce",
+            "allocation_failed": "Nie udało się przydzielić",
+            "rejected": "Odrzucono"
+          },
+          "transfer": "Przenieś do innego obszaru",
+          "transfer_modal": {
+            "title": "Przenieś do innego obszaru",
+            "search": "Szukaj obszarów",
+            "no_units": "Żaden inny obszar nie obejmuje tego projektu.",
+            "transferring": "Przenoszenie…"
+          },
+          "suggestion": "Propozycja: {name}",
+          "unavailable_until": "Nieobecny do {until}",
+          "unavailable_open": "Nieobecny",
+          "executor_away": "Nieobecny",
+          "process_progress": "{done}/{total}"
+        },
+        "executive": {
+          "title": "Widok kierowniczy",
+          "heading": "Praca według obszaru",
+          "description": "Jak praca przesuwa się w każdym obszarze i w trwających procesach.",
+          "link": "Widok kierowniczy",
+          "load_failed": "Nie udało się wczytać widoku kierowniczego.",
+          "empty": "Nie ma jeszcze obszarów.",
+          "hidden_count": "{count, plural, one {# element pracy jest w projekcie, którego nie można otworzyć} few {# elementy pracy są w projektach, których nie można otworzyć} many {# elementów pracy jest w projektach, których nie można otworzyć} other {# elementu pracy jest w projektach, których nie można otworzyć}}",
+          "period": {
+            "label": "Okres",
+            "7d": "Ostatnie 7 dni",
+            "30d": "Ostatnie 30 dni",
+            "90d": "Ostatnie 90 dni"
+          },
+          "indicators": {
+            "area": "Obszar",
+            "backlog": "Backlog",
+            "queued": "W kolejce",
+            "assignment_overdue": "Przeterminowane przypisanie",
+            "target_overdue": "Przekroczona data docelowa",
+            "queue_age_p50": "Wiek kolejki p50",
+            "queue_age_p90": "Wiek kolejki p90",
+            "throughput": "Przepustowość",
+            "cycle_time_p50": "Czas cyklu p50",
+            "cycle_time_p90": "Czas cyklu p90",
+            "concentration_top3": "Koncentracja top 3",
+            "auto_assign_kept_ratio": "Zachowane auto-przypisanie"
+          },
+          "processes": {
+            "heading": "Procesy",
+            "running": "W toku",
+            "completed": "Zakończone w okresie",
+            "lead_time_p50": "Czas realizacji p50",
+            "lead_time_p90": "Czas realizacji p90",
+            "empty": "Brak procesów trwających lub zakończonych w tym okresie.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Nic do pokazania. Elementy z projektów, których nie można otworzyć, są liczone, nie wymieniane.",
+            "close": "Zamknij"
+          }
+        },
+        "errors": {
+          "unit_not_found": "Ten obszar już nie istnieje.",
+          "name_required": "Obszar potrzebuje nazwy.",
+          "slug_taken": "Obszar o tej nazwie już istnieje.",
+          "members_not_in_workspace": "Każda dodawana osoba musi być aktywnym członkiem tej przestrzeni roboczej.",
+          "membership_not_found": "Tej osoby już nie ma w tym obszarze.",
+          "lead_already_set": "Ten obszar ma już lidera.",
+          "unit_not_in_workspace": "Ten obszar nie należy do tej przestrzeni roboczej.",
+          "project_required": "Wybierz projekt do powiązania.",
+          "invalid_role": "Obszar nie może przyznać tej roli.",
+          "project_not_in_workspace": "Ten projekt nie należy do tej przestrzeni roboczej.",
+          "link_not_found": "Ten projekt nie jest już powiązany z tym obszarem.",
+          "work_item_not_found": "Ten element pracy już nie istnieje.",
+          "work_item_has_no_unit": "Za ten element pracy nie odpowiada żaden obszar.",
+          "invalid_assignment_mode": "To nie jest tryb przydzielania.",
+          "unit_not_covering_project": "Ten obszar nie jest powiązany z tym projektem.",
+          "assignment_mode_not_allowed": "Ten obszar nie dopuszcza takiego sposobu przydzielania pracy.",
+          "executor_not_eligible": "Ta osoba nie może przejąć tego elementu pracy.",
+          "work_item_already_claimed": "Ktoś inny przejął ten element pracy wcześniej.",
+          "decision_stale": "Ten element pracy zmienił się w międzyczasie. Proszę odświeżyć i spróbować ponownie.",
+          "invalid_routing_transition": "Ten element pracy nie może przejść do tego stanu z obecnego.",
+          "directory_workspace_not_found": "Ta przestrzeń robocza już nie istnieje.",
+          "directory_token_required": "Wydaj token SCIM, zanim włączysz udostępnianie z katalogu.",
+          "not_unit_coordinator": "Tylko koordynator tego obszaru lub administrator obszaru roboczego może to zrobić.",
+          "coordinator_already_set": "Ta osoba już koordynuje ten obszar.",
+          "coordinator_not_found": "Nie znaleziono koordynatora.",
+          "not_the_executor": "Tylko obecny wykonawca, koordynator tego obszaru lub administrator obszaru roboczego może to zrobić.",
+          "coordinator_must_be_member": "Koordynator musi być aktywnym członkiem lub administratorem obszaru roboczego.",
+          "invalid_queue_filter": "Ten filtr kolejki nie jest rozpoznawany.",
+          "public_api_disabled": "Interfejs API automatyzacji jest wyłączony w tej instancji.",
+          "idempotency_key_required": "To żądanie wymaga nagłówka Idempotency-Key.",
+          "idempotency_payload_mismatch": "Ten klucz został już użyty do innego żądania.",
+          "operation_in_progress": "Identyczne żądanie jest wciąż przetwarzane. Proszę spróbować ponownie za chwilę.",
+          "external_binding_conflict": "Ten klucz zewnętrzny wskazuje już inny element pracy.",
+          "assignees_not_allowed_here": "To obszar decyduje, kto przejmuje ten element pracy, więc to żądanie nie może ustawiać osób przypisanych.",
+          "if_match_required": "To żądanie wymaga nagłówka If-Match z aktualną decyzją.",
+          "process_projection_disabled": "Projekcja procesów jest wyłączona w tej instancji.",
+          "completion_manual_only": "Ten element pracy może zakończyć tylko osoba.",
+          "internal_error": "Coś poszło nie tak. Operacja została zapisana jako nieudana.",
+          "availability_window_not_found": "Nie znaleziono tego okresu niedostępności.",
+          "availability_invalid_interval": "Koniec okresu niedostępności musi przypadać po jego początku.",
+          "availability_from_required": "Okres niedostępności wymaga daty rozpoczęcia.",
+          "workspace_member_not_found": "Ta osoba nie jest członkiem tej przestrzeni roboczej.",
+          "allocation_limit_forbidden": "Tylko koordynator lub administrator przestrzeni roboczej może ustawić osobisty limit pracy.",
+          "not_availability_manager": "Tylko koordynator jednej z obszarów tej osoby lub administrator przestrzeni roboczej może to zrobić."
+        },
+        "coordinators": {
+          "tab": "Koordynatorzy",
+          "select_person": "Wybierz osobę",
+          "no_addable": "Wszyscy, którzy mogą koordynować ten obszar, już to robią",
+          "add": "Dodaj koordynatora",
+          "empty": "Nikt jeszcze nie koordynuje tego obszaru. Koordynator obsługuje kolejkę, nie musząc do niego należeć.",
+          "remove_aria": "Przestań, by {name} koordynował ten obszar",
+          "note": "Koordynator obsługuje kolejkę obszaru. Nie musi do niego należeć. Goście przestrzeni roboczej nie mogą być koordynatorami.",
+          "toast": {
+            "added_title": "Dodano koordynatora",
+            "added": "Może teraz obsługiwać kolejkę tego obszaru.",
+            "not_added": "Nie dodano",
+            "removed_title": "Usunięto koordynatora",
+            "removed": "{name} już nie koordynuje tego obszaru.",
+            "not_removed": "Nie usunięto"
+          }
+        },
+        "policy": {
+          "tab": "Polityka",
+          "heading": "Jak ten obszar przydziela pracę",
+          "description": "Domyślne ustawienie obszaru, które projekt może nadpisać.",
+          "scope_area": "Domyślne obszaru",
+          "scope_project": "Wyjątek dla {name}",
+          "default_mode": "Tryb domyślny",
+          "allowed_modes": "Dozwolone tryby",
+          "sla_seconds": "SLA przydziału (sekundy)",
+          "sla_hint": "Jak długo element może czekać bez osoby, zanim koordynatorzy dostaną alert. Zostaw puste, jeśli nie chcesz terminu.",
+          "max_open": "Maks. otwartych elementów na osobę",
+          "max_open_hint": "Zostaw puste, jeśli nie chcesz limitu.",
+          "save": "Zapisz politykę",
+          "mode": {
+            "manual": "Koordynator przydziela",
+            "self_claim": "Osoby biorą pracę same",
+            "least_loaded": "Członek z najmniejszym obciążeniem",
+            "explicit": "Wskazana osoba"
+          },
+          "toast": {
+            "saved_title": "Zapisano politykę",
+            "saved": "Nowa praca będzie stosować te zasady.",
+            "not_saved": "Nie zapisano"
+          }
+        },
+        "my_areas": {
+          "title": "Moje obszary",
+          "heading": "Moje obszary",
+          "description": "Obszary, do których należysz, i praca czekająca w każdym z nich.",
+          "empty": "Nie należysz jeszcze do żadnego obszaru.",
+          "select": "Wybierz obszar"
+        },
+        "availability": {
+          "title": "Nieobecności",
+          "help": "Nieobecność sprawia, że automatyczne przydzielanie Cię pomija. Nie odbiera tego, co już nosisz.",
+          "empty": "Nic nie zapisano.",
+          "from": "Od",
+          "until": "Do",
+          "add": "Dodaj",
+          "added": "Zapisano",
+          "not_added": "Nie udało się zapisać",
+          "removed": "Usunięto",
+          "not_removed": "Nie udało się usunąć",
+          "remove_aria": "Usuń tę nieobecność",
+          "range": "{from} – {until}",
+          "open_ended": "Od {from}, bez daty powrotu",
+          "reason": {
+            "vacation": "Urlop",
+            "leave": "Nieobecność",
+            "other": "Inne"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Przyjmuje nową pracę z tego obszaru",
+          "accepts_new_work_help": "Wyłączone oznacza, że automatyczne przydzielanie pomija tę osobę tutaj. Zachowuje to, co ma, i nadal można jej coś przydzielić z nazwy.",
+          "max_open_items": "Najwięcej otwartych elementów naraz",
+          "max_open_items_help": "Automatyczne przydzielanie zatrzymuje się na tej liczbie. Puste pole oznacza limit obszaru.",
+          "no_limit": "Bez limitu",
+          "saved": "Zapisano",
+          "not_saved": "Nie udało się zapisać",
+          "limit_invalid": "To musi być liczba całkowita równa co najmniej jeden.",
+          "open_aria": "Ustawienia pracy {name}"
+        }
       }
     },
     "empty_state": {

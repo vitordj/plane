@@ -1,0 +1,801 @@
+# Copyright (c) 2023-present Plane Software, Inc. and contributors
+# SPDX-License-Identifier: AGPL-3.0-only
+# See the LICENSE file for details.
+
+"""
+Reconciler for the Orca organizational layer.
+
+The organizational layer (units, memberships, unit-project links) never
+replaces Plane's RBAC — it *materializes* native ``ProjectMember`` rows so the
+rest of Plane keeps authorizing project access exactly as it does today.
+
+Two invariants govern every write, per FORK.md and the fork's access policy:
+
+1. **The inherited role is a floor, and manual access above it always wins.**
+   Two halves, and they are not symmetric:
+
+   *Downwards*, the layer only lowers or removes access when the current
+   ``ProjectMember.role`` still equals the role it last wrote
+   (``OrganizationalProjectAccessState.last_applied_role``). Drift there means
+   someone changed the role by hand, so the layer withdraws its claim instead
+   of overwriting it, and any manual ``baseline_role`` it recorded is restored
+   rather than dropped.
+
+   *Upwards*, the inherited role is a floor and is re-applied. A member of a
+   unit that grants Member on a project is a Member of that project: an admin
+   who demotes them to Guest by hand is put back at the next reconcile,
+   because the unit still says they belong. That is deliberate — the way to
+   take the access away is to remove the person from the unit or change the
+   unit-project link, not to fight the reconciler by hand. Manual promotions
+   *above* the floor are untouched, since the target is
+   ``max(inherited_role, baseline_role)``.
+2. **Provenance is explicit.** ``OrganizationalUnitGrant`` records every
+   (source, unit-project) pair that sources access, so removing one unit
+   never removes access another unit (or a manual grant) still justifies.
+   A *source* is a tie between a person and an area: belonging to it, or
+   coordinating it. The two are kept apart all the way down to the grant row,
+   which is what makes "stop coordinating this area" take back exactly what
+   coordinating gave and nothing a membership still justifies.
+
+Reconciliation is always called explicitly — from the API service layer, a
+Celery task, or a management command. No Django signals, so the behavior stays
+predictable and testable.
+"""
+
+# Python imports
+import logging
+from dataclasses import dataclass, field
+from typing import Iterable, Optional
+
+# Django imports
+from django.conf import settings
+from django.db import transaction
+from django.db.models import Q
+from django.utils import timezone
+
+# Module imports
+from plane.db.models import (
+    GrantSource,
+    OrganizationalProjectAccessState,
+    OrganizationalUnit,
+    OrganizationalUnitCoordinator,
+    OrganizationalUnitGrant,
+    OrganizationalUnitMembership,
+    OrganizationalUnitProject,
+    Project,
+    ProjectMember,
+    WorkspaceMember,
+)
+
+from .feature_flags import organizational_units_enabled
+
+logger = logging.getLogger("plane.orca")
+
+# Actions reported by the planner/reconciler for a single (member, project) pair.
+ACTION_NONE = "none"
+ACTION_CREATE = "create"
+ACTION_REACTIVATE = "reactivate"
+ACTION_ELEVATE = "elevate"
+ACTION_LOWER = "lower"
+ACTION_RESTORE_BASELINE = "restore_baseline"
+ACTION_DEACTIVATE = "deactivate"
+ACTION_SKIP_MANUAL_DRIFT = "skip_manual_drift"
+
+ROLE_ADMIN = 20
+ROLE_MEMBER = 15
+ROLE_GUEST = 5
+
+# What coordinating an area is worth on the projects it covers. Member, not the
+# link's ``default_role``: a coordinator has to be able to open the work they
+# hand out, and that is all. Reading ``default_role`` here would let an area
+# that grants Admin to its members promote its coordinator too, turning "may
+# assign this area's work" into "may administer these projects" — which is the
+# escalation the whole two-source split exists to avoid. Nothing is lost for a
+# coordinator who is also a member: their membership grant still carries the
+# higher role, and the reconciler takes the strongest of the two.
+COORDINATOR_ROLE = ROLE_MEMBER
+
+
+@dataclass(frozen=True)
+class Source:
+    """
+    One tie that makes a person inherit access to one project.
+
+    @description Reconciliation used to speak in ``(membership, unit_project)``
+    pairs, which stopped working the moment a second kind of tie existed:
+    coordination is not a membership and has no membership row to borrow. The
+    pair became this — what kind of tie it is, which row it is, who it is for,
+    where it points, and what it is worth — so every step downstream (grouping,
+    the inherited role, the grant ledger) reads one shape regardless of origin.
+
+    ``kind`` and ``source_id`` together are the identity a grant is keyed by;
+    they are what "revoke only what coordinating gave" is expressed in.
+    """
+
+    kind: str
+    source_id: object
+    workspace_member_id: object
+    unit_project: OrganizationalUnitProject
+    role: int
+
+
+@dataclass
+class AccessChange:
+    """
+    One planned or applied change to a person's access on a project.
+
+    @description Returned by both the read-only planner (``plan_access``) and
+    the writer (``reconcile_access``) so the ``effective-access`` endpoint and
+    the management command can render the same shape without ever writing.
+    """
+
+    workspace_member_id: str
+    project_id: str
+    current_role: Optional[int]
+    desired_role: Optional[int]
+    action: str
+    sources: list[dict] = field(default_factory=list)
+
+    def as_dict(self) -> dict:
+        return {
+            "workspace_member_id": str(self.workspace_member_id),
+            "project_id": str(self.project_id),
+            "current_role": self.current_role,
+            "desired_role": self.desired_role,
+            "action": self.action,
+            "sources": self.sources,
+        }
+
+
+def cap_role_to_workspace_role(role: int, workspace_role: int) -> int:
+    """
+    Clamp an inherited project role to what the workspace role permits.
+
+    @description Mirrors the guards in ``ProjectMemberViewSet.create``: a
+    workspace Guest can never hold a higher project role, and a workspace Admin
+    is never added below Admin. Without this, the reconciler could write states
+    the native member API itself rejects.
+
+    @param role: Role the organizational layer wants to grant.
+    @param workspace_role: The person's role in the workspace.
+    @returns: The role that may actually be written to ``ProjectMember``.
+    """
+    if workspace_role == ROLE_GUEST:
+        return ROLE_GUEST
+    if workspace_role == ROLE_ADMIN:
+        return ROLE_ADMIN
+    return role
+
+
+def _max_edges() -> int:
+    """Fan-out threshold above which reconciliation is handed to Celery."""
+    return int(getattr(settings, "ORCA_ORG_SYNC_MAX_EDGES", 100))
+
+
+def _active_sources(workspace_id, member_ids=None, project_ids=None) -> list[Source]:
+    """
+    Every tie that currently sources inherited access in a workspace,
+    optionally narrowed to some members or projects.
+
+    @description Two kinds contribute, and both only through active units
+    linked to live, non-archived projects, for workspace members who are still
+    active: an active **membership**, worth the link's ``default_role``, and an
+    active **coordination**, worth ``COORDINATOR_ROLE`` on every project the
+    area covers. A person who is both gets two sources on the same project;
+    ``_decide`` takes the stronger, and the grant ledger keeps both rows so
+    ending either tie withdraws only its own.
+    @returns One ``Source`` per (tie, unit-project) combination.
+    """
+    queryset = (
+        OrganizationalUnitProject.objects.filter(
+            workspace_id=workspace_id,
+            organizational_unit__is_active=True,
+            project__archived_at__isnull=True,
+        )
+        .select_related("organizational_unit", "project")
+        .prefetch_related("organizational_unit__memberships")
+    )
+    if project_ids is not None:
+        queryset = queryset.filter(project_id__in=project_ids)
+
+    unit_projects = list(queryset)
+    if not unit_projects:
+        return []
+
+    unit_ids = {unit_project.organizational_unit_id for unit_project in unit_projects}
+
+    membership_filter = Q(organizational_unit_id__in=unit_ids, is_active=True, workspace_member__is_active=True)
+    coordinator_filter = Q(organizational_unit_id__in=unit_ids, is_active=True, workspace_member__is_active=True)
+    if member_ids is not None:
+        membership_filter &= Q(workspace_member_id__in=member_ids)
+        coordinator_filter &= Q(workspace_member_id__in=member_ids)
+
+    ties_by_unit: dict = {}
+    for membership in OrganizationalUnitMembership.objects.filter(membership_filter).select_related("workspace_member"):
+        ties_by_unit.setdefault(membership.organizational_unit_id, []).append(
+            (GrantSource.MEMBERSHIP.value, membership.id, membership.workspace_member_id)
+        )
+    for coordinator in OrganizationalUnitCoordinator.objects.filter(coordinator_filter).select_related(
+        "workspace_member"
+    ):
+        ties_by_unit.setdefault(coordinator.organizational_unit_id, []).append(
+            (GrantSource.COORDINATOR.value, coordinator.id, coordinator.workspace_member_id)
+        )
+
+    sources = []
+    for unit_project in unit_projects:
+        for kind, source_id, workspace_member_id in ties_by_unit.get(unit_project.organizational_unit_id, []):
+            sources.append(
+                Source(
+                    kind=kind,
+                    source_id=source_id,
+                    workspace_member_id=workspace_member_id,
+                    unit_project=unit_project,
+                    role=(COORDINATOR_ROLE if kind == GrantSource.COORDINATOR else unit_project.default_role),
+                )
+            )
+    return sources
+
+
+def _group_sources(sources) -> dict:
+    """Index active sources by (workspace_member_id, project_id)."""
+    grouped: dict = {}
+    for source in sources:
+        key = (source.workspace_member_id, source.unit_project.project_id)
+        grouped.setdefault(key, []).append(source)
+    return grouped
+
+
+def _describe_sources(sources) -> list[dict]:
+    """
+    Human-readable provenance for the effective-access response.
+
+    @description ``membership_id`` is kept, and null on a coordinator source,
+    rather than renamed: clients read it today, and a source that is not a
+    membership genuinely has no membership id. ``source_kind``/``source_id``
+    are the pair that always answers.
+    """
+    return [
+        {
+            "organizational_unit_id": str(source.unit_project.organizational_unit_id),
+            "organizational_unit_name": source.unit_project.organizational_unit.name,
+            "membership_id": (str(source.source_id) if source.kind == GrantSource.MEMBERSHIP else None),
+            "source_kind": source.kind,
+            "source_id": str(source.source_id),
+            "role": source.role,
+        }
+        for source in sources
+    ]
+
+
+def _decide(
+    current_member: Optional[ProjectMember],
+    state: Optional[OrganizationalProjectAccessState],
+    inherited_role: Optional[int],
+) -> tuple[str, Optional[int]]:
+    """
+    Decide what should happen to one (member, project) pair.
+
+    @description Pure decision function shared by the planner and the writer,
+    so a dry-run and a real run can never disagree. It encodes the asymmetry
+    described in the module docstring: the inherited role is a floor, so the
+    layer raises to it freely — re-reverting a manual demotion below it — but
+    lowers or withdraws only when the current role is still the one this layer
+    last applied.
+
+    @param current_member: The native ``ProjectMember`` row, if any.
+    @param state: The aggregate state row, if the layer has acted before.
+    @param inherited_role: Highest role inherited from active units, already
+        capped to the workspace role; ``None`` when no unit sources access.
+    @returns: Tuple of (action, role to write). The role is ``None`` when
+        nothing is written or the member is deactivated.
+    """
+    baseline = state.baseline_role if state else None
+    last_applied = state.last_applied_role if state else None
+    is_active_member = bool(current_member and current_member.is_active)
+    current_role = current_member.role if is_active_member else None
+
+    # No unit sources access any more: withdraw what this layer added.
+    if inherited_role is None:
+        if last_applied is None or not is_active_member:
+            return ACTION_NONE, None
+        if current_role != last_applied:
+            # Someone changed the role by hand — the pair is manual now.
+            return ACTION_SKIP_MANUAL_DRIFT, None
+        if baseline is not None:
+            return ACTION_RESTORE_BASELINE, baseline
+        return ACTION_DEACTIVATE, None
+
+    # A unit sources access. The inherited role is a floor and a manual
+    # promotion above it is never lost, so the target is the stronger of the
+    # two. A manual demotion *below* the floor is deliberately undone: the
+    # unit still says this person belongs, and the way to withdraw that is to
+    # change the unit, not the ProjectMember row.
+    target = max(inherited_role, baseline or 0)
+
+    if current_member is None:
+        return ACTION_CREATE, target
+    if not is_active_member:
+        return ACTION_REACTIVATE, target
+    if target > current_role:
+        return ACTION_ELEVATE, target
+    if target < current_role:
+        if current_role != last_applied:
+            return ACTION_SKIP_MANUAL_DRIFT, None
+        return ACTION_LOWER, target
+    # target == current_role. Keep last_applied in lockstep when something
+    # outside this layer (the core Guest rewrite is the known case) moved the
+    # live role to the capped target without going through ACTION_LOWER (R1.A2).
+    if last_applied is not None and last_applied != current_role:
+        return ACTION_LOWER, target
+    return ACTION_NONE, target
+
+
+def _collect_context(workspace_id, member_ids=None, project_ids=None):
+    """Load sources, existing project members and access states for a scope."""
+    sources = _active_sources(workspace_id, member_ids=member_ids, project_ids=project_ids)
+    grouped = _group_sources(sources)
+
+    # Pairs already touched by this layer must be revisited even when no unit
+    # sources them any more — that is exactly how access gets withdrawn.
+    state_filter = Q(workspace_id=workspace_id, last_applied_role__isnull=False)
+    if member_ids is not None:
+        state_filter &= Q(workspace_member_id__in=member_ids)
+    if project_ids is not None:
+        state_filter &= Q(project_id__in=project_ids)
+    states = list(OrganizationalProjectAccessState.objects.filter(state_filter))
+
+    keys = set(grouped.keys()) | {(state.workspace_member_id, state.project_id) for state in states}
+    return grouped, states, keys
+
+
+def _member_user_map(workspace_member_ids) -> dict:
+    """Map workspace member ids to their user ids and workspace roles."""
+    return {
+        workspace_member.id: workspace_member
+        for workspace_member in WorkspaceMember.objects.filter(id__in=workspace_member_ids)
+    }
+
+
+def plan_access(workspace_id, member_ids=None, project_ids=None) -> list[AccessChange]:
+    """
+    Compute what reconciliation *would* do, writing nothing.
+
+    @description Backs the strictly read-only ``effective-access`` endpoint and
+    the management command's default dry-run. Uses the same decision function
+    as ``reconcile_access``, so the preview matches the write.
+
+    @param workspace_id: Workspace being inspected.
+    @param member_ids: Optional workspace member ids to narrow the scope.
+    @param project_ids: Optional project ids to narrow the scope.
+    @returns: One ``AccessChange`` per affected (member, project) pair.
+    """
+    grouped, states, keys = _collect_context(workspace_id, member_ids, project_ids)
+    if not keys:
+        return []
+
+    workspace_members = _member_user_map({key[0] for key in keys})
+    states_by_key = {(state.workspace_member_id, state.project_id): state for state in states}
+    project_members = {
+        (project_member.member_id, project_member.project_id): project_member
+        for project_member in ProjectMember.objects.filter(
+            project_id__in={key[1] for key in keys},
+            member_id__in={workspace_members[key[0]].member_id for key in keys if key[0] in workspace_members},
+        )
+    }
+
+    changes = []
+    for workspace_member_id, project_id in sorted(keys, key=lambda key: (str(key[0]), str(key[1]))):
+        workspace_member = workspace_members.get(workspace_member_id)
+        if workspace_member is None:
+            continue
+        sources = grouped.get((workspace_member_id, project_id), [])
+        inherited = (
+            cap_role_to_workspace_role(max(source.role for source in sources), workspace_member.role)
+            if sources
+            else None
+        )
+        project_member = project_members.get((workspace_member.member_id, project_id))
+        state = states_by_key.get((workspace_member_id, project_id))
+        action, role = _decide(project_member, state, inherited)
+        changes.append(
+            AccessChange(
+                workspace_member_id=workspace_member_id,
+                project_id=project_id,
+                current_role=(project_member.role if project_member and project_member.is_active else None),
+                desired_role=role,
+                action=action,
+                sources=_describe_sources(sources),
+            )
+        )
+    return changes
+
+
+def _grant_key(grant) -> tuple:
+    """The (kind, source id, unit-project) identity one grant stands for."""
+    source_id = grant.coordinator_id if grant.grant_source == GrantSource.COORDINATOR else grant.membership_id
+    return (grant.grant_source, source_id, grant.unit_project_id)
+
+
+def _sync_grants(workspace_id, grouped, keys) -> None:
+    """
+    Bring the provenance ledger in line with the currently active sources.
+
+    @description Creates a grant per live (source, unit-project) pair and
+    revokes grants whose source disappeared, keeping revoked rows for audit.
+    Keyed by the source's *kind* as well as its id, so a person who both
+    belongs to an area and coordinates it holds two grants on the same project
+    and losing one leaves the other standing.
+    """
+    existing = {
+        _grant_key(grant): grant
+        for grant in OrganizationalUnitGrant.objects.filter(
+            workspace_id=workspace_id,
+            workspace_member_id__in={key[0] for key in keys},
+            project_id__in={key[1] for key in keys},
+        )
+    }
+    live_keys = set()
+    to_create = []
+    to_update = []
+
+    for (workspace_member_id, project_id), sources in grouped.items():
+        for source in sources:
+            unit_project = source.unit_project
+            key = (source.kind, source.source_id, unit_project.id)
+            live_keys.add(key)
+            grant = existing.get(key)
+            if grant is None:
+                to_create.append(
+                    OrganizationalUnitGrant(
+                        organizational_unit_id=unit_project.organizational_unit_id,
+                        membership_id=(source.source_id if source.kind == GrantSource.MEMBERSHIP else None),
+                        coordinator_id=(source.source_id if source.kind == GrantSource.COORDINATOR else None),
+                        grant_source=source.kind,
+                        unit_project_id=unit_project.id,
+                        workspace_member_id=workspace_member_id,
+                        project_id=project_id,
+                        workspace_id=workspace_id,
+                        granted_role=source.role,
+                        is_active=True,
+                    )
+                )
+            elif not grant.is_active or grant.granted_role != source.role:
+                grant.is_active = True
+                grant.granted_role = source.role
+                grant.revoked_at = None
+                to_update.append(grant)
+
+    for key, grant in existing.items():
+        if key not in live_keys and grant.is_active:
+            grant.is_active = False
+            grant.revoked_at = timezone.now()
+            to_update.append(grant)
+
+    if to_create:
+        OrganizationalUnitGrant.objects.bulk_create(to_create, batch_size=100, ignore_conflicts=True)
+    if to_update:
+        OrganizationalUnitGrant.objects.bulk_update(
+            to_update, ["is_active", "granted_role", "revoked_at"], batch_size=100
+        )
+
+
+def _apply_change(workspace_member, project_id, project_member, state, action, role, workspace_id):
+    """Write one decided change to the native ``ProjectMember`` and the state row."""
+    now = timezone.now()
+
+    if state is None:
+        state = OrganizationalProjectAccessState(
+            workspace_member_id=workspace_member.id,
+            project_id=project_id,
+            workspace_id=workspace_id,
+        )
+
+    if action == ACTION_CREATE:
+        project_member = ProjectMember.objects.create(
+            project_id=project_id,
+            member_id=workspace_member.member_id,
+            workspace_id=workspace_id,
+            role=role,
+            is_active=True,
+        )
+        state.baseline_role = None
+        state.created_by_org_layer = True
+        state.last_applied_role = role
+        state.project_member = project_member
+
+    elif action == ACTION_REACTIVATE:
+        # The person held no active access before, so nothing manual is lost.
+        project_member.is_active = True
+        project_member.role = role
+        project_member.save()
+        state.baseline_role = None
+        state.created_by_org_layer = True
+        state.last_applied_role = role
+        state.project_member = project_member
+
+    elif action in (ACTION_ELEVATE, ACTION_LOWER):
+        if action == ACTION_ELEVATE and project_member.role != state.last_applied_role:
+            # About to write over a role this layer did not last write: either
+            # nothing was written before (pre-existing manual access) or
+            # somebody promoted by hand since. Either way a person chose the
+            # role standing here, so it becomes the baseline to fall back to
+            # when the unit source goes away. Without this the promotion is
+            # erased by the elevation and the person is later deactivated
+            # outright, which is the opposite of "manual access always wins".
+            #
+            # A promotion above what this layer last wrote is a person choosing
+            # a stronger role; remember it as the baseline. A demotion below
+            # last_applied (the core Guest rewrite is the known case) is not a
+            # choice — do not treat it as one when this layer created the row
+            # (R1.A2). ACTION_LOWER cannot arrive drifted: _decide answers
+            # ACTION_SKIP_MANUAL_DRIFT when the current role is not ours.
+            is_promotion = project_member.role > (state.last_applied_role or 0)
+            if is_promotion or not state.created_by_org_layer:
+                state.baseline_role = project_member.role
+                state.created_by_org_layer = False
+        project_member.role = role
+        project_member.save()
+        state.last_applied_role = role
+        state.project_member = project_member
+
+    elif action == ACTION_RESTORE_BASELINE:
+        project_member.role = role
+        project_member.save()
+        state.last_applied_role = None
+        state.project_member = project_member
+
+    elif action == ACTION_DEACTIVATE:
+        project_member.is_active = False
+        project_member.save()
+        state.last_applied_role = None
+        state.created_by_org_layer = False
+        state.project_member = project_member
+
+    elif action == ACTION_SKIP_MANUAL_DRIFT:
+        # The current role is no longer ours; relinquish the claim so future
+        # runs treat this access as manual.
+        state.last_applied_role = None
+        state.created_by_org_layer = False
+
+    elif action == ACTION_NONE:
+        if role is not None and state.last_applied_role is None and project_member is not None:
+            # Inherited role already matches a manual role: record it as the
+            # baseline without touching the member.
+            state.baseline_role = project_member.role
+            state.created_by_org_layer = False
+            state.last_applied_role = role
+            state.project_member = project_member
+
+    state.last_reconciled_at = now
+    state.save()
+    return state
+
+
+def reconcile_access(workspace_id, member_ids=None, project_ids=None) -> list[AccessChange]:
+    """
+    Reconcile inherited access for a scope and write the result.
+
+    @description Idempotent and safe to retry: running it twice over the same
+    scope produces no second set of changes. Rows are locked with
+    ``select_for_update`` so two concurrent mutations cannot interleave into
+    conflicting decisions.
+
+    @param workspace_id: Workspace being reconciled.
+    @param member_ids: Optional workspace member ids to narrow the scope.
+    @param project_ids: Optional project ids to narrow the scope.
+    @returns: The changes that were applied (``ACTION_NONE`` entries included);
+        empty, with nothing written, while the layer is switched off.
+    """
+    # Defence in depth. Every current caller (API mixin, Celery task, management
+    # command) already checks the kill switch, but this is the one function that
+    # writes native ``ProjectMember`` rows, so it refuses on its own too: a future
+    # caller that forgets the guard must not be able to grant access through it.
+    if not organizational_units_enabled():
+        logger.info("Organizational layer disabled; refusing to reconcile access for workspace %s.", workspace_id)
+        return []
+
+    with transaction.atomic():
+        grouped, states, keys = _collect_context(workspace_id, member_ids, project_ids)
+        if not keys:
+            return []
+
+        workspace_members = _member_user_map({key[0] for key in keys})
+        user_ids = {workspace_member.member_id for workspace_member in workspace_members.values()}
+        project_id_set = {key[1] for key in keys}
+
+        # Lock the native rows this run may write before reading their state.
+        locked_members = {
+            (project_member.member_id, project_member.project_id): project_member
+            for project_member in ProjectMember.objects.select_for_update()
+            .filter(project_id__in=project_id_set, member_id__in=user_ids)
+            .order_by("id")
+        }
+        states_by_key = {
+            (state.workspace_member_id, state.project_id): state
+            for state in OrganizationalProjectAccessState.objects.select_for_update()
+            .filter(workspace_id=workspace_id, project_id__in=project_id_set)
+            .order_by("id")
+        }
+
+        _sync_grants(workspace_id, grouped, keys)
+
+        changes = []
+        for workspace_member_id, project_id in sorted(keys, key=lambda key: (str(key[0]), str(key[1]))):
+            workspace_member = workspace_members.get(workspace_member_id)
+            if workspace_member is None:
+                continue
+            sources = grouped.get((workspace_member_id, project_id), [])
+            inherited = (
+                cap_role_to_workspace_role(max(source.role for source in sources), workspace_member.role)
+                if sources
+                else None
+            )
+            project_member = locked_members.get((workspace_member.member_id, project_id))
+            state = states_by_key.get((workspace_member_id, project_id))
+            action, role = _decide(project_member, state, inherited)
+            current_role = project_member.role if project_member and project_member.is_active else None
+
+            if action != ACTION_NONE or (role is not None and (state is None or state.last_applied_role is None)):
+                _apply_change(
+                    workspace_member,
+                    project_id,
+                    project_member,
+                    state,
+                    action,
+                    role,
+                    workspace_id,
+                )
+
+            changes.append(
+                AccessChange(
+                    workspace_member_id=workspace_member_id,
+                    project_id=project_id,
+                    current_role=current_role,
+                    desired_role=role,
+                    action=action,
+                    sources=_describe_sources(sources),
+                )
+            )
+        return changes
+
+
+def _affected_edges(member_ids: Iterable, project_ids: Iterable) -> int:
+    """Rough fan-out estimate: people impacted × projects impacted."""
+    members = len(list(member_ids)) or 1
+    projects = len(list(project_ids)) or 1
+    return members * projects
+
+
+def dispatch_reconciliation(workspace_id, member_ids=None, project_ids=None, force_sync=False):
+    """
+    Run reconciliation inline for small fan-outs, hand large ones to Celery.
+
+    @description Small mutations (adding one person, linking one project) stay
+    synchronous so the API response reflects the final state. Anything wider
+    than ``ORCA_ORG_SYNC_MAX_EDGES`` edges is queued after commit, so the
+    request does not block on a large rewrite.
+
+    @param force_sync: Run inline regardless of size (used by tests and the
+        management command, which are already running outside a request).
+    @returns: The applied changes when run inline, otherwise ``None``.
+    """
+    member_list = list(member_ids) if member_ids is not None else None
+    project_list = list(project_ids) if project_ids is not None else None
+
+    if force_sync or _affected_edges(member_list or [], project_list or []) <= _max_edges():
+        return reconcile_access(workspace_id, member_list, project_list)
+
+    # Imported lazily: the task module imports this module for the actual work.
+    from plane.bgtasks.organizational_unit_task import reconcile_organizational_access
+
+    transaction.on_commit(
+        lambda: reconcile_organizational_access.delay(
+            str(workspace_id),
+            [str(member_id) for member_id in member_list] if member_list else None,
+            [str(project_id) for project_id in project_list] if project_list else None,
+        )
+    )
+    return None
+
+
+def reconcile_membership(membership: OrganizationalUnitMembership, force_sync=False):
+    """Reconcile every project reachable from one unit membership."""
+    project_ids = list(
+        OrganizationalUnitProject.objects.filter(organizational_unit_id=membership.organizational_unit_id).values_list(
+            "project_id", flat=True
+        )
+    )
+    return dispatch_reconciliation(
+        membership.workspace_id,
+        member_ids=[membership.workspace_member_id],
+        project_ids=project_ids or None,
+        force_sync=force_sync,
+    )
+
+
+def reconcile_coordinator(coordinator: OrganizationalUnitCoordinator, force_sync=False):
+    """
+    Reconcile every project reachable from one coordination.
+
+    @description The mirror of ``reconcile_membership`` for the second kind of
+    tie. Called after a coordinator is added or removed so the access that
+    coordinating sources appears — and disappears — in the same request.
+    """
+    project_ids = project_ids_for_unit(coordinator.organizational_unit_id)
+    return dispatch_reconciliation(
+        coordinator.workspace_id,
+        member_ids=[coordinator.workspace_member_id],
+        project_ids=project_ids or None,
+        force_sync=force_sync,
+    )
+
+
+def member_ids_for_unit(unit_id) -> list:
+    """
+    Every workspace member an area currently sources access for.
+
+    @description Both kinds of tie, deduplicated: somebody who belongs to the
+    area and coordinates it is one person to reconcile, not two. Callers use it
+    to scope a reconcile to the people an area can affect.
+    """
+    member_ids = set(
+        OrganizationalUnitMembership.objects.filter(organizational_unit_id=unit_id).values_list(
+            "workspace_member_id", flat=True
+        )
+    )
+    member_ids |= set(
+        OrganizationalUnitCoordinator.objects.filter(organizational_unit_id=unit_id).values_list(
+            "workspace_member_id", flat=True
+        )
+    )
+    return list(member_ids)
+
+
+def reconcile_unit_project(unit_project: OrganizationalUnitProject, force_sync=False):
+    """Reconcile everyone tied to the unit against one linked project."""
+    member_ids = member_ids_for_unit(unit_project.organizational_unit_id)
+    return dispatch_reconciliation(
+        unit_project.workspace_id,
+        member_ids=member_ids or None,
+        project_ids=[unit_project.project_id],
+        force_sync=force_sync,
+    )
+
+
+def reconcile_unit(unit: OrganizationalUnit, force_sync=False):
+    """Reconcile the full cross product of one unit's people and projects."""
+    member_ids = member_ids_for_unit(unit.id)
+    project_ids = project_ids_for_unit(unit.id)
+    return dispatch_reconciliation(
+        unit.workspace_id,
+        member_ids=member_ids or None,
+        project_ids=project_ids or None,
+        force_sync=force_sync,
+    )
+
+
+def reconcile_workspace(workspace_id, apply=False) -> list[AccessChange]:
+    """
+    Reconcile (or preview) an entire workspace.
+
+    @description Used by the ``reconcile_organizational_access`` management
+    command, which previews by default and only writes with ``--apply``.
+    """
+    if apply:
+        return reconcile_access(workspace_id)
+    return plan_access(workspace_id)
+
+
+def project_ids_for_unit(unit_id) -> list:
+    """Project ids currently linked to a unit."""
+    return list(
+        OrganizationalUnitProject.objects.filter(organizational_unit_id=unit_id).values_list("project_id", flat=True)
+    )
+
+
+def projects_in_workspace(workspace_id) -> list:
+    """Live project ids of a workspace, used by the workspace-wide command."""
+    return list(
+        Project.objects.filter(workspace_id=workspace_id, archived_at__isnull=True).values_list("id", flat=True)
+    )

@@ -20,7 +20,70 @@
   },
   "cycle": {
     "label": "{count, plural, one {サイクル} other {サイクル}}",
-    "no_cycle": "サイクルなし"
+    "no_cycle": "サイクルなし",
+    "start_stop": {
+      "start": {
+        "title": "サイクルを開始",
+        "loading": "開始しています",
+        "question": "「{name}」を開始しますか？{date}が開始日に設定され、サイクルがアクティブになります。"
+      },
+      "end": {
+        "title": "サイクルを完了",
+        "loading": "完了しています",
+        "question": "「{name}」を完了しますか？{date}が終了日に設定され、サイクルが完了として記録されます。"
+      },
+      "move_unstarted": {
+        "label": "未着手の作業項目を進行中に移動する",
+        "hint": "このサイクルのバックログおよび未着手の作業項目は、すべて進行中のステータスに移ります。"
+      },
+      "no_in_progress": {
+        "title": "このプロジェクトには進行中のステータスがありません。",
+        "hint": "このサイクルの作業項目は現在のステータスのままになります。"
+      },
+      "mark_completed": {
+        "label": "未完了の作業項目をすべて完了にする",
+        "hint": "{count, plural, one {このサイクルの未完了の作業項目 # 件が完了のステータスに移ります。} other {このサイクルの未完了の作業項目 # 件が完了のステータスに移ります。}}"
+      },
+      "no_completed": {
+        "hint": "このプロジェクトには、移動先となる完了のステータスがありません。",
+        "title": "{count, plural, one {作業項目 # 件がまだ完了していません。} other {作業項目 # 件がまだ完了していません。}}"
+      },
+      "toast": {
+        "started": "サイクルを開始しました",
+        "started_message": "「{name}」がアクティブになりました。",
+        "started_moved": "「{name}」がアクティブになりました。未着手の項目は進行中に移りました。",
+        "completed": "サイクルを完了しました",
+        "completed_message": "「{name}」が完了しました。",
+        "completed_moved": "「{name}」が完了しました。未完了の項目は完了に移りました。",
+        "failed": "問題が発生しました"
+      },
+      "try_again": "少し時間をおいて、もう一度お試しください。"
+    },
+    "actions": {
+      "start": "サイクルを開始",
+      "complete": "サイクルを完了"
+    },
+    "toast": {
+      "created": "サイクルを作成しました",
+      "not_created": "サイクルは作成されていません",
+      "updated": "サイクルを更新しました",
+      "not_updated": "サイクルは更新されていません",
+      "try_again": "少し時間をおいて、もう一度お試しください。",
+      "dates_taken": "その期間はすでに別のサイクルが使用しています。日付を消すと下書きのサイクルを作成できます。"
+    },
+    "transfer": {
+      "toast": {
+        "transferred": "作業項目を移しました",
+        "not_transferred": "作業項目は移されていません",
+        "not_loaded": "サイクルを読み込めませんでした"
+      },
+      "search_placeholder": "サイクルを検索",
+      "notice": "完了したサイクルは、アーカイブされるまで編集できます。未完了の作業項目は別のサイクルに移せます。",
+      "action": "未完了の作業項目を移す",
+      "heading": "未完了の作業項目を移す"
+    },
+    "drop_archived_error": "作業項目はアーカイブ済みのサイクルには移動できません",
+    "add_named": "「{name}」をサイクルに追加"
   },
   "active_cycle_analytics": {
     "empty_state": {

@@ -257,9 +257,50 @@
       },
       "project_states": {
         "title": "Status proyek",
-        "heading": "Lihat ikhtisar kemajuan untuk semua proyek.",
-        "description": "Status Proyek adalah fitur khusus Plane untuk melacak kemajuan semua proyek Anda berdasarkan properti proyek apa pun.",
-        "go_to_settings": "Pergi ke pengaturan"
+        "heading": "Status proyek",
+        "description": "Klasifikasikan dan lacak siklus hidup proyek secara konsisten di seluruh ruang kerja.",
+        "go_to_settings": "Pergi ke pengaturan",
+        "loading": "Memuat pengaturan",
+        "list_heading": "Status proyek ruang kerja",
+        "try_again": "Coba lagi sebentar lagi.",
+        "toast": {
+          "enabled": "Status proyek aktif",
+          "disabled": "Status proyek nonaktif",
+          "not_saved": "Tidak tersimpan",
+          "state_created": "Status dibuat",
+          "state_updated": "Status diperbarui",
+          "state_deleted": "Status dihapus",
+          "default_set": "Status bawaan diperbarui"
+        },
+        "confirm": {
+          "enable_title": "Aktifkan status proyek ruang kerja?",
+          "disable_title": "Nonaktifkan status proyek ruang kerja?",
+          "enable_content": "Status akan dikelola dari ruang kerja, di semua proyek. Status item kerja dapat disesuaikan dengan kumpulan milik ruang kerja.",
+          "disable_content": "Setiap proyek kembali mengelola statusnya sendiri. Status item kerja dapat disesuaikan dengan kumpulan milik proyek."
+        }
+      },
+      "project_labels": {
+        "title": "Label proyek",
+        "heading": "Label proyek",
+        "description": "Buat dan kelola label proyek di tingkat ruang kerja untuk kategorisasi dan pengelompokan pada tampilan papan dan daftar.",
+        "go_to_settings": "Pergi ke pengaturan",
+        "loading": "Memuat pengaturan",
+        "list_heading": "Label proyek ruang kerja",
+        "try_again": "Coba lagi sebentar lagi.",
+        "toast": {
+          "enabled": "Label proyek aktif",
+          "disabled": "Label proyek nonaktif",
+          "not_saved": "Tidak tersimpan",
+          "label_created": "Label dibuat",
+          "label_updated": "Label diperbarui",
+          "label_deleted": "Label dihapus"
+        },
+        "confirm": {
+          "enable_title": "Aktifkan label proyek ruang kerja?",
+          "disable_title": "Nonaktifkan label proyek ruang kerja?",
+          "enable_content": "Label akan dikelola dari ruang kerja, di semua proyek.",
+          "disable_content": "Setiap proyek kembali mengelola labelnya sendiri."
+        }
       },
       "projects": {
         "title": "Proyek",
@@ -484,6 +525,392 @@
         "heading": "Skrip",
         "new_script": "Skrip Baru",
         "description": "Otomatisasi alur kerja Anda dengan skrip kustom dan aturan otomatisasi."
+      },
+      "organizational_units": {
+        "title": "Area",
+        "heading": "Area",
+        "description": "Kelompokkan orang ke dalam area dan beri setiap area akses ke proyeknya dalam satu langkah.",
+        "add": "Area baru",
+        "disabled": "Area dinonaktifkan di instans ini. Administrator dapat mengaktifkannya dengan mengatur ORCA_ORG_UNITS_ENABLED=1.",
+        "try_again": "Coba lagi sebentar lagi.",
+        "toast": {
+          "saved": "Disimpan",
+          "not_saved": "Tidak disimpan",
+          "role_unchanged": "Peran tidak berubah"
+        },
+        "list": {
+          "empty_title": "Belum ada area.",
+          "empty_description": "Area mengelompokkan orang-orang yang bekerja bersama — Kepatuhan, Penjualan, Administrasi — dan memberi mereka akses ke proyek-proyeknya dalam satu langkah.",
+          "synced_badge": "Tersinkron",
+          "counts": "{members, plural, one {# orang} other {# orang}} · {projects, plural, one {# proyek} other {# proyek}}",
+          "delete_aria": "Hapus {name}",
+          "delete_title": "Hapus {name}?",
+          "delete_content": "Semua orang di area ini akan kehilangan akses proyek yang diberikan oleh area ini. Akses yang diberikan oleh area lain, atau diatur secara manual pada proyek, tetap dipertahankan.",
+          "delete_content_synced": "Semua orang di area ini akan kehilangan akses proyek yang diberikan oleh area ini. Area ini disinkronkan dari direktori Anda, sehingga sinkronisasi berikutnya akan membuatnya lagi — hapus grupnya di direktori jika Anda ingin menghilangkannya secara permanen.",
+          "delete_loading": "Menghapus...",
+          "delete_confirm": "Hapus area",
+          "toast": {
+            "deleted_title": "Area dihapus",
+            "deleted_message": "Akses proyek yang diberikan {name} telah dicabut. Akses yang diberikan dari tempat lain tetap dipertahankan.",
+            "not_deleted": "Tidak dihapus"
+          }
+        },
+        "form": {
+          "edit_title": "Edit area",
+          "name_placeholder": "Kepatuhan",
+          "description_placeholder": "Apa yang menjadi tanggung jawab area ini",
+          "create": "Buat area",
+          "toast": {
+            "updated": "{name} telah diperbarui.",
+            "created_title": "Dibuat",
+            "created": "{name} siap digunakan.",
+            "name_taken": "Area dengan nama ini sudah ada. Pilih nama lain."
+          }
+        },
+        "detail": {
+          "tab_people": "Orang",
+          "back_aria": "Kembali ke semua area"
+        },
+        "members": {
+          "select_person": "Pilih seseorang",
+          "no_addable": "Semua orang di ruang kerja ini sudah berada di area ini",
+          "add": "Tambahkan ke area",
+          "empty": "Belum ada siapa pun di area ini. Tambahkan orang untuk memberi mereka akses ke proyek-proyeknya.",
+          "directory_badge": "Direktori",
+          "remove_aria": "Hapus {name} dari area ini",
+          "lead_note": "Memimpin area berarti mengelola area itu sendiri. Hak admin proyek diberikan secara terpisah, pada proyek.",
+          "directory_note": "Orang yang ditandai {badge} berasal dari penyedia identitas Anda. Menghapus mereka di sini hanya berlaku sampai sinkronisasi berikutnya — keluarkan mereka dari grup di sumbernya. Orang yang Anda tambahkan secara manual tidak akan pernah dihapus oleh sinkronisasi.",
+          "toast": {
+            "added_title": "Anggota ditambahkan",
+            "added": "Mereka kini memiliki akses ke proyek-proyek area ini.",
+            "not_added": "Tidak ditambahkan",
+            "one_lead": "Sebuah area hanya dapat memiliki satu pemimpin pada satu waktu.",
+            "removed_title": "Anggota dihapus",
+            "removed": "{name} tetap memiliki akses proyek yang diberikan di luar area ini.",
+            "not_removed": "Tidak dihapus"
+          }
+        },
+        "projects": {
+          "role_admin_hint": "Dapat mengubah pengaturan dan anggota proyek",
+          "role_member_hint": "Dapat membuat dan mengedit item kerja",
+          "role_guest_hint": "Akses terbatas",
+          "select_project": "Pilih proyek",
+          "no_linkable": "Semua proyek sudah ditautkan ke area ini",
+          "link": "Tautkan proyek",
+          "empty": "Belum ada proyek yang ditautkan. Tautkan satu proyek untuk memberi anggota area ini akses ke proyek tersebut.",
+          "unlink_aria": "Lepaskan tautan {name} dari area ini",
+          "role_note": "Peran seseorang adalah peran tertinggi yang diberikan oleh area-areanya, dibatasi oleh peran ruang kerjanya. Peran yang diatur secara manual pada proyek tidak akan pernah diturunkan di sini.",
+          "toast": {
+            "linked_title": "Proyek ditautkan",
+            "linked": "Semua orang di area ini kini memiliki akses ke proyek tersebut.",
+            "not_linked": "Tidak ditautkan",
+            "unlinked_title": "Tautan proyek dilepas",
+            "unlinked": "Akses ke {name} yang diberikan di luar area ini tetap dipertahankan.",
+            "not_unlinked": "Tautan tidak dilepas"
+          }
+        },
+        "directory_sync": {
+          "heading": "Sinkronisasi direktori",
+          "description": "Biarkan Microsoft Entra ID menjaga keanggotaan area selalu terbaru. Entra menentukan siapa yang termasuk dalam suatu area; proyek mana yang diberikan oleh area, dan dengan peran apa, tetap diatur di sini.",
+          "never": "Belum pernah",
+          "copy": "Salin",
+          "provisioning_on": "Penyediaan aktif.",
+          "provisioning_off": "Penyediaan nonaktif.",
+          "no_token_warning": "Terbitkan token sebelum mengaktifkan penyediaan — Entra tidak dapat melakukan autentikasi tanpanya.",
+          "tenant_url": "URL tenant",
+          "tenant_url_hint": "Tempelkan ini ke Provisioning → Admin Credentials di aplikasi perusahaan Entra.",
+          "secret_token": "Token rahasia",
+          "token_installed": "Token yang diawali {prefix}… telah terpasang. Terakhir digunakan {last_used}.",
+          "no_token": "Belum ada token yang terpasang.",
+          "rotate_token": "Rotasi token",
+          "issue_token": "Terbitkan token",
+          "revoke": "Cabut",
+          "rotate_hint": "Rotasi berlaku segera, sehingga penyediaan akan gagal sampai Entra diberi token yang baru.",
+          "last_sync": "Sinkronisasi terakhir",
+          "resync_now": "Sinkronkan ulang sekarang",
+          "summary_added": "{count, plural, one {# ditambahkan} other {# ditambahkan}}",
+          "summary_restored": "{count, plural, one {# dipulihkan} other {# dipulihkan}}",
+          "summary_withdrawn": "{count, plural, one {# dicabut} other {# dicabut}}",
+          "resync_hint": "Sinkronisasi ulang memutar kembali apa yang sudah dikirim direktori — tidak memanggil Entra. Gunakan setelah mengundang seseorang yang sudah didorong oleh direktori.",
+          "unresolved_heading": "Didorong oleh direktori, tidak ada di ruang kerja ini ({count})",
+          "unresolved_empty": "Semua orang yang dikirim direktori adalah anggota aktif ruang kerja ini.",
+          "not_workspace_member": "Bukan anggota ruang kerja",
+          "inactive_in_directory": "Tidak aktif di direktori",
+          "unresolved_hint": "Undang orang-orang ini ke ruang kerja dan mereka akan otomatis bergabung ke areanya, atau hapus mereka dari grup di Entra.",
+          "auto_create_title": "Buat area untuk grup baru",
+          "auto_create_hint": "Saat nonaktif, direktori hanya dapat mengisi area yang Anda buat dan beri nama yang sesuai.",
+          "auto_create_saved": "Cara penanganan grup direktori baru telah disimpan.",
+          "deprovision_title": "Izinkan direktori menghapus orang",
+          "deprovision_hint": "Saat nonaktif, sinkronisasi hanya menambahkan. Orang yang Anda tambahkan secara manual tidak akan pernah dihapus, apa pun pengaturannya.",
+          "deprovision_saved": "Cara penanganan penghapusan dari direktori telah disimpan.",
+          "toast": {
+            "copied_title": "Disalin",
+            "copied": "{label} disalin ke clipboard Anda.",
+            "not_copied_title": "Tidak dapat menyalin",
+            "not_copied": "Pilih dan salin {label} secara manual.",
+            "load_failed_title": "Tidak dapat memuat koneksi direktori",
+            "load_failed": "Silakan coba lagi sebentar lagi.",
+            "save_failed": "Perubahan tidak dapat disimpan. Silakan coba lagi.",
+            "token_issued_title": "Token diterbitkan",
+            "token_issued": "Salin sekarang — token hanya ditampilkan sekali ini saja.",
+            "token_not_issued_title": "Tidak diterbitkan",
+            "token_not_issued": "Token tidak dapat dibuat.",
+            "token_revoked_title": "Token dicabut",
+            "token_revoked": "Penyediaan dinonaktifkan sampai token baru diterbitkan.",
+            "token_not_revoked_title": "Tidak dicabut",
+            "token_not_revoked": "Token tidak dapat dicabut.",
+            "resynced_title": "Disinkronkan ulang",
+            "resynced": "{added, plural, one {# ditambahkan} other {# ditambahkan}}, {withdrawn, plural, one {# dicabut} other {# dicabut}}.",
+            "not_resynced_title": "Tidak disinkronkan ulang",
+            "not_resynced": "Sinkronisasi ulang tidak dapat diselesaikan."
+          }
+        },
+        "work": {
+          "tab": "Pekerjaan",
+          "inbox": "Kotak masuk",
+          "in_progress": "Sedang berjalan",
+          "empty_inbox": "Tidak ada yang menunggu. Item kerja yang diambil area ini muncul di sini sampai ada yang menanganinya.",
+          "empty_in_progress": "Saat ini tidak ada yang sedang mengerjakan apa pun untuk area ini.",
+          "claim": "Ambil",
+          "assign": "Tugaskan kepada…",
+          "return_to_queue": "Kembalikan ke antrean",
+          "overdue": "Terlambat",
+          "unassigned": "Belum ada penanggung jawab",
+          "executor_count": "{count, plural, one {# item kerja} other {# item kerja}}",
+          "age": {
+            "just_now": "Baru saja",
+            "minutes": "{count, plural, one {# menit} other {# menit}}",
+            "hours": "{count, plural, one {# jam} other {# jam}}",
+            "days": "{count, plural, one {# hari} other {# hari}}"
+          },
+          "reason": {
+            "new_item": "Baru diambil",
+            "awaiting_coordinator": "Menunggu koordinator",
+            "awaiting_claim": "Menunggu seseorang mengambilnya",
+            "no_eligible_member": "Tidak ada di area ini yang dapat mengambilnya",
+            "executor_unavailable": "Pelaksananya tidak tersedia",
+            "manually_returned": "Dikembalikan ke antrean"
+          },
+          "assign_modal": {
+            "title": "Tugaskan item kerja ini",
+            "search": "Cari berdasarkan nama atau email",
+            "no_candidates": "Belum ada di area ini yang dapat mengambil pekerjaan. Tambahkan orang ke area ini terlebih dahulu.",
+            "assigning": "Menugaskan…",
+            "open_items": "{count, plural, one {# item terbuka} other {# item terbuka}}",
+            "unavailable": "Tidak ada",
+            "opted_out": "Tidak menerima pekerjaan baru"
+          },
+          "toast": {
+            "claimed_title": "Item kerja diambil",
+            "claimed": "Sekarang menjadi milik Anda dan telah keluar dari kotak masuk area ini.",
+            "not_claimed": "Tidak diambil",
+            "assigned_title": "Item kerja ditugaskan",
+            "assigned": "{name} yang menanganinya sekarang.",
+            "not_assigned": "Tidak ditugaskan",
+            "returned_title": "Dikembalikan ke antrean",
+            "returned": "Item ini menunggu seseorang lagi.",
+            "not_returned": "Tidak dikembalikan",
+            "transferred_title": "Dipindahkan ke area lain",
+            "transferred": "{name} kini bertanggung jawab atasnya.",
+            "not_transferred": "Tidak dipindahkan"
+          },
+          "attention": "Perlu perhatian",
+          "attention_overdue_date": "Lewat tanggal jatuh tempo",
+          "attention_suspended": "Dijeda",
+          "attention_unavailable": "Pelaksana tidak tersedia",
+          "attention_no_date": "Tanpa tanggal jatuh tempo",
+          "empty_attention": "Tidak ada yang perlu diperhatikan saat ini.",
+          "decisions": "Keputusan",
+          "empty_decisions": "Belum ada keputusan alokasi.",
+          "decision_supersedes": "Menggantikan keputusan sebelumnya",
+          "decision_outcome": {
+            "assigned": "Ditugaskan",
+            "queued": "Dalam antrean",
+            "allocation_failed": "Tidak dapat menugaskan",
+            "rejected": "Ditolak"
+          },
+          "transfer": "Pindahkan ke area lain",
+          "transfer_modal": {
+            "title": "Pindahkan ke area lain",
+            "search": "Cari area",
+            "no_units": "Tidak ada area lain yang mencakup proyek ini.",
+            "transferring": "Memindahkan…"
+          },
+          "suggestion": "Saran: {name}",
+          "unavailable_until": "Tidak ada hingga {until}",
+          "unavailable_open": "Tidak ada",
+          "executor_away": "Tidak ada",
+          "process_progress": "{done}/{total}"
+        },
+        "executive": {
+          "title": "Tampilan eksekutif",
+          "heading": "Kerja per area",
+          "description": "Bagaimana pekerjaan bergerak di setiap area, dan pada proses yang sedang berjalan.",
+          "link": "Tampilan eksekutif",
+          "load_failed": "Tampilan eksekutif tidak dapat dimuat.",
+          "empty": "Belum ada area.",
+          "hidden_count": "{count, plural, one {# item kerja berada di proyek yang tidak dapat Anda buka} other {# item kerja berada di proyek yang tidak dapat Anda buka}}",
+          "period": {
+            "label": "Periode",
+            "7d": "7 hari terakhir",
+            "30d": "30 hari terakhir",
+            "90d": "90 hari terakhir"
+          },
+          "indicators": {
+            "area": "Area",
+            "backlog": "Backlog",
+            "queued": "Dalam antrean",
+            "assignment_overdue": "Penugasan terlambat",
+            "target_overdue": "Tanggal target terlewati",
+            "queue_age_p50": "Usia antrean p50",
+            "queue_age_p90": "Usia antrean p90",
+            "throughput": "Throughput",
+            "cycle_time_p50": "Waktu siklus p50",
+            "cycle_time_p90": "Waktu siklus p90",
+            "concentration_top3": "Konsentrasi 3 teratas",
+            "auto_assign_kept_ratio": "Penugasan otomatis dipertahankan"
+          },
+          "processes": {
+            "heading": "Proses",
+            "running": "Berjalan",
+            "completed": "Selesai dalam periode",
+            "lead_time_p50": "Lead time p50",
+            "lead_time_p90": "Lead time p90",
+            "empty": "Tidak ada proses yang berjalan atau selesai dalam periode ini.",
+            "step": "{step} · {template}"
+          },
+          "drill_down": {
+            "title": "{metric} · {unit}",
+            "empty": "Tidak ada yang ditampilkan. Item di proyek yang tidak dapat Anda buka dihitung, bukan didaftarkan.",
+            "close": "Tutup"
+          }
+        },
+        "errors": {
+          "unit_not_found": "Area itu sudah tidak ada.",
+          "name_required": "Area memerlukan nama.",
+          "slug_taken": "Sudah ada area dengan nama ini.",
+          "members_not_in_workspace": "Setiap orang yang Anda tambahkan harus menjadi anggota aktif ruang kerja ini.",
+          "membership_not_found": "Orang itu sudah tidak ada di area ini.",
+          "lead_already_set": "Area ini sudah memiliki pemimpin.",
+          "unit_not_in_workspace": "Area itu bukan bagian dari ruang kerja ini.",
+          "project_required": "Pilih proyek untuk ditautkan.",
+          "invalid_role": "Area tidak dapat memberikan peran itu.",
+          "project_not_in_workspace": "Proyek itu bukan bagian dari ruang kerja ini.",
+          "link_not_found": "Proyek itu sudah tidak tertaut ke area ini.",
+          "work_item_not_found": "Item kerja itu sudah tidak ada.",
+          "work_item_has_no_unit": "Tidak ada area yang bertanggung jawab atas item kerja ini.",
+          "invalid_assignment_mode": "Itu bukan mode penugasan.",
+          "unit_not_covering_project": "Area itu tidak tertaut dengan proyek ini.",
+          "assignment_mode_not_allowed": "Area itu tidak mengizinkan cara penugasan kerja tersebut.",
+          "executor_not_eligible": "Orang itu tidak dapat mengambil item kerja ini.",
+          "work_item_already_claimed": "Orang lain sudah mengambil item kerja ini lebih dulu.",
+          "decision_stale": "Item kerja ini berubah saat Anda melihatnya. Muat ulang lalu coba lagi.",
+          "invalid_routing_transition": "Item kerja ini tidak dapat berpindah ke status itu dari status saat ini.",
+          "directory_workspace_not_found": "Ruang kerja itu sudah tidak ada.",
+          "directory_token_required": "Terbitkan token SCIM sebelum mengaktifkan penyediaan dari direktori.",
+          "not_unit_coordinator": "Hanya koordinator area ini atau admin ruang kerja yang dapat melakukan ini.",
+          "coordinator_already_set": "Orang ini sudah menjadi koordinator area ini.",
+          "coordinator_not_found": "Koordinator tidak ditemukan.",
+          "not_the_executor": "Hanya eksekutor saat ini, koordinator area ini, atau admin ruang kerja yang dapat melakukan ini.",
+          "coordinator_must_be_member": "Koordinator harus menjadi anggota aktif atau admin ruang kerja.",
+          "invalid_queue_filter": "Filter antrean itu tidak dikenali.",
+          "public_api_disabled": "API otomatisasi dimatikan pada instansi ini.",
+          "idempotency_key_required": "Permintaan ini memerlukan header Idempotency-Key.",
+          "idempotency_payload_mismatch": "Kunci itu sudah dipakai untuk permintaan lain.",
+          "operation_in_progress": "Permintaan yang sama masih berjalan. Coba lagi sebentar lagi.",
+          "external_binding_conflict": "Kunci eksternal itu sudah menunjuk ke item kerja lain.",
+          "assignees_not_allowed_here": "Area yang menentukan siapa mengambil item kerja ini, jadi permintaan ini tidak dapat menetapkan penanggung jawab.",
+          "if_match_required": "Permintaan ini memerlukan header If-Match berisi keputusan yang berlaku.",
+          "process_projection_disabled": "Proyeksi proses dimatikan pada instansi ini.",
+          "completion_manual_only": "Item kerja ini hanya dapat diselesaikan oleh orang.",
+          "internal_error": "Terjadi kesalahan. Operasi dicatat sebagai gagal.",
+          "availability_window_not_found": "Periode ketidaktersediaan itu tidak ditemukan.",
+          "availability_invalid_interval": "Akhir periode ketidaktersediaan harus setelah awalnya.",
+          "availability_from_required": "Periode ketidaktersediaan memerlukan tanggal mulai.",
+          "workspace_member_not_found": "Orang itu bukan anggota workspace ini.",
+          "allocation_limit_forbidden": "Hanya koordinator atau admin workspace yang boleh menetapkan batas kerja pribadi.",
+          "not_availability_manager": "Hanya koordinator salah satu area orang ini, atau admin workspace, yang boleh melakukan ini."
+        },
+        "coordinators": {
+          "tab": "Koordinator",
+          "select_person": "Pilih seseorang",
+          "no_addable": "Semua yang dapat mengoordinasikan area ini sudah melakukannya",
+          "add": "Tambah koordinator",
+          "empty": "Belum ada yang mengoordinasikan area ini. Koordinator mengelola antrean tanpa harus menjadi anggotanya.",
+          "remove_aria": "Hentikan {name} mengoordinasikan area ini",
+          "note": "Koordinator mengelola antrean area. Mereka tidak harus menjadi anggota area. Tamu ruang kerja tidak dapat menjadi koordinator.",
+          "toast": {
+            "added_title": "Koordinator ditambahkan",
+            "added": "Mereka kini dapat mengelola antrean area ini.",
+            "not_added": "Tidak ditambahkan",
+            "removed_title": "Koordinator dihapus",
+            "removed": "{name} tidak lagi mengoordinasikan area ini.",
+            "not_removed": "Tidak dihapus"
+          }
+        },
+        "policy": {
+          "tab": "Kebijakan",
+          "heading": "Bagaimana area ini menugaskan pekerjaan",
+          "description": "Nilai default area, yang dapat ditimpa oleh sebuah proyek.",
+          "scope_area": "Default area",
+          "scope_project": "Pengecualian untuk {name}",
+          "default_mode": "Mode default",
+          "allowed_modes": "Mode yang diizinkan",
+          "sla_seconds": "SLA penugasan (detik)",
+          "sla_hint": "Berapa lama sebuah item boleh menunggu tanpa penugasan sebelum koordinator diingatkan. Biarkan kosong jika tanpa tenggat.",
+          "max_open": "Maksimum item terbuka per orang",
+          "max_open_hint": "Biarkan kosong jika tanpa batas.",
+          "save": "Simpan kebijakan",
+          "mode": {
+            "manual": "Koordinator menugaskan",
+            "self_claim": "Orang mengambil pekerjaan sendiri",
+            "least_loaded": "Anggota dengan beban paling sedikit",
+            "explicit": "Orang yang disebutkan"
+          },
+          "toast": {
+            "saved_title": "Kebijakan disimpan",
+            "saved": "Pekerjaan baru akan mengikuti aturan ini.",
+            "not_saved": "Tidak disimpan"
+          }
+        },
+        "my_areas": {
+          "title": "Area saya",
+          "heading": "Area saya",
+          "description": "Area tempat Anda menjadi anggota, dan pekerjaan yang menunggu di masing-masing.",
+          "empty": "Anda belum menjadi anggota area mana pun.",
+          "select": "Pilih area"
+        },
+        "availability": {
+          "title": "Waktu tidak ada",
+          "help": "Tidak ada membuat penugasan otomatis tidak memilih Anda. Pekerjaan yang sudah Anda bawa tidak ditarik.",
+          "empty": "Belum ada catatan.",
+          "from": "Dari",
+          "until": "Sampai",
+          "add": "Tambah",
+          "added": "Tercatat",
+          "not_added": "Tidak dapat mencatatnya",
+          "removed": "Dihapus",
+          "not_removed": "Tidak dapat menghapusnya",
+          "remove_aria": "Hapus ketidakhadiran ini",
+          "range": "{from} sampai {until}",
+          "open_ended": "Dari {from}, tanpa tanggal kembali",
+          "reason": {
+            "vacation": "Libur",
+            "leave": "Cuti",
+            "other": "Lainnya"
+          }
+        },
+        "allocation": {
+          "accepts_new_work": "Menerima pekerjaan baru dari area ini",
+          "accepts_new_work_help": "Nonaktif berarti penugasan otomatis melewati mereka di sini. Mereka tetap membawa yang sudah ada, dan masih bisa diberi secara nama.",
+          "max_open_items": "Paling banyak item terbuka sekaligus",
+          "max_open_items_help": "Penugasan otomatis berhenti pada angka ini. Kosong berarti batas area yang berlaku.",
+          "no_limit": "Tanpa batas",
+          "saved": "Disimpan",
+          "not_saved": "Tidak dapat menyimpan",
+          "limit_invalid": "Harus berupa bilangan bulat satu atau lebih.",
+          "open_aria": "Pengaturan kerja untuk {name}"
+        }
       }
     },
     "empty_state": {

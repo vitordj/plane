@@ -15,6 +15,7 @@ import { useState } from "react";
 import { observer } from "mobx-react";
 import { AlertTriangle } from "lucide-react";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { ICycle } from "@plane/types";
 import { AlertModalCore } from "@plane/ui";
@@ -39,21 +40,11 @@ type Props = {
   handleClose: () => void;
 };
 
-const MODAL_COPY: Record<TMode, { title: string; primaryDefault: string; primaryLoading: string }> = {
-  start: {
-    title: "Start cycle",
-    primaryDefault: "Start cycle",
-    primaryLoading: "Starting…",
-  },
-  end: {
-    title: "Complete cycle",
-    primaryDefault: "Complete cycle",
-    primaryLoading: "Completing…",
-  },
-};
-
 export const CycleStartStopModal = observer(function CycleStartStopModal(props: Props) {
   const { isOpen, mode, cycleDetails, workspaceSlug, projectId, handleClose } = props;
+  // translation
+  const { t } = useTranslation();
+  const SS = "cycle.start_stop";
   // state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [setInProgress, setSetInProgress] = useState<boolean>(true);
@@ -67,22 +58,8 @@ export const CycleStartStopModal = observer(function CycleStartStopModal(props: 
   // timezone converter
   const { renderFormattedDateInUserTimezone } = useTimeZoneConverter(projectId);
 
-  const copy = MODAL_COPY[mode];
   const formattedDate =
-    renderFormattedDateInUserTimezone(new Date().toISOString()) || renderFormattedDate(new Date()) || "today";
-
-  const description =
-    mode === "start" ? (
-      <>
-        This will set <span className="font-semibold text-primary">{formattedDate}</span> as the start date and move the
-        cycle to active.
-      </>
-    ) : (
-      <>
-        This will set <span className="font-semibold text-primary">{formattedDate}</span> as the end date and mark the
-        cycle as completed.
-      </>
-    );
+    renderFormattedDateInUserTimezone(new Date().toISOString()) || renderFormattedDate(new Date()) || "";
 
   /**
    * Number of work items that are not yet done (not completed or cancelled).
@@ -99,28 +76,28 @@ export const CycleStartStopModal = observer(function CycleStartStopModal(props: 
         await startCycle(workspaceSlug, projectId, cycleDetails.id, { set_in_progress: willUpdateState });
         setToast({
           type: TOAST_TYPE.SUCCESS,
-          title: "Cycle started",
-          message: willUpdateState
-            ? `"${cycleDetails.name}" is now active and unstarted issues were moved to In Progress.`
-            : `"${cycleDetails.name}" is now active.`,
+          title: t(`${SS}.toast.started`),
+          message: t(willUpdateState ? `${SS}.toast.started_moved` : `${SS}.toast.started_message`, {
+            name: cycleDetails.name,
+          }),
         });
       } else {
         const willMarkCompleted = markCompleted && Boolean(hasCompletedState) && incompleteCount > 0;
         await endCycle(workspaceSlug, projectId, cycleDetails.id, { mark_completed: willMarkCompleted });
         setToast({
           type: TOAST_TYPE.SUCCESS,
-          title: "Cycle completed",
-          message: willMarkCompleted
-            ? `"${cycleDetails.name}" has been marked as completed and incomplete issues were moved to Completed.`
-            : `"${cycleDetails.name}" has been marked as completed.`,
+          title: t(`${SS}.toast.completed`),
+          message: t(willMarkCompleted ? `${SS}.toast.completed_moved` : `${SS}.toast.completed_message`, {
+            name: cycleDetails.name,
+          }),
         });
       }
       handleClose();
     } catch {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Something went wrong",
-        message: "Please try again later.",
+        title: t(`${SS}.toast.failed`),
+        message: t(`${SS}.try_again`),
       });
     } finally {
       setIsSubmitting(false);
@@ -129,9 +106,14 @@ export const CycleStartStopModal = observer(function CycleStartStopModal(props: 
 
   const modalContent = (
     <div className="flex flex-col gap-3">
-      <p>
-        Are you sure you want to {mode === "start" ? "start" : "end"}{" "}
-        <span className="font-medium break-words text-primary">"{cycleDetails.name}"</span>? {description}
+      {/* One sentence per mode rather than a verb spliced into a shared frame:
+          the cycle name, the date and the verb sit in different places once the
+          sentence is translated, so the whole thing has to be one key. */}
+      <p className="break-words">
+        {t(mode === "start" ? `${SS}.start.question` : `${SS}.end.question`, {
+          name: cycleDetails.name,
+          date: formattedDate,
+        })}
       </p>
 
       {/* Option to move unstarted items to In Progress when starting a cycle */}
@@ -145,10 +127,8 @@ export const CycleStartStopModal = observer(function CycleStartStopModal(props: 
             className="focus:ring-primary mt-0.5 h-4 w-4 cursor-pointer rounded border-subtle text-primary"
           />
           <label htmlFor="set_in_progress" className="text-xs cursor-pointer select-none">
-            <span className="font-medium text-primary">Move unstarted work items to In Progress</span>
-            <p className="mt-0.5 text-secondary">
-              All backlog and unstarted work items in this cycle will automatically move to the In Progress state.
-            </p>
+            <span className="font-medium text-primary">{t(`${SS}.move_unstarted.label`)}</span>
+            <p className="mt-0.5 text-secondary">{t(`${SS}.move_unstarted.hint`)}</p>
           </label>
         </div>
       )}
@@ -158,8 +138,7 @@ export const CycleStartStopModal = observer(function CycleStartStopModal(props: 
         <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 flex items-start gap-2 rounded-md p-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
           <p className="text-13">
-            <span className="font-medium">No "In Progress" state found.</span> Work items in this cycle will remain in
-            their current state when started.
+            <span className="font-medium">{t(`${SS}.no_in_progress.title`)}</span> {t(`${SS}.no_in_progress.hint`)}
           </p>
         </div>
       )}
@@ -175,11 +154,8 @@ export const CycleStartStopModal = observer(function CycleStartStopModal(props: 
             className="focus:ring-primary mt-0.5 h-4 w-4 cursor-pointer rounded border-subtle text-primary"
           />
           <label htmlFor="mark_completed" className="text-xs cursor-pointer select-none">
-            <span className="font-medium text-primary">Mark all incomplete work items as Completed</span>
-            <p className="mt-0.5 text-secondary">
-              All {incompleteCount} unfinished work item{incompleteCount !== 1 ? "s" : ""} in this cycle will
-              automatically move to the Completed state.
-            </p>
+            <span className="font-medium text-primary">{t(`${SS}.mark_completed.label`)}</span>
+            <p className="mt-0.5 text-secondary">{t(`${SS}.mark_completed.hint`, { count: incompleteCount })}</p>
           </label>
         </div>
       )}
@@ -189,10 +165,8 @@ export const CycleStartStopModal = observer(function CycleStartStopModal(props: 
         <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 flex items-start gap-2 rounded-md p-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
           <p className="text-13">
-            <span className="font-medium">
-              {incompleteCount} work item{incompleteCount !== 1 ? "s" : ""} not yet done.
-            </span>{" "}
-            No "Completed" state found in this project to update them automatically.
+            <span className="font-medium">{t(`${SS}.no_completed.title`, { count: incompleteCount })}</span>{" "}
+            {t(`${SS}.no_completed.hint`)}
           </p>
         </div>
       )}
@@ -205,14 +179,14 @@ export const CycleStartStopModal = observer(function CycleStartStopModal(props: 
       handleClose={handleClose}
       handleSubmit={handleSubmit}
       isSubmitting={isSubmitting}
-      title={copy.title}
+      title={t(mode === "start" ? `${SS}.start.title` : `${SS}.end.title`)}
       content={modalContent}
       variant="primary"
       primaryButtonText={{
-        default: copy.primaryDefault,
-        loading: copy.primaryLoading,
+        default: t(mode === "start" ? `${SS}.start.title` : `${SS}.end.title`),
+        loading: t(mode === "start" ? `${SS}.start.loading` : `${SS}.end.loading`),
       }}
-      secondaryButtonText="Cancel"
+      secondaryButtonText={t("common.cancel")}
     />
   );
 });

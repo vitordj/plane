@@ -50,6 +50,8 @@ function StatesSettingsPage({ params }: Route.ComponentProps) {
 
   const { t } = useTranslation();
 
+  const WS_STATES = "project_settings.states.workspace_states";
+
   // derived values
   const pageTitle = currentProjectDetails?.name ? `${currentProjectDetails?.name} - States` : undefined;
   // derived values
@@ -78,14 +80,13 @@ function StatesSettingsPage({ params }: Route.ComponentProps) {
       await fetchProjectStates(workspaceSlug, projectId);
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Success",
-        message: `Project States feature ${nextValue ? "enabled" : "disabled"} successfully.`,
+        title: t(nextValue ? `${WS_STATES}.toast.enabled` : `${WS_STATES}.toast.disabled`),
       });
     } catch (_e) {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error",
-        message: "Failed to update project state settings.",
+        title: t(`${WS_STATES}.toast.not_saved`),
+        message: t(`${WS_STATES}.try_again`),
       });
     } finally {
       setIsSubmitting(false);
@@ -172,10 +173,8 @@ function StatesSettingsPage({ params }: Route.ComponentProps) {
         {isWorkspaceStatesEnabled && (
           <div className="bg-custom-background-90 flex items-center justify-between rounded-xl border border-subtle p-4">
             <div>
-              <h4 className="text-sm text-custom-text-100 font-semibold">Use Workspace Project States</h4>
-              <p className="text-xs text-custom-text-300">
-                When enabled, project-level state management is locked and controlled globally from the workspace.
-              </p>
+              <h4 className="text-sm text-custom-text-100 font-semibold">{t(`${WS_STATES}.title`)}</h4>
+              <p className="text-xs text-custom-text-300">{t(`${WS_STATES}.description`)}</p>
             </div>
             {!loadingProperty && (
               <ToggleSwitch
@@ -193,11 +192,8 @@ function StatesSettingsPage({ params }: Route.ComponentProps) {
               <div className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 text-sm mb-6 flex items-start gap-2.5 rounded-md p-3">
                 <AlertTriangle className="mt-0.5 size-4 shrink-0" />
                 <div className="flex flex-col gap-0.5">
-                  <span className="font-semibold">Workspace Project States Active</span>
-                  <span className="text-xs opacity-90">
-                    This project is currently using workspace-level project states. Editing is disabled. Turn off the
-                    toggle above to customize states locally.
-                  </span>
+                  <span className="font-semibold">{t(`${WS_STATES}.active_title`)}</span>
+                  <span className="text-xs opacity-90">{t(`${WS_STATES}.active_description`)}</span>
                 </div>
               </div>
               <GroupList
@@ -218,12 +214,18 @@ function StatesSettingsPage({ params }: Route.ComponentProps) {
           handleClose={() => setIsConfirmationModalOpen(false)}
           handleSubmit={handleConfirmToggle}
           isSubmitting={isSubmitting}
-          title="Confirm Toggle Project States"
-          content={`Are you sure you want to ${isProjectUsingWorkspaceStates ? "disable" : "enable"} workspace project states for this project? This will change how states are managed. Work items in this project might have their states updated or moved.`}
+          title={t(
+            isProjectUsingWorkspaceStates ? `${WS_STATES}.confirm.disable_title` : `${WS_STATES}.confirm.enable_title`
+          )}
+          content={t(
+            isProjectUsingWorkspaceStates
+              ? `${WS_STATES}.confirm.disable_content`
+              : `${WS_STATES}.confirm.enable_content`
+          )}
           variant="primary"
           primaryButtonText={{
-            loading: "Updating...",
-            default: "Confirm",
+            loading: t("common.updating"),
+            default: t("common.confirm"),
           }}
         />
       )}

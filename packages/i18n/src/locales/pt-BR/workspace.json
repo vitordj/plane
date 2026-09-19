@@ -223,6 +223,14 @@
       "search": {
         "description": "Nenhum projeto detectado com os critérios correspondentes.\nCrie um novo projeto em vez disso"
       }
+    },
+    "group_by_button": "Agrupar por: {value}",
+    "group": {
+      "no_label": "Sem etiqueta"
+    },
+    "card": {
+      "set_state": "Definir estado",
+      "add_label": "+ Etiqueta"
     }
   },
   "workspace_views": {

@@ -162,6 +162,43 @@ gitea_config_variables = [
     },
 ]
 
+# Microsoft Entra ID sign-in (fork addition, see FORK.md). ENTRA_TENANT_ID is
+# required rather than optional: the provider refuses the multi-tenant
+# authorities, because an unpinned tenant would let any Azure directory assert
+# any email address.
+entra_config_variables = [
+    {
+        "key": "IS_ENTRA_ENABLED",
+        "value": os.environ.get("IS_ENTRA_ENABLED", "0"),
+        "category": "ENTRA",
+        "is_encrypted": False,
+    },
+    {
+        "key": "ENTRA_TENANT_ID",
+        "value": os.environ.get("ENTRA_TENANT_ID"),
+        "category": "ENTRA",
+        "is_encrypted": False,
+    },
+    {
+        "key": "ENTRA_CLIENT_ID",
+        "value": os.environ.get("ENTRA_CLIENT_ID"),
+        "category": "ENTRA",
+        "is_encrypted": False,
+    },
+    {
+        "key": "ENTRA_CLIENT_SECRET",
+        "value": os.environ.get("ENTRA_CLIENT_SECRET"),
+        "category": "ENTRA",
+        "is_encrypted": True,
+    },
+    {
+        "key": "ENABLE_ENTRA_SYNC",
+        "value": os.environ.get("ENABLE_ENTRA_SYNC", "0"),
+        "category": "ENTRA",
+        "is_encrypted": False,
+    },
+]
+
 smtp_config_variables = [
     {
         "key": "ENABLE_SMTP",
@@ -257,6 +294,7 @@ core_config_variables = [
     *github_config_variables,
     *gitlab_config_variables,
     *gitea_config_variables,
+    *entra_config_variables,
     *smtp_config_variables,
     *llm_config_variables,
     *unsplash_config_variables,
