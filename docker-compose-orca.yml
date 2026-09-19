@@ -94,6 +94,12 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Container clock. Celery beat schedules "every day at ..." against the
+      # process timezone, so a beat on UTC and an operator on UTC-3 disagree
+      # about which day a nightly job belongs to. Set the same value on all
+      # four containers of this image and on plane-db, or a timestamp written
+      # by the worker and read back by the API is off by the offset.
+      - TZ=${TZ:-UTC}
       # Which of the four containers sharing the api image answered; read by
       # `manage.py orca_build_info` and the build-info endpoint (P0.15).
       - ORCA_SERVICE_NAME=${ORCA_SERVICE_NAME_API:-api}
@@ -112,6 +118,13 @@ services:
       - ORCA_PROCESS_PROJECTION_ENABLED=${ORCA_PROCESS_PROJECTION_ENABLED:-0}
       - SCIM_RATE_LIMIT=${SCIM_RATE_LIMIT:-600/minute}
       - SCIM_AUTH_FAILURE_RATE_LIMIT=${SCIM_AUTH_FAILURE_RATE_LIMIT:-30/minute}
+      # Seeds the DEFAULT_LANGUAGE instance configuration on first boot, which
+      # is what every runtime read resolves against afterwards (SKIP_ENV_VAR
+      # defaults to 1, so the database row wins once it exists). Only `api`
+      # needs it because `configure_instance` runs in this entrypoint alone --
+      # unlike the ORCA_ switches above, which each process reads for itself.
+      # Documented in docs/i18n.md; changeable later in /god-mode/.
+      - DEFAULT_LANGUAGE=${DEFAULT_LANGUAGE:-en}
       - GUNICORN_WORKERS=${GUNICORN_WORKERS:-1}
       - FILE_SIZE_LIMIT=${FILE_SIZE_LIMIT:-5242880}
       - SERVICE_URL_PROXY
@@ -150,6 +163,12 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Container clock. Celery beat schedules "every day at ..." against the
+      # process timezone, so a beat on UTC and an operator on UTC-3 disagree
+      # about which day a nightly job belongs to. Set the same value on all
+      # four containers of this image and on plane-db, or a timestamp written
+      # by the worker and read back by the API is off by the offset.
+      - TZ=${TZ:-UTC}
       # Which of the four containers sharing the api image answered; read by
       # `manage.py orca_build_info` and the build-info endpoint (P0.15).
       - ORCA_SERVICE_NAME=${ORCA_SERVICE_NAME_WORKER:-worker}
@@ -200,6 +219,12 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Container clock. Celery beat schedules "every day at ..." against the
+      # process timezone, so a beat on UTC and an operator on UTC-3 disagree
+      # about which day a nightly job belongs to. Set the same value on all
+      # four containers of this image and on plane-db, or a timestamp written
+      # by the worker and read back by the API is off by the offset.
+      - TZ=${TZ:-UTC}
       # Which of the four containers sharing the api image answered; read by
       # `manage.py orca_build_info` and the build-info endpoint (P0.15).
       - ORCA_SERVICE_NAME=${ORCA_SERVICE_NAME_BEAT_WORKER:-beat-worker}
@@ -250,6 +275,12 @@ services:
       - AWS_S3_ENDPOINT_URL=http://plane-minio:9000
       - BUCKET_NAME=${AWS_S3_BUCKET_NAME:-uploads}
       - USE_MINIO=1
+      # Container clock. Celery beat schedules "every day at ..." against the
+      # process timezone, so a beat on UTC and an operator on UTC-3 disagree
+      # about which day a nightly job belongs to. Set the same value on all
+      # four containers of this image and on plane-db, or a timestamp written
+      # by the worker and read back by the API is off by the offset.
+      - TZ=${TZ:-UTC}
       # Which of the four containers sharing the api image answered; read by
       # `manage.py orca_build_info` and the build-info endpoint (P0.15).
       - ORCA_SERVICE_NAME=${ORCA_SERVICE_NAME_MIGRATOR:-migrator}
@@ -320,6 +351,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-plane}
       POSTGRES_PASSWORD: "${SERVICE_PASSWORD_DATABASE:?set a generated PostgreSQL password, there is no default}"
       PGDATA: /var/lib/postgresql/data
+      # Same clock as the application containers: `now()` and any
+      # timestamp-without-timezone column are evaluated by the server.
+      TZ: ${TZ:-UTC}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB:-plane}"]
       interval: 10s
