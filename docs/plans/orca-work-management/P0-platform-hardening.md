@@ -721,7 +721,7 @@ implantação e `docker-compose-test.yml` usam `postgres:15.7-alpine`.
 
 ---
 
-## P0.17 — Documentação de implantação não presume Coolify `[~]`
+## P0.17 — Documentação de implantação não presume Coolify `[x]` (19/09/2026)
 
 **Situação.** README, `docker-compose-orca.yml`, os workflows e este plano
 falam em Coolify como se fosse o alvo de implantação. Isso vem do ambiente da
@@ -743,15 +743,52 @@ a decisão não sai — o que existe é documentação que descreve outro ambien
 - `FORK.md` §Phase 3: o passo "Staging Deploy" dizia que o merge dispara o redeploy do Coolify, sem qualificar. Agora diz que é opt-in por `COOLIFY_DEPLOY_ENABLED` e que, com a variável desligada, as imagens são publicadas do mesmo jeito e um ambiente que não é Coolify as puxa por digest.
 - README aponta este item para quem for registrar a decisão.
 
-**Não entregue, e por quê.** Qual é o alvo real da 4UM é decisão de
-negócio/operação, não achado de código. Enquanto ela não sai, os jobs de
-deploy continuam opt-in e nada quebra — o que existia era documentação
-descrevendo outro ambiente, e isso é o que foi corrigido.
+**Fechado em 19/09/2026: a decisão saiu.** O alvo de implantação da 4UM é
+**Compose puro numa VM interna** — a SVLP10031 (10.41.22.14), onde a stack já
+roda e serve usuários. Não há PaaS, não há ingress controller: o Caddy do
+serviço `proxy` **é** a borda, e não um segundo salto atrás de outra coisa. O
+Coolify passa a ser um caminho suportado entre outros, e os jobs
+`Deploy to Stage/Prod (Coolify)` continuam opt-in por `COOLIFY_DEPLOY_ENABLED`,
+desligada.
+
+**Entregue com a decisão** (o que um PaaS teria fornecido e um host de Compose
+puro perde):
+
+- `deployments/compose/update.sh`: pull, migração, up e **verificação** — recusa
+  TAG mutável, espera o `api` ficar healthy e imprime `orca_build_info` e o
+  digest resolvido dos três containers da imagem da api. É o §4 do runbook
+  executável, parametrizado pelo diretório da stack (`--dir`). Nuance
+  registrada ali e no runbook: num commit que só foi **re-taguado**, o
+  `orca_build_info` reporta o commit que CONSTRUIU a imagem, não o da TAG; a
+  igualdade que vale é entre os três serviços e entre os digests.
+- `deployments/compose/compose.override.example.yaml`: o caso "sem ingress na
+  frente" — publicar `:80`, `TRUSTED_PROXIES` só com as redes do Docker
+  (`127.0.0.1/32 172.16.0.0/12`, separado por **espaço**; vírgula o Caddy
+  recusa), e limites de recursos para um host com folga.
+- `deployments/compose/README.md`: a forma do diretório de stack — `compose.yaml`
+  como cópia fiel, tudo que é do host no override, e o refresh como
+  `git show <commit>:docker-compose-orca.yml`.
+- `apps/proxy/Caddyfile.ce` e `Caddyfile.aio.ce`: `encode zstd gzip` e
+  `Cache-Control` imutável para `*/assets/*`. Um PaaS costuma comprimir na
+  borda dele; num `docker compose up` numa VM não há nada na frente, e as
+  imagens servem os bundles sem compressão. Medido na VM, no link de ~1 MB/s
+  até a estação: o maior chunk do web caiu de 1,9 MB para 642 KB e de 1,9–7,9 s
+  para 1,1 s. Só `*/assets/*` recebe `immutable`, porque é a saída do Vite e
+  cada nome já carrega hash do conteúdo.
+- `tools/ci-local.sh`: a suíte da API pelo `docker-compose-test.yml` e o build
+  das seis imagens com os mesmos contextos, Dockerfiles e build-args
+  (`GIT_SHA`, `IMAGE_TAG`) do `stage.yml`. O `AGENTS.md` diz que Docker está
+  fora do alcance da sessão de agente; num host que tem Docker, este script é
+  esse passo que faltava.
+- README §Self-Hosting: o alvo registrado, o Coolify qualificado como opcional,
+  e a nota de que os limites de memória do Compose são **mínimos** de VPS < 3 GB
+  e que o lugar de folgá-los é o override.
 
 **Aceite.**
 
-- [ ] Alvo de implantação da 4UM registrado (aqui e no README) — **pendência de negócio**.
+- [x] Alvo de implantação da 4UM registrado (aqui e no README): Compose puro na VM SVLP10031.
 - [x] Nenhuma instrução de implantação afirma Coolify sem qualificar.
+- [x] O que o PaaS fornecia e o Compose puro perde tem substituto versionado: atualização verificada, override de borda, compressão e cache de estáticos, CI local.
 
 **Arquivos:** `README.md`, `FORK.md`, `docker-compose-orca.yml`, `.github/workflows/{stage,prod}.yml`, este plano.
 

@@ -20,6 +20,24 @@
 		max_size {$FILE_SIZE_LIMIT}
 	}
 
+	# Compression and static-asset caching. A PaaS usually puts its own edge
+	# proxy in front of this one and does both; a plain `docker compose up` on
+	# a VM has nothing in front, so Caddy is the edge and has to do them here.
+	#
+	# The service images serve their bundles uncompressed, and the web bundle
+	# alone is ~33 MB across ~1100 files. Measured on the internal 4UM VM over
+	# a ~1 MB/s link: the largest chunk went from 1.9 MB to 642 KB, and from
+	# 1.9-7.9 s to 1.1 s.
+	#
+	# `*/assets/*` is the Vite output directory of web, admin and space, where
+	# every filename already carries a content hash -- so the response is
+	# immutable by construction and revalidating it on every tab is pure
+	# round-trips. Nothing else is cached: `immutable` on an unhashed path
+	# would pin a stale file for a year.
+	encode zstd gzip
+	@assets path */assets/*
+	header @assets >Cache-Control "public, max-age=31536000, immutable"
+
   redir /spaces /spaces/ permanent
 	reverse_proxy /spaces/* space:3000
 

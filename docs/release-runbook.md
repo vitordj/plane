@@ -100,6 +100,10 @@ Keep the promoted digest list. §6 is where you need it.
 Not "the deploy job went green" — that only means the platform accepted the
 request.
 
+On a plain Compose host, `deployments/compose/update.sh` does all of the
+below in one pass — see [deployments/compose](../deployments/compose/README.md).
+By hand:
+
 ```bash
 # 1. The container is running the image we think it is.
 docker inspect --format '{{.Config.Image}} {{index .RepoDigests 0}}' api
@@ -117,6 +121,16 @@ All three must report the **same** `git_sha` and the **same**
 `orca_org_units_enabled`. A worker left behind on an older image is the failure
 mode this check exists for: it keeps writing `ProjectMember` rows with last
 week's rules while the API serves this week's.
+
+**`git_sha` is the commit that built the image, not the commit in the tag.**
+Promotion (§3) copies a digest onto a new tag; it never rebuilds. So for a
+release whose stage commit only changed files no service Dockerfile sees — a
+docs-only commit, say — the images were retagged rather than rebuilt, and all
+three containers correctly report the *earlier* commit that produced those
+bits. That is not drift. The two equalities that mean something are: the three
+services agree with each other, and the digest running on the host is the
+digest the promotion job wrote. `deployments/compose/update.sh` prints both and
+does not fail on a `git_sha` that differs from the tag, deliberately.
 
 ```bash
 # 3. The organizational kill switch agrees across services (P0.14).
