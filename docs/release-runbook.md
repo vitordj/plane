@@ -8,12 +8,10 @@ Read this once before your first release. The two things worth internalizing:
 **every step has a check that can fail** — a release that skipped its checks is
 not faster, it is just unverified.
 
-> **Status:** written alongside the release-chain work (P0.1–P0.3, P0.15,
-> P0.16). The end-to-end rehearsal called for by P0.13 has **not** happened
-> yet; the rehearsal log at the bottom is empty on purpose, and the timings are
-> estimates. §2 no longer carries the version-bump warning it was written with:
-> that question has been answered against the tool, and what it actually does
-> is recorded there.
+> **Status:** rehearsed end to end on 19/09/2026 — see the rehearsal log at the
+> bottom, which closes the P0.13 acceptance criterion. Every step below has now
+> been executed at least once against the real repository and the real
+> deployment, and the corrections that run produced are already folded in.
 
 ---
 
@@ -103,9 +101,12 @@ the PR by hand.
      advance it on its own, which is correct — it tracks upstream, not this
      fork's release count.
    - Every such version is a semver **prerelease**, so it sorts *before* the
-     plain `1.6.0` that will never exist, and GitHub marks the Release as a
-     prerelease. That is a property of the convention in FORK.md, not a
-     misconfiguration.
+     plain `1.6.0` that will never exist. GitHub, however, does **not** mark
+     the Release as a prerelease: that flag follows the `prerelease` setting in
+     the config, which is absent, not the shape of the version string. Observed
+     on `v1.6.0-plane.1.4.2`, which is a normal release and therefore is what
+     `/releases/latest` returns. Both facts are properties of the convention in
+     FORK.md, not misconfigurations.
 
    The Release PR is still editable before merge, and it remains the place to
    look. If a future upstream sync makes the proposal wrong, fix it there and
@@ -251,4 +252,42 @@ P0.13 acceptance criterion.
 
 | Date | Version | Stage commit | Duration (RC → verified) | What went wrong | Runbook change |
 | --- | --- | --- | --- | --- | --- |
-| — | — | — | — | — | — |
+| 2026-09-19 | `1.6.0-plane.1.4.2` | `19b28d738` | ~7 min (RC merged 23:46:43Z → promotion done 23:53:23Z) | Nothing, on the run itself. Everything that went wrong went wrong *before* it — see below. | Status block; §2 prerelease flag corrected; §4 build-info nuance and the `RepoDigests` fix |
+
+### What the first rehearsal actually cost
+
+The run itself took seven minutes and did exactly what §3 says. The price was
+paid earlier, and is worth recording because none of it was visible from the
+workflow files alone.
+
+1. **A previous attempt had already half-happened.** On the same day, an RC PR
+   was merged into `prod` and `Release Please` ran green and produced nothing,
+   because `token:` was handed an unset secret (§2). `prod` moved, no tag was
+   cut, `Production CI/CD` stayed `skipped`, and nothing said so. Fixing that
+   is what made this rehearsal possible.
+
+2. **The version question was answered without a release.** §2 used to say the
+   Release PR was where you would find out whether the `-plane.<upstream>`
+   suffix survives. It was instead answered by running the tool's versioning
+   strategy directly, before the release. The prediction — `1.6.0-plane.1.4.2`,
+   suffix intact — matched what Release Please then proposed, exactly. A
+   runbook step that says "you will find out when it happens" is worth one
+   attempt at answering it first.
+
+3. **§4 step 1 did not work as written.** `docker inspect <container>` was
+   asked for `.RepoDigests`, which is a field of the image. Found by running
+   `deployments/compose/update.sh`, where the same line aborted the script
+   under `set -e` after the pull, the migration and the `up` had all succeeded.
+   Fixed in both places.
+
+4. **`git_sha` did not match the tag, and that was correct.** All six services
+   promoted from `sha-19b28d738`, but the three api-image containers report
+   `d9b594ac1` and the proxy reports `c428869d6`: the last commits that
+   actually *built* each image. Promotion copies digests. §4 now says this
+   before someone reads it as drift at three in the morning.
+
+Verified after promotion: `:latest`, `:1.6.0-plane.1.4.2` and
+`:v1.6.0-plane.1.4.2` resolve to the same digest as `:sha-19b28d738` for all
+six services, and those digests are the ones the containers on the deployment
+host were already running — the release promoted the bits that had been serving
+traffic, which is the whole point of promoting rather than rebuilding.
