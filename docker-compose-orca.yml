@@ -393,8 +393,24 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
+      # Every `rabbitmq-diagnostics` subcommand boots an Erlang CLI node to ask
+      # the broker its question. Measured on an idle broker (cgroup cpu.stat,
+      # mean of five runs): `ping` costs 0.92 CPU-seconds per invocation. At a
+      # 10s interval that is ~9% of a core burned continuously, forever, to
+      # learn nothing new -- more than the idle broker itself uses.
+      #
+      # `check_port_connectivity` is not the cheaper answer it sounds like: it
+      # pays the same Erlang startup and measured *worse* (1.11s), as did
+      # `check_running` (1.07s). What actually costs less is asking less often.
+      # At 30s the same check costs ~3% of a core.
+      #
+      # Nothing here gates on this: no service in this file uses
+      # `depends_on: condition: service_healthy`, and a Compose healthcheck does
+      # not restart anything on its own (`restart: always` covers a crash). The
+      # interval only decides how stale the reported status may be, so the
+      # slower detection this buys costs nothing operationally.
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
+      interval: 30s
       timeout: 10s
       retries: 3
       start_period: 15s

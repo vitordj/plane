@@ -66,6 +66,12 @@ services:
     tmpfs:
       - /var/lib/rabbitmq
     healthcheck:
+      # Deliberately still 10s, unlike docker-compose-orca.yml. `api-tests`
+      # waits on `condition: service_healthy`, so the interval is the floor on
+      # how long every run sits idle before the suite starts -- 30s here would
+      # tax each CI run to save CPU on a container that lives for minutes. The
+      # cost the deployment file avoids is the accumulation, and there is none
+      # to accumulate here.
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 10s
