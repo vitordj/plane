@@ -67,9 +67,36 @@ SHA=$(git_repo rev-parse HEAD)
 SHORT="${SHA:0:9}"
 step "commit $SHA"
 git_repo --no-pager log -1 --format='%cs %s'
-if [ -n "$(git_repo status --porcelain --untracked-files=no)" ]; then
-  echo "WARNING: the tree has local modifications -- the images will not match commit $SHORT"
-fi
+
+# The run takes over an hour, and the checkout is a shared working tree that
+# somebody -- or some other tool -- can move while it is in flight. That is not
+# hypothetical: it happened on the first long run here. The SHA captured above
+# is baked into every image as GIT_SHA and ORCA_IMAGE_TAG, so a tree that moved
+# afterwards produces images that ATTEST to a commit they were not built from,
+# which is precisely the failure `orca_build_info` exists to make visible.
+#
+# So the tree is re-checked before anything is stamped, and again before the
+# stack is brought up. A warning at minute zero is not a guard; a run that
+# refuses to mislabel an image is.
+assert_tree_unchanged() {
+  local now dirty
+  now=$(git_repo rev-parse HEAD)
+  if [ "$now" != "$SHA" ]; then
+    echo "FAILED: the working tree moved during this run ($SHORT -> ${now:0:9})." >&2
+    echo "        Images would have been stamped with a commit they were not built from." >&2
+    return 1
+  fi
+  dirty=$(git_repo status --porcelain --untracked-files=no)
+  if [ -n "$dirty" ]; then
+    echo "FAILED: the working tree has uncommitted changes -- images would not match $SHORT:" >&2
+    printf '%s
+' "$dirty" | sed 's/^/        /' >&2
+    return 1
+  fi
+  return 0
+}
+
+assert_tree_unchanged || exit 1
 
 # What setup.sh copies, minus the pnpm install, which the container builds do
 # themselves. The API suite reads apps/api/.env for SECRET_KEY.
@@ -106,6 +133,7 @@ if [ "$RUN_BUILD" -eq 1 ]; then
   # Same six services, contexts and Dockerfiles as the build-push matrix in
   # stage.yml, and the same two build-args: GIT_SHA and IMAGE_TAG are baked in
   # so the running container can answer which commit it came from (P0.15).
+  assert_tree_unchanged || exit 1
   step "building six images as $IMAGE_PREFIX/<service>:sha-$SHA"
   build_one() {
     local service="$1" context="$2" file="$3"
@@ -135,6 +163,9 @@ if [ "$RUN_BUILD" -eq 1 ]; then
 fi
 
 if [ -n "$UP_DIR" ]; then
+  # Between the first image and the last there is a quarter of an hour; check
+  # again, so the stack is not brought up on a set built from two trees.
+  assert_tree_unchanged || exit 1
   # The stack directory is the host deployment, not this repository: its
   # compose file builds from ${PLANE_SRC} and reads TAG/GIT_SHA from its .env.
   step "up in $UP_DIR"
