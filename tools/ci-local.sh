@@ -67,9 +67,35 @@ SHA=$(git_repo rev-parse HEAD)
 SHORT="${SHA:0:9}"
 step "commit $SHA"
 git_repo --no-pager log -1 --format='%cs %s'
-if [ -n "$(git_repo status --porcelain --untracked-files=no)" ]; then
-  echo "WARNING: the tree has local modifications -- the images will not match commit $SHORT"
-fi
+
+# The run takes over an hour, and the checkout is a shared working tree that
+# somebody -- or some other tool -- can move while it is in flight. That is not
+# hypothetical: it happened on the first long run here. The SHA captured above
+# is baked into every image as GIT_SHA and ORCA_IMAGE_TAG, so a tree that moved
+# afterwards produces images that ATTEST to a commit they were not built from,
+# which is precisely the failure `orca_build_info` exists to make visible.
+#
+# So the tree is re-checked before anything is stamped, and again before the
+# stack is brought up. A warning at minute zero is not a guard; a run that
+# refuses to mislabel an image is.
+assert_tree_unchanged() {
+  local now dirty
+  now=$(git_repo rev-parse HEAD)
+  if [ "$now" != "$SHA" ]; then
+    echo "FAILED: the working tree moved during this run ($SHORT -> ${now:0:9})." >&2
+    echo "        Images would have been stamped with a commit they were not built from." >&2
+    return 1
+  fi
+  dirty=$(git_repo status --porcelain --untracked-files=no)
+  if [ -n "$dirty" ]; then
+    echo "FAILED: the working tree has uncommitted changes -- images would not match $SHORT:" >&2
+    printf '%s\n' "$dirty" | sed 's/^/        /' >&2
+    return 1
+  fi
+  return 0
+}
+
+assert_tree_unchanged || exit 1
 
 # What setup.sh copies, minus the pnpm install, which the container builds do
 # themselves. The API suite reads apps/api/.env for SECRET_KEY.
@@ -106,6 +132,7 @@ if [ "$RUN_BUILD" -eq 1 ]; then
   # Same six services, contexts and Dockerfiles as the build-push matrix in
   # stage.yml, and the same two build-args: GIT_SHA and IMAGE_TAG are baked in
   # so the running container can answer which commit it came from (P0.15).
+  assert_tree_unchanged || exit 1
   step "building six images as $IMAGE_PREFIX/<service>:sha-$SHA"
   build_one() {
     local service="$1" context="$2" file="$3"
@@ -122,33 +149,113 @@ if [ "$RUN_BUILD" -eq 1 ]; then
     "live:.:apps/live/Dockerfile.live" \
     "api:apps/api:apps/api/Dockerfile.api" \
     "proxy:apps/proxy:apps/proxy/Dockerfile.ce"
-  running=0
+  # Builds run in batches of BUILD_PARALLEL, and every wait names a PID.
+  #
+  # A bare `wait` cannot be used here, and neither can `wait -n`: the logging
+  # set up above with `exec > >(tee -a "$LOG")` leaves a process substitution in
+  # this shell job table, and that `tee` only exits when the script stdout
+  # closes -- which is after the script ends. A bare `wait` therefore waits for
+  # the logger forever. The script hung there every time, with all six images
+  # already built; the build path had never been run to completion.
+  #
+  # Batching instead of a sliding window costs a little wall-clock when one
+  # image in a batch is slower than its partner, and is worth it for a loop
+  # whose failure mode is a deadlock.
+  failed=""
+  batch=""
+  n=0
+  wait_batch() {
+    local p rc
+    for p in $batch; do
+      rc=0
+      wait "$p" || rc=$?
+      [ "$rc" -eq 0 ] || failed="${failed} pid:${p}(rc=${rc})"
+    done
+    batch=""
+    n=0
+  }
   for spec in "$@"; do
     IFS=: read -r service context file <<<"$spec"
     build_one "$service" "$context" "$file" &
-    running=$((running + 1))
-    if [ "$running" -ge "$BUILD_PARALLEL" ]; then wait -n; running=$((running - 1)); fi
+    batch="${batch} $!"
+    n=$((n + 1))
+    [ "$n" -ge "$BUILD_PARALLEL" ] && wait_batch
   done
-  wait
-  docker images --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}' | grep -E "^$IMAGE_PREFIX/" | grep -F "sha-$SHORT" \
-    || { echo "FAILED: no $IMAGE_PREFIX/* image for sha-$SHORT"; exit 1; }
+  wait_batch
+
+  # Every service, checked by name. The previous check grepped for any image
+  # matching the prefix and the short SHA, so five successes and one failure
+  # passed it -- and the failure was invisible anyway, because a background job
+  # that fails does not trip `set -e` and nothing collected the exit codes.
+  missing=""
+  for spec in "$@"; do
+    IFS=: read -r service _ _ <<<"$spec"
+    docker image inspect "$IMAGE_PREFIX/$service:sha-$SHA" >/dev/null 2>&1 || missing="${missing} ${service}"
+  done
+  if [ -n "$failed" ] || [ -n "$missing" ]; then
+    [ -n "$failed" ] && echo "FAILED: a build exited non-zero:${failed}" >&2
+    [ -n "$missing" ] && echo "FAILED: no $IMAGE_PREFIX image for sha-$SHORT:${missing}" >&2
+    exit 1
+  fi
+  docker images --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}' | grep -E "^$IMAGE_PREFIX/" | grep -F "sha-$SHORT"
 fi
 
 if [ -n "$UP_DIR" ]; then
+  # Between the first image and the last there is a quarter of an hour; check
+  # again, so the stack is not brought up on a set built from two trees.
+  assert_tree_unchanged || exit 1
   # The stack directory is the host deployment, not this repository: its
   # compose file builds from ${PLANE_SRC} and reads TAG/GIT_SHA from its .env.
   step "up in $UP_DIR"
   cd "$UP_DIR"
   [ -f .env ] || { echo "$UP_DIR/.env not found" >&2; exit 1; }
+  # `sed` is silent about a pattern it never matched, so a stack whose .env has
+  # no TAG= line would come up on whatever tag it already carried while this
+  # script reported the new one. Same guard `deployments/compose/update.sh` has.
+  for k in TAG GIT_SHA; do
+    grep -qE "^${k}=" .env || { echo "FAILED: no ${k}= line in $UP_DIR/.env to rewrite" >&2; exit 1; }
+  done
   sed -i "s|^TAG=.*|TAG=sha-$SHA|; s|^GIT_SHA=.*|GIT_SHA=$SHA|" .env
   docker compose up -d --remove-orphans
   docker compose ps --format 'table {{.Name}}\t{{.Image}}\t{{.Status}}'
+  # "must report" was printed and never checked: the three could disagree and
+  # the run still ended in OK.
+  #
+  # What this catches: a container that did not restart onto the new images, a
+  # service that does not answer, and a stack whose compose never passes
+  # GIT_SHA through to the build. What it cannot catch: which tree the stack
+  # actually built from -- the image only repeats the build-arg it was handed,
+  # and this script wrote that value into the stack .env seconds earlier. A
+  # deployment that pulls published images gets the stronger check, by digest,
+  # in deployments/compose/update.sh.
   step "orca_build_info (all three must report $SHORT)"
+  mismatch=""
   for s in api worker beat-worker; do
+    info=$(docker compose exec -T "$s" python manage.py orca_build_info 2>/dev/null || true)
+    # No backslash escapes anywhere in this block, on purpose: it gets
+    # regenerated by tooling, and a lost level of escaping once turned the
+    # backreference in a sed replacement into a 0x01 byte, which made every
+    # service look like a mismatch.
+    oneline=$(printf '%s' "$info" | tr -d '[:space:]')
     printf '%-12s ' "$s"
-    docker compose exec -T "$s" python manage.py orca_build_info 2>/dev/null | tr '\n' ' ' || printf '(no answer)'
-    echo
+    echo "${oneline:-(no answer)}"
+    got=$(printf '%s' "$oneline" | grep -o '"git_sha":"[0-9a-f]*"' | grep -oE '[0-9a-f]{7,}' || true)
+    if [ -z "$oneline" ]; then
+      reported="no answer"
+    else
+      reported="${got:-empty git_sha}"
+    fi
+    [ "$got" = "$SHA" ] || mismatch="${mismatch} ${s}(${reported})"
   done
+  if [ -n "$mismatch" ]; then
+    echo "FAILED: built from $SHORT, but these report another commit:${mismatch}" >&2
+    echo "        A container that did not restart, or a stack whose compose does" >&2
+    echo "        not pass GIT_SHA through to the image, reports the wrong commit." >&2
+    echo "        Note this cannot tell you WHICH tree the stack built from: the" >&2
+    echo "        image repeats the GIT_SHA build-arg it was handed, which this" >&2
+    echo "        script wrote into $UP_DIR/.env a moment ago." >&2
+    exit 1
+  fi
 fi
 
 step "OK -- commit $SHORT. Log: $LOG"
