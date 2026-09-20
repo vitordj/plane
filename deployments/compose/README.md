@@ -25,7 +25,25 @@ with nothing in front of it has to set.
 ```
 
 `docker compose` merges `compose.yaml` and `compose.override.yaml` by name, so
-nothing needs `-f`. Keeping the copy verbatim is what makes it cheap to refresh
+nothing needs `-f`.
+
+**What has to be in `.env`, not in the override.** Compose interpolates each
+file on its own *before* merging them, so a variable the base file declares
+required -- `${TRUSTED_PROXIES:?...}` -- is not satisfied by a literal in the
+override. `docker compose config` fails with `required variable
+TRUSTED_PROXIES is missing a value` and nothing starts. The minimum `.env` for
+a stack that is its own edge:
+
+```dotenv
+TAG=sha-<commit>
+DOMAIN_NAME=plane.internal.example
+WEB_URL=http://plane.internal.example
+TRUSTED_PROXIES=127.0.0.1/32 172.16.0.0/12
+# plus every SERVICE_* secret docker-compose-orca.yml declares required
+```
+
+`TRUSTED_PROXIES` is space-separated; Caddy rejects a comma-separated list at
+startup. Keeping the copy verbatim is what makes it cheap to refresh
 from a new commit:
 
 ```bash

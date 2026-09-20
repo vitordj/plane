@@ -20,16 +20,24 @@ services:
     # store stay on the Compose network.
     ports:
       - "0.0.0.0:80:80"
-    environment:
-      # Caddy is the edge here, so the only hops it may believe are Docker's own
-      # networks -- the bridge that forwards the published port. Putting the
-      # site subnet (10.0.0.0/8, say) in this list would let any client on that
-      # network forge X-Forwarded-For and choose the IP the application logs and
-      # rate-limits on, which is the failure TRUSTED_PROXIES exists to prevent.
-      #
-      # SPACE-separated. Caddy rejects a comma-separated list, and the error
-      # arrives as a config parse failure at startup, not as a warning.
-      TRUSTED_PROXIES: "127.0.0.1/32 172.16.0.0/12"
+    # TRUSTED_PROXIES is NOT set here, and cannot be: `docker-compose-orca.yml`
+    # declares it `${TRUSTED_PROXIES:?...}`, and Compose interpolates each file
+    # on its own, before merging them. A literal in this override does not
+    # satisfy the base file's requirement -- `docker compose config` fails with
+    # "required variable TRUSTED_PROXIES is missing a value" and the stack never
+    # starts. It goes in `.env`, next to the secrets:
+    #
+    #     TRUSTED_PROXIES=127.0.0.1/32 172.16.0.0/12
+    #
+    # Those are Docker's own networks -- the bridge that forwards the published
+    # port -- because Caddy is the edge here and nothing legitimate sits in
+    # front of it. Putting the site subnet (10.0.0.0/8, say) in that list would
+    # let any client on that network forge X-Forwarded-For and choose the IP the
+    # application logs and rate-limits on, which is the failure TRUSTED_PROXIES
+    # exists to prevent.
+    #
+    # SPACE-separated. Caddy rejects a comma-separated list, and the error
+    # arrives as a config parse failure at startup, not as a warning.
 
   # docker-compose-orca.yml is tuned for a VPS under 3 GB: every limit in it is
   # a floor, not a recommendation. On a host with room, raise them here rather
