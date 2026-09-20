@@ -150,16 +150,55 @@ if [ "$RUN_BUILD" -eq 1 ]; then
     "live:.:apps/live/Dockerfile.live" \
     "api:apps/api:apps/api/Dockerfile.api" \
     "proxy:apps/proxy:apps/proxy/Dockerfile.ce"
-  running=0
+  # Builds run in batches of BUILD_PARALLEL, and every wait names a PID.
+  #
+  # A bare `wait` cannot be used here, and neither can `wait -n`: the logging
+  # set up above with `exec > >(tee -a "$LOG")` leaves a process substitution in
+  # this shell job table, and that `tee` only exits when the script stdout
+  # closes -- which is after the script ends. A bare `wait` therefore waits for
+  # the logger forever. The script hung there every time, with all six images
+  # already built; the build path had never been run to completion.
+  #
+  # Batching instead of a sliding window costs a little wall-clock when one
+  # image in a batch is slower than its partner, and is worth it for a loop
+  # whose failure mode is a deadlock.
+  failed=""
+  batch=""
+  n=0
+  wait_batch() {
+    local p rc
+    for p in $batch; do
+      rc=0
+      wait "$p" || rc=$?
+      [ "$rc" -eq 0 ] || failed="${failed} pid:${p}(rc=${rc})"
+    done
+    batch=""
+    n=0
+  }
   for spec in "$@"; do
     IFS=: read -r service context file <<<"$spec"
     build_one "$service" "$context" "$file" &
-    running=$((running + 1))
-    if [ "$running" -ge "$BUILD_PARALLEL" ]; then wait -n; running=$((running - 1)); fi
+    batch="${batch} $!"
+    n=$((n + 1))
+    [ "$n" -ge "$BUILD_PARALLEL" ] && wait_batch
   done
-  wait
-  docker images --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}' | grep -E "^$IMAGE_PREFIX/" | grep -F "sha-$SHORT" \
-    || { echo "FAILED: no $IMAGE_PREFIX/* image for sha-$SHORT"; exit 1; }
+  wait_batch
+
+  # Every service, checked by name. The previous check grepped for any image
+  # matching the prefix and the short SHA, so five successes and one failure
+  # passed it -- and the failure was invisible anyway, because a background job
+  # that fails does not trip `set -e` and nothing collected the exit codes.
+  missing=""
+  for spec in "$@"; do
+    IFS=: read -r service _ _ <<<"$spec"
+    docker image inspect "$IMAGE_PREFIX/$service:sha-$SHA" >/dev/null 2>&1 || missing="${missing} ${service}"
+  done
+  if [ -n "$failed" ] || [ -n "$missing" ]; then
+    [ -n "$failed" ] && echo "FAILED: a build exited non-zero:${failed}" >&2
+    [ -n "$missing" ] && echo "FAILED: no $IMAGE_PREFIX image for sha-$SHORT:${missing}" >&2
+    exit 1
+  fi
+  docker images --format 'table {{.Repository}}	{{.Tag}}	{{.Size}}' | grep -E "^$IMAGE_PREFIX/" | grep -F "sha-$SHORT"
 fi
 
 if [ -n "$UP_DIR" ]; then
