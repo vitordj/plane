@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.6.1-plane.1.4.2](https://github.com/vitordj/plane/compare/v1.6.0-plane.1.4.2...v1.6.1-plane.1.4.2) (2026-09-20)
+
+
+### 🐛 Bug Fixes
+
+* **orca:** --up announced a check it never performed ([52e78a7](https://github.com/vitordj/plane/commit/52e78a710776dfc1ebf022e74a3c5da618affcd4))
+* **orca:** five defects in tools/ci-local.sh, which had never been run ([c74db45](https://github.com/vitordj/plane/commit/c74db4513728485e2fdff871c09678b56b33f30c))
+* **orca:** refuse to stamp an image with a commit it was not built from ([7de5f89](https://github.com/vitordj/plane/commit/7de5f89494c0119432ba9af28a83dd28de958ccd))
+* **orca:** the build loop deadlocked, and swallowed failures on the way ([ed534b8](https://github.com/vitordj/plane/commit/ed534b8048efeee14493284b43c260e5ba1c89ff))
+* **orca:** the example override never worked as documented ([fd374dd](https://github.com/vitordj/plane/commit/fd374dd7b0c5df0bd3be8534cea835e4fc7fea31))
+* **orca:** the example override never worked as documented ([4cf415c](https://github.com/vitordj/plane/commit/4cf415cf1e4ce44725f08e92d14affb8ad05b6c3))
+
+
+### 📝 Documentation
+
+* **orca:** close P0.13 with the first release, and correct two claims ([94e87f5](https://github.com/vitordj/plane/commit/94e87f51f146591132a6b3604597fc28341e2cfa))
+* **orca:** close P0.13 with the first release, and correct two claims ([9170f8c](https://github.com/vitordj/plane/commit/9170f8cf047f4aa972b661953520af8151670cc9))
+
 ## [1.6.0-plane.1.4.2](https://github.com/vitordj/plane/compare/v1.5.0-plane.1.4.2...v1.6.0-plane.1.4.2) (2026-09-19)
 
 
