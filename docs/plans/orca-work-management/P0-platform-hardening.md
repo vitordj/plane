@@ -588,7 +588,7 @@ git push origin --delete claude/azure-aad-integration-review-5if6pz \
 
 ---
 
-## P0.13 — Versão 1.5.0, Release Please e runbook `[~]`
+## P0.13 — Versão 1.5.0, Release Please e runbook `[x]` (19/09/2026)
 
 **Situação.** `package.json` em `1.4.0-plane.1.4.1`;
 `.github/release-please-manifest.json` e `.github/release-please-config.json`
@@ -617,21 +617,41 @@ PR #11 mesclado (`af571341`), `package.json` e
 `.github/release-please-manifest.json` estão em `1.5.0-plane.1.4.2` e a
 afirmação é verdadeira.
 
-**Resta o que só o primeiro release responde.** A decisão de prerelease
-continua aberta e não é decidível sem rodar: o Release Please pode propor uma
-versão **sem** o sufixo `-plane.<upstream>`, porque em semver ele é um
-prerelease tag e a configuração não declara `prerelease: true`. O PR de
-release é onde isso aparece e é editável antes do merge — runbook §2 descreve
-as duas saídas. O ensaio do runbook também continua pendente, e depende de
-ambiente.
+**Fechado em 19/09/2026: o release aconteceu.** `v1.6.0-plane.1.4.2`, tag e
+GitHub Release criados, promoção por digest verificada.
+
+**A decisão de prerelease: o Release Please calcula a versão, e o sufixo
+sobrevive.** E isso não foi descoberto no PR de release — foi medido antes
+dele. Rodando o `DefaultVersioningStrategy` da release-please 17.9.0 (a que a
+action `@v4` embute) com esta configuração, a partir de `1.5.0-plane.1.4.2`:
+`fix` → `1.5.1-plane.1.4.2`, `fix`+`feat` → `1.6.0-plane.1.4.2`, breaking →
+`2.0.0-plane.1.4.2`. O prerelease é carregado intacto pelo bump; só o núcleo
+numérico anda. O PR de release (#37) propôs exatamente `1.6.0-plane.1.4.2`.
+**Nada de `prerelease: true`** — seria o movimento errado, porque ele faria o
+Release Please tentar incrementar `plane.1.4.2` como contador, e esse sufixo
+rastreia o upstream, não a contagem de releases do fork. Ele só muda quando um
+sync (P0.11) o muda à mão no manifest.
+
+Nuance registrada junto: o GitHub **não** marca o Release como prerelease.
+Aquela flag segue a configuração, não o formato da string; `v1.6.0-plane.1.4.2`
+é release normal e é o que `/releases/latest` devolve.
+
+**O que o ensaio custou, e por quê vale registrar.** A tentativa anterior do
+mesmo dia já tinha falhado calada: o `release-please.yml` passava
+`secrets.RELEASE_PLEASE_TOKEN` sem fallback, o secret não existia, a expressão
+virava string vazia e a action **aceita isso como token** — roda sem
+autenticação, sai verde e não abre PR nenhum; sem `chore(prod): release`, o
+`prod.yml` fica `skipped` e nada é promovido. Corrigido com o mesmo fallback
+que o `stage.yml` já usava. E o §4 do runbook não funcionava como escrito:
+`.RepoDigests` é campo de imagem, não de container.
 
 **Aceite.**
 
 - [x] Template e FORK.md §Phase 4 descrevem o mesmo fluxo que os workflows executam.
 - [x] Runbook escrito, com verificação pós-deploy e rollback por digest.
-- [ ] Runbook ensaiado, com data e resultado no próprio arquivo (tabela "Rehearsal log").
+- [x] Runbook ensaiado, com data e resultado no próprio arquivo (tabela "Rehearsal log", linha de 19/09/2026), mais uma seção sobre o que o primeiro ensaio custou.
 - [x] `package.json` e manifest em `1.5.0-plane.1.4.2` — entrou no PR do sync (P0.11, PR #11), como previsto aqui.
-- [ ] Decidido e registrado se o Release Please calcula a versão ou se o sufixo é mantido à mão (o runbook descreve as duas saídas; a decisão sai no primeiro release).
+- [x] Decidido e registrado: o Release Please calcula a versão e mantém o sufixo; medido contra a ferramenta antes do release e confirmado pelo PR #37.
 
 **Arquivos:** `package.json`, `.github/release-please-manifest.json`, `.github/release-please-config.json`, `.github/PULL_REQUEST_TEMPLATE/release_candidate.md`, `FORK.md`, `docs/release-runbook.md`.
 
