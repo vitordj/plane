@@ -26,9 +26,11 @@ Full procedure, including verification and rollback: [`docs/release-runbook.md`]
 >
 > 1. Merging this PR lands the changes on `prod` and triggers `release-please`,
 >    which opens a **second** PR with the version bump and the changelog.
->    Check the version it proposes before merging it — the fork's
->    `-plane.<upstream>` suffix is a semver prerelease tag and is the part most
->    likely to be dropped (runbook §2).
+>    Check the version it proposes before merging it. The fork's
+>    `-plane.<upstream>` suffix is a semver prerelease tag, and Release Please
+>    carries it through the bump untouched — only the numeric core moves
+>    (runbook §2). The suffix changes when an upstream sync changes it by
+>    hand, never on its own.
 > 2. Merging **that** PR creates the `chore(prod): release X.Y.Z` commit, which
 >    is what the `prod.yml` workflow keys on. It promotes the images of the
 >    stage commit this release carries — by digest, from the immutable

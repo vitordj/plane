@@ -188,9 +188,11 @@ Promotion takes **two** merges, not one:
    **`release-please`**, which opens a _second_ PR carrying the version bump
    and the changelog. Merging the RC PR **does not deploy**.
 4. **Merge the Release PR**: this creates the `chore(prod): release [Version]`
-   commit, which is what `prod.yml` keys on. Check the proposed version first —
-   the `-plane.[UpstreamVersion]` suffix is a semver prerelease tag and is the
-   part most likely to be dropped (runbook §2).
+   commit, which is what `prod.yml` keys on. Check the proposed version first.
+   The `-plane.[UpstreamVersion]` suffix is a semver prerelease tag, and
+   Release Please carries it through the bump untouched — only the numeric
+   core moves (runbook §2). The suffix tracks upstream, so it changes when a
+   sync changes it by hand, never on its own.
 5. **Production promotion**: `prod.yml` resolves the `stage` commit the release
    carries, reads the immutable `:sha-[commit]` images the staging workflow
    published for it, and copies **those digests** to `:latest`, `:[Version]`
