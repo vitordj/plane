@@ -538,6 +538,16 @@ jobs:
         working-directory: ./apps/api
         run: pytest plane/tests/unit -q -m unit
 
+      # 255 of the tests under plane/tests/unit/orca carry a marker other than
+      # `unit` (most are HTTP-level and were marked `contract`), so the step
+      # above deselects them and they gated nothing. They need only what this
+      # job already provisions -- PostgreSQL and Valkey, no broker and no
+      # object storage -- so they run here, selected by directory instead of
+      # by marker. A new Orca test is covered whichever marker it carries.
+      - name: Run Orca Tests Not Marked Unit
+        working-directory: ./apps/api
+        run: pytest plane/tests/unit/orca -q -m "not unit"
+
       # The one contract file that belongs in the merge gate (item 1.8). The
       # rest of plane/tests/contract needs RabbitMQ and MinIO and stays in the
       # manual job below; this one needs a live HTTP server and PostgreSQL,
