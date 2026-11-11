@@ -110,6 +110,11 @@ ACCEPTED = [
         lambda ids: [{"op": "replace", "value": {"members": [{"value": ids["c"]}]}}],
         {"c"},
     ),
+    # Attributes the service does not store never touch membership: ignored,
+    # not refused, so a custom mapping in the directory cannot fail a cycle.
+    ("unknown-path-is-ignored", lambda ids: [{"op": "replace", "path": "nickName", "value": "x"}], BOTH),
+    ("unknown-path-with-urn-prefix-is-ignored", lambda ids: [{"op": "remove", "path": GROUP_URN + "nickName"}], BOTH),
+    ("pathless-unknown-attribute-is-ignored", lambda ids: [{"op": "add", "value": {"nickName": "x"}}], BOTH),
 ]
 
 # (case id, operation builder, expected scimType)
@@ -138,19 +143,8 @@ REJECTED = [
     ("unsupported-op", lambda ids: [{"op": "move", "path": "members"}], "invalidSyntax"),
     ("missing-op", lambda ids: [{"path": "members", "value": []}], "invalidSyntax"),
     ("operation-that-is-not-an-object", lambda ids: ["remove"], "invalidSyntax"),
-    ("unknown-path", lambda ids: [{"op": "replace", "path": "nickName", "value": "x"}], "invalidPath"),
-    (
-        "unknown-path-with-urn-prefix",
-        lambda ids: [{"op": "remove", "path": GROUP_URN + "nickName"}],
-        "invalidPath",
-    ),
     ("sub-attribute-of-members", lambda ids: [{"op": "remove", "path": "members.value"}], "invalidPath"),
     ("pathless-remove", lambda ids: [{"op": "remove", "value": {"members": []}}], "invalidPath"),
-    (
-        "pathless-with-an-unknown-attribute",
-        lambda ids: [{"op": "add", "value": {"nickName": "x"}}],
-        "invalidPath",
-    ),
     ("pathless-with-a-non-object-value", lambda ids: [{"op": "add", "value": "members"}], "invalidValue"),
     (
         "empty-display-name",

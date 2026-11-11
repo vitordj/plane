@@ -402,9 +402,10 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
         shape in particular varies — a filtered path
         (``members[value eq "..."]``), a ``members`` path with the ids in
         ``value``, or a bare ``members`` remove meaning "empty the group" — and
-        all three are handled. Anything else (an unparseable filter, an unknown
-        path or ``op``) is a 400 and changes nothing: guessing at an unknown
-        removal used to empty the group.
+        all three are handled. Anything else aimed at ``members`` (an unparseable
+        filter, an unknown sub-path) or an unknown ``op`` is a 400 and changes
+        nothing: guessing at an unknown removal used to empty the group. A path
+        to an attribute this service does not store is ignored.
         """
         unit = self.get_unit(unit_id)
         payload = request.data if isinstance(request.data, dict) else {}
@@ -503,7 +504,15 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
                 )
             return [(STEP_NAME if path == "displayname" else STEP_EXTERNAL_ID, text)]
 
-        raise SCIMError(f"Unsupported patch path '{raw_path}'", status.HTTP_400_BAD_REQUEST, scim_type="invalidPath")
+        if path.startswith("members"):
+            raise SCIMError(
+                f"Unsupported patch path '{raw_path}'", status.HTTP_400_BAD_REQUEST, scim_type="invalidPath"
+            )
+        # An attribute this service does not store (a custom mapping in the
+        # directory, say). It never touches membership, so it is ignored as it
+        # always was: refusing it would fail a provisioning cycle over a value
+        # that changes no access.
+        return []
 
     def parse_pathless(self, op, value) -> list:
         """
@@ -511,12 +520,12 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
 
         @description ``add`` adds the listed members, ``replace`` replaces the
         membership; ``remove`` needs a path. ``id``, ``schemas`` and ``meta``
-        are ignored, any other attribute is refused rather than dropped.
+        are ignored, and so is any attribute this service does not store.
 
         @param op: ``add`` or ``replace`` (``remove`` is refused).
         @param value: The partial group resource.
         @returns: A list of ``(step, argument)`` tuples for ``apply_step``.
-        @raises SCIMError: 400 for a remove, a non-object value or an unknown attribute.
+        @raises SCIMError: 400 for a remove, a non-object value or an empty name.
         """
         if op == "remove":
             raise SCIMError("A remove operation needs a path", status.HTTP_400_BAD_REQUEST, scim_type="invalidPath")
@@ -542,8 +551,8 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
                 steps.append(
                     (STEP_MEMBERS_REPLACE if op == "replace" else STEP_MEMBERS_ADD, self.read_member_values(item))
                 )
-            else:
-                raise SCIMError(f"Unsupported attribute '{key}'", status.HTTP_400_BAD_REQUEST, scim_type="invalidPath")
+            # Any other attribute is one this service does not store; it cannot
+            # touch membership and is ignored, as it always was.
         return steps
 
     @staticmethod
