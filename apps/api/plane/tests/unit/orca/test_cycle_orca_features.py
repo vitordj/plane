@@ -788,7 +788,7 @@ class TestManuallyCompletedFlag:
 # --- archiving (upstream c9b56cf8a end_date guard) -----------------------------
 
 
-@pytest.mark.contract
+@pytest.mark.unit
 class TestArchivingStartOnlyCycles:
     """
     Archive on both endpoints, after upstream added ``end_date is None`` to its guard.
