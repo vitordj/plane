@@ -514,6 +514,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements/test.txt
 
+      # Model drift and migration graph health (upstream sync, P0.11). `--check`
+      # exits non-zero when a model has no migration, and Django refuses to
+      # build the graph at all when two apps' migrations leave two leaves --
+      # which is how a sync that brings in an upstream migration next to a fork
+      # one shows up. The unit suite cannot see either: it runs with
+      # `--nomigrations`, so it builds tables straight from the models.
+      - name: Check Migrations
+        working-directory: ./apps/api
+        run: python manage.py makemigrations --check --dry-run
+
       # The whole unit suite, fork and upstream alike (P0.8). Running only the
       # Orca directory meant an upstream regression this fork carries could
       # reach `stage` unseen: the code is ours to deploy whether or not we
