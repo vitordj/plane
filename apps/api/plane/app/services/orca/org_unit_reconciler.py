@@ -80,6 +80,7 @@ ACTION_LOWER = "lower"
 ACTION_RESTORE_BASELINE = "restore_baseline"
 ACTION_DEACTIVATE = "deactivate"
 ACTION_SKIP_MANUAL_DRIFT = "skip_manual_drift"
+ACTION_RELINQUISH_CLAIM = "relinquish_claim"
 
 ROLE_ADMIN = 20
 ROLE_MEMBER = 15
@@ -297,8 +298,16 @@ def _decide(
 
     # No unit sources access any more: withdraw what this layer added.
     if inherited_role is None:
-        if last_applied is None or not is_active_member:
+        if last_applied is None:
             return ACTION_NONE, None
+        if not is_active_member:
+            # The row is inactive (or gone) while the layer still claims it: a
+            # person removed the access through the native UI after the layer
+            # granted it. The claim is stale — if the same role is later
+            # re-granted by hand, a surviving claim would make that manual
+            # access look like ours and the next run would withdraw it. Drop
+            # the claim; the ProjectMember row is not touched.
+            return ACTION_RELINQUISH_CLAIM, None
         if current_role != last_applied:
             # Someone changed the role by hand — the pair is manual now.
             return ACTION_SKIP_MANUAL_DRIFT, None
@@ -552,9 +561,10 @@ def _apply_change(workspace_member, project_id, project_member, state, action, r
         state.created_by_org_layer = False
         state.project_member = project_member
 
-    elif action == ACTION_SKIP_MANUAL_DRIFT:
-        # The current role is no longer ours; relinquish the claim so future
-        # runs treat this access as manual.
+    elif action in (ACTION_SKIP_MANUAL_DRIFT, ACTION_RELINQUISH_CLAIM):
+        # The current role is no longer ours (drift), or the row it described
+        # is no longer active (stale claim); relinquish the claim so future
+        # runs treat any access on this pair as manual.
         state.last_applied_role = None
         state.created_by_org_layer = False
 
