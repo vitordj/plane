@@ -61,3 +61,90 @@ def reconcile_organizational_access(self, workspace_id, member_ids=None, project
     except Exception as exception:
         log_exception(exception)
         raise self.retry(exc=exception)
+
+
+def _sweep_targets(workspace_id) -> list:
+    """
+    Every project a full-workspace reconciliation has to visit.
+
+    @description The live projects of the workspace, plus any project that
+    still carries a claim of the layer (an ``OrganizationalProjectAccessState``
+    with ``last_applied_role``) even though it is archived now: an unscoped
+    ``reconcile_access`` visits those pairs to withdraw their access, so a
+    batched run over live projects alone would silently skip them.
+
+    @param workspace_id: Workspace being swept.
+    @returns: Distinct project ids, in a stable order.
+    """
+    from plane.app.services.orca.org_unit_reconciler import projects_in_workspace
+    from plane.db.models import OrganizationalProjectAccessState
+
+    claimed = OrganizationalProjectAccessState.objects.filter(
+        workspace_id=workspace_id, last_applied_role__isnull=False
+    ).values_list("project_id", flat=True)
+    return sorted(set(projects_in_workspace(workspace_id)) | set(claimed), key=str)
+
+
+def _sweep_workspace_ids() -> list:
+    """
+    Workspaces the periodic sweep has to look at.
+
+    @description Those with at least one active organizational unit linked to a
+    project, plus those where the layer still holds a claim on some project
+    (so access left behind by the last unit being deactivated or unlinked is
+    also repaired).
+
+    @returns: Distinct workspace ids, in a stable order.
+    """
+    from plane.db.models import OrganizationalProjectAccessState, OrganizationalUnitProject
+
+    linked = OrganizationalUnitProject.objects.filter(organizational_unit__is_active=True).values_list(
+        "workspace_id", flat=True
+    )
+    claimed = OrganizationalProjectAccessState.objects.filter(last_applied_role__isnull=False).values_list(
+        "workspace_id", flat=True
+    )
+    return sorted(set(linked) | set(claimed), key=str)
+
+
+@shared_task
+def reconcile_all_organizational_workspaces():
+    """
+    Periodic safety net: re-run the full reconciliation of every workspace.
+
+    @description A large fan-out is queued to ``reconcile_organizational_access``
+    after the membership change commits; if that task is lost or exhausts its
+    retries, nothing else would ever re-run it and a deprovisioned person would
+    keep project access until somebody ran the management command by hand. This
+    task is that somebody: for each workspace using the layer it runs the same
+    ``reconcile_access`` the command's ``--apply`` uses, in project batches.
+    Reconciliation is idempotent, so a healthy workspace costs reads only and
+    logs nothing. One workspace failing is logged and does not stop the rest.
+
+    @returns: ``{workspace_id: changed pair count}`` for the workspaces where
+        something changed (empty while the layer is switched off).
+    """
+    from plane.app.services.orca import organizational_units_enabled, reconcile_access
+
+    # Same guard as the queued task, read at execution time: with the layer off
+    # this must write nothing.
+    if not organizational_units_enabled():
+        logger.info("Organizational layer disabled; skipping the periodic reconciliation.")
+        return {}
+
+    repaired = {}
+    for workspace_id in _sweep_workspace_ids():
+        try:
+            targets = _sweep_targets(workspace_id)
+            changed = 0
+            for index in range(0, len(targets), PROJECT_BATCH_SIZE):
+                batch = targets[index : index + PROJECT_BATCH_SIZE]
+                changed += sum(1 for change in reconcile_access(workspace_id, None, batch) if change.action != "none")
+            if changed:
+                repaired[str(workspace_id)] = changed
+                logger.info(
+                    "Periodic reconciliation repaired %s access pair(s) in workspace %s.", changed, workspace_id
+                )
+        except Exception as exception:
+            log_exception(exception)
+    return repaired

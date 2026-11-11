@@ -109,6 +109,13 @@ default 100) reconcile inline inside the request transaction, with
 Celery after commit and processed in project batches. Either path is
 idempotent: running it twice produces no second set of changes.
 
+A queued reconciliation that is lost, or exhausts its retries after the change
+committed, would otherwise never run again. As a safety net, the Celery beat task
+`reconcile_all_organizational_workspaces` (daily, 04:15 UTC) runs the same full
+reconciliation as `--apply` for every workspace that uses the layer, in project
+batches. It honours `ORCA_ORG_UNITS_ENABLED`, logs a line per workspace only
+when it changed something, and a failure in one workspace does not stop the rest.
+
 To inspect or repair a workspace:
 
 ```bash
