@@ -783,3 +783,82 @@ class TestManuallyCompletedFlag:
 
         cycle.refresh_from_db()
         assert "completed" not in cycle.view_props
+
+
+# --- archiving (upstream c9b56cf8a end_date guard) -----------------------------
+
+
+@pytest.mark.contract
+class TestArchivingStartOnlyCycles:
+    """
+    Archive on both endpoints, after upstream added ``end_date is None`` to its guard.
+
+    @description Upstream answers ``400 Only completed cycles can be archived`` for
+    any cycle without an ``end_date``. The fork's start-only cycles have none by
+    design, and are completed by ``view_props["completed"]``, so the guard is
+    overridden for exactly that case (``plane.utils.orca_cycles``). Each test runs
+    against the web endpoint and the public v1 endpoint, which carry separate
+    copies of the guard.
+    """
+
+    @pytest.fixture(params=["web", "v1"])
+    def archive(self, request, admin_client, token_client, admin_user, workspace_with_members, project):
+        """A callable ``cycle -> response`` for the endpoint under test."""
+        slug = workspace_with_members.slug
+        client = admin_client if request.param == "web" else token_client(admin_user)
+        prefix = "/api" if request.param == "web" else "/api/v1"
+        return lambda cycle: client.post(f"{prefix}/workspaces/{slug}/projects/{project.id}/cycles/{cycle.id}/archive/")
+
+    def test_a_completed_start_only_cycle_is_archived(self, archive, project, project_admin, make_cycle):
+        cycle = make_cycle(
+            name="Ended by hand", start_date=timezone.now() - timedelta(days=3), view_props={"completed": True}
+        )
+
+        response = archive(cycle)
+
+        assert response.status_code in (status.HTTP_200_OK, status.HTTP_204_NO_CONTENT), getattr(response, "data", None)
+        cycle.refresh_from_db()
+        assert cycle.archived_at is not None
+
+    def test_a_running_start_only_cycle_is_refused(self, archive, project, project_admin, make_cycle):
+        cycle = make_cycle(name="Running", start_date=timezone.now() - timedelta(days=3))
+
+        response = archive(cycle)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["error"] == "Only completed cycles can be archived"
+        cycle.refresh_from_db()
+        assert cycle.archived_at is None
+
+    def test_the_completed_flag_means_nothing_when_the_project_auto_completes(
+        self, archive, project, project_admin, make_cycle
+    ):
+        """With auto-complete on only an end date ends a cycle, as in the ``status`` annotation."""
+        ProjectCustomSettings.objects.create(project=project, cycle_auto_complete=True)
+        cycle = make_cycle(
+            name="Stale flag", start_date=timezone.now() - timedelta(days=3), view_props={"completed": True}
+        )
+
+        response = archive(cycle)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        cycle.refresh_from_db()
+        assert cycle.archived_at is None
+
+    def test_a_dated_cycle_that_has_ended_is_archived_as_before(self, archive, project, project_admin, make_cycle):
+        now = timezone.now()
+        cycle = make_cycle(name="Done", start_date=now - timedelta(days=14), end_date=now - timedelta(days=1))
+
+        response = archive(cycle)
+
+        assert response.status_code in (status.HTTP_200_OK, status.HTTP_204_NO_CONTENT), getattr(response, "data", None)
+        cycle.refresh_from_db()
+        assert cycle.archived_at is not None
+
+    def test_a_dated_cycle_still_running_is_refused_as_before(self, archive, project, project_admin, make_cycle):
+        now = timezone.now()
+        cycle = make_cycle(name="Live", start_date=now - timedelta(days=1), end_date=now + timedelta(days=6))
+
+        response = archive(cycle)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST

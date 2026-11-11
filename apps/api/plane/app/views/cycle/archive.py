@@ -32,6 +32,7 @@ from rest_framework.response import Response
 from plane.app.permissions import allow_permission, ROLE
 from plane.db.models import Cycle, UserFavorite, Issue, Label, User, Project
 from plane.utils.analytics_plot import burndown_plot
+from plane.utils.orca_cycles import orca_start_only_cycle_is_completed
 
 # Module imports
 from .. import BaseAPIView
@@ -587,7 +588,11 @@ class CycleArchiveUnarchiveEndpoint(BaseAPIView):
     def post(self, request, slug, project_id, cycle_id):
         cycle = Cycle.objects.get(pk=cycle_id, project_id=project_id, workspace__slug=slug)
 
-        if cycle.end_date is None or cycle.end_date >= timezone.now():
+        # ORCA OVERRIDE: a start-only cycle (no end_date) completed by hand is archivable; upstream's
+        # guard for cycles that are not completed is unchanged. See plane/utils/orca_cycles.py.
+        if (cycle.end_date is None and not orca_start_only_cycle_is_completed(cycle)) or (
+            cycle.end_date is not None and cycle.end_date >= timezone.now()
+        ):
             return Response(
                 {"error": "Only completed cycles can be archived"},
                 status=status.HTTP_400_BAD_REQUEST,

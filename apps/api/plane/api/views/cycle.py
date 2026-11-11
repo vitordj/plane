@@ -49,6 +49,7 @@ from plane.db.models import (
 from plane.utils.cycle_transfer_issues import transfer_cycle_issues
 from plane.utils.order_queryset import CYCLE_ORDER_BY_ALLOWLIST, ISSUE_ORDER_BY_ALLOWLIST, sanitize_order_by
 from plane.utils.host import base_host
+from plane.utils.orca_cycles import orca_start_only_cycle_is_completed
 from .base import BaseAPIView
 from plane.bgtasks.webhook_task import model_activity
 from plane.utils.openapi.decorators import cycle_docs
@@ -801,7 +802,11 @@ class CycleArchiveUnarchiveAPIEndpoint(BaseAPIView):
         Only cycles that have ended can be archived.
         """
         cycle = Cycle.objects.get(pk=cycle_id, project_id=project_id, workspace__slug=slug)
-        if cycle.end_date is None or cycle.end_date >= timezone.now():
+        # ORCA OVERRIDE: a start-only cycle (no end_date) completed by hand is archivable; upstream's
+        # guard for cycles that are not completed is unchanged. See plane/utils/orca_cycles.py.
+        if (cycle.end_date is None and not orca_start_only_cycle_is_completed(cycle)) or (
+            cycle.end_date is not None and cycle.end_date >= timezone.now()
+        ):
             return Response(
                 {"error": "Only completed cycles can be archived"},
                 status=status.HTTP_400_BAD_REQUEST,
