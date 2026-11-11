@@ -168,6 +168,23 @@ def cap_role_to_workspace_role(role: int, workspace_role: int) -> int:
     return role
 
 
+def self_join_role(workspace_role: int) -> int:
+    """
+    The project role a person gets by joining a project themselves.
+
+    @description Mirrors ``UserProjectInvitationsViewset.create`` (the "join
+    project" endpoint), which writes the *workspace* role to the new row and, for
+    a row that already exists, only flips ``is_active`` back on without touching
+    the role. A row the layer deactivates therefore has to carry this role: it is
+    what that endpoint would hand a first-time joiner, so rejoining can never
+    yield more than the person could obtain without the unit.
+
+    @param workspace_role: The person's role in the workspace.
+    @returns: The role to leave on a deactivated row.
+    """
+    return workspace_role
+
+
 def _max_edges() -> int:
     """Fan-out threshold above which reconciliation is handed to Celery."""
     return int(getattr(settings, "ORCA_ORG_SYNC_MAX_EDGES", 100))
@@ -289,7 +306,10 @@ def _decide(
     @param inherited_role: Highest role inherited from active units, already
         capped to the workspace role; ``None`` when no unit sources access.
     @returns: Tuple of (action, role to write). The role is ``None`` when
-        nothing is written or the member is deactivated.
+        nothing is written or the member is deactivated. (A deactivated row does
+        get a role written — ``self_join_role`` of the workspace role, applied by
+        ``_apply_change`` — but that is a withdrawal, not access, so the plan
+        reports no desired role.)
     """
     baseline = state.baseline_role if state else None
     last_applied = state.last_applied_role if state else None
@@ -555,7 +575,12 @@ def _apply_change(workspace_member, project_id, project_member, state, action, r
         state.project_member = project_member
 
     elif action == ACTION_DEACTIVATE:
+        # Take back the role the layer wrote as well: an inactive row must not
+        # carry a layer-granted role, because upstream's join endpoint reactivates
+        # existing rows without resetting it. Leave what a first-time joiner
+        # would get from that endpoint.
         project_member.is_active = False
+        project_member.role = self_join_role(workspace_member.role)
         project_member.save()
         state.last_applied_role = None
         state.created_by_org_layer = False
