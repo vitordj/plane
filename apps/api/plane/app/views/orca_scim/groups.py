@@ -63,6 +63,26 @@ GROUP_FILTER_ATTRIBUTES = {
 }
 
 
+# Core Group schema URN a patch path may be prefixed with.
+GROUP_SCHEMA_URN = "urn:ietf:params:scim:schemas:core:2.0:Group:"
+
+SUPPORTED_PATCH_OPS = ("add", "remove", "replace")
+
+# The one filter Entra sends: ``members[value eq "<id>"]``. Either quote style
+# is accepted; nothing else is parsed, and anything else is refused.
+MEMBER_FILTER_PATTERN = re.compile(
+    r"^members\[\s*value\s+eq\s+(?P<quote>[\"'])(?P<value>[^\"']+)(?P=quote)\s*\]$", re.IGNORECASE
+)
+
+# Steps a validated operation is translated into (see ``parse_operation``).
+STEP_MEMBERS_ADD = "members_add"
+STEP_MEMBERS_REPLACE = "members_replace"
+STEP_MEMBERS_REMOVE = "members_remove"
+STEP_MEMBERS_CLEAR = "members_clear"
+STEP_NAME = "name"
+STEP_EXTERNAL_ID = "external_id"
+
+
 def unique_unit_slug(workspace_id, name, exclude_id=None) -> str:
     """
     Derive a unit slug that is free inside the workspace.
@@ -382,7 +402,9 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
         shape in particular varies — a filtered path
         (``members[value eq "..."]``), a ``members`` path with the ids in
         ``value``, or a bare ``members`` remove meaning "empty the group" — and
-        all three are handled.
+        all three are handled. Anything else (an unparseable filter, an unknown
+        path or ``op``) is a 400 and changes nothing: guessing at an unknown
+        removal used to empty the group.
         """
         unit = self.get_unit(unit_id)
         payload = request.data if isinstance(request.data, dict) else {}
@@ -390,10 +412,12 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
         if not isinstance(operations, list):
             raise SCIMError("Operations must be a list", status.HTTP_400_BAD_REQUEST, scim_type="invalidValue")
 
+        # Validate everything first: a PATCH is applied whole or not at all.
+        steps = [step for operation in operations for step in self.parse_operation(operation)]
+
         with transaction.atomic():
-            for operation in operations:
-                if isinstance(operation, dict):
-                    self.apply_operation(unit, operation)
+            for step, argument in steps:
+                self.apply_step(unit, step, argument)
             self.assert_binding_is_free(unit)
             unit.directory_synced_at = timezone.now()
             unit.save()
@@ -406,50 +430,150 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
             content_type=SCIM_CONTENT_TYPE,
         )
 
-    def apply_operation(self, unit, operation):
+    def parse_operation(self, operation) -> list:
         """
-        Apply one ``Operations`` entry to a group.
+        Validate one ``Operations`` entry and translate it into steps.
 
-        @param unit: The unit bound to the group.
+        @description Nothing is written here. ``patch`` parses every operation
+        before applying any, so a request containing one shape the module does
+        not understand is refused whole instead of half-applied — and, above
+        all, instead of falling through to "empty the group", which is what an
+        unparsed removal used to do. The only thing that empties a group is a
+        bare ``remove`` whose path is exactly ``members`` and that carries no
+        ``value`` key at all; ``remove`` with an explicit empty list removes
+        nothing.
+
         @param operation: One patch operation.
+        @returns: A list of ``(step, argument)`` tuples for ``apply_step``.
+        @raises SCIMError: 400 (``invalidSyntax``, ``invalidPath``,
+            ``invalidFilter`` or ``invalidValue``) for anything unsupported.
         """
-        op = str(operation.get("op", "")).lower()
-        raw_path = str(operation.get("path", "") or "")
+        if not isinstance(operation, dict):
+            raise SCIMError("Each operation must be an object", status.HTTP_400_BAD_REQUEST, scim_type="invalidSyntax")
+
+        op = str(operation.get("op", "")).strip().lower()
+        if op not in SUPPORTED_PATCH_OPS:
+            raise SCIMError(
+                f"Unsupported patch operation '{operation.get('op')}'",
+                status.HTTP_400_BAD_REQUEST,
+                scim_type="invalidSyntax",
+            )
+
+        raw_path = _strip_group_schema(str(operation.get("path", "") or "").strip())
         path = raw_path.lower()
+        has_value = "value" in operation
         value = operation.get("value")
 
-        if path.startswith("members"):
-            filtered = _member_from_path(raw_path)
-            values = filtered or member_values(value)
+        if not path:
+            return self.parse_pathless(op, value)
+
+        if path == "members":
             if op == "remove":
-                # A bare `remove` on `members` with no value and no filter is
-                # SCIM for "empty this group".
-                if values:
-                    self.remove_members(unit, values)
-                else:
-                    self.replace_members(unit, [])
-            elif op == "replace":
-                self.replace_members(unit, values)
+                if not has_value:
+                    return [(STEP_MEMBERS_CLEAR, None)]
+                return [(STEP_MEMBERS_REMOVE, self.read_member_values(value))]
+            step = STEP_MEMBERS_REPLACE if op == "replace" else STEP_MEMBERS_ADD
+            return [(step, self.read_member_values(value))]
+
+        if path.startswith("members["):
+            match = MEMBER_FILTER_PATTERN.match(raw_path)
+            if match is None:
+                raise SCIMError(
+                    f"Unsupported members filter '{raw_path}'; only members[value eq \"<id>\"] is supported",
+                    status.HTTP_400_BAD_REQUEST,
+                    scim_type="invalidFilter",
+                )
+            if op != "remove":
+                raise SCIMError(
+                    "A filtered members path is only supported with op 'remove'",
+                    status.HTTP_400_BAD_REQUEST,
+                    scim_type="invalidPath",
+                )
+            return [(STEP_MEMBERS_REMOVE, [match.group("value")])]
+
+        if path in ("displayname", "externalid"):
+            if op == "remove":
+                raise SCIMError(f"'{raw_path}' cannot be removed", status.HTTP_400_BAD_REQUEST, scim_type="mutability")
+            text = _clean_text(value)
+            if not text:
+                raise SCIMError(
+                    f"'{raw_path}' needs a non-empty string value",
+                    status.HTTP_400_BAD_REQUEST,
+                    scim_type="invalidValue",
+                )
+            return [(STEP_NAME if path == "displayname" else STEP_EXTERNAL_ID, text)]
+
+        raise SCIMError(f"Unsupported patch path '{raw_path}'", status.HTTP_400_BAD_REQUEST, scim_type="invalidPath")
+
+    def parse_pathless(self, op, value) -> list:
+        """
+        Translate a pathless operation: a partial group resource in ``value``.
+
+        @description ``add`` adds the listed members, ``replace`` replaces the
+        membership; ``remove`` needs a path. ``id``, ``schemas`` and ``meta``
+        are ignored, any other attribute is refused rather than dropped.
+
+        @param op: ``add`` or ``replace`` (``remove`` is refused).
+        @param value: The partial group resource.
+        @returns: A list of ``(step, argument)`` tuples for ``apply_step``.
+        @raises SCIMError: 400 for a remove, a non-object value or an unknown attribute.
+        """
+        if op == "remove":
+            raise SCIMError("A remove operation needs a path", status.HTTP_400_BAD_REQUEST, scim_type="invalidPath")
+        if not isinstance(value, dict):
+            raise SCIMError(
+                "A pathless operation needs an object value", status.HTTP_400_BAD_REQUEST, scim_type="invalidValue"
+            )
+        steps = []
+        for key, item in value.items():
+            lowered = str(key).lower()
+            if lowered in ("id", "schemas", "meta"):
+                continue
+            if lowered in ("displayname", "externalid"):
+                text = _clean_text(item)
+                if not text:
+                    raise SCIMError(
+                        f"{key} needs a non-empty string value",
+                        status.HTTP_400_BAD_REQUEST,
+                        scim_type="invalidValue",
+                    )
+                steps.append((STEP_NAME if lowered == "displayname" else STEP_EXTERNAL_ID, text))
+            elif lowered == "members":
+                steps.append(
+                    (STEP_MEMBERS_REPLACE if op == "replace" else STEP_MEMBERS_ADD, self.read_member_values(item))
+                )
             else:
-                self.add_members(unit, values)
-            return
+                raise SCIMError(f"Unsupported attribute '{key}'", status.HTTP_400_BAD_REQUEST, scim_type="invalidPath")
+        return steps
 
-        if path == "displayname" and value:
-            unit.name = str(value).strip()
+    @staticmethod
+    def read_member_values(value) -> list:
+        """Read member ids from an operation value, refusing shapes that are not members."""
+        if value is not None and not isinstance(value, (str, dict, list)):
+            raise SCIMError("Invalid members value", status.HTTP_400_BAD_REQUEST, scim_type="invalidValue")
+        return member_values(value)
+
+    def apply_step(self, unit, step, argument):
+        """
+        Apply one validated step produced by ``parse_operation``.
+
+        @param unit: The unit bound to the group.
+        @param step: One of the ``STEP_*`` constants.
+        @param argument: The step's argument (member ids or text).
+        """
+        if step == STEP_MEMBERS_ADD:
+            self.add_members(unit, argument)
+        elif step == STEP_MEMBERS_REPLACE:
+            self.replace_members(unit, argument)
+        elif step == STEP_MEMBERS_REMOVE:
+            self.remove_members(unit, argument)
+        elif step == STEP_MEMBERS_CLEAR:
+            self.replace_members(unit, [])
+        elif step == STEP_NAME:
+            unit.name = argument
             unit.slug = unique_unit_slug(self.workspace.id, unit.name, exclude_id=unit.id)
-            return
-
-        if path == "externalid" and value:
-            unit.external_id = str(value).strip()
-            return
-
-        if not path and isinstance(value, dict):
-            # Pathless replace: a partial group resource.
-            if value.get("displayName"):
-                unit.name = str(value["displayName"]).strip()
-                unit.slug = unique_unit_slug(self.workspace.id, unit.name, exclude_id=unit.id)
-            if "members" in value:
-                self.replace_members(unit, member_values(value.get("members")))
+        elif step == STEP_EXTERNAL_ID:
+            unit.external_id = argument
 
     def delete(self, request, slug, unit_id):
         """
@@ -473,15 +597,13 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-def _member_from_path(raw_path: str):
-    """
-    Read the member id out of a filtered patch path.
+def _strip_group_schema(path: str) -> str:
+    """Drop the optional core Group schema URN prefix from a patch path."""
+    if path.lower().startswith(GROUP_SCHEMA_URN.lower()):
+        return path[len(GROUP_SCHEMA_URN) :]
+    return path
 
-    @description Entra removes a single member with
-    ``members[value eq "0a1b..."]`` rather than putting the id in ``value``.
 
-    @param raw_path: The raw ``path`` of the operation.
-    @returns: A single-item list with the id, or an empty list.
-    """
-    match = re.search(r'members\[\s*value\s+eq\s+"([^"]+)"\s*\]', raw_path, re.IGNORECASE)
-    return [match.group(1)] if match else []
+def _clean_text(value):
+    """A stripped string, or ``""`` when the value is not a usable string."""
+    return value.strip() if isinstance(value, str) else ""
