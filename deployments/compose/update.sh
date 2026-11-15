@@ -107,8 +107,7 @@ docker compose ps -q | while read -r cid; do
   name=$(docker inspect --format '{{.Name}}' "$cid")
   image_id=$(docker inspect --format '{{.Image}}' "$cid")
   digest=$(docker image inspect --format '{{if .RepoDigests}}{{index .RepoDigests 0}}{{else}}(no digest: built locally){{end}}' "$image_id")
-  printf '%-16s %s
-' "${name#/}" "$digest"
+  printf '%-16s %s\n' "${name#/}" "$digest"
 done
 
 [ "$st" = healthy ] || { echo "FAILED: api never became healthy" >&2; exit 1; }
