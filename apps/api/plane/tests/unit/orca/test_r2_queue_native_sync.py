@@ -68,14 +68,18 @@ class TestR205NativeAssigneeSyncAndDriftSweep:
         staffed_unit,
         make_issue,
         plain_user,
-        second_user,
+        admin_user,
     ):
+        # The replacement (admin) is a project member but not a member of the
+        # area, so nobody eligible is left on the item: it goes back to the queue.
+        # (When the replacement is an eligible area member the item is adopted
+        # instead; see test_r2_review_queue.py.)
         issue = make_issue(project)
         set_responsibility(issue, staffed_unit, explicit_executor=plain_user)
 
         response = admin_client.patch(
             f"/api/workspaces/{workspace_with_members.slug}/projects/{project.id}/issues/{issue.id}/",
-            {"assignee_ids": [str(second_user.id)]},
+            {"assignee_ids": [str(admin_user.id)]},
             format="json",
         )
         assert response.status_code == status.HTTP_200_OK, response.data
@@ -318,8 +322,8 @@ class TestR211ReturnToQueueSlaAndReassign:
         issue = make_issue(project)
         set_responsibility(issue, staffed_unit, explicit_executor=plain_user)
         return_to_queue(issue, actor=admin_user)
-        # Native assignee stays on the issue after return_to_queue.
-        assert IssueAssignee.objects.filter(issue=issue, assignee=plain_user).exists()
+        # The previous executor is taken off the issue by return_to_queue (R2.05).
+        assert not IssueAssignee.objects.filter(issue=issue, assignee=plain_user).exists()
 
         response = admin_client.post(
             issue_assign_url(workspace_with_members.slug, project.id, issue.id),

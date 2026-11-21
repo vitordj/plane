@@ -22,6 +22,9 @@ by default and repairs only when asked.
 from dataclasses import dataclass, replace
 from typing import Optional
 
+# Django imports
+from django.db import transaction
+
 # Module imports
 from plane.db.models import (
     AssignmentMode,
@@ -33,6 +36,7 @@ from plane.db.models import (
     RoutingState,
 )
 
+from .alerts import notify_executor_unavailable_safely
 from .assignment_service import _assert_eligible, return_to_queue
 from .errors import ExecutorNotEligible, InvalidTransition
 from .queue import open_work_links
@@ -76,7 +80,7 @@ class Finding:
         return " ".join(parts)
 
 
-def _assigned_findings(workspace_id, *, write, actor):
+def _assigned_findings(workspace_id, *, write, actor, alert=False):
     """@description I3 and I4 over every open link the area considers assigned (R2.06)."""
     links = (
         open_work_links(
@@ -117,6 +121,7 @@ def _assigned_findings(workspace_id, *, write, actor):
                 link,
                 write=write,
                 actor=actor,
+                alert=alert,
             )
             continue
 
@@ -135,19 +140,23 @@ def _assigned_findings(workspace_id, *, write, actor):
                 link,
                 write=write,
                 actor=actor,
+                alert=alert,
             )
 
 
-def _repair(finding, link, *, write, actor):
+def _repair(finding, link, *, write, actor, alert=False):
     """
     @description Put the item back in the queue, through the service, so the
     repair is a decision like any other rather than an UPDATE nobody can trace.
+    @param alert: Tell the area's coordinators, on commit, with the same
+        ``executor_unavailable`` alert ``sweep_unavailable_executors`` raises.
+        Off for the command (an operator is watching it); on for the hourly drift sweep.
     @returns The finding, marked repaired when it was.
     """
     if not write:
         return finding
     try:
-        return_to_queue(
+        result = return_to_queue(
             link.issue,
             actor=actor,
             reason=f"audit: {finding.kind}",
@@ -158,6 +167,9 @@ def _repair(finding, link, *, write, actor):
         # Something moved the item between the read and the write. The next
         # run sees whatever it is now.
         return finding
+    if alert:
+        link_id = result.link.pk
+        transaction.on_commit(lambda: notify_executor_unavailable_safely(link_id))
     return replace(finding, repaired=True)
 
 
@@ -214,7 +226,7 @@ def _policy_findings(workspace_id):
             )
 
 
-def audit_routing(workspace_id, *, write=False, actor=None) -> list:
+def audit_routing(workspace_id, *, write=False, actor=None, alert=False) -> list:
     """
     @description Check every routing invariant that lives outside the database
     for one workspace (RFC §6.1 I3, I4).
@@ -222,9 +234,12 @@ def audit_routing(workspace_id, *, write=False, actor=None) -> list:
     @param write: Return the repairable findings' items to the queue. Off by
         default: the command previews, like the reconciler does.
     @param actor: Who is running it, recorded on the decisions written.
+    @param alert: With ``write``, also raise the coordinators' ``executor_unavailable``
+        alert for every item returned. The hourly drift sweep sets it; the
+        management command does not.
     @returns A list of ``Finding``, in the order they were found.
     """
-    findings = list(_assigned_findings(workspace_id, write=write, actor=actor))
+    findings = list(_assigned_findings(workspace_id, write=write, actor=actor, alert=alert))
     findings.extend(_queued_findings(workspace_id))
     findings.extend(_policy_findings(workspace_id))
     return findings

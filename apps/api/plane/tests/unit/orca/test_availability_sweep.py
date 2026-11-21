@@ -147,13 +147,20 @@ class TestTheSweep:
         assert link.queue_reason == QueueReason.EXECUTOR_UNAVAILABLE
         assert link.primary_executor_id is None
 
-    def test_the_person_stays_on_the_work_item(self, availability_on, assigned_issue, send_them_away, executor):
-        """So they still see it when they get back — two weeks away is survivable."""
+    def test_the_person_is_taken_off_the_work_item(self, availability_on, assigned_issue, send_them_away, executor):
+        """
+        R2.05: a returned item must not keep showing the person as its assignee.
+
+        This used to assert the opposite ("so they still see it when they get
+        back"). Plane and the area have to agree about who is executing a queued
+        item, so the executor is removed natively, with history; coming back
+        from leave they find the item in the area's queue like everyone else.
+        """
         send_them_away(executor)
 
         sweep_unavailable_executors()
 
-        assert IssueAssignee.objects.filter(issue=assigned_issue, assignee=executor).exists()
+        assert not IssueAssignee.objects.filter(issue=assigned_issue, assignee=executor).exists()
 
     def test_it_never_hands_the_work_to_somebody_else(
         self,

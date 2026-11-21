@@ -52,6 +52,8 @@ from plane.db.models import (
     Workspace,
 )
 
+from .queue import open_work_links
+
 # Waiting for a person: the coordinator's inbox, including the ones the
 # allocator already failed on (they still need a human).
 WAITING_STATES = (RoutingState.QUEUED, RoutingState.ALLOCATION_FAILED)
@@ -282,7 +284,9 @@ def unit_metrics(
     @returns: JSON-ready dict matching ``IExecutiveUnitMetrics``.
     """
     links = _links(unit.workspace, unit)
-    queued = links.filter(routing_state__in=WAITING_STATES)
+    # Same open-work filter as the queue itself (R2.06): a waiting item that was
+    # completed, cancelled, archived, deleted or is a draft is not queued work.
+    queued = open_work_links(links.filter(routing_state__in=WAITING_STATES))
     open_links = links.filter(OPEN_ISSUE)
     open_assigned = open_links.filter(routing_state=RoutingState.ASSIGNED)
     completed = links.filter(issue__completed_at__gte=period_start, issue__completed_at__lte=now)
@@ -485,9 +489,9 @@ def drill_down_queryset(
     if metric == "backlog":
         links = links.filter(OPEN_ISSUE)
     elif metric == "queued":
-        links = links.filter(routing_state__in=WAITING_STATES)
+        links = open_work_links(links.filter(routing_state__in=WAITING_STATES))
     elif metric == "assignment_overdue":
-        links = links.filter(routing_state__in=WAITING_STATES, assignment_due_at__lt=now)
+        links = open_work_links(links.filter(routing_state__in=WAITING_STATES, assignment_due_at__lt=now))
     elif metric == "target_overdue":
         links = links.filter(OPEN_ISSUE, issue__target_date__lt=now.date())
     elif metric == "throughput":
