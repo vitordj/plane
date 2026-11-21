@@ -667,7 +667,9 @@ class TestReassignAndReturn:
         assert result.link.primary_executor_id is None
         assert result.link.queue_reason == QueueReason.MANUALLY_RETURNED
         assert result.decision.previous_primary_executor_id == previous.id
-        assert IssueAssignee.objects.filter(issue=assigned, assignee=previous).exists()
+        # R2.05: the executor who gave the item up is taken off it natively, so
+        # Plane does not show a queued item as somebody's.
+        assert not IssueAssignee.objects.filter(issue=assigned, assignee=previous).exists()
 
     def test_a_queued_item_cannot_be_returned_again(self, unit, project, staffed, make_link, make_issue):
         issue = make_issue(project)
@@ -839,16 +841,18 @@ class TestSpeakingForThePublicApi:
     def test_a_revoked_token_does_not_take_the_decisions_with_it(
         self, unit, project, staffed, make_issue, operation, workspace_with_members
     ):
-        # The receipt is SET_NULL on the decision for the same reason it is
-        # SET_NULL on the token: withdrawing a credential must not erase the
-        # record of what it did.
+        # Withdrawing a credential must not erase the record of what it did.
+        # ``operation.delete()`` is a SOFT delete, and ``bgtasks/deletion_task.py``
+        # deliberately skips ``SET_NULL`` on append-only audit rows during a soft
+        # delete: the soft-deleted operation row still exists, so the decision
+        # keeps naming it rather than having its trail rewritten.
         issue = make_issue(project)
         result = set_responsibility(issue, unit, automation_operation=operation)
 
         operation.delete()
 
         result.decision.refresh_from_db()
-        assert result.decision.automation_operation_id is None
+        assert result.decision.automation_operation_id == operation.id
         assert AssignmentDecision.objects.filter(pk=result.decision.pk).exists()
 
 
