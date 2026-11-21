@@ -120,7 +120,7 @@ export interface IQueueRow {
   assignment_due_at: string | null;
   /** Past `assignment_due_at` with nobody on it — the row the coordinator owes. */
   assignment_overdue: boolean;
-  age_seconds: number;
+  age_seconds: number | null;
   primary_executor: {
     id: string;
     display_name: string;
@@ -325,7 +325,8 @@ export interface IOrganizationalUnitWorkload {
 
 export interface IUserOrganizationalUnit {
   organizational_unit: IOrganizationalUnit;
-  role: TOrganizationalUnitMemberRole;
+  role: TOrganizationalUnitMemberRole | "coordinator";
+  is_coordinator?: boolean;
   projects: IOrganizationalUnitProject[];
 }
 

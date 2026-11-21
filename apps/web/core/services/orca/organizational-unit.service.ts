@@ -87,7 +87,7 @@ export class OrganizationalUnitService extends APIService {
     return this.post(`${this.basePath(workspaceSlug)}/`, data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response?.data;
       });
   }
 
@@ -99,7 +99,7 @@ export class OrganizationalUnitService extends APIService {
     return this.patch(`${this.basePath(workspaceSlug)}/${unitId}/`, data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response?.data;
       });
   }
 
@@ -107,7 +107,7 @@ export class OrganizationalUnitService extends APIService {
     return this.delete(`${this.basePath(workspaceSlug)}/${unitId}/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response?.data;
       });
   }
 
@@ -131,7 +131,7 @@ export class OrganizationalUnitService extends APIService {
     })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response?.data;
       });
   }
 
@@ -144,7 +144,7 @@ export class OrganizationalUnitService extends APIService {
     return this.patch(`${this.basePath(workspaceSlug)}/${unitId}/members/${membershipId}/`, data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response?.data;
       });
   }
 
@@ -152,7 +152,7 @@ export class OrganizationalUnitService extends APIService {
     return this.delete(`${this.basePath(workspaceSlug)}/${unitId}/members/${membershipId}/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response?.data;
       });
   }
 
@@ -176,7 +176,7 @@ export class OrganizationalUnitService extends APIService {
     })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response?.data;
       });
   }
 
@@ -189,7 +189,7 @@ export class OrganizationalUnitService extends APIService {
     return this.patch(`${this.basePath(workspaceSlug)}/${unitId}/projects/${linkId}/`, data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response?.data;
       });
   }
 
@@ -197,7 +197,7 @@ export class OrganizationalUnitService extends APIService {
     return this.delete(`${this.basePath(workspaceSlug)}/${unitId}/projects/${linkId}/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response?.data;
       });
   }
 
@@ -258,7 +258,7 @@ export class OrganizationalUnitService extends APIService {
     )
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response?.data;
       });
   }
 
@@ -268,7 +268,7 @@ export class OrganizationalUnitService extends APIService {
     )
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response?.data;
       });
   }
 
@@ -295,7 +295,7 @@ export class OrganizationalUnitService extends APIService {
     )
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response?.data;
       });
   }
 

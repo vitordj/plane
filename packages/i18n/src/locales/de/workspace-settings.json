@@ -740,7 +740,8 @@
           "unavailable_until": "Abwesend bis {until}",
           "unavailable_open": "Abwesend",
           "executor_away": "Abwesend",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Die Arbeit dieses Bereichs konnte nicht geladen werden."
         },
         "executive": {
           "title": "Führungsübersicht",

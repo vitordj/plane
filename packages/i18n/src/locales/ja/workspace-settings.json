@@ -740,7 +740,8 @@
           "unavailable_until": "{until}まで不在",
           "unavailable_open": "不在",
           "executor_away": "不在",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "このエリアの作業を読み込めませんでした。"
         },
         "executive": {
           "title": "エグゼクティブビュー",

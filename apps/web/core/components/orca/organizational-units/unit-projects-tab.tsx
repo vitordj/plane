@@ -130,11 +130,11 @@ export const OrganizationalUnitProjectsTab = observer(function OrganizationalUni
         title: t(`${OU}.projects.toast.unlinked_title`),
         message: t(`${OU}.projects.toast.unlinked`, { name: projectName }),
       });
-    } catch {
+    } catch (error) {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: t(`${OU}.projects.toast.not_unlinked`),
-        message: t(`${OU}.try_again`),
+        message: t(resolveOrcaErrorKey(error) ?? `${OU}.try_again`),
       });
     }
   };

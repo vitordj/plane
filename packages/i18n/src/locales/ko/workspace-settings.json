@@ -740,7 +740,8 @@
           "unavailable_until": "{until}까지 부재",
           "unavailable_open": "부재",
           "executor_away": "부재",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "이 영역의 작업을 불러오지 못했습니다."
         },
         "executive": {
           "title": "경영진 보기",

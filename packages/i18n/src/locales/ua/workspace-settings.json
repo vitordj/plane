@@ -740,7 +740,8 @@
           "unavailable_until": "Відсутній до {until}",
           "unavailable_open": "Відсутній",
           "executor_away": "Відсутній",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Не вдалося завантажити роботу цієї області."
         },
         "executive": {
           "title": "Керівний огляд",

@@ -740,7 +740,8 @@
           "unavailable_until": "Nieobecny do {until}",
           "unavailable_open": "Nieobecny",
           "executor_away": "Nieobecny",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Nie udało się załadować pracy tego obszaru."
         },
         "executive": {
           "title": "Widok kierowniczy",

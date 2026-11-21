@@ -650,9 +650,13 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
    * @param routing What the API says about the item now.
    * @returns The row to put back in the list.
    */
-  private mergeRoutingIntoRow = (row: IQueueRow, routing: IIssueRouting): IQueueRow => {
+  private mergeRoutingIntoRow = (unitId: string, row: IQueueRow, routing: IIssueRouting): IQueueRow => {
+    const queue = this.getQueueByUnitId(unitId);
+    const currentUserId = this.rootStore.user.data?.id;
     const executorId = routing.primary_executor;
     const details = executorId ? this.rootStore.memberRoot.workspace.getWorkspaceMemberDetails(executorId) : null;
+    const isAssigned = routing.routing_state === "assigned";
+    const canManage = queue.viewer.is_admin || queue.viewer.is_coordinator;
     return {
       ...row,
       routing_state: routing.routing_state,
@@ -662,7 +666,7 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       // A just-allocated item cannot be late on an allocation it no longer
       // owes, and one just returned starts its wait over.
       assignment_overdue: false,
-      age_seconds: 0,
+      age_seconds: routing.queued_at ? 0 : null,
       primary_executor: executorId
         ? {
             id: executorId,
@@ -681,6 +685,13 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
           }
         : null,
       current_decision_id: routing.current_assignment_decision?.id ?? null,
+      // R2.13: recompute row permissions immediately so action buttons match
+      // the new routing state without waiting for a full reload.
+      permissions: {
+        can_claim: isAssigned ? false : row.permissions.can_claim,
+        can_assign: canManage,
+        can_return: isAssigned && (canManage || (Boolean(currentUserId) && executorId === currentUserId)),
+      },
     };
   };
 
@@ -711,7 +722,8 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
    */
   claim = async (workspaceSlug: string, unitId: string, row: IQueueRow) => {
     const routing = await this.service.claimIssue(workspaceSlug, row.project.id, row.issue_id);
-    this.placeRow(unitId, this.mergeRoutingIntoRow(row, routing));
+    this.placeRow(unitId, this.mergeRoutingIntoRow(unitId, row, routing));
+    void this.fetchQueue(workspaceSlug, unitId).catch(() => undefined);
     return routing;
   };
 
@@ -726,7 +738,8 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       expectedDecisionId: row.current_decision_id,
       reason: options?.reason,
     });
-    this.placeRow(unitId, this.mergeRoutingIntoRow(row, routing));
+    this.placeRow(unitId, this.mergeRoutingIntoRow(unitId, row, routing));
+    void this.fetchQueue(workspaceSlug, unitId).catch(() => undefined);
     return routing;
   };
 
@@ -807,7 +820,8 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
     const routing = await this.service.returnIssue(workspaceSlug, row.project.id, row.issue_id, {
       expectedDecisionId: row.current_decision_id,
     });
-    this.placeRow(unitId, this.mergeRoutingIntoRow(row, routing));
+    this.placeRow(unitId, this.mergeRoutingIntoRow(unitId, row, routing));
+    void this.fetchQueue(workspaceSlug, unitId).catch(() => undefined);
     return routing;
   };
 
