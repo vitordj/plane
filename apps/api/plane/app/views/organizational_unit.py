@@ -24,6 +24,7 @@ from rest_framework.response import Response
 
 # Module imports
 from plane.app.permissions.base import ROLE, allow_permission
+from plane.app.permissions.organizational_unit import is_unit_coordinator, is_workspace_admin
 from plane.app.serializers import (
     AssignmentPolicySerializer,
     IssueRoutingSerializer,
@@ -741,6 +742,20 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
         if unit is None:
             return orca_error("ORG_UNIT_NOT_IN_WORKSPACE")
 
+        existing = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
+        requested_mode = request.data.get("mode")
+        # D2 / R2.02: Any project member may set an area on a work item that has
+        # none yet. Changing the area or re-running allocation with an explicit
+        # mode (e.g. mode="manual" to return an assigned item to the queue)
+        # requires workspace Admin or coordinator of the item's current area.
+        # An idempotent re-POST of the same area with no mode stays a no-op.
+        if existing is not None and (existing.organizational_unit_id != unit.id or requested_mode is not None):
+            if not (
+                is_workspace_admin(request.user, issue.workspace_id)
+                or is_unit_coordinator(request.user, existing.organizational_unit)
+            ):
+                return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
+
         try:
             # The service creates the link (or transfers it), records the
             # responsibility event, applies the area's policy and writes the
@@ -751,7 +766,7 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
                 unit,
                 actor=request.user,
                 source=ResponsibilitySource.INTERNAL_API,
-                requested_mode=request.data.get("mode"),
+                requested_mode=requested_mode,
                 reason=request.data.get("reason", ""),
             )
         except OrcaDomainError as exc:
@@ -767,11 +782,21 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
     def delete(self, request, slug, project_id, issue_id):
-        link = IssueOrganizationalUnit.objects.filter(
-            issue_id=issue_id, project_id=project_id, workspace__slug=slug
-        ).first()
+        link = (
+            IssueOrganizationalUnit.objects.filter(issue_id=issue_id, project_id=project_id, workspace__slug=slug)
+            .select_related("organizational_unit")
+            .first()
+        )
         if link is None:
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+        # D2 / R2.02: Removing an area's responsibility over a work item
+        # requires workspace Admin or coordinator of the current area.
+        if not (
+            is_workspace_admin(request.user, link.workspace_id)
+            or is_unit_coordinator(request.user, link.organizational_unit)
+        ):
+            return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
 
         with transaction.atomic():
             # The event is what keeps "this used to belong to Support" from
@@ -814,15 +839,24 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
         if issue is None:
             return orca_not_found("ORG_WORK_ITEM_NOT_FOUND")
 
+        existing = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
         unit_id = request.data.get("organizational_unit_id")
         if unit_id:
             unit = OrganizationalUnit.objects.filter(pk=unit_id, workspace_id=issue.workspace_id).first()
         else:
-            link = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
-            unit = link.organizational_unit if link else None
+            unit = existing.organizational_unit if existing else None
 
         if unit is None:
             return orca_error("ORG_WORK_ITEM_HAS_NO_UNIT")
+
+        # D2 / R2.02: Running allocation explicitly (especially mode=append or
+        # transferring to another area) assigns or replaces an executor and
+        # requires workspace Admin or coordinator of the governing area.
+        governing_unit = existing.organizational_unit if existing is not None else unit
+        if not (
+            is_workspace_admin(request.user, issue.workspace_id) or is_unit_coordinator(request.user, governing_unit)
+        ):
+            return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
 
         # Checked here as well as in the service: the service answers "nobody
         # eligible", which is true but unhelpful, and this route can say the
@@ -856,7 +890,7 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
                 {
                     "assigned": None,
                     "reason": "already_assigned",
-                    "routing": IssueRoutingSerializer(link).data if link else None,
+                    "routing": IssueRoutingSerializer(existing).data if existing else None,
                 },
                 status=status.HTTP_200_OK,
             )
