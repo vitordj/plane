@@ -372,6 +372,14 @@ class BulkIssueOperationsEndpoint(BaseAPIView):
             ignore_conflicts=True,
             batch_size=100,
         )
+        # Orca (R2.05): bulk assignee edits bypass Django signals; reconcile
+        # routing for every issue whose assignees were touched.
+        if "assignee_ids" in properties:
+            from plane.app.services.orca.signals import reconcile_issue_assignees
+
+            for issue in issues:
+                reconcile_issue_assignees(issue.id)
+
         # update the issue activity
         [issue_activity.delay(**activity) for activity in bulk_issue_activities]
 

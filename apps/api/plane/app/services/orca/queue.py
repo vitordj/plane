@@ -23,7 +23,7 @@ from django.utils import timezone
 
 # Module imports
 from plane.app.permissions.base import ROLE
-from plane.db.models import IssueOrganizationalUnit, ProjectMember, RoutingState, WorkspaceMember
+from plane.db.models import IssueOrganizationalUnit, ProjectMember, RoutingState, StateGroup, WorkspaceMember
 
 # What "the queue" means when the caller does not say: work this area owns that
 # nobody is on. ``allocation_failed`` belongs here rather than in an error
@@ -33,6 +33,31 @@ WAITING_STATES = (RoutingState.QUEUED, RoutingState.ALLOCATION_FAILED)
 
 # Accepted values of the ``routing_state`` filter beyond the real states.
 ALL_STATES = "all"
+
+# State groups where work is finished (R2.06 / D3): routing stops once a work
+# item is completed or cancelled.
+CLOSED_STATE_GROUPS = (StateGroup.COMPLETED.value, StateGroup.CANCELLED.value)
+
+
+def open_work_links(queryset):
+    """
+    Keep only links whose work item is still live and open (R2.06 / D3).
+
+    @description FK joins from ``IssueOrganizationalUnit`` traverse
+    ``Issue._base_manager``, which bypasses ``IssueManager``'s soft-delete,
+    archive, and draft filters. Centralizing the filter here keeps the queue,
+    SLA sweep, availability sweep, and routing audit in agreement: closed,
+    cancelled, archived, soft-deleted, and draft work items (or items in
+    archived projects) are out of routing.
+    @param queryset: A queryset of ``IssueOrganizationalUnit``.
+    @returns Filtered queryset containing only live, open work items.
+    """
+    return queryset.filter(
+        issue__deleted_at__isnull=True,
+        issue__archived_at__isnull=True,
+        issue__is_draft=False,
+        project__archived_at__isnull=True,
+    ).exclude(issue__state__group__in=CLOSED_STATE_GROUPS)
 
 
 def visible_project_ids_for(user, workspace):
@@ -69,14 +94,14 @@ def queue_queryset(unit, *, routing_state=None, overdue=None, project_id=None, n
         row-by-row against ``now()`` can order two items by microseconds.
     @param visible_project_ids: Restrict to projects the reader can open.
         ``None`` means unrestricted (workspace Admin); an empty list yields
-        no rows. Archived projects are always excluded: the reconciler has
-        already withdrawn access to them (R1.A7).
+        no rows. Archived projects and closed/archived/deleted/draft work items
+        are always excluded (R1.A7, R2.06).
     @returns A queryset of ``IssueOrganizationalUnit``, annotated with
         ``assignment_overdue`` and ordered overdue-first, oldest-first.
     """
     now = now or timezone.now()
 
-    queryset = IssueOrganizationalUnit.objects.filter(organizational_unit=unit, project__archived_at__isnull=True)
+    queryset = open_work_links(IssueOrganizationalUnit.objects.filter(organizational_unit=unit))
     if visible_project_ids is not None:
         queryset = queryset.filter(project_id__in=visible_project_ids)
     if routing_state == ALL_STATES:

@@ -25,6 +25,7 @@ from uuid import UUID
 
 from django.utils import timezone
 
+from plane.app.permissions.base import ROLE
 from plane.db.models import (
     IssueOrganizationalUnit,
     Notification,
@@ -46,15 +47,21 @@ def recipients_for(unit) -> list:
 
     @description Coordinators first, because that is the role the queue is
     for. The lead is a fallback for areas that have not named a coordinator
-    yet (the Gate 2-minimum pilot may be in that state). An empty list is a
-    valid answer: it means "do not invent a recipient".
+    yet (the Gate 2-minimum pilot may be in that state). Deactivated workspace
+    members, inactive users, and coordinators demoted to Guest are excluded
+    (R2.19). An empty list is a valid answer: it means "do not invent a
+    recipient".
     @param unit: The ``OrganizationalUnit``.
     @returns Distinct user ids, coordinators first, otherwise the lead.
     """
     coordinator_ids = list(
-        OrganizationalUnitCoordinator.objects.filter(organizational_unit=unit, is_active=True).values_list(
-            "workspace_member__member_id", flat=True
-        )
+        OrganizationalUnitCoordinator.objects.filter(
+            organizational_unit=unit,
+            is_active=True,
+            workspace_member__is_active=True,
+            workspace_member__member__is_active=True,
+            workspace_member__role__gte=ROLE.MEMBER.value,
+        ).values_list("workspace_member__member_id", flat=True)
     )
     if coordinator_ids:
         return list(dict.fromkeys(coordinator_ids))
@@ -63,6 +70,8 @@ def recipients_for(unit) -> list:
         OrganizationalUnitMembership.objects.filter(
             organizational_unit=unit,
             is_active=True,
+            workspace_member__is_active=True,
+            workspace_member__member__is_active=True,
             role=OrganizationalUnitMemberRole.LEAD,
         )
         .values_list("workspace_member__member_id", flat=True)

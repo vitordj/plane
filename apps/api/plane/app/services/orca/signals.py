@@ -190,10 +190,10 @@ def _return_if_executor(issue_id, assignee_id) -> None:
     longer on the work item. Nobody sees it in a queue, nobody sees it in their
     own list, and it stops moving.
 
-    Anything that goes wrong here is swallowed. A failure to keep the sidecar in
-    step must not roll back the assignee change the person actually made — the
-    audit command finds the divergence, which is worse than fixing it now and
-    much better than a 500 on an ordinary edit.
+    Respects the master kill switch ``ORCA_ORG_UNITS_ENABLED`` (R2.20) and
+    ignores closed/archived/deleted/draft items (R2.06). Anything that goes
+    wrong here is swallowed so a sidecar failure never rolls back an ordinary
+    assignee edit.
     @param issue_id: The work item.
     @param assignee_id: Who was removed.
     @returns: None.
@@ -201,10 +201,22 @@ def _return_if_executor(issue_id, assignee_id) -> None:
     from plane.db.models import IssueAssignee as Assignee, IssueOrganizationalUnit
     from plane.db.models.organizational_unit import QueueReason, RoutingState
 
+    from .feature_flags import organizational_units_enabled
+    from .queue import open_work_links
+
+    if not organizational_units_enabled():
+        return
+
     try:
         link = (
-            IssueOrganizationalUnit.objects.select_related("issue")
-            .filter(issue_id=issue_id, primary_executor_id=assignee_id, routing_state=RoutingState.ASSIGNED)
+            open_work_links(
+                IssueOrganizationalUnit.objects.filter(
+                    issue_id=issue_id,
+                    primary_executor_id=assignee_id,
+                    routing_state=RoutingState.ASSIGNED,
+                )
+            )
+            .select_related("issue")
             .first()
         )
         if link is None:
@@ -227,6 +239,46 @@ def _return_if_executor(issue_id, assignee_id) -> None:
         from plane.utils.exception_logger import log_exception
 
         log_exception(Exception(f"orca: could not requeue issue {issue_id} after assignee removal"))
+
+
+def reconcile_issue_assignees(issue_id) -> None:
+    """
+    Sync area routing after a bulk/queryset native assignee replacement (R2.05).
+
+    @description ``IssueCreateSerializer.update`` and ``BulkOperationsEndpoint``
+    replace ``IssueAssignee`` rows via ``QuerySet.delete()`` + ``bulk_create()``,
+    which bypass Django signals. Calling this sidecar helper immediately after
+    keeps ``IssueOrganizationalUnit`` in sync when the primary executor was
+    removed — returning open work to the area queue without ever failing the
+    native edit.
+    @param issue_id: The work item whose assignees were just replaced.
+    @returns: None.
+    """
+    from plane.db.models import IssueOrganizationalUnit
+    from plane.db.models.organizational_unit import RoutingState
+
+    from .feature_flags import organizational_units_enabled
+
+    if not organizational_units_enabled():
+        return
+
+    try:
+        link = (
+            IssueOrganizationalUnit.objects.filter(
+                issue_id=issue_id,
+                routing_state=RoutingState.ASSIGNED,
+                primary_executor__isnull=False,
+            )
+            .only("primary_executor_id")
+            .first()
+        )
+        if link is None:
+            return
+        _return_if_executor(issue_id, link.primary_executor_id)
+    except Exception:  # noqa: BLE001 - never break an ordinary assignee edit
+        from plane.utils.exception_logger import log_exception
+
+        log_exception(Exception(f"orca: could not reconcile routing for issue {issue_id}"))
 
 
 @receiver(pre_save, sender=IssueAssignee)
