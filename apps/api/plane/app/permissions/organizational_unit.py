@@ -83,19 +83,21 @@ def is_workspace_admin(user, workspace_id) -> bool:
 def is_unit_coordinator(user, unit) -> bool:
     """
     @description Whether the person actively coordinates this area. The
-    workspace membership must be active too: somebody removed from the
-    workspace stops coordinating it, and leaving that to the coordinator row
-    alone would keep a departed person's authority alive.
+    workspace membership must be active and at least Member (not Guest), and
+    the unit itself must be active (R2.22): somebody removed from the workspace,
+    demoted to Guest, or assigned to a deactivated unit stops coordinating it.
     @param user: The requesting user.
     @param unit: The ``OrganizationalUnit``.
     @returns bool.
     """
-    if unit is None or user is None or getattr(user, "is_anonymous", False):
+    if unit is None or not unit.is_active or user is None or getattr(user, "is_anonymous", False):
         return False
     return OrganizationalUnitCoordinator.objects.filter(
         organizational_unit=unit,
+        organizational_unit__is_active=True,
         workspace_member__member=user,
         workspace_member__is_active=True,
+        workspace_member__role__gte=ROLE.MEMBER.value,
         is_active=True,
     ).exists()
 
@@ -123,10 +125,11 @@ def may_manage_member_availability(user, workspace_member) -> bool:
     Whether the caller may read and write another person's availability windows.
 
     @description Workspace Admin always may. Otherwise the caller has to
-    coordinate **any area this person belongs to** (item 3.3): leave is a
-    fact about the person, not about one area, so the coordinator who
-    would otherwise keep handing them work is the one who may record it.
-    A coordinator of an unrelated area may not.
+    coordinate **any active area this person belongs to** (item 3.3, R2.22):
+    leave is a fact about the person, not about one area, so the coordinator
+    who would otherwise keep handing them work is the one who may record it.
+    A coordinator of an unrelated or deactivated area, or one demoted to Guest,
+    may not.
     @param user: The requesting user.
     @param workspace_member: The ``WorkspaceMember`` whose windows are at stake.
     @returns bool.
@@ -136,14 +139,18 @@ def may_manage_member_availability(user, workspace_member) -> bool:
     if is_workspace_admin(user, workspace_member.workspace_id):
         return True
     unit_ids = OrganizationalUnitMembership.objects.filter(
-        workspace_member=workspace_member, is_active=True
+        workspace_member=workspace_member,
+        is_active=True,
+        organizational_unit__is_active=True,
     ).values_list("organizational_unit_id", flat=True)
     if not unit_ids:
         return False
     return OrganizationalUnitCoordinator.objects.filter(
         organizational_unit_id__in=unit_ids,
+        organizational_unit__is_active=True,
         workspace_member__member=user,
         workspace_member__is_active=True,
+        workspace_member__role__gte=ROLE.MEMBER.value,
         is_active=True,
     ).exists()
 

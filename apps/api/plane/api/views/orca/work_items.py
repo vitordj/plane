@@ -72,6 +72,7 @@ from plane.app.services.orca import (
     return_to_queue,
     set_responsibility,
     transfer_unit,
+    visible_project_ids_for,
 )
 from plane.app.services.orca.errors import IfMatchRequired
 from plane.app.services.orca.service_level import record_service_level
@@ -131,7 +132,14 @@ class OrcaWorkItemBaseEndpoint(OrcaPublicBaseAPIView):
         @returns A DRF ``Response``.
         """
         key = read_idempotency_key(request)
-        with begin_operation(workspace, self.api_token, key, operation_type, request.data) as handle:
+        # R2.18: include HTTP method and path in the idempotency fingerprint so
+        # reusing a key with the same body on a different route or target item
+        # yields 409 payload mismatch rather than replaying the first route's
+        # response.
+        request_scope = {"method": request.method, "path": request.path}
+        with begin_operation(
+            workspace, self.api_token, key, operation_type, request.data, request_scope=request_scope
+        ) as handle:
             if handle.replayed:
                 return replay_response(handle)
             try:
@@ -735,17 +743,31 @@ class ProcessInstanceEndpoint(OrcaWorkspaceReadEndpoint):
         if workspace is None:
             return self.forbidden()
 
+        visible_project_ids = visible_project_ids_for(request.user, workspace)
+
         instance = ProcessInstanceReference.objects.filter(
             workspace=workspace, external_source=source, external_instance_id=instance_id
         ).first()
         if instance is None:
             raise WorkItemNotFound(external_source=source, external_id=instance_id)
 
-        items = list(
+        all_items = list(
             ProcessInstanceItem.objects.filter(process_instance=instance)
             .select_related("issue", "issue__project", "issue__state", "issue__orca_service_level")
             .order_by("created_at")
         )
+        # R2.03: mirror UnitQueueEndpoint (R1.A7). A workspace admin sees every
+        # step; everyone else sees only steps in projects where they hold an
+        # active ProjectMember row, and a caller with no visible steps on a
+        # non-empty run is refused with 403 rather than learning about the run.
+        if visible_project_ids is not None:
+            visible_set = set(visible_project_ids)
+            items = [item for item in all_items if item.issue.project_id in visible_set]
+            if all_items and not items:
+                return self.forbidden()
+        else:
+            items = all_items
+
         routing_by_issue = {
             link.issue_id: link
             for link in IssueOrganizationalUnit.objects.filter(

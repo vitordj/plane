@@ -165,12 +165,13 @@ def _resume(operation, request_hash, api_token) -> OperationHandle:
     return OperationHandle(operation)
 
 
-def _existing(operation, request_hash, api_token) -> OperationHandle:
+def _existing(operation, operation_type, request_hash, api_token) -> OperationHandle:
     """Decide what an already-present row means for this caller (RFC §6.7)."""
-    if operation.request_hash != request_hash:
-        # Checked before status on purpose: a changed payload is a caller bug
-        # whether the first attempt succeeded, failed or is still running, and
-        # saying so is more useful than reporting the first call's outcome.
+    if operation.operation_type != operation_type or operation.request_hash != request_hash:
+        # Checked before status on purpose: a changed payload or reusing a key
+        # on a different operation/route (R2.18) is a caller bug whether the
+        # first attempt succeeded, failed or is still running, and saying so is
+        # more useful than reporting the first call's outcome.
         raise IdempotencyPayloadMismatch(idempotency_key=operation.idempotency_key)
 
     if operation.status in (AutomationOperationStatus.SUCCEEDED, AutomationOperationStatus.FAILED):
@@ -182,7 +183,7 @@ def _existing(operation, request_hash, api_token) -> OperationHandle:
     return _resume(operation, request_hash, api_token)
 
 
-def start_operation(workspace, api_token, key, operation_type, payload) -> OperationHandle:
+def start_operation(workspace, api_token, key, operation_type, payload, *, request_scope=None) -> OperationHandle:
     """
     Open or recover the receipt for one ``Idempotency-Key`` (RFC §6.7).
 
@@ -201,11 +202,19 @@ def start_operation(workspace, api_token, key, operation_type, payload) -> Opera
     @param key: The caller's ``Idempotency-Key``.
     @param operation_type: Member of ``AutomationOperationType``.
     @param payload: The request body, for the hash.
+    @param request_scope: Optional request metadata (such as HTTP method and
+        path) mixed into the fingerprint so reusing a key across routes or
+        targets is caught as a mismatch (R2.18).
     @returns A handle: either open, or marked ``replayed``.
-    @raises IdempotencyPayloadMismatch: Key reused with a different payload.
+    @raises IdempotencyPayloadMismatch: Key reused with a different payload,
+        operation type, or route.
     @raises OperationInProgress: The first call is still running.
     """
-    request_hash = canonical_hash(payload)
+    request_hash = (
+        canonical_hash({"scope": request_scope, "payload": payload})
+        if request_scope is not None
+        else canonical_hash(payload)
+    )
 
     # all_objects, not objects. The default manager hides soft-deleted rows,
     # but the uniqueness constraint on (workspace, api_token, idempotency_key)
@@ -219,7 +228,7 @@ def start_operation(workspace, api_token, key, operation_type, payload) -> Opera
         workspace=workspace, api_token=api_token, idempotency_key=key
     ).first()
     if existing is not None:
-        return _existing(existing, request_hash, api_token)
+        return _existing(existing, operation_type, request_hash, api_token)
 
     try:
         # Its own atomic block so a lost race marks only this INSERT as failed;
@@ -232,7 +241,7 @@ def start_operation(workspace, api_token, key, operation_type, payload) -> Opera
         ).first()
         if winner is None:
             raise
-        return _existing(winner, request_hash, api_token)
+        return _existing(winner, operation_type, request_hash, api_token)
 
 
 def complete_operation(
@@ -296,7 +305,7 @@ def release_operation(handle):
 
 
 @contextmanager
-def begin_operation(workspace, api_token, key, operation_type, payload):
+def begin_operation(workspace, api_token, key, operation_type, payload, *, request_scope=None):
     """
     ``start_operation`` with a guarantee that the row never stays in progress.
 
@@ -316,7 +325,7 @@ def begin_operation(workspace, api_token, key, operation_type, payload):
 
     @yields An ``OperationHandle``.
     """
-    handle = start_operation(workspace, api_token, key, operation_type, payload)
+    handle = start_operation(workspace, api_token, key, operation_type, payload, request_scope=request_scope)
     try:
         yield handle
     except Exception:

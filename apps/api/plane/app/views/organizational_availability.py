@@ -40,7 +40,7 @@ from plane.app.serializers import (
     MembershipAllocationSettingsSerializer,
     WorkspaceMemberAvailabilitySerializer,
 )
-from plane.app.services.orca import availability_enabled
+from plane.app.services.orca import availability_enabled, organizational_units_enabled
 from plane.db.models import (
     MembershipAllocationSettings,
     OrganizationalUnitMembership,
@@ -58,13 +58,14 @@ class AvailabilityFeatureMixin:
     404 while the feature is off.
 
     @description Same shape as the organizational layer's own switch: an
-    instance that has not turned availability on should not have these routes
+    instance that has not turned availability on — or has turned off the
+    master organizational layer switch (R2.20) — should not have these routes
     at all, so that switching it off during an incident makes them gone rather
     than merely refusing.
     """
 
     def initial(self, request, *args, **kwargs):
-        if not availability_enabled():
+        if not organizational_units_enabled() or not availability_enabled():
             raise Http404("Availability is disabled on this instance")
         return super().initial(request, *args, **kwargs)
 
