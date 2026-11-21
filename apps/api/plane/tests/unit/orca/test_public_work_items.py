@@ -30,7 +30,9 @@ from plane.db.models import (
     ExternalWorkItemBinding,
     Issue,
     IssueAssignee,
+    IssueLabel,
     IssueOrganizationalUnit,
+    Label,
     OrganizationalUnitAssignmentPolicy,
     RoutingState,
     State,
@@ -467,6 +469,80 @@ class TestRefusing:
         assert response.status_code == 409
         assert response.data["error_message"] == "ORG_EXTERNAL_BINDING_CONFLICT"
         assert response.data["issue_id"] == str(other.id)
+
+
+@pytest.mark.unit
+class TestLabels:
+    """
+    Labels in the ``work_item`` block, after upstream e3324b6c0 (v1.4.2 -> v1.4.3).
+
+    @description The native v1 ``IssueSerializer`` used to drop label ids that
+    were not labels of the project and answer 201 anyway; it now raises. This
+    route reuses that serializer, so the stricter policy is inherited. What
+    these tests pin is the **shape** of the refusal on this route: a typed
+    ``400 VALIDATION_ERROR`` (never a 500), nothing created, and the failure
+    stored on the receipt so a retry with the same key replays it.
+    """
+
+    @pytest.fixture
+    def label(self, project, workspace_with_members):
+        return Label.objects.create(name="urgent", project=project, workspace=workspace_with_members)
+
+    def test_a_label_of_the_project_is_attached(self, caller, project, world, label):
+        response = post(caller, project, body(work_item={"name": "x", "labels": [str(label.id)]}))
+
+        assert response.status_code == 201, response.data
+        assert list(
+            IssueLabel.objects.filter(issue_id=response.data["work_item"]["id"]).values_list("label_id", flat=True)
+        ) == [label.id]
+
+    def test_a_label_of_another_project_is_a_typed_400_and_creates_nothing(
+        self, caller, project, second_project, world, workspace_with_members
+    ):
+        foreign = Label.objects.create(name="billing", project=second_project, workspace=workspace_with_members)
+
+        response = post(caller, project, body(work_item={"name": "x", "labels": [str(foreign.id)]}))
+
+        assert response.status_code == 400
+        assert response.data["error_message"] == "VALIDATION_ERROR"
+        assert str(foreign.id) in str(response.data["detail"])
+        assert not Issue.objects.exists()
+        assert not ExternalWorkItemBinding.objects.exists()
+        assert not IssueLabel.objects.exists()
+        operation = AutomationOperation.objects.get(idempotency_key="key-1")
+        assert operation.status == AutomationOperationStatus.FAILED
+        assert operation.error_code == "VALIDATION_ERROR"
+
+    def test_an_unknown_label_is_a_typed_400(self, caller, project, world):
+        response = post(
+            caller, project, body(work_item={"name": "x", "labels": ["00000000-0000-4000-8000-000000000000"]})
+        )
+
+        assert response.status_code == 400
+        assert response.data["error_message"] == "VALIDATION_ERROR"
+        assert not Issue.objects.exists()
+
+    def test_a_soft_deleted_label_is_a_typed_400(self, caller, project, world, label):
+        label.delete()
+
+        response = post(caller, project, body(work_item={"name": "x", "labels": [str(label.id)]}))
+
+        assert response.status_code == 400
+        assert response.data["error_message"] == "VALIDATION_ERROR"
+        assert not Issue.objects.exists()
+
+    def test_the_refusal_is_replayed_under_the_same_key(
+        self, caller, project, second_project, world, workspace_with_members
+    ):
+        foreign = Label.objects.create(name="billing", project=second_project, workspace=workspace_with_members)
+        payload = body(work_item={"name": "x", "labels": [str(foreign.id)]})
+        post(caller, project, payload)
+
+        replay = post(caller, project, payload)
+
+        assert replay.status_code == 400
+        assert replay["Idempotent-Replay"] == "true"
+        assert replay.data["error_message"] == "VALIDATION_ERROR"
 
 
 @pytest.mark.unit

@@ -514,6 +514,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements/test.txt
 
+      # Model drift and migration graph health (upstream sync, P0.11). `--check`
+      # exits non-zero when a model has no migration, and Django refuses to
+      # build the graph at all when two apps' migrations leave two leaves --
+      # which is how a sync that brings in an upstream migration next to a fork
+      # one shows up. The unit suite cannot see either: it runs with
+      # `--nomigrations`, so it builds tables straight from the models.
+      - name: Check Migrations
+        working-directory: ./apps/api
+        run: python manage.py makemigrations --check --dry-run
+
       # The whole unit suite, fork and upstream alike (P0.8). Running only the
       # Orca directory meant an upstream regression this fork carries could
       # reach `stage` unseen: the code is ours to deploy whether or not we
@@ -527,6 +537,16 @@ jobs:
       - name: Run Unit Tests
         working-directory: ./apps/api
         run: pytest plane/tests/unit -q -m unit
+
+      # 255 of the tests under plane/tests/unit/orca carry a marker other than
+      # `unit` (most are HTTP-level and were marked `contract`), so the step
+      # above deselects them and they gated nothing. They need only what this
+      # job already provisions -- PostgreSQL and Valkey, no broker and no
+      # object storage -- so they run here, selected by directory instead of
+      # by marker. A new Orca test is covered whichever marker it carries.
+      - name: Run Orca Tests Not Marked Unit
+        working-directory: ./apps/api
+        run: pytest plane/tests/unit/orca -q -m "not unit"
 
       # The one contract file that belongs in the merge gate (item 1.8). The
       # rest of plane/tests/contract needs RabbitMQ and MinIO and stays in the

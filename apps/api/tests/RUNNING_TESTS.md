@@ -88,13 +88,13 @@ whether the command runs at all.
 
 ## How it works
 
-| Service      | Image                                      | Purpose                                       |
-| ------------ | ------------------------------------------ | --------------------------------------------- |
-| `test-db`    | `postgres:15.7-alpine`                     | Application database                          |
-| `test-redis` | `valkey/valkey:7.2.11-alpine`              | Cache / Celery broker                         |
-| `test-mq`    | `rabbitmq:3.13.6-management-alpine`        | Task queue                                    |
-| `test-minio` | `minio/minio:RELEASE.2025-09-07T16-13-09Z` | S3-compatible object storage                  |
-| `api-tests`  | built from `apps/api/Dockerfile.dev`       | Installs `requirements/test.txt`, runs pytest |
+| Service      | Image                                              | Purpose                                       |
+| ------------ | -------------------------------------------------- | --------------------------------------------- |
+| `test-db`    | `postgres:15.7-alpine`                             | Application database                          |
+| `test-redis` | `valkey/valkey:7.2.11-alpine`                      | Cache / Celery broker                         |
+| `test-mq`    | `rabbitmq:3.13.6-management-alpine`                | Task queue                                    |
+| `test-minio` | `quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z` | S3-compatible object storage                  |
+| `api-tests`  | built from `apps/api/Dockerfile.dev`               | Installs `requirements/test.txt`, runs pytest |
 
 ### Image versions
 

@@ -2,8 +2,9 @@
 
 **Status:** especificação em implementação. Revisão 13 (10/09/2026).
 **Base analisada:** `stage` em `f490a2d7` (após o merge do PR #14) mais a
-ponta do PR #15 em `31d35e2b`. A base upstream é **Plane CE v1.4.2**
-(`package.json` → `1.5.0-plane.1.4.2`), não a 1.4.1 desta revisão inicial.
+ponta do PR #15 em `31d35e2b`. A base upstream é **Plane CE v1.4.3**
+(`package.json` → `1.6.1-plane.1.4.3`; era v1.4.2 na data desta revisão, e a 1.4.1
+desta revisão inicial).
 **O que está implementado é a tabela de §2.1**, e ela é a única resposta
 para "isto já existe?"; as seções ainda marcadas "proposta" são as das
 Fases 2 a 5.

@@ -177,6 +177,13 @@ area decides who does the work. To name a person, use
 `assignment.mode = "explicit"` below, which validates that the person is
 actually able to hold work of that area on that project.
 
+**`labels` must be labels of the project.** An id that is a label of another
+project, does not exist or has been deleted is refused with
+`400 VALIDATION_ERROR` (not silently dropped, as before Plane 1.4.3); `detail`
+names the offending ids, and nothing is created. Like every refusal on this
+route it is recorded on the idempotency receipt, so a retry with the same key
+replays the same 400 — fix the payload and send it under a new key.
+
 Any other unknown key is refused as well, with the accepted keys listed in the
 error. A silently ignored field is a bug you find weeks later.
 

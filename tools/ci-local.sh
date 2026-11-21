@@ -117,8 +117,14 @@ if [ "$RUN_TESTS" -eq 1 ]; then
   TC=(docker compose -p plane-test -f "$REPO/docker-compose-test.yml")
   "${TC[@]}" build --quiet api-tests
   rc=0
-  # shellcheck disable=SC2086
-  "${TC[@]}" run --rm api-tests pytest $PYTEST_ARGS > "$TEST_LOG" 2>&1 || rc=$?
+  # Same guard as the `Check migrations` step of the api_tests job: a sync that
+  # leaves two migration leaves, or a model changed without a migration, fails
+  # here instead of at `migrate` on the first deploy.
+  "${TC[@]}" run --rm api-tests python manage.py makemigrations --check --dry-run > "$TEST_LOG" 2>&1 || rc=$?
+  if [ "$rc" -eq 0 ]; then
+    # shellcheck disable=SC2086
+    "${TC[@]}" run --rm api-tests pytest $PYTEST_ARGS >> "$TEST_LOG" 2>&1 || rc=$?
+  fi
   "${TC[@]}" down -v --remove-orphans >/dev/null 2>&1 || true
   echo "--- tail of $TEST_LOG:"
   tail -n 15 "$TEST_LOG"
