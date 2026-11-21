@@ -479,9 +479,8 @@ class IssueRoutingSerializer(BaseSerializer):
         """
         @description Whether the viewer may change this item's area (D2), from
         the same helper the routes enforce, so the interface does not recompute
-        roles. ``None`` when the serializer has no request in its context (the
-        queue and coordinator routes), meaning "not stated" — the client keeps
-        what it already knew.
+        roles. ``None`` only when serialized without a request in context,
+        meaning "not stated" — the client keeps what it already knew.
         @returns bool or None.
         """
         request = self.context.get("request")

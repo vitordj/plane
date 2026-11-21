@@ -216,7 +216,7 @@ class IssueClaimEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
         except OrcaDomainError as exc:
             return orca_error(exc.error_code, exc.http_status)
 
-        return Response(_routing_data(result.link), status=status.HTTP_200_OK)
+        return Response(_routing_data(result.link, request), status=status.HTTP_200_OK)
 
 
 class IssueReturnEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
@@ -253,7 +253,7 @@ class IssueReturnEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
         except OrcaDomainError as exc:
             return orca_error(exc.error_code, exc.http_status)
 
-        return Response(_routing_data(result.link), status=status.HTTP_200_OK)
+        return Response(_routing_data(result.link, request), status=status.HTTP_200_OK)
 
 
 class IssueReassignEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
@@ -289,7 +289,7 @@ class IssueReassignEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
             # executor does, so it answers with the same code.
             return orca_error("ORG_EXECUTOR_NOT_ELIGIBLE")
 
-        return Response(_routing_data(result.link), status=status.HTTP_200_OK)
+        return Response(_routing_data(result.link, request), status=status.HTTP_200_OK)
 
 
 class IssueTransferEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
@@ -322,7 +322,7 @@ class IssueTransferEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
             return orca_error(exc.error_code, exc.http_status)
 
         updated_link = link_for_issue(issue_id, slug=slug, project_id=project_id)
-        return Response(_routing_data(updated_link), status=status.HTTP_200_OK)
+        return Response(_routing_data(updated_link, request), status=status.HTTP_200_OK)
 
 
 class OrganizationalUnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
@@ -525,9 +525,15 @@ class OrganizationalUnitCoordinatorViewSet(OrganizationalUnitFeatureMixin, BaseV
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-def _routing_data(link):
-    """The response body every action route in this module answers with."""
-    return IssueRoutingSerializer(link).data
+def _routing_data(link, request=None):
+    """
+    @description The response body every action route in this module answers with.
+    @param link: The ``IssueOrganizationalUnit`` to serialize.
+    @param request: The HTTP request, forwarded so ``can_change_responsibility`` is populated.
+    @returns Serialized routing dict.
+    """
+    context = {"request": request} if request is not None else {}
+    return IssueRoutingSerializer(link, context=context).data
 
 
 class IssueCandidatesEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):

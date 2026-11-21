@@ -467,28 +467,23 @@ def stash_previous_issue_state(sender, instance, **kwargs):
     setattr(instance, _PREVIOUS_STATE_ID, instance.old_values.get("state_id"))
 
 
-@receiver(post_save, sender="db.Issue")
-def restart_waiting_clock_on_reopen(sender, instance, created, **kwargs):
+def restart_waiting_clock_if_reopened(issue_id, previous_state_id, new_state_id) -> bool:
     """
     Give a reopened item a fresh waiting clock in its area's queue (R2.06).
 
-    @description An item closed while ``queued`` keeps its ``queued_at`` and
-    ``assignment_due_at``; reopened later, it came back already overdue and
-    alerted at once, with a queue age that counted the time it was closed. When a
-    save moves a work item out of a completed/cancelled state while its link is
-    still waiting, this restarts the clock the way ``return_to_queue`` does:
-    ``queued_at`` is now, the deadline is recomputed from the governing policy's
-    SLA, and ``last_alerted_at`` is cleared.
-
-    Sees only saves that go through ``Issue.save()``; the bulk-operations
-    endpoint updates states with ``bulk_update`` and raises no signal, so a
-    reopen made there keeps the old clock (the 15-minute SLA sweep then alerts on it).
-    @returns: None. Never raises into the state edit.
+    @description Shared by ``restart_waiting_clock_on_reopen`` (single-row
+    ``Issue.save()``) and ``BulkOperationsEndpoint`` (``bulk_update`` seam).
+    When a transition moves a work item out of a completed/cancelled state
+    while its link is still waiting, resets ``queued_at``, recomputes
+    ``assignment_due_at`` from the governing policy's SLA, and clears
+    ``last_alerted_at``.
+    @param issue_id: Primary key of the work item.
+    @param previous_state_id: State pk before the update.
+    @param new_state_id: State pk after the update.
+    @returns True when the clock was restarted, False otherwise. Never raises.
     """
-    previous_state_id = getattr(instance, _PREVIOUS_STATE_ID, None)
-    if created or previous_state_id is None:
-        return
-    setattr(instance, _PREVIOUS_STATE_ID, None)
+    if previous_state_id is None or previous_state_id == new_state_id:
+        return False
 
     from datetime import timedelta
 
@@ -499,24 +494,24 @@ def restart_waiting_clock_on_reopen(sender, instance, created, **kwargs):
     from .feature_flags import organizational_units_enabled
 
     if not organizational_units_enabled():
-        return
+        return False
 
     try:
         link = (
             IssueOrganizationalUnit.objects.filter(
-                issue_id=instance.pk,
+                issue_id=issue_id,
                 routing_state__in=(RoutingState.QUEUED, RoutingState.ALLOCATION_FAILED),
             )
             .select_related("organizational_unit")
             .first()
         )
         if link is None:
-            return
-        groups = dict(State.objects.filter(pk__in=[previous_state_id, instance.state_id]).values_list("id", "group"))
+            return False
+        groups = dict(State.objects.filter(pk__in=[previous_state_id, new_state_id]).values_list("id", "group"))
         was_closed = groups.get(previous_state_id) in CLOSED_STATE_GROUPS
-        is_open = groups.get(instance.state_id) not in CLOSED_STATE_GROUPS
+        is_open = groups.get(new_state_id) not in CLOSED_STATE_GROUPS
         if not (was_closed and is_open):
-            return
+            return False
 
         now = timezone.now()
         sla_seconds = resolve_policy(link.organizational_unit, link.project_id).sla_seconds
@@ -524,10 +519,29 @@ def restart_waiting_clock_on_reopen(sender, instance, created, **kwargs):
         link.assignment_due_at = now + timedelta(seconds=sla_seconds) if sla_seconds else None
         link.last_alerted_at = None
         link.save(update_fields=["queued_at", "assignment_due_at", "last_alerted_at", "updated_at"])
+        return True
     except Exception:  # noqa: BLE001 - never break an ordinary state edit
         from plane.utils.exception_logger import log_exception
 
-        log_exception(Exception(f"orca: could not restart the waiting clock for reopened issue {instance.pk}"))
+        log_exception(Exception(f"orca: could not restart the waiting clock for reopened issue {issue_id}"))
+        return False
+
+
+@receiver(post_save, sender="db.Issue")
+def restart_waiting_clock_on_reopen(sender, instance, created, **kwargs):
+    """
+    Give a reopened item a fresh waiting clock in its area's queue (R2.06).
+
+    @description Delegates to ``restart_waiting_clock_if_reopened`` for
+    single-row ``Issue.save()`` calls; bulk state updates call the same helper
+    from the Orca seam in ``BulkOperationsEndpoint``.
+    @returns: None. Never raises into the state edit.
+    """
+    previous_state_id = getattr(instance, _PREVIOUS_STATE_ID, None)
+    if created or previous_state_id is None:
+        return
+    setattr(instance, _PREVIOUS_STATE_ID, None)
+    restart_waiting_clock_if_reopened(instance.pk, previous_state_id, instance.state_id)
 
 
 # Track prior active/deleted state on WorkspaceMember so post_save knows when a

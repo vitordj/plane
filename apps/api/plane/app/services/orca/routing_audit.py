@@ -80,7 +80,7 @@ class Finding:
         return " ".join(parts)
 
 
-def _assigned_findings(workspace_id, *, write, actor, alert=False):
+def _assigned_findings(workspace_id, *, write, actor, alert=False, limit=None):
     """@description I3 and I4 over every open link the area considers assigned (R2.06)."""
     links = (
         open_work_links(
@@ -94,7 +94,10 @@ def _assigned_findings(workspace_id, *, write, actor, alert=False):
         .order_by("created_at")
     )
 
+    repaired = 0
     for link in links:
+        if limit is not None and repaired >= limit:
+            break
         if link.primary_executor_id is None:
             # The CHECK constraint forbids this, so a row that has it is older
             # than the constraint or was written around it.
@@ -109,7 +112,7 @@ def _assigned_findings(workspace_id, *, write, actor, alert=False):
 
         holds_item = IssueAssignee.objects.filter(issue_id=link.issue_id, assignee_id=link.primary_executor_id).exists()
         if not holds_item:
-            yield _repair(
+            finding = _repair(
                 Finding(
                     kind=ASSIGNED_WITHOUT_ASSIGNEE,
                     issue_id=link.issue_id,
@@ -123,12 +126,15 @@ def _assigned_findings(workspace_id, *, write, actor, alert=False):
                 actor=actor,
                 alert=alert,
             )
+            if finding.repaired:
+                repaired += 1
+            yield finding
             continue
 
         try:
             _assert_eligible(link.organizational_unit, link.project_id, link.primary_executor_id)
         except ExecutorNotEligible as exc:
-            yield _repair(
+            finding = _repair(
                 Finding(
                     kind=EXECUTOR_NOT_ELIGIBLE,
                     issue_id=link.issue_id,
@@ -142,6 +148,9 @@ def _assigned_findings(workspace_id, *, write, actor, alert=False):
                 actor=actor,
                 alert=alert,
             )
+            if finding.repaired:
+                repaired += 1
+            yield finding
 
 
 def _repair(finding, link, *, write, actor, alert=False):
@@ -226,7 +235,7 @@ def _policy_findings(workspace_id):
             )
 
 
-def audit_routing(workspace_id, *, write=False, actor=None, alert=False) -> list:
+def audit_routing(workspace_id, *, write=False, actor=None, alert=False, limit=None) -> list:
     """
     @description Check every routing invariant that lives outside the database
     for one workspace (RFC §6.1 I3, I4).
@@ -237,11 +246,13 @@ def audit_routing(workspace_id, *, write=False, actor=None, alert=False) -> list
     @param alert: With ``write``, also raise the coordinators' ``executor_unavailable``
         alert for every item returned. The hourly drift sweep sets it; the
         management command does not.
+    @param limit: Optional cap on how many items to repair in this call.
     @returns A list of ``Finding``, in the order they were found.
     """
-    findings = list(_assigned_findings(workspace_id, write=write, actor=actor, alert=alert))
-    findings.extend(_queued_findings(workspace_id))
-    findings.extend(_policy_findings(workspace_id))
+    findings = list(_assigned_findings(workspace_id, write=write, actor=actor, alert=alert, limit=limit))
+    if limit is None:
+        findings.extend(_queued_findings(workspace_id))
+        findings.extend(_policy_findings(workspace_id))
     return findings
 
 

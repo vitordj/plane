@@ -352,6 +352,9 @@ class WorkItemAutomationEndpoint(OrcaWorkItemBaseEndpoint):
         instruction and still goes through the service, which transfers.
         """
         if not issue._state.adding:
+            # Lock the work item row so a concurrent placement cannot slip
+            # between the pre-receipt gate check and ``set_responsibility``.
+            Issue.objects.select_for_update().filter(pk=issue.pk).first()
             existing = (
                 IssueOrganizationalUnit.objects.filter(issue=issue)
                 .select_related("organizational_unit", "current_assignment_decision", "primary_executor")
@@ -359,6 +362,10 @@ class WorkItemAutomationEndpoint(OrcaWorkItemBaseEndpoint):
             )
             if existing is not None and existing.organizational_unit_id == unit.id:
                 return existing, existing.current_assignment_decision
+            if existing is not None and not may_change_item_responsibility(request.user, existing, to_unit=unit):
+                from plane.app.services.orca.errors import NotUnitCoordinator
+
+                raise NotUnitCoordinator()
 
         result = set_responsibility(
             issue,
@@ -813,7 +820,10 @@ class ProcessInstanceEndpoint(OrcaWorkspaceReadEndpoint):
             raise WorkItemNotFound(external_source=source, external_id=instance_id)
 
         all_items = list(
-            ProcessInstanceItem.objects.filter(process_instance=instance)
+            ProcessInstanceItem.objects.filter(
+                process_instance=instance,
+                issue__project__archived_at__isnull=True,
+            )
             .select_related("issue", "issue__project", "issue__state", "issue__orca_service_level")
             .order_by("created_at")
         )

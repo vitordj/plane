@@ -97,6 +97,9 @@ class BulkIssueOperationsEndpoint(BaseAPIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+        # Orca (R2.06): capture prior states before bulk_update mutates them.
+        previous_state_ids = {issue.id: issue.state_id for issue in issues} if properties.get("state_id", False) else {}
+
         for issue in issues:
             # Priority
             if properties.get("priority", False):
@@ -372,13 +375,20 @@ class BulkIssueOperationsEndpoint(BaseAPIView):
             ignore_conflicts=True,
             batch_size=100,
         )
-        # Orca (R2.05): bulk assignee edits bypass Django signals; reconcile
-        # routing for every issue whose assignees were touched.
+        # Orca (R2.05 / R2.06): bulk edits bypass Django signals; reconcile
+        # routing for touched assignees and restart the waiting clock for
+        # reopened queued items.
         if "assignee_ids" in properties:
             from plane.app.services.orca.signals import reconcile_issue_assignees
 
             for issue in issues:
                 reconcile_issue_assignees(issue.id)
+
+        if previous_state_ids:
+            from plane.app.services.orca.signals import restart_waiting_clock_if_reopened
+
+            for issue in issues:
+                restart_waiting_clock_if_reopened(issue.id, previous_state_ids.get(issue.id), issue.state_id)
 
         # update the issue activity
         [issue_activity.delay(**activity) for activity in bulk_issue_activities]

@@ -934,7 +934,9 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
                 {
                     "assigned": None,
                     "reason": "already_assigned",
-                    "routing": IssueRoutingSerializer(existing).data if existing else None,
+                    "routing": IssueRoutingSerializer(existing, context={"request": request}).data
+                    if existing
+                    else None,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -958,7 +960,7 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
             {
                 "assigned": _assigned_payload(result),
                 "reason": ASSIGN_REASON_FOR_OUTCOME.get(result.outcome, result.outcome),
-                "routing": IssueRoutingSerializer(result.link).data,
+                "routing": IssueRoutingSerializer(result.link, context={"request": request}).data,
             },
             status=status.HTTP_200_OK,
         )

@@ -245,3 +245,10 @@ class ExternalBindingConflict(OrcaDomainError):
 
     error_code = "ORG_EXTERNAL_BINDING_CONFLICT"
     http_status = status.HTTP_409_CONFLICT
+
+
+class NotUnitCoordinator(OrcaDomainError):
+    """The caller may not change responsibility for an item already owned by an area (D2)."""
+
+    error_code = "ORG_NOT_UNIT_COORDINATOR"
+    http_status = status.HTTP_403_FORBIDDEN
