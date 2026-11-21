@@ -167,7 +167,10 @@ class TestReassigning:
         assert response.status_code == 200
         assert response.data["responsibility"]["routing_state"] == RoutingState.QUEUED
         assert response.data["responsibility"]["primary_executor"] is None
-        assert IssueAssignee.objects.filter(issue=issue, assignee=plain_user).exists()
+        # R2.05: returning an item detaches the returned executor's native
+        # assignee row, so the item never shows someone the queue no longer
+        # considers its executor.
+        assert not IssueAssignee.objects.filter(issue=issue, assignee=plain_user).exists()
 
     def test_returning_it_is_optimistic_too(self, caller, project, assigned, second_user):
         issue, stale = assigned

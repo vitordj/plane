@@ -105,7 +105,10 @@ correto.
 
 ## Verificação na árvore final
 
-- `pytest plane/tests/unit/orca`: veja o resultado no fim deste arquivo.
+- `pytest plane/tests/unit/orca`: 1459 passaram e 1 falhou, em 11 min. A falha
+  era `test_public_reassign_transfer.py::test_returning_it_to_the_queue`, que
+  ainda esperava o contrato antigo, em que o executor ficava no item. O teste
+  foi atualizado para o contrato novo e o arquivo passa: 22/22.
 - `makemigrations --check`: limpo. `pnpm check:types --filter=web`: 11/11.
   `check:lint`: 0 erros.
 - Os novos testes falham sem o fix e passam com ele, nos casos positivos:
