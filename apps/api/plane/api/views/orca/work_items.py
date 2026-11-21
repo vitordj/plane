@@ -54,6 +54,8 @@ from plane.api.serializers.orca import (
     work_item_envelope,
 )
 from plane.app.permissions import ProjectEntityPermission
+from plane.app.permissions.organizational_unit import is_unit_coordinator, is_workspace_admin
+from plane.utils.orca_error_codes import orca_error
 from plane.app.services.orca import (
     ExternalBindingConflict,
     OrcaDomainError,
@@ -552,6 +554,15 @@ class WorkItemReassignEndpoint(OrcaWorkItemBaseEndpoint):
     def post(self, request, slug, project_id, issue_id):
         project = self.resolve_project(slug, project_id)
         issue = self._resolve_issue(project, issue_id)
+        # R2.02: Public reassign/return carries the same coordinator gate as
+        # the internal queue routes. Checked before opening the receipt so an
+        # unauthorized caller never spends an idempotency key.
+        link = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
+        if link is not None and not (
+            is_workspace_admin(request.user, project.workspace_id)
+            or is_unit_coordinator(request.user, link.organizational_unit)
+        ):
+            return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
         # Read before the receipt is opened, like the idempotency key: a
         # missing precondition header is a malformed request, not a failed
         # operation, and it should not spend the caller's key.
@@ -614,6 +625,14 @@ class WorkItemTransferEndpoint(OrcaWorkItemBaseEndpoint):
     def post(self, request, slug, project_id, issue_id):
         project = self.resolve_project(slug, project_id)
         issue = self._resolve_issue(project, issue_id)
+        # R2.02: Transferring responsibility off an area requires workspace
+        # Admin or coordinator of the current area, before opening a receipt.
+        link = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
+        if link is not None and not (
+            is_workspace_admin(request.user, project.workspace_id)
+            or is_unit_coordinator(request.user, link.organizational_unit)
+        ):
+            return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
         return self.run_operation(
             request,
             project.workspace,
