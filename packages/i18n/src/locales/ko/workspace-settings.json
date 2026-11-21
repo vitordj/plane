@@ -793,6 +793,7 @@
           "membership_not_found": "그 사람은 더 이상 이 영역에 없습니다.",
           "lead_already_set": "이 영역에는 이미 리드가 있습니다.",
           "unit_not_in_workspace": "해당 영역은 이 작업 공간에 속하지 않습니다.",
+          "unit_has_active_work_items": "이 영역에 아직 열린 작업 항목이 있습니다. 삭제하기 전에 이동하거나 완료해 주세요.",
           "project_required": "연결할 프로젝트를 선택하십시오.",
           "invalid_role": "영역은 그 역할을 부여할 수 없습니다.",
           "project_not_in_workspace": "해당 프로젝트는 이 작업 공간에 속하지 않습니다.",

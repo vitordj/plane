@@ -793,6 +793,7 @@
           "membership_not_found": "Quella persona non è più in quest’area.",
           "lead_already_set": "Quest’area ha già un responsabile.",
           "unit_not_in_workspace": "Quell’area non appartiene a questo spazio di lavoro.",
+          "unit_has_active_work_items": "Questa area ha ancora elementi di lavoro aperti. Spostali o chiudili prima di eliminarla.",
           "project_required": "Scelga un progetto da collegare.",
           "invalid_role": "Un’area non può concedere quel ruolo.",
           "project_not_in_workspace": "Quel progetto non appartiene a questo spazio di lavoro.",

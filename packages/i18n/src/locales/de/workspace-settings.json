@@ -793,6 +793,7 @@
           "membership_not_found": "Diese Person ist nicht mehr in diesem Bereich.",
           "lead_already_set": "Dieser Bereich hat bereits eine Leitung.",
           "unit_not_in_workspace": "Dieser Bereich gehört nicht zu diesem Arbeitsbereich.",
+          "unit_has_active_work_items": "Dieser Bereich hat noch offene Arbeitselemente. Verschieben oder schließen Sie sie, bevor Sie ihn löschen.",
           "project_required": "Ein Projekt zum Verknüpfen auswählen.",
           "invalid_role": "Diese Rolle kann ein Bereich nicht vergeben.",
           "project_not_in_workspace": "Dieses Projekt gehört nicht zu diesem Arbeitsbereich.",

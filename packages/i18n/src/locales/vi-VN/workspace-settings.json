@@ -793,6 +793,7 @@
           "membership_not_found": "Người đó không còn trong khu vực này.",
           "lead_already_set": "Khu vực này đã có người phụ trách.",
           "unit_not_in_workspace": "Khu vực đó không thuộc không gian làm việc này.",
+          "unit_has_active_work_items": "Khu vực này vẫn còn mục công việc đang mở. Hãy di chuyển hoặc đóng chúng trước khi xóa.",
           "project_required": "Hãy chọn một dự án để liên kết.",
           "invalid_role": "Khu vực không thể cấp vai trò đó.",
           "project_not_in_workspace": "Dự án đó không thuộc không gian làm việc này.",

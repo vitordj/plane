@@ -793,6 +793,7 @@
           "membership_not_found": "Orang itu sudah tidak ada di area ini.",
           "lead_already_set": "Area ini sudah memiliki pemimpin.",
           "unit_not_in_workspace": "Area itu bukan bagian dari ruang kerja ini.",
+          "unit_has_active_work_items": "Area ini masih memiliki item kerja yang terbuka. Pindahkan atau tutup terlebih dahulu sebelum menghapusnya.",
           "project_required": "Pilih proyek untuk ditautkan.",
           "invalid_role": "Area tidak dapat memberikan peran itu.",
           "project_not_in_workspace": "Proyek itu bukan bagian dari ruang kerja ini.",

@@ -793,6 +793,7 @@
           "membership_not_found": "此人已不在该区域中。",
           "lead_already_set": "该区域已有负责人。",
           "unit_not_in_workspace": "该区域不属于本工作区。",
+          "unit_has_active_work_items": "此区域仍有未关闭的工作项。请先移动或关闭它们，然后再删除。",
           "project_required": "请选择要关联的项目。",
           "invalid_role": "区域无法授予该角色。",
           "project_not_in_workspace": "该项目不属于本工作区。",

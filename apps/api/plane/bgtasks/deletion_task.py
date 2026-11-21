@@ -53,6 +53,13 @@ def soft_delete_related_objects(app_label, model_name, instance_pk, using=None):
             continue
 
         elif on_delete_name == "SET_NULL":
+            # Orca (R2.10 / R1.A14): append-only audit rows (AssignmentDecision,
+            # IssueResponsibilityEvent) must never be rewritten by a soft-delete
+            # cascade — the soft-deleted target row still exists in the database.
+            from plane.db.models.organizational_assignment import AppendOnlyModel
+
+            if issubclass(relation.related_model, AppendOnlyModel):
+                continue
             # Handle SET_NULL relationships
             if isinstance(relation, OneToOneRel):
                 # For OneToOne relationships

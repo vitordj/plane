@@ -793,6 +793,7 @@
           "membership_not_found": "Cette personne n’est plus dans cette zone.",
           "lead_already_set": "Cette zone a déjà un responsable.",
           "unit_not_in_workspace": "Cette zone n’appartient pas à cet espace de travail.",
+          "unit_has_active_work_items": "Ce domaine contient encore des éléments de travail ouverts. Déplacez-les ou fermez-les avant de le supprimer.",
           "project_required": "Choisissez un projet à lier.",
           "invalid_role": "Une zone ne peut pas accorder ce rôle.",
           "project_not_in_workspace": "Ce projet n’appartient pas à cet espace de travail.",
