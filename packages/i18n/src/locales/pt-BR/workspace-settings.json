@@ -570,7 +570,7 @@
           "membership_not_found": "Essa pessoa não está mais nesta área.",
           "lead_already_set": "Esta área já tem um responsável.",
           "unit_not_in_workspace": "Essa área não pertence a este espaço de trabalho.",
-          "unit_has_active_work_items": "Esta área ainda tem itens de trabalho abertos. Mova ou conclua-os antes de apagá-la.",
+          "unit_has_active_work_items": "Esta área ainda tem itens de trabalho abertos. Mova-os, conclua-os ou cancele-os antes de excluí-la.",
           "project_required": "Escolha um projeto para vincular.",
           "invalid_role": "Uma área não pode conceder esse papel.",
           "project_not_in_workspace": "Esse projeto não pertence a este espaço de trabalho.",
