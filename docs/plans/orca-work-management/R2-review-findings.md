@@ -28,8 +28,8 @@ i18n e de códigos de erro; os 20 achados do R1 continuam fechados. **Um achado
 levantado na leitura não se confirmou na execução** e ficou fora: desvincular
 um projeto retira corretamente o acesso do coordenador que não é membro.
 
-**Verificações de base na mesma sessão:** `makemigrations --check --dry-run`
-limpo; `pnpm check:types --filter=web` (11 tarefas), `check:lint` (0 erros,
+**Verificações de base na mesma sessão:** `pytest plane/tests/unit/orca -q` →
+**1345 passed** em 9m59s; `makemigrations --check --dry-run` limpo; `pnpm check:types --filter=web` (11 tarefas), `check:lint` (0 erros,
 733 avisos), `check:format` e `check:sync` com exit 0. Nenhum achado abaixo é
 pego por elas: todos moram em caminho que a suíte não exercita.
 
