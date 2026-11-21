@@ -405,7 +405,10 @@ class OrganizationalUnitDecisionsEndpoint(OrganizationalUnitFeatureMixin, BaseAP
 
     use_read_replica = True
 
-    @allow_unit_role([UNIT_COORDINATOR])
+    # The refusal carries the Orca code so the web timeline can tell "not this
+    # area's coordinator" (render nothing) from a real failure (offer a retry)
+    # without matching on the generic 403 sentence.
+    @allow_unit_role([UNIT_COORDINATOR], error_code="ORG_NOT_UNIT_COORDINATOR")
     def get(self, request, slug, unit_id):
         unit = request.organizational_unit
         queryset = (

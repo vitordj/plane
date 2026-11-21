@@ -653,6 +653,8 @@ class TestDecisions:
         )
 
         assert response.status_code == 403
+        # Coded, so the web timeline can tell this refusal from a real failure.
+        assert response.data["error_message"] == "ORG_NOT_UNIT_COORDINATOR"
 
 
 @pytest.mark.unit
