@@ -29,13 +29,13 @@ correto.
 
 ## Avaliação por branch (antes dos ajustes)
 
-| Branch | Veredito | Principais problemas encontrados |
-|---|---|---|
-| F1 access-and-scim | Ok, com ressalvas | R2.03: o progresso contava etapas ocultas, e 403 vs 404 revelava se a execução existia. R2.04: um `replace` com valor que não é lista (`""`, `{}`, `5`) ainda esvaziava o grupo. |
-| F2 coordinator-gate | **Bloqueante** | O `POST /api/v1/orca/.../work-items/` público (`_place`) ignorava o gate: um token de Member movia o item de área e derrubava o executor (reproduzido, 201). A rota `assign/` devolvia 403 a Members em itens sem área, contrariando D2. O retorno pelo executor na API pública foi perdido. O gate estava duplicado em 4 lugares. A UI mostrava os controles a todos. |
-| F3 queue-native-sync | Parcial | O PATCH da API pública não reconciliava. Uma troca nativa por alguém elegível deixava o link `queued` sem executor enquanto o Plane mostrava a pessoa nova. Notificações com ator `None` e os alertas não tinham `data.issue_activity`, o que **derrubava a página `/notifications`** (reproduzido no navegador). As métricas executivas contavam itens fechados. Reabrir um item mantinha o relógio antigo. O sweep de drift não alertava ninguém. |
-| F4 member-and-unit-lifecycle | Ok, com ressalvas | A desativação de conta por `bulk_update` contorna o signal: o slot de líder ficava preso. Os itens de quem saiu continuavam atribuídos a essa pessoa. O `pre_save` fazia uma query extra em todo save. Houve erros de tradução (pt-BR, fr). O delete de área não tinha lock. |
-| F5 web-quick-wins | Ok, com ressalvas | A fila piscava o skeleton depois de cada ação. `can_claim` ficava desatualizado. A timeline ficava em branco num erro 5xx. `formatLocalDate` estava duplicado. O locale `ua` é BCP-47 inválido. Dois testes de R2.12 não provavam nada. |
+| Branch                       | Veredito          | Principais problemas encontrados                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ---------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F1 access-and-scim           | Ok, com ressalvas | R2.03: o progresso contava etapas ocultas, e 403 vs 404 revelava se a execução existia. R2.04: um `replace` com valor que não é lista (`""`, `{}`, `5`) ainda esvaziava o grupo.                                                                                                                                                                                                                                                                    |
+| F2 coordinator-gate          | **Bloqueante**    | O `POST /api/v1/orca/.../work-items/` público (`_place`) ignorava o gate: um token de Member movia o item de área e derrubava o executor (reproduzido, 201). A rota `assign/` devolvia 403 a Members em itens sem área, contrariando D2. O retorno pelo executor na API pública foi perdido. O gate estava duplicado em 4 lugares. A UI mostrava os controles a todos.                                                                              |
+| F3 queue-native-sync         | Parcial           | O PATCH da API pública não reconciliava. Uma troca nativa por alguém elegível deixava o link `queued` sem executor enquanto o Plane mostrava a pessoa nova. Notificações com ator `None` e os alertas não tinham `data.issue_activity`, o que **derrubava a página `/notifications`** (reproduzido no navegador). As métricas executivas contavam itens fechados. Reabrir um item mantinha o relógio antigo. O sweep de drift não alertava ninguém. |
+| F4 member-and-unit-lifecycle | Ok, com ressalvas | A desativação de conta por `bulk_update` contorna o signal: o slot de líder ficava preso. Os itens de quem saiu continuavam atribuídos a essa pessoa. O `pre_save` fazia uma query extra em todo save. Houve erros de tradução (pt-BR, fr). O delete de área não tinha lock.                                                                                                                                                                        |
+| F5 web-quick-wins            | Ok, com ressalvas | A fila piscava o skeleton depois de cada ação. `can_claim` ficava desatualizado. A timeline ficava em branco num erro 5xx. `formatLocalDate` estava duplicado. O locale `ua` é BCP-47 inválido. Dois testes de R2.12 não provavam nada.                                                                                                                                                                                                             |
 
 ## O que os ajustes fizeram (commits em `claude/laughing-pasteur-uhje1u`)
 
@@ -115,7 +115,7 @@ correto.
   - `test_r2_review_access.py`: 14 de 30;
   - `test_r2_review_queue.py`: 14 de 22;
   - lifecycle: 5 de 6.
-  Os demais são guardas de regressão.
+    Os demais são guardas de regressão.
 - Reteste ao vivo contra a API em execução, com base demo:
   - R2.01, R2.02, R2.06, R2.08, R2.09, R2.10, R2.11 e R2.12 ok;
   - R2.05 agora adota Rafael (elegível) e devolve à fila quando o escolhido é
@@ -145,25 +145,30 @@ correto.
 - **F6**: o resto de R2.15. R2.16, itens 3 (confirmação ao remover) e 4 (SLA em
   segundos).
 - **F7**: D1 e D4. Essas decisões continuam pendentes com o dono do produto.
-- Chaves i18n órfãs: `work.attention_no_date` e `form.toast.name_taken`.
-- O texto do alerta na caixa de entrada sai em inglês ("updated queue alert
-  to …"). Isso vem do card upstream (`content.tsx`, campo `queue_alert` sem
-  ramo próprio). Para localizar, abra uma seam mínima e comentada no card, ou
-  use `field="assignees"`.
-- `routing.can_change_responsibility` vem `null` nas respostas das rotas de
-  queue, claim, reassign e transfer, porque o serializer não recebe `request`.
-  A UI mantém o último valor conhecido. Passe o `request` no contexto dessas
-  views.
-- Corrida pequena entre o gate e `_place` no create-or-find público: não há
-  lock.
-- Reabertura por `bulk_update` (bulk operations) não dispara signal e mantém o
-  relógio antigo.
-- Bordas de R2.07: com janelas sobrepostas, falta definir qual vale. A
-  proteção de "atribuído durante a janela" nunca expira.
-- O sweep de drift não tem limite de itens por execução. A reconciliação custa
-  uma operação por issue.
-- O progresso de processo ainda conta etapas de projetos arquivados.
 - Frontend: só type-check e lint, nenhum teste de UI. Valide no navegador os
   controles de área do item com Member, coordenador e admin.
-- `ruff`: o CI fixa a versão 0.9.7 (`requirements/local.txt`). Formate com essa
-  versão; a 0.17.x acusa arquivos que o CI aceita.
+
+### Pendências técnicas fechadas neste PR (pós-brief)
+
+- Chaves i18n órfãs (`work.attention_no_date` e `form.toast.name_taken`) removidas
+  dos 19 locales.
+- Seam mínima e comentada para `queue_alert` em
+  `apps/web/core/components/workspace-notifications/sidebar/notification-card/content.tsx`
+  eliminando o prefixo `"updated queue alert to …"`.
+- `request` passado no contexto de `IssueRoutingSerializer` nas rotas
+  `claim/`, `return/`, `reassign/`, `transfer/` e `assign/`
+  (`can_change_responsibility` sempre booleano).
+- `_place` no create-or-find público trava o `Issue` com `select_for_update()` e
+  revalida `may_change_item_responsibility` sob lock.
+- `BulkIssueOperationsEndpoint` reinicia o relógio de espera de itens reabertos
+  via `restart_waiting_clock_if_reopened`.
+- Bordas de R2.07: `all_covering_windows_for` determinístico em janelas
+  sobrepostas, invalidação de override em edição (`updated_at`) e prazo de
+  `UNBOUNDED_OVERRIDE_GRACE` (7 dias) para janelas sem data fim.
+- `sweep_routing_drift` limitado por execução (`DRIFT_SWEEP_LIMIT = 200`,
+  configurável via `ORCA_DRIFT_SWEEP_LIMIT`).
+- Progresso e listagem de etapas de processo excluem projetos arquivados
+  (`issue__project__archived_at__isnull=True`).
+- Breaking change da API pública (D2 para tokens de Member) documentada em
+  `docs/orca-public-api.md`.
+- Todos os arquivos Python da branch verificados com `ruff 0.9.7` (versão do CI).

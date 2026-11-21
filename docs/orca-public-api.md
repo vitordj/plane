@@ -292,8 +292,15 @@ longer current: `412 ORG_DECISION_STALE`, whose body carries
 412 blindly** — somebody acted between your read and your write, and that is
 information, not an obstacle.
 
-The previous executor keeps their assignee row on the item. Plane shows
-assignees to everyone, and quietly detaching a person is a human's call.
+**Permissions (D2):** changing the executor or transferring an item that already
+belongs to an area requires the token's user to be a coordinator of the item's
+**current** area or a workspace Admin (`403 ORG_NOT_UNIT_COORDINATOR` for a
+plain project Member token). The one exception is `{"return_to_queue": true}`,
+which the item's current executor may also call to release their own work.
+
+When `return_to_queue` is used, the returned executor is also removed from the
+item's native assignees (with activity and notification). On `reassign/` to a
+new executor, the previous executor keeps their assignee row as a collaborator.
 
 ```http
 POST .../work-items/{issue_id}/transfer/
@@ -301,7 +308,8 @@ POST .../work-items/{issue_id}/transfer/
 
 Body `{"unit": "legal", "reason": "..."}`, plus `Idempotency-Key`. No
 `If-Match`: "this work belongs to Legal" is not a contested edit of one
-decision.
+decision. Requires a coordinator of the item's current area or a workspace Admin
+(`403 ORG_NOT_UNIT_COORDINATOR`).
 
 If the current executor is not a member of the receiving area, the item goes
 back to that area's queue and they stay on it as a collaborator. If the
