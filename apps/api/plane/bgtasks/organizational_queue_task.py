@@ -87,9 +87,22 @@ def sweep_routing_drift():
     Hourly safety net that repairs routing drift across workspaces (R2.05).
 
     @description Native bulk/queryset assignee edits bypass Django signals.
-    ``IssueCreateSerializer.update`` and ``BulkOperationsEndpoint`` also
-    reconcile immediately, and this beat task catches any remaining path
-    (I3/I4) within the hour — independent of ``ORCA_AVAILABILITY_ENABLED``.
+    ``IssueCreateSerializer.update`` (app and public API) and
+    ``BulkOperationsEndpoint`` also reconcile immediately, and this beat task
+    catches any remaining path (I3/I4) within the hour — independent of
+    ``ORCA_AVAILABILITY_ENABLED``.
+
+    What it does: for every ``assigned`` item whose executor is no longer on
+    the work item (I3) or no longer eligible — left the area or the project
+    (I4) — it returns the item to the queue and raises the coordinators'
+    ``executor_unavailable`` alert, once per item. Eligibility is the
+    service's own check (active area membership in an active workspace
+    membership, assignable project member), so a departed workspace member is
+    caught too. It does not look at availability windows (vacations): those
+    belong to ``sweep_unavailable_executors``, which is gated by
+    ``ORCA_AVAILABILITY_ENABLED`` and also returns and alerts for the
+    workspace/area/project departures. An item both sweeps see is returned by
+    whichever runs first and alerted once, because the second finds it already queued.
     @returns Summary dict with ``workspaces`` scanned and ``repaired`` count.
     """
     from plane.app.services.orca.feature_flags import organizational_units_enabled
@@ -107,7 +120,7 @@ def sweep_routing_drift():
     repaired = 0
     for workspace_id in workspace_ids:
         try:
-            findings = audit_routing(workspace_id, write=True)
+            findings = audit_routing(workspace_id, write=True, alert=True)
             repaired += sum(1 for finding in findings if finding.repaired)
         except Exception as exception:  # noqa: BLE001 - one workspace failing must not stop others
             log_exception(exception)
