@@ -4,11 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { Link } from "react-router";
 // plane imports
 import { useTranslation } from "@plane/i18n";
+import type { TOrcaApiError } from "@plane/constants";
 import { Loader } from "@plane/ui";
 // hooks
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
@@ -21,10 +22,32 @@ type Props = {
 
 const OU = "workspace_settings.settings.organizational_units";
 
+/** `ORG_NOT_UNIT_COORDINATOR`: the Orca code for "only this area's coordinator". */
+const NOT_UNIT_COORDINATOR_CODE = 4932;
+/** Body of the plain 403 the decisions route answers with today (no Orca code attached). */
+const PLAIN_FORBIDDEN_MESSAGE = "You don't have the required permissions.";
+
+/**
+ * @description Whether a failed decisions request was a permission refusal.
+ * The service throws only the response body, so the HTTP status is gone; a
+ * refusal is recognised by its Orca code or, while the route answers with the
+ * plain permission body, by that body. Anything else (network, 5xx) is a
+ * failure the person can retry.
+ */
+function isForbiddenError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false;
+  const body = error as TOrcaApiError;
+  return (
+    body.error_code === NOT_UNIT_COORDINATOR_CODE ||
+    (body.error_code === undefined && body.error === PLAIN_FORBIDDEN_MESSAGE)
+  );
+}
+
 /**
  * @description The area's allocation log, newest first. Coordinator-only
  * on the server; a 403 here is an empty state rather than an error, because
  * a member looking at Work has no other reason to see who was passed over.
+ * Any other failure shows an error with a retry.
  */
 export const DecisionTimeline = observer(function DecisionTimeline(props: Props) {
   const { workspaceSlug, unitId } = props;
@@ -36,21 +59,27 @@ export const DecisionTimeline = observer(function DecisionTimeline(props: Props)
 
   const [isLoading, setIsLoading] = useState(true);
   const [forbidden, setForbidden] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const decisions = store.getDecisionsByUnitId(unitId);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     setIsLoading(true);
     setForbidden(false);
+    setLoadFailed(false);
     store
       .fetchDecisions(workspaceSlug, unitId)
-      .catch(() => {
-        // Coordinator-only on the server. A 403, a network failure and an
-        // empty log are the same thing to a member looking at Work: they
-        // have no other reason to see who was passed over.
-        setForbidden(true);
+      .catch((error: unknown) => {
+        // Coordinator-only on the server: a permission refusal renders
+        // nothing. Any other failure is shown with a retry.
+        if (isForbiddenError(error)) setForbidden(true);
+        else setLoadFailed(true);
       })
       .finally(() => setIsLoading(false));
   }, [workspaceSlug, unitId, store]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   if (isLoading)
     return (
@@ -61,6 +90,16 @@ export const DecisionTimeline = observer(function DecisionTimeline(props: Props)
     );
 
   if (forbidden) return null;
+
+  if (loadFailed)
+    return (
+      <div className="border-custom-border-200 flex flex-col items-center gap-3 rounded border px-4 py-8 text-center">
+        <p className="text-sm text-custom-text-200">{t(`${OU}.work.load_failed`)}</p>
+        <button type="button" className="text-xs text-custom-primary-100 hover:underline" onClick={load}>
+          {t(`${OU}.try_again`)}
+        </button>
+      </div>
+    );
 
   if (decisions.length === 0)
     return <p className="text-sm text-custom-text-300 py-8 text-center">{t(`${OU}.work.empty_decisions`)}</p>;
