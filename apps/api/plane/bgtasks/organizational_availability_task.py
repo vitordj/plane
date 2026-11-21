@@ -60,8 +60,11 @@ def unusable_executor_links(now=None):
     @returns: A list of ``IssueOrganizationalUnit`` with a ``reason`` attribute
         naming which of the four applies — for the log, and for the dry run.
     """
-    from plane.app.services.orca.availability import unavailable_workspace_member_ids
+    from plane.app.services.orca.availability import covering_windows_for
+    from plane.app.services.orca.feature_flags import availability_enabled
+    from plane.app.services.orca.queue import open_work_links
     from plane.db.models import (
+        DecisionTrigger,
         IssueOrganizationalUnit,
         OrganizationalUnitMembership,
         ProjectMember,
@@ -72,9 +75,20 @@ def unusable_executor_links(now=None):
     now = now or timezone.now()
 
     links = list(
-        IssueOrganizationalUnit.objects.filter(
-            routing_state=RoutingState.ASSIGNED, primary_executor__isnull=False
-        ).select_related("issue", "organizational_unit", "primary_executor", "project", "workspace")
+        open_work_links(
+            IssueOrganizationalUnit.objects.filter(
+                routing_state=RoutingState.ASSIGNED,
+                primary_executor__isnull=False,
+                organizational_unit__is_active=True,
+            )
+        ).select_related(
+            "issue",
+            "organizational_unit",
+            "primary_executor",
+            "project",
+            "workspace",
+            "current_assignment_decision",
+        )
     )
     if not links:
         return []
@@ -90,8 +104,8 @@ def unusable_executor_links(now=None):
     active_in_workspace = {(user_id, workspace_id) for user_id, workspace_id, _ in member_rows}
     member_row_of = {(user_id, workspace_id): row_id for user_id, workspace_id, row_id in member_rows}
 
-    away_rows = unavailable_workspace_member_ids(member_row_of.values(), at=now)
-    away = {pair for pair, row_id in member_row_of.items() if row_id in away_rows}
+    away_windows = covering_windows_for(member_row_of.values(), at=now) if availability_enabled() else {}
+    away_window_of = {pair: away_windows[row_id] for pair, row_id in member_row_of.items() if row_id in away_windows}
 
     in_project = set(
         ProjectMember.objects.filter(
@@ -109,6 +123,12 @@ def unusable_executor_links(now=None):
         ).values_list("workspace_member__member_id", "organizational_unit_id")
     )
 
+    human_triggers = {
+        DecisionTrigger.UI_COORDINATOR,
+        DecisionTrigger.UI_CLAIM,
+        DecisionTrigger.REASSIGN,
+    }
+
     unusable = []
     for link in links:
         executor_id = link.primary_executor_id
@@ -120,7 +140,21 @@ def unusable_executor_links(now=None):
             link.reason = "left_area"
         elif (executor_id, link.project_id) not in in_project:
             link.reason = "left_project"
-        elif pair in away:
+        elif pair in away_window_of:
+            # R2.07: nothing automatic undoes a human choice made when the
+            # unavailability window already existed and was already in force
+            # (RFC §1.1). Retroactively recorded absences (created after the
+            # decision) still return the work to the queue.
+            window = away_window_of[pair]
+            decision = link.current_assignment_decision
+            known_since = max(window.unavailable_from, window.created_at)
+            is_intentional_override = (
+                decision is not None
+                and (decision.decided_by_id is not None or decision.trigger in human_triggers)
+                and decision.created_at >= known_since
+            )
+            if is_intentional_override:
+                continue
             link.reason = "away"
         else:
             continue

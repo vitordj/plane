@@ -35,6 +35,7 @@ from plane.db.models import (
 
 from .assignment_service import _assert_eligible, return_to_queue
 from .errors import ExecutorNotEligible, InvalidTransition
+from .queue import open_work_links
 
 # What each finding means, and whether ``--write`` can do anything about it.
 ASSIGNED_WITHOUT_ASSIGNEE = "assigned_without_assignee"
@@ -76,9 +77,15 @@ class Finding:
 
 
 def _assigned_findings(workspace_id, *, write, actor):
-    """@description I3 and I4 over every link the area considers assigned."""
+    """@description I3 and I4 over every open link the area considers assigned (R2.06)."""
     links = (
-        IssueOrganizationalUnit.objects.filter(workspace_id=workspace_id, routing_state=RoutingState.ASSIGNED)
+        open_work_links(
+            IssueOrganizationalUnit.objects.filter(
+                workspace_id=workspace_id,
+                routing_state=RoutingState.ASSIGNED,
+                organizational_unit__is_active=True,
+            )
+        )
         .select_related("organizational_unit", "issue")
         .order_by("created_at")
     )
@@ -156,14 +163,17 @@ def _repair(finding, link, *, write, actor):
 
 def _queued_findings(workspace_id):
     """
-    @description Items the area is still waiting to hand out that somebody is
-    already on. Reported and never repaired: the assignee may be a
+    @description Open items the area is still waiting to hand out that somebody
+    is already on. Reported and never repaired: the assignee may be a
     collaborator the coordinator added on purpose, and deciding otherwise is a
     person's call.
     """
-    links = IssueOrganizationalUnit.objects.filter(
-        workspace_id=workspace_id,
-        routing_state__in=(RoutingState.QUEUED, RoutingState.ALLOCATION_FAILED),
+    links = open_work_links(
+        IssueOrganizationalUnit.objects.filter(
+            workspace_id=workspace_id,
+            routing_state__in=(RoutingState.QUEUED, RoutingState.ALLOCATION_FAILED),
+            organizational_unit__is_active=True,
+        )
     ).order_by("created_at")
 
     for link in links:

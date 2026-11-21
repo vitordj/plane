@@ -728,8 +728,18 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
             return orca_error("ORG_INVALID_ASSIGNMENT_MODE")
 
         current_assignees = list(IssueAssignee.objects.filter(issue=issue).values_list("assignee_id", flat=True))
-        if current_assignees and mode == MODE_FILL_EMPTY:
-            link = IssueOrganizationalUnit.objects.filter(issue=issue).first()
+        link = IssueOrganizationalUnit.objects.filter(issue=issue).first()
+        # R2.11: return_to_queue intentionally leaves the previous executor's
+        # native IssueAssignee row in place. If the item is queued or failed
+        # allocation (no primary executor), it is waiting for assignment — not
+        # "already assigned".
+        from plane.db.models import RoutingState
+
+        is_waiting_for_executor = link is not None and link.routing_state in (
+            RoutingState.QUEUED,
+            RoutingState.ALLOCATION_FAILED,
+        )
+        if current_assignees and mode == MODE_FILL_EMPTY and not is_waiting_for_executor:
             return Response(
                 {
                     "assigned": None,
