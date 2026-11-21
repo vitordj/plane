@@ -18,6 +18,8 @@ import { CustomSelect, Loader } from "@plane/ui";
 import { DateDropdown } from "@/components/dropdowns/date";
 // hooks
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
+// local
+import { formatLocalDate } from "./format-local-date";
 
 type Props = {
   workspaceSlug: string;
@@ -31,16 +33,6 @@ type Props = {
 
 const OU = "workspace_settings.settings.organizational_units";
 const REASONS: TAvailabilityReason[] = ["vacation", "leave", "other"];
-
-function formatLocalDate(iso: string, locale: string): string {
-  const parsed = new Date(iso);
-  if (Number.isNaN(parsed.getTime())) return iso;
-  try {
-    return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(parsed);
-  } catch {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(parsed);
-  }
-}
 
 /**
  * @description When somebody is away. Recorded as intervals rather than a

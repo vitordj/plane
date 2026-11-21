@@ -17,6 +17,7 @@ import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { IQueueRow } from "@plane/types";
 import { Avatar, Tooltip } from "@plane/ui";
 // components
+import { formatLocalDate } from "./format-local-date";
 import { QueueSuggestion } from "./queue-suggestion";
 // hooks
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
@@ -35,16 +36,6 @@ type Props = {
 };
 
 const OU = "workspace_settings.settings.organizational_units";
-
-function formatLocalDate(iso: string, locale: string): string {
-  const parsed = new Date(iso);
-  if (Number.isNaN(parsed.getTime())) return iso;
-  try {
-    return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(parsed);
-  } catch {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(parsed);
-  }
-}
 
 /**
  * @description Turns `age_seconds` into something a person reads. Coarse on
