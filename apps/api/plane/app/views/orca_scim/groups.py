@@ -384,7 +384,7 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
             unit.save()
 
             if "members" in payload and payload["members"] is not None:
-                self.replace_members(unit, self.read_member_values(payload["members"]))
+                self.replace_members(unit, self.read_replacement_members(payload["members"]))
             result = project_unit(unit)
 
         self.record_sync(result.as_dict())
@@ -474,17 +474,18 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
                 if not has_value:
                     return [(STEP_MEMBERS_CLEAR, None)]
                 return [(STEP_MEMBERS_REMOVE, self.read_member_values(value))]
-            if op == "replace" and (not has_value or value is None):
-                # R2.04: a replace without a list (missing value or null) must
-                # not fall through to replace_members(unit, []) and wipe the
-                # group. An explicit empty list [] still clears intentionally.
-                raise SCIMError(
-                    "A replace operation on 'members' needs a non-null value",
-                    status.HTTP_400_BAD_REQUEST,
-                    scim_type="invalidValue",
-                )
-            step = STEP_MEMBERS_REPLACE if op == "replace" else STEP_MEMBERS_ADD
-            return [(step, self.read_member_values(value))]
+            if op == "replace":
+                # R2.04: a replace must carry a real list (see
+                # ``read_replacement_members``); anything else must not fall
+                # through to replace_members(unit, []) and wipe the group.
+                if not has_value:
+                    raise SCIMError(
+                        "A replace operation on 'members' needs a list value",
+                        status.HTTP_400_BAD_REQUEST,
+                        scim_type="invalidValue",
+                    )
+                return [(STEP_MEMBERS_REPLACE, self.read_replacement_members(value))]
+            return [(STEP_MEMBERS_ADD, self.read_member_values(value))]
 
         if path.startswith("members["):
             match = MEMBER_FILTER_PATTERN.match(raw_path)
@@ -558,15 +559,10 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
                     )
                 steps.append((STEP_NAME if lowered == "displayname" else STEP_EXTERNAL_ID, text))
             elif lowered == "members":
-                if op == "replace" and item is None:
-                    raise SCIMError(
-                        "A replace operation on 'members' needs a non-null value",
-                        status.HTTP_400_BAD_REQUEST,
-                        scim_type="invalidValue",
-                    )
-                steps.append(
-                    (STEP_MEMBERS_REPLACE if op == "replace" else STEP_MEMBERS_ADD, self.read_member_values(item))
-                )
+                if op == "replace":
+                    steps.append((STEP_MEMBERS_REPLACE, self.read_replacement_members(item)))
+                else:
+                    steps.append((STEP_MEMBERS_ADD, self.read_member_values(item)))
             # Any other attribute is one this service does not store; it cannot
             # touch membership and is ignored, as it always was.
         return steps
@@ -577,6 +573,36 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
         if value is not None and not isinstance(value, (str, dict, list)):
             raise SCIMError("Invalid members value", status.HTTP_400_BAD_REQUEST, scim_type="invalidValue")
         return member_values(value)
+
+    @staticmethod
+    def read_replacement_members(value) -> list:
+        """
+        Read the member ids of a *replace* (or PUT) members value, refusing shapes that could empty the group.
+
+        @description Replacing membership deletes everyone not listed, so the
+        value has to be an actual list. An explicit empty list ``[]`` is the one
+        legitimate way to clear a group (Microsoft Entra sends it) and stays
+        allowed; a non-list (``""``, ``{}``, a bare string, a number) and a
+        non-empty list that yields no usable id (``[{"display": "x"}]``) are
+        malformed, not "everybody left".
+        @param value: The ``members`` value received.
+        @returns: The member ids as strings.
+        @raises SCIMError: 400 ``invalidValue`` for either malformed shape.
+        """
+        if not isinstance(value, list):
+            raise SCIMError(
+                "A replace operation on 'members' needs a list value",
+                status.HTTP_400_BAD_REQUEST,
+                scim_type="invalidValue",
+            )
+        ids = member_values(value)
+        if value and not ids:
+            raise SCIMError(
+                "None of the listed members carries a usable 'value'",
+                status.HTTP_400_BAD_REQUEST,
+                scim_type="invalidValue",
+            )
+        return ids
 
     def apply_step(self, unit, step, argument):
         """

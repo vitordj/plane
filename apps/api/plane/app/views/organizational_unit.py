@@ -25,7 +25,7 @@ from rest_framework.response import Response
 
 # Module imports
 from plane.app.permissions.base import ROLE, allow_permission
-from plane.app.permissions.organizational_unit import is_unit_coordinator, is_workspace_admin
+from plane.app.permissions.organizational_unit import may_change_item_responsibility
 from plane.app.serializers import (
     AssignmentPolicySerializer,
     IssueRoutingSerializer,
@@ -782,7 +782,9 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
         return Response(
             {
                 "organizational_unit": OrganizationalUnitSerializer(link.organizational_unit).data,
-                "routing": IssueRoutingSerializer(link).data,
+                # Context carries the viewer so the routing can say whether they
+                # may change this item's area (``can_change_responsibility``).
+                "routing": IssueRoutingSerializer(link, context={"request": request}).data,
             },
             status=status.HTTP_200_OK,
         )
@@ -806,11 +808,11 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
         # mode (e.g. mode="manual" to return an assigned item to the queue)
         # requires workspace Admin or coordinator of the item's current area.
         # An idempotent re-POST of the same area with no mode stays a no-op.
+        # Running the area's policy on an item that is waiting with nobody on it,
+        # in its own area, takes nothing from anyone, so it stays open to Members
+        # (same answer as the ``-assign/`` route below).
         if existing is not None and (existing.organizational_unit_id != unit.id or requested_mode is not None):
-            if not (
-                is_workspace_admin(request.user, issue.workspace_id)
-                or is_unit_coordinator(request.user, existing.organizational_unit)
-            ):
+            if not may_change_item_responsibility(request.user, existing, to_unit=unit, allow_unowned_in_area=True):
                 return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
 
         try:
@@ -832,7 +834,7 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
         return Response(
             {
                 "organizational_unit": OrganizationalUnitSerializer(unit).data,
-                "routing": IssueRoutingSerializer(result.link).data,
+                "routing": IssueRoutingSerializer(result.link, context={"request": request}).data,
             },
             status=status.HTTP_200_OK,
         )
@@ -849,10 +851,7 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
 
         # D2 / R2.02: Removing an area's responsibility over a work item
         # requires workspace Admin or coordinator of the current area.
-        if not (
-            is_workspace_admin(request.user, link.workspace_id)
-            or is_unit_coordinator(request.user, link.organizational_unit)
-        ):
+        if not may_change_item_responsibility(request.user, link):
             return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
 
         with transaction.atomic():
@@ -906,13 +905,12 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
         if unit is None:
             return orca_error("ORG_WORK_ITEM_HAS_NO_UNIT")
 
-        # D2 / R2.02: Running allocation explicitly (especially mode=append or
-        # transferring to another area) assigns or replaces an executor and
-        # requires workspace Admin or coordinator of the governing area.
-        governing_unit = existing.organizational_unit if existing is not None else unit
-        if not (
-            is_workspace_admin(request.user, issue.workspace_id) or is_unit_coordinator(request.user, governing_unit)
-        ):
+        # D2 / R2.02: an item with no area may be given one by any Member, and
+        # the area's policy may be run on an item waiting with nobody on it in
+        # its own area. Anything else (transferring to another area, or
+        # replacing / adding to an executor) needs workspace Admin or a
+        # coordinator of the item's CURRENT area.
+        if not may_change_item_responsibility(request.user, existing, to_unit=unit, allow_unowned_in_area=True):
             return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
 
         # Checked here as well as in the service: the service answers "nobody
@@ -931,18 +929,7 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
             return orca_error("ORG_INVALID_ASSIGNMENT_MODE")
 
         current_assignees = list(IssueAssignee.objects.filter(issue=issue).values_list("assignee_id", flat=True))
-        link = IssueOrganizationalUnit.objects.filter(issue=issue).first()
-        # R2.11: return_to_queue intentionally leaves the previous executor's
-        # native IssueAssignee row in place. If the item is queued or failed
-        # allocation (no primary executor), it is waiting for assignment — not
-        # "already assigned".
-        from plane.db.models import RoutingState
-
-        is_waiting_for_executor = link is not None and link.routing_state in (
-            RoutingState.QUEUED,
-            RoutingState.ALLOCATION_FAILED,
-        )
-        if current_assignees and mode == MODE_FILL_EMPTY and not is_waiting_for_executor:
+        if current_assignees and mode == MODE_FILL_EMPTY:
             return Response(
                 {
                     "assigned": None,

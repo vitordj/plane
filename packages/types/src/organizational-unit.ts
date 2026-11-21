@@ -74,6 +74,11 @@ export interface IIssueRouting {
   assignment_due_at: string | null;
   primary_executor: string | null;
   current_assignment_decision: IAssignmentDecision | null;
+  /**
+   * Whether the viewer may change this item's area (D2). Only the routes that
+   * read or set the area state it; the others send `null` ("not stated").
+   */
+  can_change_responsibility?: boolean | null;
   created_at: string;
   updated_at: string;
 }
