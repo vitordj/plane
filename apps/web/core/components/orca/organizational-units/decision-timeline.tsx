@@ -60,7 +60,9 @@ export const DecisionTimeline = observer(function DecisionTimeline(props: Props)
       </Loader>
     );
 
-  if (forbidden || decisions.length === 0)
+  if (forbidden) return null;
+
+  if (decisions.length === 0)
     return <p className="text-sm text-custom-text-300 py-8 text-center">{t(`${OU}.work.empty_decisions`)}</p>;
 
   return (

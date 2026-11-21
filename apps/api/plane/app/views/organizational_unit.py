@@ -558,18 +558,34 @@ class UserOrganizationalUnitsEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
     The requesting user's own units, their role in each, and linked projects.
 
     @description Cheap read endpoint that lets the UI show "my areas" without
-    admin permissions. The v1 UI only uses workspace settings, but shipping the
-    endpoint now means the view can be added later without reshaping the API.
+    admin permissions. Includes both units the caller belongs to and units
+    they actively coordinate (R2.12), so a coordinator who is not a member of
+    the area still has a screen to open its queue.
     """
 
     use_read_replica = True
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
     def get(self, request, slug):
+        from plane.db.models import OrganizationalUnitCoordinator
+
         memberships = (
             OrganizationalUnitMembership.objects.filter(
                 organizational_unit__workspace__slug=slug,
                 workspace_member__member=request.user,
+                workspace_member__is_active=True,
+                is_active=True,
+                organizational_unit__is_active=True,
+            )
+            .select_related("organizational_unit")
+            .prefetch_related("organizational_unit__unit_projects")
+        )
+        coordinators = (
+            OrganizationalUnitCoordinator.objects.filter(
+                organizational_unit__workspace__slug=slug,
+                workspace_member__member=request.user,
+                workspace_member__is_active=True,
+                workspace_member__role__gte=ROLE.MEMBER.value,
                 is_active=True,
                 organizational_unit__is_active=True,
             )
@@ -577,16 +593,29 @@ class UserOrganizationalUnitsEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
             .prefetch_related("organizational_unit__unit_projects")
         )
 
-        payload = [
-            {
-                "organizational_unit": OrganizationalUnitSerializer(membership.organizational_unit).data,
+        entries_by_unit = {}
+        for membership in memberships:
+            unit = membership.organizational_unit
+            entries_by_unit[unit.id] = {
+                "organizational_unit": OrganizationalUnitSerializer(unit).data,
                 "role": membership.role,
-                "projects": OrganizationalUnitProjectSerializer(
-                    membership.organizational_unit.unit_projects.all(), many=True
-                ).data,
+                "is_coordinator": False,
+                "projects": OrganizationalUnitProjectSerializer(unit.unit_projects.all(), many=True).data,
             }
-            for membership in memberships
-        ]
+
+        for coordinator in coordinators:
+            unit = coordinator.organizational_unit
+            if unit.id in entries_by_unit:
+                entries_by_unit[unit.id]["is_coordinator"] = True
+            else:
+                entries_by_unit[unit.id] = {
+                    "organizational_unit": OrganizationalUnitSerializer(unit).data,
+                    "role": "coordinator",
+                    "is_coordinator": True,
+                    "projects": OrganizationalUnitProjectSerializer(unit.unit_projects.all(), many=True).data,
+                }
+
+        payload = sorted(entries_by_unit.values(), key=lambda entry: entry["organizational_unit"]["name"].lower())
         return Response(payload, status=status.HTTP_200_OK)
 
 

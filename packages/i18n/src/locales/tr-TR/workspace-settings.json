@@ -740,7 +740,8 @@
           "unavailable_until": "{until} tarihine kadar uzak",
           "unavailable_open": "Uzak",
           "executor_away": "Uzak",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Bu alanın işleri yüklenemedi."
         },
         "executive": {
           "title": "Yönetici görünümü",

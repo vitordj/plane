@@ -740,7 +740,8 @@
           "unavailable_until": "Tidak ada hingga {until}",
           "unavailable_open": "Tidak ada",
           "executor_away": "Tidak ada",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Tidak dapat memuat pekerjaan area ini."
         },
         "executive": {
           "title": "Tampilan eksekutif",

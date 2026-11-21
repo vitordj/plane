@@ -16,7 +16,6 @@ import { PriorityIcon, StateGroupIcon } from "@plane/propel/icons";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { IQueueRow } from "@plane/types";
 import { Avatar, Tooltip } from "@plane/ui";
-import { renderFormattedDate } from "@plane/utils";
 // components
 import { QueueSuggestion } from "./queue-suggestion";
 // hooks
@@ -36,6 +35,16 @@ type Props = {
 };
 
 const OU = "workspace_settings.settings.organizational_units";
+
+function formatLocalDate(iso: string, locale: string): string {
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return iso;
+  try {
+    return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(parsed);
+  } catch {
+    return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(parsed);
+  }
+}
 
 /**
  * @description Turns `age_seconds` into something a person reads. Coarse on
@@ -62,11 +71,11 @@ function ageLabel(seconds: number): { key: string; count: number } {
 export const QueueItemRow = observer(function QueueItemRow(props: Props) {
   const { workspaceSlug, unitId, row, onAssign, onTransfer } = props;
   const store = useOrganizationalUnit();
-  const { t } = useTranslation();
+  const { t, currentLocale } = useTranslation();
 
   const [pendingAction, setPendingAction] = useState<"claim" | "return" | null>(null);
 
-  const age = ageLabel(row.age_seconds);
+  const age = row.age_seconds != null ? ageLabel(row.age_seconds) : null;
   const workItemLink = `/${workspaceSlug}/projects/${row.project.id}/issues/${row.issue_id}`;
 
   const handleClaim = async () => {
@@ -137,7 +146,7 @@ export const QueueItemRow = observer(function QueueItemRow(props: Props) {
 
         <div className="text-xs text-custom-text-300 flex flex-wrap items-center gap-x-3 gap-y-1">
           {row.queue_reason && <span>{t(`${OU}.work.reason.${row.queue_reason}`)}</span>}
-          <span>{t(`${OU}.work.age.${age.key}`, { count: age.count })}</span>
+          {age && <span>{t(`${OU}.work.age.${age.key}`, { count: age.count })}</span>}
           {/* Only where somebody has to pick the next person: the rows the
               availability sweep handed back. */}
           {row.queue_reason === "executor_unavailable" && row.permissions.can_assign && (
@@ -159,7 +168,7 @@ export const QueueItemRow = observer(function QueueItemRow(props: Props) {
                   tooltipContent={
                     row.primary_executor.unavailable_until
                       ? t(`${OU}.work.unavailable_until`, {
-                          until: renderFormattedDate(row.primary_executor.unavailable_until),
+                          until: formatLocalDate(row.primary_executor.unavailable_until, currentLocale),
                         })
                       : t(`${OU}.work.unavailable_open`)
                   }

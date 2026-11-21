@@ -740,7 +740,8 @@
           "unavailable_until": "Neprítomný do {until}",
           "unavailable_open": "Neprítomný",
           "executor_away": "Neprítomný",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Nepodarilo sa načítať prácu tejto oblasti."
         },
         "executive": {
           "title": "Manažérsky prehľad",

@@ -740,7 +740,8 @@
           "unavailable_until": "Vắng đến {until}",
           "unavailable_open": "Vắng",
           "executor_away": "Vắng",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Không thể tải công việc của khu vực này."
         },
         "executive": {
           "title": "Góc nhìn điều hành",

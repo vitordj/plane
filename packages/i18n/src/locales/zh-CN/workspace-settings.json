@@ -740,7 +740,8 @@
           "unavailable_until": "离开至 {until}",
           "unavailable_open": "离开",
           "executor_away": "离开",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "无法加载此区域的工作。"
         },
         "executive": {
           "title": "管理视图",

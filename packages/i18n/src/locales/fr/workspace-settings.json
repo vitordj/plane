@@ -740,7 +740,8 @@
           "unavailable_until": "Absent jusqu’au {until}",
           "unavailable_open": "Absent",
           "executor_away": "Absent",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Impossible de charger le travail de ce domaine."
         },
         "executive": {
           "title": "Vue exécutive",

@@ -8,12 +8,12 @@ import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { CalendarOff, X } from "lucide-react";
 // plane imports
+import { resolveOrcaErrorKey } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { TAvailabilityReason } from "@plane/types";
 import { CustomSelect, Loader } from "@plane/ui";
-import { renderFormattedDate } from "@plane/utils";
 // components
 import { DateDropdown } from "@/components/dropdowns/date";
 // hooks
@@ -32,6 +32,16 @@ type Props = {
 const OU = "workspace_settings.settings.organizational_units";
 const REASONS: TAvailabilityReason[] = ["vacation", "leave", "other"];
 
+function formatLocalDate(iso: string, locale: string): string {
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return iso;
+  try {
+    return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(parsed);
+  } catch {
+    return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(parsed);
+  }
+}
+
 /**
  * @description When somebody is away. Recorded as intervals rather than a
  * single "available" flag, because the useful question is "will they be back
@@ -44,7 +54,7 @@ const REASONS: TAvailabilityReason[] = ["vacation", "leave", "other"];
 export const AvailabilityForm = observer(function AvailabilityForm(props: Props) {
   const { workspaceSlug, workspaceMemberId, forSelf = false, canEdit = true } = props;
   const store = useOrganizationalUnit();
-  const { t } = useTranslation();
+  const { t, currentLocale } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -74,12 +84,24 @@ export const AvailabilityForm = observer(function AvailabilityForm(props: Props)
     if (!from) return;
     setIsSaving(true);
     try {
+      // R2.23: normalize `from` to local start-of-day and `until` to local
+      // end-of-day so single-day absences (from === until) satisfy the server's
+      // strict `unavailable_until > unavailable_from` check and cover the full
+      // chosen end day.
+      const normalizedFrom = new Date(from);
+      normalizedFrom.setHours(0, 0, 0, 0);
+      let normalizedUntil: Date | null = null;
+      if (until) {
+        normalizedUntil = new Date(until);
+        normalizedUntil.setHours(23, 59, 59, 999);
+      }
+
       await store.addAvailability(
         workspaceSlug,
         workspaceMemberId,
         {
-          unavailable_from: from.toISOString(),
-          unavailable_until: until ? until.toISOString() : null,
+          unavailable_from: normalizedFrom.toISOString(),
+          unavailable_until: normalizedUntil ? normalizedUntil.toISOString() : null,
           reason,
         },
         forSelf
@@ -87,8 +109,12 @@ export const AvailabilityForm = observer(function AvailabilityForm(props: Props)
       setFrom(null);
       setUntil(null);
       setToast({ type: TOAST_TYPE.SUCCESS, title: t(`${OU}.availability.added`) });
-    } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.availability.not_added`) });
+    } catch (error) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${OU}.availability.not_added`),
+        message: t(resolveOrcaErrorKey(error) ?? `${OU}.try_again`),
+      });
     } finally {
       setIsSaving(false);
     }
@@ -98,8 +124,12 @@ export const AvailabilityForm = observer(function AvailabilityForm(props: Props)
     try {
       await store.removeAvailability(workspaceSlug, workspaceMemberId, availabilityId, forSelf);
       setToast({ type: TOAST_TYPE.SUCCESS, title: t(`${OU}.availability.removed`) });
-    } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: t(`${OU}.availability.not_removed`) });
+    } catch (error) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${OU}.availability.not_removed`),
+        message: t(resolveOrcaErrorKey(error) ?? `${OU}.try_again`),
+      });
     }
   };
 
@@ -126,10 +156,12 @@ export const AvailabilityForm = observer(function AvailabilityForm(props: Props)
               <span className="text-custom-text-100 text-xs flex-1 truncate">
                 {row.unavailable_until
                   ? t(`${OU}.availability.range`, {
-                      from: renderFormattedDate(row.unavailable_from),
-                      until: renderFormattedDate(row.unavailable_until),
+                      from: formatLocalDate(row.unavailable_from, currentLocale),
+                      until: formatLocalDate(row.unavailable_until, currentLocale),
                     })
-                  : t(`${OU}.availability.open_ended`, { from: renderFormattedDate(row.unavailable_from) })}
+                  : t(`${OU}.availability.open_ended`, {
+                      from: formatLocalDate(row.unavailable_from, currentLocale),
+                    })}
               </span>
               <span className="text-custom-text-400 text-[11px]">{t(`${OU}.availability.reason.${row.reason}`)}</span>
               {canEdit && (
@@ -152,6 +184,7 @@ export const AvailabilityForm = observer(function AvailabilityForm(props: Props)
           <DateDropdown
             value={from}
             onChange={setFrom}
+            maxDate={until ?? undefined}
             buttonVariant="border-with-text"
             placeholder={t(`${OU}.availability.from`)}
           />

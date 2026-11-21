@@ -131,10 +131,15 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
     try {
       const { routing: state } = await store.setIssueUnit(workspaceSlug, projectId, issueId, unitId);
       setRouting(state);
-    } catch {
+      if (state?.routing_state === "assigned") onAssigned?.();
+    } catch (error) {
       setSelectedUnitId(previous);
       setRouting(previousRouting);
-      setToast({ type: TOAST_TYPE.ERROR, title: t(`${KEY}.toast.area_unchanged`), message: t(TRY_AGAIN) });
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${KEY}.toast.area_unchanged`),
+        message: t(resolveOrcaErrorKey(error) ?? TRY_AGAIN),
+      });
     }
   };
 
@@ -172,8 +177,12 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
           message: t(`${KEY}.toast.nobody`),
         });
       }
-    } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: t(`${KEY}.toast.not_assigned`), message: t(TRY_AGAIN) });
+    } catch (error) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${KEY}.toast.not_assigned`),
+        message: t(resolveOrcaErrorKey(error) ?? TRY_AGAIN),
+      });
     } finally {
       setIsAssigning(false);
     }

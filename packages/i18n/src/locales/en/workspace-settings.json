@@ -516,7 +516,8 @@
           "unavailable_until": "Away until {until}",
           "unavailable_open": "Away",
           "executor_away": "Away",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Could not load this area's work."
         },
         "executive": {
           "title": "Executive view",

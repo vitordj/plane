@@ -51,13 +51,15 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
 
   const [rowToAssign, setRowToAssign] = useState<IQueueRow | null>(null);
   const [rowToTransfer, setRowToTransfer] = useState<IQueueRow | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   const queue = store.getQueueByUnitId(unitId);
   const canTransfer = queue.viewer.is_admin || queue.viewer.is_coordinator;
   const onTransfer = canTransfer ? setRowToTransfer : undefined;
 
   useEffect(() => {
-    store.fetchQueue(workspaceSlug, unitId).catch(() => undefined);
+    setLoadError(false);
+    store.fetchQueue(workspaceSlug, unitId).catch(() => setLoadError(true));
   }, [workspaceSlug, unitId, store]);
 
   const attention = useMemo(() => {
@@ -65,7 +67,6 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
     const overdueDate: IQueueRow[] = [];
     const suspended: IQueueRow[] = [];
     const unavailable: IQueueRow[] = [];
-    const noDate: IQueueRow[] = [];
     const seen = new Set<string>();
     const take = (bucket: IQueueRow[], row: IQueueRow) => {
       if (seen.has(row.issue_id)) return;
@@ -81,14 +82,10 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
     for (const row of rows) {
       if (row.queue_reason === "executor_unavailable") take(unavailable, row);
     }
-    for (const row of queue.inProgress) {
-      if (!row.target_date) take(noDate, row);
-    }
-    return { overdueDate, suspended, unavailable, noDate };
+    return { overdueDate, suspended, unavailable };
   }, [queue.waiting, queue.inProgress, queue.suspended]);
 
-  const attentionCount =
-    attention.overdueDate.length + attention.suspended.length + attention.unavailable.length + attention.noDate.length;
+  const attentionCount = attention.overdueDate.length + attention.suspended.length + attention.unavailable.length;
 
   // Nobody on an item is still an answer to "who is carrying what", so an
   // unassigned group is kept rather than dropped — an item in progress with no
@@ -127,6 +124,24 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
     );
   };
 
+  if (loadError && !queue.loader) {
+    return (
+      <div className="border-custom-border-200 flex flex-col items-center gap-3 rounded border px-4 py-8 text-center">
+        <p className="text-sm text-custom-text-200">{t(`${OU}.work.load_failed`)}</p>
+        <button
+          type="button"
+          className="text-xs text-custom-primary-100 hover:underline"
+          onClick={() => {
+            setLoadError(false);
+            store.fetchQueue(workspaceSlug, unitId).catch(() => setLoadError(true));
+          }}
+        >
+          {t(`${OU}.try_again`)}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {attentionCount > 0 && (
@@ -138,7 +153,6 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
           {renderAttentionBucket("attention_overdue_date", attention.overdueDate)}
           {renderAttentionBucket("attention_suspended", attention.suspended)}
           {renderAttentionBucket("attention_unavailable", attention.unavailable)}
-          {renderAttentionBucket("attention_no_date", attention.noDate)}
         </section>
       )}
 
@@ -199,10 +213,12 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
         )}
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h4 className="text-sm text-custom-text-200 font-medium">{t(`${OU}.work.decisions`)}</h4>
-        <DecisionTimeline workspaceSlug={workspaceSlug} unitId={unitId} />
-      </section>
+      {canTransfer && (
+        <section className="flex flex-col gap-3">
+          <h4 className="text-sm text-custom-text-200 font-medium">{t(`${OU}.work.decisions`)}</h4>
+          <DecisionTimeline workspaceSlug={workspaceSlug} unitId={unitId} />
+        </section>
+      )}
 
       <AssignMemberModal
         isOpen={rowToAssign !== null}

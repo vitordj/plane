@@ -740,7 +740,8 @@
           "unavailable_until": "Absent până la {until}",
           "unavailable_open": "Absent",
           "executor_away": "Absent",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Nu s-a putut încărca activitatea acestei zone."
         },
         "executive": {
           "title": "Vizualizare executivă",

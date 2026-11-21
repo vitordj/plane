@@ -740,7 +740,8 @@
           "unavailable_until": "Ausente hasta {until}",
           "unavailable_open": "Ausente",
           "executor_away": "Ausente",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "No se pudo cargar el trabajo de esta área."
         },
         "executive": {
           "title": "Vista ejecutiva",
