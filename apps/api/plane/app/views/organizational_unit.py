@@ -165,6 +165,30 @@ class OrcaConfigEndpoint(BaseAPIView):
         )
 
 
+def _visible_unit_projects(queryset, request, slug):
+    """
+    Restrict ``OrganizationalUnitProject`` rows to projects the caller can see.
+
+    @description Mirrors R1.A5 on the public unit map (R2.21): workspace admins
+    see every linked project; workspace members see projects they belong to plus
+    workspace-public projects (``network == 2``); workspace guests see only
+    projects where they hold an active ``ProjectMember`` row. Secret projects
+    are never revealed to people outside them.
+    """
+    workspace_member = WorkspaceMember.objects.filter(workspace__slug=slug, member=request.user, is_active=True).first()
+    if workspace_member is None:
+        return queryset.none()
+    if workspace_member.role == ROLE.ADMIN.value:
+        return queryset
+    member_project_q = Q(
+        project__project_projectmember__member=request.user,
+        project__project_projectmember__is_active=True,
+    )
+    if workspace_member.role == ROLE.GUEST.value:
+        return queryset.filter(member_project_q).distinct()
+    return queryset.filter(member_project_q | Q(project__network=2)).distinct()
+
+
 class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
     """CRUD for organizational units inside a workspace."""
 
@@ -174,18 +198,34 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
     search_fields = ["name", "slug"]
 
     def get_queryset(self):
+        slug = self.kwargs.get("slug")
+        visible_projects_qs = _visible_unit_projects(
+            OrganizationalUnitProject.objects.filter(
+                organizational_unit__workspace__slug=slug,
+                project__archived_at__isnull=True,
+            ),
+            self.request,
+            slug,
+        )
+        visible_project_ids = list(visible_projects_qs.values_list("id", flat=True))
         return (
-            OrganizationalUnit.objects.filter(workspace__slug=self.kwargs.get("slug"))
+            OrganizationalUnit.objects.filter(workspace__slug=slug)
             .annotate(member_count=Count("memberships", filter=Q(memberships__is_active=True), distinct=True))
-            .annotate(project_count=Count("unit_projects", distinct=True))
+            .annotate(
+                project_count=Count(
+                    "unit_projects",
+                    filter=Q(unit_projects__id__in=visible_project_ids),
+                    distinct=True,
+                )
+            )
             .select_related("workspace")
             # Feeds OrganizationalUnitSerializer.project_ids in one query
             # instead of one per area, and applies the same archived-project
-            # rule the coverage check uses.
+            # and visibility rules (R2.21).
             .prefetch_related(
                 Prefetch(
                     "unit_projects",
-                    queryset=OrganizationalUnitProject.objects.filter(project__archived_at__isnull=True),
+                    queryset=OrganizationalUnitProject.objects.filter(id__in=visible_project_ids),
                     to_attr=OrganizationalUnitSerializer.COVERED_PROJECTS_ATTR,
                 )
             )
@@ -432,9 +472,13 @@ class OrganizationalUnitProjectViewSet(OrganizationalUnitFeatureMixin, BaseViewS
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
     def list(self, request, slug, unit_id):
-        unit_projects = OrganizationalUnitProject.objects.filter(
-            organizational_unit_id=unit_id,
-            organizational_unit__workspace__slug=slug,
+        unit_projects = _visible_unit_projects(
+            OrganizationalUnitProject.objects.filter(
+                organizational_unit_id=unit_id,
+                organizational_unit__workspace__slug=slug,
+            ),
+            request,
+            slug,
         ).select_related("project")
         serializer = OrganizationalUnitProjectSerializer(unit_projects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

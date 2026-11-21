@@ -383,7 +383,8 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
             unit.directory_synced_at = timezone.now()
             unit.save()
 
-            self.replace_members(unit, member_values(payload.get("members")))
+            if "members" in payload and payload["members"] is not None:
+                self.replace_members(unit, self.read_member_values(payload["members"]))
             result = project_unit(unit)
 
         self.record_sync(result.as_dict())
@@ -473,6 +474,15 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
                 if not has_value:
                     return [(STEP_MEMBERS_CLEAR, None)]
                 return [(STEP_MEMBERS_REMOVE, self.read_member_values(value))]
+            if op == "replace" and (not has_value or value is None):
+                # R2.04: a replace without a list (missing value or null) must
+                # not fall through to replace_members(unit, []) and wipe the
+                # group. An explicit empty list [] still clears intentionally.
+                raise SCIMError(
+                    "A replace operation on 'members' needs a non-null value",
+                    status.HTTP_400_BAD_REQUEST,
+                    scim_type="invalidValue",
+                )
             step = STEP_MEMBERS_REPLACE if op == "replace" else STEP_MEMBERS_ADD
             return [(step, self.read_member_values(value))]
 
@@ -548,6 +558,12 @@ class SCIMGroupDetailEndpoint(SCIMGroupMixin, SCIMBaseView):
                     )
                 steps.append((STEP_NAME if lowered == "displayname" else STEP_EXTERNAL_ID, text))
             elif lowered == "members":
+                if op == "replace" and item is None:
+                    raise SCIMError(
+                        "A replace operation on 'members' needs a non-null value",
+                        status.HTTP_400_BAD_REQUEST,
+                        scim_type="invalidValue",
+                    )
                 steps.append(
                     (STEP_MEMBERS_REPLACE if op == "replace" else STEP_MEMBERS_ADD, self.read_member_values(item))
                 )

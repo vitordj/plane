@@ -81,7 +81,6 @@ from plane.db.models import (
     AssignmentMode,
     DecisionTrigger,
     Issue,
-    IssueOrganizationalUnit,
     OrganizationalUnit,
     OrganizationalUnitCoordinator,
     ResponsibilitySource,
@@ -539,15 +538,9 @@ class IssueCandidatesEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
     use_read_replica = True
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER], level="WORKSPACE")
+    @allow_issue_unit_role([UNIT_COORDINATOR], error_code="ORG_NOT_UNIT_COORDINATOR")
     def get(self, request, slug, project_id, issue_id):
-        issue = Issue.objects.filter(pk=issue_id, project_id=project_id, workspace__slug=slug).first()
-        if issue is None:
-            return orca_not_found("ORG_WORK_ITEM_NOT_FOUND")
-
-        link = IssueOrganizationalUnit.objects.select_related("organizational_unit").filter(issue=issue).first()
-        if link is None:
-            return orca_error("ORG_WORK_ITEM_HAS_NO_UNIT")
-
+        link = request.organizational_unit_link
         resolution = resolve_policy(link.organizational_unit, link.project_id)
         ranked = rank_candidates(link.organizational_unit, link.project_id, resolution)
         users = {
