@@ -16,6 +16,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count, Prefetch, Q
 from django.http import Http404
+from django.utils import timezone
 from django.utils.text import slugify
 
 # Third party imports
@@ -34,6 +35,7 @@ from plane.app.serializers import (
     OrganizationalUnitProjectSerializer,
     OrganizationalUnitSerializer,
 )
+from plane.app.services.orca.queue import open_work_links
 from plane.app.services.orca import (
     MODE_APPEND,
     MODE_FILL_EMPTY,
@@ -41,6 +43,7 @@ from plane.app.services.orca import (
     allocation_settings_map,
     availability_enabled,
     covering_windows_for,
+    dispatch_reconciliation,
     orca_public_api_enabled,
     organizational_units_enabled,
     process_projection_enabled,
@@ -62,6 +65,7 @@ from plane.db.models import (
     IssueOrganizationalUnit,
     OrganizationalUnit,
     OrganizationalUnitAssignmentPolicy,
+    OrganizationalUnitCoordinator,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
     ResponsibilitySource,
@@ -106,6 +110,54 @@ def _assigned_payload(result):
         "open_issues": snapshot.get("total_open", 0),
         "last_assigned_at": snapshot.get("last_auto_at"),
     }
+
+
+def retire_stale_unit_ties(unit):
+    """
+    Retire the area's ties whose workspace member has left but never got cleaned up.
+
+    @description Orca seam for R2.09. The signal cleanup on ``WorkspaceMember``
+    does not run when upstream deactivates memberships with ``bulk_update``
+    (account deactivation), which leaves a departed lead holding the single
+    active-lead slot (``org_unit_membership_single_active_lead_per_unit``).
+    Called before the views decide "this area already has a lead" and before
+    they create or promote one: memberships and coordinator appointments of
+    this area that are still active although their workspace member is
+    inactive or soft-deleted are deactivated, the same way
+    ``_deactivate_member_org_ties`` does it (same fields), and the inherited
+    project access is reconciled after commit. A member who is reactivated
+    later does not get the role back, because the row is already inactive.
+    @param unit: The ``OrganizationalUnit`` whose rows are checked.
+    @returns The number of rows retired.
+    """
+    stale = Q(workspace_member__is_active=False) | Q(workspace_member__deleted_at__isnull=False)
+    with transaction.atomic():
+        now = timezone.now()
+        membership_member_ids = list(
+            OrganizationalUnitMembership.objects.filter(organizational_unit=unit, is_active=True)
+            .filter(stale)
+            .values_list("workspace_member_id", flat=True)
+        )
+        coordinator_member_ids = list(
+            OrganizationalUnitCoordinator.objects.filter(organizational_unit=unit, is_active=True)
+            .filter(stale)
+            .values_list("workspace_member_id", flat=True)
+        )
+        if not membership_member_ids and not coordinator_member_ids:
+            return 0
+        OrganizationalUnitMembership.objects.filter(
+            organizational_unit=unit, is_active=True, workspace_member_id__in=membership_member_ids
+        ).update(is_active=False, updated_at=now)
+        OrganizationalUnitCoordinator.objects.filter(
+            organizational_unit=unit, is_active=True, workspace_member_id__in=coordinator_member_ids
+        ).update(is_active=False, updated_at=now)
+
+        member_ids = list(set(membership_member_ids) | set(coordinator_member_ids))
+        project_ids = list(unit.unit_projects.values_list("project_id", flat=True))
+        transaction.on_commit(
+            lambda: dispatch_reconciliation(unit.workspace_id, member_ids=member_ids, project_ids=project_ids or None)
+        )
+    return len(membership_member_ids) + len(coordinator_member_ids)
 
 
 class OrganizationalUnitFeatureMixin:
@@ -304,35 +356,35 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
 
     @allow_permission([ROLE.ADMIN], level="WORKSPACE")
     def destroy(self, request, slug, pk):
-        from plane.db.models import StateGroup
-
         unit = OrganizationalUnit.objects.filter(workspace__slug=slug, pk=pk).first()
         if unit is None:
             return orca_not_found("ORG_UNIT_NOT_FOUND")
 
-        # R2.10: refuse to delete an area that still owns open work items.
-        # Silently soft-deleting links in cascade would drop live items from
-        # every queue and violate invariant I6 (every unit change recorded).
-        closed_groups = (StateGroup.COMPLETED.value, StateGroup.CANCELLED.value)
-        has_active_work = (
-            IssueOrganizationalUnit.objects.filter(
-                organizational_unit=unit,
-                issue__deleted_at__isnull=True,
-                issue__archived_at__isnull=True,
-                issue__is_draft=False,
-                project__archived_at__isnull=True,
-            )
-            .exclude(issue__state__group__in=closed_groups)
-            .exists()
-        )
-        if has_active_work:
-            return orca_error("ORG_UNIT_HAS_ACTIVE_WORK_ITEMS", status.HTTP_409_CONFLICT)
-
-        # Withdraw inherited access before the unit disappears, so the ledger
-        # can still tell which project access it was responsible for. Clear any
-        # remaining closed/archived links explicitly with an I6 event inside
-        # the same transaction so no dangling rows wait on Celery cascade.
+        # One transaction with the unit row locked, so a link added between the
+        # check and the delete cannot be cascaded without its audit event.
         with transaction.atomic():
+            unit = OrganizationalUnit.objects.select_for_update().filter(workspace__slug=slug, pk=pk).first()
+            if unit is None:
+                return orca_not_found("ORG_UNIT_NOT_FOUND")
+
+            # R2.10: refuse to delete an area that still owns open work items.
+            # Silently soft-deleting links in cascade would drop live items from
+            # every queue and violate invariant I6 (every unit change recorded).
+            # Same definition of "open" as the queue (``open_work_links``); a
+            # soft-deleted project does not count while the async cascade of its
+            # work items catches up.
+            has_active_work = (
+                open_work_links(IssueOrganizationalUnit.objects.filter(organizational_unit=unit))
+                .filter(project__deleted_at__isnull=True)
+                .exists()
+            )
+            if has_active_work:
+                return orca_error("ORG_UNIT_HAS_ACTIVE_WORK_ITEMS", status.HTTP_409_CONFLICT)
+
+            # Withdraw inherited access before the unit disappears, so the ledger
+            # can still tell which project access it was responsible for. Clear any
+            # remaining closed/archived links explicitly with an I6 event inside
+            # the same transaction so no dangling rows wait on Celery cascade.
             remaining_links = list(IssueOrganizationalUnit.objects.filter(organizational_unit=unit))
             for link in remaining_links:
                 IssueResponsibilityEvent.objects.create(
@@ -405,6 +457,9 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
         if unit is None:
             return orca_not_found("ORG_UNIT_NOT_FOUND")
 
+        # A departed lead must not block the lead slot (see ``retire_stale_unit_ties``).
+        retire_stale_unit_ties(unit)
+
         # Validated before anything is written: `role` never reaches the model
         # through a serializer on this path, and a second active lead would
         # otherwise abort the transaction with an IntegrityError from the
@@ -460,6 +515,10 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
         ).first()
         if membership is None:
             return orca_not_found("ORG_UNIT_MEMBERSHIP_NOT_FOUND")
+
+        # A departed lead must not block the lead slot (see ``retire_stale_unit_ties``).
+        retire_stale_unit_ties(membership.organizational_unit)
+        membership.refresh_from_db()
 
         # A unit has at most one active lead, enforced by a partial unique
         # index. Rejecting the second lead here keeps it a validation error
@@ -651,8 +710,6 @@ class UserOrganizationalUnitsEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
     def get(self, request, slug):
-        from plane.db.models import OrganizationalUnitCoordinator
-
         memberships = (
             OrganizationalUnitMembership.objects.filter(
                 organizational_unit__workspace__slug=slug,
