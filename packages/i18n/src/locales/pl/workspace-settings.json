@@ -793,6 +793,7 @@
           "membership_not_found": "Tej osoby już nie ma w tym obszarze.",
           "lead_already_set": "Ten obszar ma już lidera.",
           "unit_not_in_workspace": "Ten obszar nie należy do tej przestrzeni roboczej.",
+          "unit_has_active_work_items": "Ten obszar nadal ma otwarte elementy robocze. Przenieś je lub zamknij przed usunięciem.",
           "project_required": "Wybierz projekt do powiązania.",
           "invalid_role": "Obszar nie może przyznać tej roli.",
           "project_not_in_workspace": "Ten projekt nie należy do tej przestrzeni roboczej.",

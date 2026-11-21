@@ -445,7 +445,9 @@ class OrganizationalUnitCoordinatorViewSet(OrganizationalUnitFeatureMixin, BaseV
     def list(self, request, slug, unit_id):
         unit = request.organizational_unit
         coordinators = OrganizationalUnitCoordinator.objects.filter(
-            organizational_unit=unit, is_active=True
+            organizational_unit=unit,
+            is_active=True,
+            workspace_member__is_active=True,
         ).select_related("workspace_member", "workspace_member__member")
         serializer = OrganizationalUnitCoordinatorSerializer(coordinators, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

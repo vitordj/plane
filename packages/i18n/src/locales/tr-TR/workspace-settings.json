@@ -793,6 +793,7 @@
           "membership_not_found": "Bu kişi artık bu alanda değil.",
           "lead_already_set": "Bu alanın zaten bir lideri var.",
           "unit_not_in_workspace": "Bu alan bu çalışma alanına ait değil.",
+          "unit_has_active_work_items": "Bu alanda hâlâ açık iş öğeleri var. Silmeden önce bunları taşıyın veya kapatın.",
           "project_required": "Bağlanacak bir proje seçin.",
           "invalid_role": "Bir alan bu rolü veremez.",
           "project_not_in_workspace": "Bu proje bu çalışma alanına ait değil.",

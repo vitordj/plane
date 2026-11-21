@@ -210,7 +210,13 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
         visible_project_ids = list(visible_projects_qs.values_list("id", flat=True))
         return (
             OrganizationalUnit.objects.filter(workspace__slug=slug)
-            .annotate(member_count=Count("memberships", filter=Q(memberships__is_active=True), distinct=True))
+            .annotate(
+                member_count=Count(
+                    "memberships",
+                    filter=Q(memberships__is_active=True, memberships__workspace_member__is_active=True),
+                    distinct=True,
+                )
+            )
             .annotate(
                 project_count=Count(
                     "unit_projects",
@@ -297,15 +303,47 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
 
     @allow_permission([ROLE.ADMIN], level="WORKSPACE")
     def destroy(self, request, slug, pk):
+        from plane.db.models import StateGroup
+
         unit = OrganizationalUnit.objects.filter(workspace__slug=slug, pk=pk).first()
         if unit is None:
             return orca_not_found("ORG_UNIT_NOT_FOUND")
 
+        # R2.10: refuse to delete an area that still owns open work items.
+        # Silently soft-deleting links in cascade would drop live items from
+        # every queue and violate invariant I6 (every unit change recorded).
+        closed_groups = (StateGroup.COMPLETED.value, StateGroup.CANCELLED.value)
+        has_active_work = (
+            IssueOrganizationalUnit.objects.filter(
+                organizational_unit=unit,
+                issue__deleted_at__isnull=True,
+                issue__archived_at__isnull=True,
+                issue__is_draft=False,
+                project__archived_at__isnull=True,
+            )
+            .exclude(issue__state__group__in=closed_groups)
+            .exists()
+        )
+        if has_active_work:
+            return orca_error("ORG_UNIT_HAS_ACTIVE_WORK_ITEMS", status.HTTP_409_CONFLICT)
+
         # Withdraw inherited access before the unit disappears, so the ledger
-        # can still tell which project access it was responsible for. All three
-        # steps share one transaction: a half-applied delete would leave the
-        # unit gone and the inherited ProjectMember rows orphaned.
+        # can still tell which project access it was responsible for. Clear any
+        # remaining closed/archived links explicitly with an I6 event inside
+        # the same transaction so no dangling rows wait on Celery cascade.
         with transaction.atomic():
+            remaining_links = list(IssueOrganizationalUnit.objects.filter(organizational_unit=unit))
+            for link in remaining_links:
+                IssueResponsibilityEvent.objects.create(
+                    issue_id=link.issue_id,
+                    workspace_id=link.workspace_id,
+                    from_unit=unit,
+                    to_unit=None,
+                    actor=request.user,
+                    source=ResponsibilitySource.INTERNAL_API,
+                    reason="organizational unit deleted",
+                )
+                link.delete()
             unit.is_active = False
             unit.save()
             reconcile_unit(unit, force_sync=True)
@@ -334,6 +372,7 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
             organizational_unit_id=unit_id,
             organizational_unit__workspace__slug=slug,
             is_active=True,
+            workspace_member__is_active=True,
         ).select_related("workspace_member", "workspace_member__member")
         # Guest of the workspace does not see email, matching the native
         # workspace member list (R1.A4). The area itself stays readable.

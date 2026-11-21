@@ -793,6 +793,7 @@
           "membership_not_found": "その方はこのエリアにはいません。",
           "lead_already_set": "このエリアにはすでにリードがいます。",
           "unit_not_in_workspace": "そのエリアはこのワークスペースのものではありません。",
+          "unit_has_active_work_items": "このエリアには未完了のワークアイテムが残っています。削除する前に移動または完了してください。",
           "project_required": "紐付けるプロジェクトを選んでください。",
           "invalid_role": "エリアはそのロールを付与できません。",
           "project_not_in_workspace": "そのプロジェクトはこのワークスペースのものではありません。",

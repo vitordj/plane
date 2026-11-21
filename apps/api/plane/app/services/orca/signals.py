@@ -323,3 +323,86 @@ def requeue_on_soft_deleted_assignee(sender, instance, created, **kwargs):
 def requeue_on_hard_deleted_assignee(sender, instance, **kwargs):
     """@description The same, for a hard delete — cascades and ``delete(soft=False)``."""
     _return_if_executor(instance.issue_id, instance.assignee_id)
+
+
+# Track prior active/deleted state on WorkspaceMember so post_save knows when a
+# member has just been deactivated or soft-deleted (R2.09).
+_PREVIOUS_WM_STATE = "_orca_previous_wm_state"
+
+
+def _deactivate_member_org_ties(workspace_member_id, workspace_id) -> None:
+    """
+    Withdraw area memberships and coordinator roles when someone leaves a workspace (R2.09).
+
+    @description Keeps unit rosters, coordinator lists, and the single-active-lead
+    constraint accurate when a member leaves or is removed via upstream's
+    workspace-member routes without patching upstream views (FORK.md). Also
+    schedules access reconciliation so the grant ledger is cleaned up.
+    """
+    from django.db import transaction
+
+    from plane.db.models import OrganizationalUnitCoordinator, OrganizationalUnitMembership
+
+    from .feature_flags import organizational_units_enabled
+
+    if not organizational_units_enabled():
+        return
+
+    try:
+        now = timezone.now()
+        deactivated_memberships = OrganizationalUnitMembership.objects.filter(
+            workspace_member_id=workspace_member_id,
+            is_active=True,
+        ).update(is_active=False, updated_at=now)
+        deactivated_coordinators = OrganizationalUnitCoordinator.objects.filter(
+            workspace_member_id=workspace_member_id,
+            is_active=True,
+        ).update(is_active=False, updated_at=now)
+
+        if deactivated_memberships or deactivated_coordinators:
+
+            def _reconcile():
+                try:
+                    from .org_unit_reconciler import dispatch_reconciliation
+
+                    dispatch_reconciliation(workspace_id, member_ids=[workspace_member_id])
+                except Exception:  # noqa: BLE001 - never fail member removal on async reconcile
+                    from plane.utils.exception_logger import log_exception
+
+                    log_exception(
+                        Exception(f"orca: could not reconcile grants after workspace member {workspace_member_id} left")
+                    )
+
+            transaction.on_commit(_reconcile)
+    except Exception:  # noqa: BLE001 - never break workspace member removal
+        from plane.utils.exception_logger import log_exception
+
+        log_exception(Exception(f"orca: could not deactivate unit ties for workspace member {workspace_member_id}"))
+
+
+@receiver(pre_save, sender="db.WorkspaceMember")
+def stash_previous_workspace_member_state(sender, instance, **kwargs):
+    """@description Remember whether this WorkspaceMember was active before the save (R2.09)."""
+    if instance._state.adding or instance.pk is None:
+        setattr(instance, _PREVIOUS_WM_STATE, None)
+        return
+    row = sender.all_objects.filter(pk=instance.pk).values_list("is_active", "deleted_at").first()
+    setattr(instance, _PREVIOUS_WM_STATE, row)
+
+
+@receiver(post_save, sender="db.WorkspaceMember")
+def deactivate_org_ties_on_workspace_member_removal(sender, instance, created, **kwargs):
+    """@description Deactivate area memberships and coordinators when a WorkspaceMember becomes inactive (R2.09)."""
+    if created:
+        return
+    previous = getattr(instance, _PREVIOUS_WM_STATE, None)
+    was_active = previous is not None and previous[0] is True and previous[1] is None
+    now_inactive = not instance.is_active or instance.deleted_at is not None
+    if was_active and now_inactive:
+        _deactivate_member_org_ties(instance.pk, instance.workspace_id)
+
+
+@receiver(post_delete, sender="db.WorkspaceMember")
+def deactivate_org_ties_on_workspace_member_hard_delete(sender, instance, **kwargs):
+    """@description Same cleanup on hard delete of a WorkspaceMember (R2.09)."""
+    _deactivate_member_org_ties(instance.pk, instance.workspace_id)
