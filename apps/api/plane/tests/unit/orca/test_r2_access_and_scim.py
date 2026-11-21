@@ -155,7 +155,7 @@ class TestR203ProcessInstanceVisibility:
         response = guest_api.get(
             public_process_instance_url(workspace_with_members.slug, "espo-onboarding", "client-secret")
         )
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_member_only_sees_steps_from_projects_they_belong_to(
         self,
