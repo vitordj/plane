@@ -235,7 +235,8 @@ export type TOrganizationalUnitAccessAction =
   | "lower"
   | "restore_baseline"
   | "deactivate"
-  | "skip_manual_drift";
+  | "skip_manual_drift"
+  | "relinquish_claim";
 
 export interface IOrganizationalUnit {
   id: string;

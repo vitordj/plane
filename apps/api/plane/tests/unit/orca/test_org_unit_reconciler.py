@@ -726,3 +726,53 @@ class TestCoordinatorAccess:
         assert grant.grant_source == GrantSource.MEMBERSHIP
         assert grant.membership_id == membership.id
         assert grant.coordinator_id is None
+
+
+@pytest.mark.unit
+class TestWithdrawnRoleDoesNotSurviveOnTheInactiveRow:
+    """Rejoining through upstream's endpoint must not resurrect an inherited role."""
+
+    def test_rejoining_after_withdrawal_gives_the_first_time_joiner_role(
+        self, org_workspace, make_member, make_project, make_unit
+    ):
+        compliance = make_unit("Compliance", "compliance")
+        onboarding = make_project("Onboarding", "ONB")
+        link_project(compliance, onboarding, role=ROLE_ADMIN)
+        ana = make_member("ana")
+        membership = add_member(compliance, ana)
+        reconcile_access(org_workspace.id)
+        assert project_member(onboarding, ana).role == ROLE_ADMIN
+
+        membership.is_active = False
+        membership.save()
+        reconcile_access(org_workspace.id)
+
+        row = project_member(onboarding, ana)
+        assert row.is_active is False
+        assert row.role == ROLE_MEMBER  # the workspace role, not the withdrawn Admin
+
+        client = APIClient()
+        client.force_authenticate(user=ana.member)
+        response = client.post(
+            f"/api/users/me/workspaces/{org_workspace.slug}/projects/invitations/",
+            {"project_ids": [str(onboarding.id)]},
+            format="json",
+        )
+        assert response.status_code == 201
+
+        rejoined = project_member(onboarding, ana)
+        assert rejoined.is_active is True
+        assert rejoined.role != ROLE_ADMIN
+
+        # A first-time joiner (no row at all) gets exactly the same role.
+        newcomer = make_member("newcomer")
+        client.force_authenticate(user=newcomer.member)
+        assert (
+            client.post(
+                f"/api/users/me/workspaces/{org_workspace.slug}/projects/invitations/",
+                {"project_ids": [str(onboarding.id)]},
+                format="json",
+            ).status_code
+            == 201
+        )
+        assert rejoined.role == project_member(onboarding, newcomer).role

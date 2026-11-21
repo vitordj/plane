@@ -110,6 +110,16 @@ app.conf.beat_schedule = {
         "task": "plane.bgtasks.orca_automation_cleanup_task.delete_orca_automation_operations",
         "schedule": crontab(hour=4, minute=0),  # UTC 04:00
     },
+    # Orca: safety net for lost reconciliations. Large fan-outs are queued to
+    # Celery after the membership change commits; if that task is lost or runs
+    # out of retries, nothing else re-runs it and a deprovisioned person keeps
+    # project access until someone runs `reconcile_organizational_access
+    # --apply` by hand. Daily, in the small hours, after the cleanup tasks above;
+    # it is idempotent and logs only the workspaces where it changed something.
+    "check-every-day-to-reconcile-organizational-access": {
+        "task": "plane.bgtasks.organizational_unit_task.reconcile_all_organizational_workspaces",
+        "schedule": crontab(hour=4, minute=15),  # UTC 04:15
+    },
     # Orca: notice items whose assignment SLA has passed. Fifteen minutes is
     # the same cadence as the rest of the intra-day schedule; last_alerted_at
     # (four-hour cooldown) is what stops the same people being told about the

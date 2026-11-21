@@ -80,6 +80,7 @@ ACTION_LOWER = "lower"
 ACTION_RESTORE_BASELINE = "restore_baseline"
 ACTION_DEACTIVATE = "deactivate"
 ACTION_SKIP_MANUAL_DRIFT = "skip_manual_drift"
+ACTION_RELINQUISH_CLAIM = "relinquish_claim"
 
 ROLE_ADMIN = 20
 ROLE_MEMBER = 15
@@ -165,6 +166,23 @@ def cap_role_to_workspace_role(role: int, workspace_role: int) -> int:
     if workspace_role == ROLE_ADMIN:
         return ROLE_ADMIN
     return role
+
+
+def self_join_role(workspace_role: int) -> int:
+    """
+    The project role a person gets by joining a project themselves.
+
+    @description Mirrors ``UserProjectInvitationsViewset.create`` (the "join
+    project" endpoint), which writes the *workspace* role to the new row and, for
+    a row that already exists, only flips ``is_active`` back on without touching
+    the role. A row the layer deactivates therefore has to carry this role: it is
+    what that endpoint would hand a first-time joiner, so rejoining can never
+    yield more than the person could obtain without the unit.
+
+    @param workspace_role: The person's role in the workspace.
+    @returns: The role to leave on a deactivated row.
+    """
+    return workspace_role
 
 
 def _max_edges() -> int:
@@ -288,7 +306,10 @@ def _decide(
     @param inherited_role: Highest role inherited from active units, already
         capped to the workspace role; ``None`` when no unit sources access.
     @returns: Tuple of (action, role to write). The role is ``None`` when
-        nothing is written or the member is deactivated.
+        nothing is written or the member is deactivated. (A deactivated row does
+        get a role written — ``self_join_role`` of the workspace role, applied by
+        ``_apply_change`` — but that is a withdrawal, not access, so the plan
+        reports no desired role.)
     """
     baseline = state.baseline_role if state else None
     last_applied = state.last_applied_role if state else None
@@ -297,8 +318,16 @@ def _decide(
 
     # No unit sources access any more: withdraw what this layer added.
     if inherited_role is None:
-        if last_applied is None or not is_active_member:
+        if last_applied is None:
             return ACTION_NONE, None
+        if not is_active_member:
+            # The row is inactive (or gone) while the layer still claims it: a
+            # person removed the access through the native UI after the layer
+            # granted it. The claim is stale — if the same role is later
+            # re-granted by hand, a surviving claim would make that manual
+            # access look like ours and the next run would withdraw it. Drop
+            # the claim; the ProjectMember row is not touched.
+            return ACTION_RELINQUISH_CLAIM, None
         if current_role != last_applied:
             # Someone changed the role by hand — the pair is manual now.
             return ACTION_SKIP_MANUAL_DRIFT, None
@@ -546,15 +575,21 @@ def _apply_change(workspace_member, project_id, project_member, state, action, r
         state.project_member = project_member
 
     elif action == ACTION_DEACTIVATE:
+        # Take back the role the layer wrote as well: an inactive row must not
+        # carry a layer-granted role, because upstream's join endpoint reactivates
+        # existing rows without resetting it. Leave what a first-time joiner
+        # would get from that endpoint.
         project_member.is_active = False
+        project_member.role = self_join_role(workspace_member.role)
         project_member.save()
         state.last_applied_role = None
         state.created_by_org_layer = False
         state.project_member = project_member
 
-    elif action == ACTION_SKIP_MANUAL_DRIFT:
-        # The current role is no longer ours; relinquish the claim so future
-        # runs treat this access as manual.
+    elif action in (ACTION_SKIP_MANUAL_DRIFT, ACTION_RELINQUISH_CLAIM):
+        # The current role is no longer ours (drift), or the row it described
+        # is no longer active (stale claim); relinquish the claim so future
+        # runs treat any access on this pair as manual.
         state.last_applied_role = None
         state.created_by_org_layer = False
 

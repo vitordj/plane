@@ -313,3 +313,126 @@ class TestReconciliationTask:
                 reconcile_organizational_access.apply(args=[str(workspace_with_members.id), None, [str(project.id)]])
 
         assert isinstance(retried.value.exc, RuntimeError)
+
+
+@pytest.mark.unit
+class TestPeriodicReconciliationSweep:
+    """The daily safety net for reconciliations that were queued and lost."""
+
+    def _grant_then_lose_the_reconcile(self, workspace, unit, project, link_project, add_member, user):
+        """Grant access, then deactivate the membership *without* reconciling."""
+        from plane.app.services.orca import reconcile_access
+
+        link_project(unit, project, ROLE_MEMBER)
+        membership = add_member(unit, user)
+        reconcile_access(workspace.id)
+        assert ProjectMember.objects.get(project=project, member=user).is_active is True
+        membership.is_active = False
+        membership.save()  # the queued reconcile for this change never ran
+
+    def test_a_reconcile_that_never_ran_is_repaired(
+        self, workspace_with_members, unit, project, link_project, add_member, plain_user
+    ):
+        from plane.bgtasks.organizational_unit_task import reconcile_all_organizational_workspaces
+
+        self._grant_then_lose_the_reconcile(workspace_with_members, unit, project, link_project, add_member, plain_user)
+        assert ProjectMember.objects.get(project=project, member=plain_user).is_active is True
+
+        repaired = reconcile_all_organizational_workspaces()
+
+        assert ProjectMember.objects.get(project=project, member=plain_user).is_active is False
+        assert repaired == {str(workspace_with_members.id): 1}
+
+    def test_a_second_run_changes_nothing_and_logs_nothing(
+        self, workspace_with_members, unit, project, link_project, add_member, plain_user, caplog
+    ):
+        import logging
+
+        from plane.bgtasks.organizational_unit_task import reconcile_all_organizational_workspaces
+
+        self._grant_then_lose_the_reconcile(workspace_with_members, unit, project, link_project, add_member, plain_user)
+        reconcile_all_organizational_workspaces()
+
+        with caplog.at_level(logging.INFO, logger="plane.worker"):
+            assert reconcile_all_organizational_workspaces() == {}
+        assert "Periodic reconciliation" not in caplog.text
+
+    def test_the_kill_switch_stops_every_write(
+        self, settings, workspace_with_members, unit, project, link_project, add_member, plain_user
+    ):
+        from plane.bgtasks.organizational_unit_task import reconcile_all_organizational_workspaces
+
+        self._grant_then_lose_the_reconcile(workspace_with_members, unit, project, link_project, add_member, plain_user)
+        settings.ORCA_ORG_UNITS_ENABLED = False
+
+        with mock.patch("plane.app.services.orca.reconcile_access") as reconcile:
+            assert reconcile_all_organizational_workspaces() == {}
+
+        assert reconcile.call_count == 0
+        assert ProjectMember.objects.get(project=project, member=plain_user).is_active is True
+
+    def test_hand_made_access_is_untouched(
+        self, workspace_with_members, unit, project, second_project, link_project, add_member, plain_user
+    ):
+        from plane.bgtasks.organizational_unit_task import reconcile_all_organizational_workspaces
+
+        # Manual access to a project the unit does not cover, and a manual
+        # promotion above what the unit grants on a project it does.
+        manual = ProjectMember.objects.create(
+            project=second_project, member=plain_user, workspace=workspace_with_members, role=ROLE_MEMBER
+        )
+        link_project(unit, project, ROLE_MEMBER)
+        add_member(unit, plain_user)
+        ProjectMember.objects.create(
+            project=project, member=plain_user, workspace=workspace_with_members, role=20, is_active=True
+        )
+
+        reconcile_all_organizational_workspaces()
+
+        manual.refresh_from_db()
+        assert (manual.is_active, manual.role) == (True, ROLE_MEMBER)
+        promoted = ProjectMember.objects.get(project=project, member=plain_user)
+        assert (promoted.is_active, promoted.role) == (True, 20)
+
+    def test_one_failing_workspace_does_not_stop_the_others(
+        self,
+        workspace_with_members,
+        other_workspace,
+        unit,
+        project,
+        foreign_unit,
+        foreign_project,
+        link_project,
+        add_member,
+        plain_user,
+        outsider_user,
+    ):
+        from plane.app.services.orca import reconcile_access as real_reconcile
+        from plane.bgtasks.organizational_unit_task import reconcile_all_organizational_workspaces
+        from plane.db.models import OrganizationalUnitProject, WorkspaceMember
+
+        self._grant_then_lose_the_reconcile(workspace_with_members, unit, project, link_project, add_member, plain_user)
+        # A second workspace whose membership was never reconciled at all.
+        OrganizationalUnitMembership.objects.create(
+            organizational_unit=foreign_unit,
+            workspace_member=WorkspaceMember.objects.get(workspace=other_workspace, member=outsider_user),
+            workspace=other_workspace,
+        )
+        OrganizationalUnitProject.objects.create(
+            organizational_unit=foreign_unit,
+            project=foreign_project,
+            workspace=other_workspace,
+            default_role=ROLE_MEMBER,
+        )
+
+        def flaky(workspace_id, *args, **kwargs):
+            if workspace_id == workspace_with_members.id:
+                raise RuntimeError("database unavailable")
+            return real_reconcile(workspace_id, *args, **kwargs)
+
+        with mock.patch("plane.app.services.orca.reconcile_access", side_effect=flaky):
+            repaired = reconcile_all_organizational_workspaces()
+
+        # The failing workspace is skipped; the other one was still reconciled.
+        assert str(workspace_with_members.id) not in repaired
+        assert str(other_workspace.id) in repaired

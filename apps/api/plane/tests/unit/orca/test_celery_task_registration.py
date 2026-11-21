@@ -43,7 +43,10 @@ QUEUE_TASK_MODULE = "plane.bgtasks.organizational_queue_task"
 AVAILABILITY_TASK_NAME = "plane.bgtasks.organizational_availability_task.sweep_unavailable_executors"
 AVAILABILITY_TASK_MODULE = "plane.bgtasks.organizational_availability_task"
 
+SWEEP_TASK_NAME = "plane.bgtasks.organizational_unit_task.reconcile_all_organizational_workspaces"
+
 TASKS = [
+    pytest.param(TASK_MODULE, SWEEP_TASK_NAME, id="reconcile_all_organizational_workspaces"),
     pytest.param(TASK_MODULE, TASK_NAME, id="reconcile_organizational_access"),
     pytest.param(DIRECTORY_TASK_MODULE, DIRECTORY_TASK_NAME, id="resolve_directory_identities"),
     pytest.param(CLEANUP_TASK_MODULE, CLEANUP_TASK_NAME, id="delete_orca_automation_operations"),
@@ -93,6 +96,10 @@ class TestOrganizationalTaskRegistration:
         assert QUEUE_TASK_NAME in celery_app.tasks
         assert AVAILABILITY_TASK_NAME in scheduled
         assert AVAILABILITY_TASK_NAME in celery_app.tasks
+        # The daily reconciliation safety net: a drift here means lost
+        # reconciliations are never repaired and nothing reports it.
+        assert SWEEP_TASK_NAME in scheduled
+        assert SWEEP_TASK_NAME in celery_app.tasks
 
     def test_the_registered_task_is_the_one_the_dispatcher_queues(self):
         # A name can be registered by a callable other than the one the
