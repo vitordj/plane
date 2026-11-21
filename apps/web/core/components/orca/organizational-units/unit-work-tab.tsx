@@ -144,6 +144,25 @@ export const OrganizationalUnitWorkTab = observer(function OrganizationalUnitWor
 
   return (
     <div className="flex flex-col gap-6">
+      {/* A silent refresh after an action failed: the rows below are the
+          optimistic ones, kept on screen with a small retry. */}
+      {queue.stale && (
+        <div
+          role="status"
+          className="border-custom-border-200 text-custom-text-200 text-xs flex items-center justify-between gap-3 rounded border px-3 py-2"
+        >
+          <span>{t(`${OU}.work.load_failed`)}</span>
+          <button
+            type="button"
+            className="text-custom-primary-100 hover:underline"
+            onClick={() => {
+              store.fetchQueue(workspaceSlug, unitId, { silent: true }).catch(() => undefined);
+            }}
+          >
+            {t(`${OU}.try_again`)}
+          </button>
+        </div>
+      )}
       {attentionCount > 0 && (
         <section className="flex flex-col gap-3">
           <h4 className="text-sm text-custom-text-200 flex items-center gap-2 font-medium">
