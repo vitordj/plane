@@ -123,9 +123,9 @@ class IssueSerializer(BaseSerializer):
         # Validate labels are from project
         if data.get("labels", []):
             valid_label_ids = set(
-                Label.objects.filter(
-                    project_id=self.context.get("project_id"), id__in=data["labels"]
-                ).values_list("id", flat=True)
+                Label.objects.filter(project_id=self.context.get("project_id"), id__in=data["labels"]).values_list(
+                    "id", flat=True
+                )
             )
             invalid_label_ids = set(data["labels"]) - valid_label_ids
             if invalid_label_ids:
@@ -275,6 +275,13 @@ class IssueSerializer(BaseSerializer):
                 )
             except IntegrityError:
                 pass
+
+            # Orca (R2.05): QuerySet.delete() above bypasses Django signals, so
+            # let the organizational sidecar follow the replacement (same seam
+            # as plane/app/serializers/issue.py).
+            from plane.app.services.orca.signals import reconcile_issue_assignees
+
+            reconcile_issue_assignees(instance.id)
 
         if labels is not None:
             IssueLabel.objects.filter(issue=instance).delete()
