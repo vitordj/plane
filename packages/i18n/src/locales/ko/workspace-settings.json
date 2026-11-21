@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name}이(가) 업데이트되었습니다.",
             "created_title": "생성되었습니다",
-            "created": "{name}을(를) 사용할 수 있습니다.",
-            "name_taken": "같은 이름의 영역이 이미 있습니다. 다른 이름을 선택하세요."
+            "created": "{name}을(를) 사용할 수 있습니다."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "기한 지남",
           "attention_suspended": "일시 중지됨",
           "attention_unavailable": "수행자 부재",
-          "attention_no_date": "기한 없음",
           "empty_attention": "지금은 주의가 필요한 항목이 없습니다.",
           "decisions": "결정",
           "empty_decisions": "아직 할당 결정이 없습니다.",
@@ -740,7 +738,8 @@
           "unavailable_until": "{until}까지 부재",
           "unavailable_open": "부재",
           "executor_away": "부재",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "이 영역의 작업을 불러오지 못했습니다."
         },
         "executive": {
           "title": "경영진 보기",
@@ -793,6 +792,7 @@
           "membership_not_found": "그 사람은 더 이상 이 영역에 없습니다.",
           "lead_already_set": "이 영역에는 이미 리드가 있습니다.",
           "unit_not_in_workspace": "해당 영역은 이 작업 공간에 속하지 않습니다.",
+          "unit_has_active_work_items": "이 영역에 아직 열린 작업 항목이 있습니다. 삭제하기 전에 이동하거나 완료해 주세요.",
           "project_required": "연결할 프로젝트를 선택하십시오.",
           "invalid_role": "영역은 그 역할을 부여할 수 없습니다.",
           "project_not_in_workspace": "해당 프로젝트는 이 작업 공간에 속하지 않습니다.",

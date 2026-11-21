@@ -339,8 +339,7 @@
           "toast": {
             "updated": "{name} was updated.",
             "created_title": "Created",
-            "created": "{name} is ready to use.",
-            "name_taken": "An area with this name already exists. Pick a different name."
+            "created": "{name} is ready to use."
           }
         },
         "detail": {
@@ -494,7 +493,6 @@
           "attention_overdue_date": "Past due date",
           "attention_suspended": "Paused",
           "attention_unavailable": "Executor unavailable",
-          "attention_no_date": "No due date",
           "empty_attention": "Nothing needs attention right now.",
           "decisions": "Decisions",
           "empty_decisions": "No allocation decisions yet.",
@@ -516,7 +514,8 @@
           "unavailable_until": "Away until {until}",
           "unavailable_open": "Away",
           "executor_away": "Away",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Could not load this area's work."
         },
         "executive": {
           "title": "Executive view",
@@ -569,6 +568,7 @@
           "membership_not_found": "That person is no longer in this area.",
           "lead_already_set": "This area already has a lead.",
           "unit_not_in_workspace": "That area is not in this workspace.",
+          "unit_has_active_work_items": "This area still has open work items. Move or close them before deleting it.",
           "project_required": "Pick a project to link.",
           "invalid_role": "That is not a role an area can grant.",
           "project_not_in_workspace": "That project is not in this workspace.",

@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} đã được cập nhật.",
             "created_title": "Đã tạo",
-            "created": "{name} đã sẵn sàng để sử dụng.",
-            "name_taken": "Đã có khu vực với tên này. Vui lòng chọn tên khác."
+            "created": "{name} đã sẵn sàng để sử dụng."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Quá hạn",
           "attention_suspended": "Tạm dừng",
           "attention_unavailable": "Người thực hiện không sẵn sàng",
-          "attention_no_date": "Không có hạn",
           "empty_attention": "Hiện không có gì cần chú ý.",
           "decisions": "Quyết định",
           "empty_decisions": "Chưa có quyết định phân công.",
@@ -740,7 +738,8 @@
           "unavailable_until": "Vắng đến {until}",
           "unavailable_open": "Vắng",
           "executor_away": "Vắng",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Không thể tải công việc của khu vực này."
         },
         "executive": {
           "title": "Góc nhìn điều hành",
@@ -793,6 +792,7 @@
           "membership_not_found": "Người đó không còn trong khu vực này.",
           "lead_already_set": "Khu vực này đã có người phụ trách.",
           "unit_not_in_workspace": "Khu vực đó không thuộc không gian làm việc này.",
+          "unit_has_active_work_items": "Khu vực này vẫn còn mục công việc đang mở. Hãy di chuyển hoặc đóng chúng trước khi xóa.",
           "project_required": "Hãy chọn một dự án để liên kết.",
           "invalid_role": "Khu vực không thể cấp vai trò đó.",
           "project_not_in_workspace": "Dự án đó không thuộc không gian làm việc này.",

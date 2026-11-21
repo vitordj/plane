@@ -563,8 +563,7 @@
           "toast": {
             "updated": "Oblast {name} byla aktualizována.",
             "created_title": "Vytvořeno",
-            "created": "Oblast {name} je připravena k použití.",
-            "name_taken": "Oblast s tímto názvem již existuje. Zvolte jiný název."
+            "created": "Oblast {name} je připravena k použití."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Po termínu",
           "attention_suspended": "Pozastaveno",
           "attention_unavailable": "Vykonavatel není k dispozici",
-          "attention_no_date": "Bez termínu",
           "empty_attention": "Teď nic nevyžaduje pozornost.",
           "decisions": "Rozhodnutí",
           "empty_decisions": "Zatím žádná rozhodnutí o přidělení.",
@@ -740,7 +738,8 @@
           "unavailable_until": "Nepřítomen do {until}",
           "unavailable_open": "Nepřítomen",
           "executor_away": "Nepřítomen",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Nepodařilo se načíst práci této oblasti."
         },
         "executive": {
           "title": "Manažerský přehled",
@@ -793,6 +792,7 @@
           "membership_not_found": "Tento člověk už v této oblasti není.",
           "lead_already_set": "Tato oblast už má vedoucího.",
           "unit_not_in_workspace": "Tato oblast do tohoto pracovního prostoru nepatří.",
+          "unit_has_active_work_items": "Tato oblast má stále otevřené pracovní položky. Před odstraněním je přesuňte nebo zavřete.",
           "project_required": "Vyberte projekt, který chcete připojit.",
           "invalid_role": "Tuto roli oblast udělit nemůže.",
           "project_not_in_workspace": "Tento projekt do tohoto pracovního prostoru nepatří.",

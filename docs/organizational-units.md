@@ -146,8 +146,11 @@ python manage.py audit_organizational_routing --workspace <slug> --write
 `--write` returns the affected items to the unit's queue with the reason
 `executor_unavailable`, through the same service any other allocation goes
 through, so the repair is a recorded decision rather than an untraceable
-update. The assignee row itself is left alone: detaching a person is a human's
-call.
+update. Returning an item also removes the returned executor's native assignee
+row (and tells them in the inbox), so the item never shows a person the queue
+no longer considers its executor. Collaborators added on purpose are not
+touched, and a transfer to another area keeps the previous executor as a
+collaborator (RFC §6.8).
 
 Two findings are reported and never repaired — a queued item that already has
 an assignee (it may be a collaborator a coordinator added on purpose) and a

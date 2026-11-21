@@ -74,6 +74,11 @@ export interface IIssueRouting {
   assignment_due_at: string | null;
   primary_executor: string | null;
   current_assignment_decision: IAssignmentDecision | null;
+  /**
+   * Whether the viewer may change this item's area (D2). Only the routes that
+   * read or set the area state it; the others send `null` ("not stated").
+   */
+  can_change_responsibility?: boolean | null;
   created_at: string;
   updated_at: string;
 }
@@ -120,7 +125,7 @@ export interface IQueueRow {
   assignment_due_at: string | null;
   /** Past `assignment_due_at` with nobody on it — the row the coordinator owes. */
   assignment_overdue: boolean;
-  age_seconds: number;
+  age_seconds: number | null;
   primary_executor: {
     id: string;
     display_name: string;
@@ -325,7 +330,8 @@ export interface IOrganizationalUnitWorkload {
 
 export interface IUserOrganizationalUnit {
   organizational_unit: IOrganizationalUnit;
-  role: TOrganizationalUnitMemberRole;
+  role: TOrganizationalUnitMemberRole | "coordinator";
+  is_coordinator?: boolean;
   projects: IOrganizationalUnitProject[];
 }
 

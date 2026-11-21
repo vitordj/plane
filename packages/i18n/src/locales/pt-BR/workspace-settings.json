@@ -339,8 +339,7 @@
           "toast": {
             "updated": "{name} foi atualizada.",
             "created_title": "Criada",
-            "created": "{name} está pronta para uso.",
-            "name_taken": "Já existe uma área com este nome. Escolha um nome diferente."
+            "created": "{name} está pronta para uso."
           }
         },
         "detail": {
@@ -460,7 +459,7 @@
             "days": "{count, plural, one {# dia} many {# de dias} other {# dias}}"
           },
           "reason": {
-            "new_item": "Recém-assumido",
+            "new_item": "Novo na fila",
             "awaiting_coordinator": "Aguardando um coordenador",
             "awaiting_claim": "Aguardando alguém assumir",
             "no_eligible_member": "Ninguém desta área pode assumir",
@@ -494,7 +493,6 @@
           "attention_overdue_date": "Data de entrega vencida",
           "attention_suspended": "Pausado",
           "attention_unavailable": "Executor indisponível",
-          "attention_no_date": "Sem data de entrega",
           "empty_attention": "Nada precisa de atenção no momento.",
           "decisions": "Decisões",
           "empty_decisions": "Ainda não há decisões de alocação.",
@@ -516,7 +514,8 @@
           "unavailable_until": "Ausente até {until}",
           "unavailable_open": "Ausente",
           "executor_away": "Ausente",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Não foi possível carregar o trabalho desta área."
         },
         "executive": {
           "title": "Visão executiva",
@@ -569,6 +568,7 @@
           "membership_not_found": "Essa pessoa não está mais nesta área.",
           "lead_already_set": "Esta área já tem um responsável.",
           "unit_not_in_workspace": "Essa área não pertence a este espaço de trabalho.",
+          "unit_has_active_work_items": "Esta área ainda tem itens de trabalho abertos. Mova-os, conclua-os ou cancele-os antes de excluí-la.",
           "project_required": "Escolha um projeto para vincular.",
           "invalid_role": "Uma área não pode conceder esse papel.",
           "project_not_in_workspace": "Esse projeto não pertence a este espaço de trabalho.",

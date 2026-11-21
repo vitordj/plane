@@ -135,6 +135,12 @@ app.conf.beat_schedule = {
         "task": "plane.bgtasks.organizational_availability_task.sweep_unavailable_executors",
         "schedule": crontab(minute=40),
     },
+    # Orca: repair routing drift (executor no longer an assignee or no longer
+    # eligible) within the hour, independent of ORCA_AVAILABILITY_ENABLED (R2.05).
+    "check-every-hour-to-sweep-routing-drift": {
+        "task": "plane.bgtasks.organizational_queue_task.sweep_routing_drift",
+        "schedule": crontab(minute=50),
+    },
 }
 
 

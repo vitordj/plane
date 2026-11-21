@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} 已更新。",
             "created_title": "已创建",
-            "created": "{name} 已可以使用。",
-            "name_taken": "已存在同名区域。请换一个名称。"
+            "created": "{name} 已可以使用。"
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "已过截止日期",
           "attention_suspended": "已暂停",
           "attention_unavailable": "执行人不可用",
-          "attention_no_date": "没有截止日期",
           "empty_attention": "目前没有需要关注的事项。",
           "decisions": "决策",
           "empty_decisions": "尚无分配决策。",
@@ -740,7 +738,8 @@
           "unavailable_until": "离开至 {until}",
           "unavailable_open": "离开",
           "executor_away": "离开",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "无法加载此区域的工作。"
         },
         "executive": {
           "title": "管理视图",
@@ -793,6 +792,7 @@
           "membership_not_found": "此人已不在该区域中。",
           "lead_already_set": "该区域已有负责人。",
           "unit_not_in_workspace": "该区域不属于本工作区。",
+          "unit_has_active_work_items": "此区域仍有未关闭的工作项。请先移动或关闭它们，然后再删除。",
           "project_required": "请选择要关联的项目。",
           "invalid_role": "区域无法授予该角色。",
           "project_not_in_workspace": "该项目不属于本工作区。",

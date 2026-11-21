@@ -54,6 +54,8 @@ from plane.api.serializers.orca import (
     work_item_envelope,
 )
 from plane.app.permissions import ProjectEntityPermission
+from plane.app.permissions.organizational_unit import may_change_item_responsibility
+from plane.utils.orca_error_codes import orca_error
 from plane.app.services.orca import (
     ExternalBindingConflict,
     OrcaDomainError,
@@ -72,8 +74,10 @@ from plane.app.services.orca import (
     return_to_queue,
     set_responsibility,
     transfer_unit,
+    visible_project_ids_for,
 )
 from plane.app.services.orca.errors import IfMatchRequired
+from plane.app.services.orca.process import CLOSED_GROUPS
 from plane.app.services.orca.service_level import record_service_level
 from plane.bgtasks.issue_activities_task import issue_activity
 from plane.bgtasks.webhook_task import model_activity
@@ -131,7 +135,14 @@ class OrcaWorkItemBaseEndpoint(OrcaPublicBaseAPIView):
         @returns A DRF ``Response``.
         """
         key = read_idempotency_key(request)
-        with begin_operation(workspace, self.api_token, key, operation_type, request.data) as handle:
+        # R2.18: include HTTP method and path in the idempotency fingerprint so
+        # reusing a key with the same body on a different route or target item
+        # yields 409 payload mismatch rather than replaying the first route's
+        # response.
+        request_scope = {"method": request.method, "path": request.path}
+        with begin_operation(
+            workspace, self.api_token, key, operation_type, request.data, request_scope=request_scope
+        ) as handle:
             if handle.replayed:
                 return replay_response(handle)
             try:
@@ -222,6 +233,11 @@ class WorkItemAutomationEndpoint(OrcaWorkItemBaseEndpoint):
 
     def post(self, request, slug, project_id):
         project = self.resolve_project(slug, project_id)
+        # D2 / R2.02: this create-or-find route can move an existing item to
+        # another area (and so drop its executor). Checked before the receipt
+        # is opened, like reassign/transfer, so a refusal spends no key.
+        if self._would_move_without_standing(request, project):
+            return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
         return self.run_operation(
             request,
             project.workspace,
@@ -229,6 +245,44 @@ class WorkItemAutomationEndpoint(OrcaWorkItemBaseEndpoint):
             lambda handle: self._create(request, handle, project),
             success_status=status.HTTP_201_CREATED,
         )
+
+    def _would_move_without_standing(self, request, project):
+        """
+        @description Whether the body names an item that already has an area,
+        names a *different* area, and the caller may not change responsibility
+        for it (D2). Creating a new item, placing an item that has no area yet,
+        and naming the area that already owns it (the idempotent "find" case,
+        which ``_place`` answers without changing anything) are all open to a
+        project Member. An invalid body or unknown area is left for ``_create``
+        to report in its usual shape.
+        @returns bool - ``True`` when the request must be refused.
+        """
+        payload = WorkItemAutomationSerializer(data=request.data)
+        if not payload.is_valid():
+            return False
+        data = payload.validated_data
+        external = data["external"]
+        binding = (
+            ExternalWorkItemBinding.objects.filter(
+                workspace_id=project.workspace_id,
+                external_source=external["source"],
+                external_id=external["id"],
+                issue__project_id=project.id,
+            )
+            .select_related("issue")
+            .first()
+        )
+        if binding is None:
+            return False
+        link = IssueOrganizationalUnit.objects.filter(issue=binding.issue).select_related("organizational_unit").first()
+        if link is None:
+            return False
+        unit = OrganizationalUnit.objects.filter(
+            workspace_id=project.workspace_id, slug=data["responsibility"]["unit"], is_active=True
+        ).first()
+        if unit is None or unit.id == link.organizational_unit_id:
+            return False
+        return not may_change_item_responsibility(request.user, link, to_unit=unit)
 
     def _create(self, request, handle, project):
         """@description Steps 2-4 of RFC §7.2, in one transaction. @returns ``(body, issue)``."""
@@ -298,6 +352,9 @@ class WorkItemAutomationEndpoint(OrcaWorkItemBaseEndpoint):
         instruction and still goes through the service, which transfers.
         """
         if not issue._state.adding:
+            # Lock the work item row so a concurrent placement cannot slip
+            # between the pre-receipt gate check and ``set_responsibility``.
+            Issue.objects.select_for_update().filter(pk=issue.pk).first()
             existing = (
                 IssueOrganizationalUnit.objects.filter(issue=issue)
                 .select_related("organizational_unit", "current_assignment_decision", "primary_executor")
@@ -305,6 +362,10 @@ class WorkItemAutomationEndpoint(OrcaWorkItemBaseEndpoint):
             )
             if existing is not None and existing.organizational_unit_id == unit.id:
                 return existing, existing.current_assignment_decision
+            if existing is not None and not may_change_item_responsibility(request.user, existing, to_unit=unit):
+                from plane.app.services.orca.errors import NotUnitCoordinator
+
+                raise NotUnitCoordinator()
 
         result = set_responsibility(
             issue,
@@ -552,6 +613,16 @@ class WorkItemReassignEndpoint(OrcaWorkItemBaseEndpoint):
     def post(self, request, slug, project_id, issue_id):
         project = self.resolve_project(slug, project_id)
         issue = self._resolve_issue(project, issue_id)
+        # R2.02: Public reassign/return carries the same coordinator gate as
+        # the internal queue routes. Checked before opening the receipt so an
+        # unauthorized caller never spends an idempotency key.
+        link = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
+        # The current executor may return their own item to the queue (parity
+        # with the app ``return/`` route); anything else keeps the gate.
+        parsed = ReassignSerializer(data=request.data)
+        returning = parsed.is_valid() and bool(parsed.validated_data.get("return_to_queue"))
+        if not may_change_item_responsibility(request.user, link, allow_executor=returning):
+            return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
         # Read before the receipt is opened, like the idempotency key: a
         # missing precondition header is a malformed request, not a failed
         # operation, and it should not spend the caller's key.
@@ -614,6 +685,11 @@ class WorkItemTransferEndpoint(OrcaWorkItemBaseEndpoint):
     def post(self, request, slug, project_id, issue_id):
         project = self.resolve_project(slug, project_id)
         issue = self._resolve_issue(project, issue_id)
+        # R2.02: Transferring responsibility off an area requires workspace
+        # Admin or coordinator of the current area, before opening a receipt.
+        link = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
+        if not may_change_item_responsibility(request.user, link):
+            return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
         return self.run_operation(
             request,
             project.workspace,
@@ -735,17 +811,36 @@ class ProcessInstanceEndpoint(OrcaWorkspaceReadEndpoint):
         if workspace is None:
             return self.forbidden()
 
+        visible_project_ids = visible_project_ids_for(request.user, workspace)
+
         instance = ProcessInstanceReference.objects.filter(
             workspace=workspace, external_source=source, external_instance_id=instance_id
         ).first()
         if instance is None:
             raise WorkItemNotFound(external_source=source, external_id=instance_id)
 
-        items = list(
-            ProcessInstanceItem.objects.filter(process_instance=instance)
+        all_items = list(
+            ProcessInstanceItem.objects.filter(
+                process_instance=instance,
+                issue__project__archived_at__isnull=True,
+            )
             .select_related("issue", "issue__project", "issue__state", "issue__orca_service_level")
             .order_by("created_at")
         )
+        # R2.03: mirror UnitQueueEndpoint (R1.A7). A workspace admin sees every
+        # step; everyone else sees only steps in projects where they hold an
+        # active ProjectMember row, and a caller with no visible steps on a
+        # non-empty run is refused with 403 rather than learning about the run.
+        if visible_project_ids is not None:
+            visible_set = set(visible_project_ids)
+            items = [item for item in all_items if item.issue.project_id in visible_set]
+            if all_items and not items:
+                # Same 404 as a run that does not exist: a distinct 403 would
+                # tell a non-member that the id is real.
+                raise WorkItemNotFound(external_source=source, external_id=instance_id)
+        else:
+            items = all_items
+
         routing_by_issue = {
             link.issue_id: link
             for link in IssueOrganizationalUnit.objects.filter(
@@ -766,12 +861,23 @@ class ProcessInstanceEndpoint(OrcaWorkspaceReadEndpoint):
                     "status": instance.status,
                     "started_at": instance.started_at.isoformat() if instance.started_at else None,
                     "completed_at": instance.completed_at.isoformat() if instance.completed_at else None,
-                    "progress": instance_progress(instance),
+                    # Counted over the steps this caller may see, not the run: a
+                    # total of 5 beside 2 listed steps would disclose the rest.
+                    "progress": (instance_progress(instance) if items is all_items else self._visible_progress(items)),
                 },
                 "items": [self._item(item, routing_by_issue.get(item.issue_id)) for item in items],
             },
             status=status.HTTP_200_OK,
         )
+
+    def _visible_progress(self, items):
+        """
+        @description ``{"done", "total"}`` over only the given steps, with the
+        same closed-state rule as ``instance_progress``.
+        @returns dict.
+        """
+        done = sum(1 for item in items if item.issue.state_id and item.issue.state.group in CLOSED_GROUPS)
+        return {"done": done, "total": len(items)}
 
     def _item(self, item, link):
         """@description One step of the run, as the orchestrator needs it after a restart."""

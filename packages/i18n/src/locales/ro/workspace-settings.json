@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} a fost actualizată.",
             "created_title": "Creată",
-            "created": "{name} este gata de utilizare.",
-            "name_taken": "Există deja o zonă cu acest nume. Alegeți un alt nume."
+            "created": "{name} este gata de utilizare."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Termen depășit",
           "attention_suspended": "Întrerupt",
           "attention_unavailable": "Executor indisponibil",
-          "attention_no_date": "Fără termen",
           "empty_attention": "Nimic nu necesită atenție acum.",
           "decisions": "Decizii",
           "empty_decisions": "Nu există încă decizii de alocare.",
@@ -740,7 +738,8 @@
           "unavailable_until": "Absent până la {until}",
           "unavailable_open": "Absent",
           "executor_away": "Absent",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Nu s-a putut încărca activitatea acestei zone."
         },
         "executive": {
           "title": "Vizualizare executivă",
@@ -793,6 +792,7 @@
           "membership_not_found": "Această persoană nu mai este în această zonă.",
           "lead_already_set": "Această zonă are deja un responsabil.",
           "unit_not_in_workspace": "Această zonă nu aparține acestui spațiu de lucru.",
+          "unit_has_active_work_items": "Această zonă are încă elemente de lucru deschise. Mută-le sau închide-le înainte de ștergere.",
           "project_required": "Alegeți un proiect de asociat.",
           "invalid_role": "O zonă nu poate acorda acest rol.",
           "project_not_in_workspace": "Acest proiect nu aparține acestui spațiu de lucru.",

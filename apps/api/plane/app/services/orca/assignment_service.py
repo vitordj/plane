@@ -23,10 +23,11 @@ call site and expect to stay in step:
 * automatic allocation for one area is serialized by an advisory lock, so the
   load the second request reads already includes the first. Without it, two
   simultaneous items both go to the person who was least loaded a moment ago;
-* an existing ``IssueAssignee`` is never removed. Plane shows assignees to
-  everyone, and silently taking a person off an item is not something an
-  allocator should do — the previous executor stays as a collaborator until a
-  human decides otherwise.
+* an existing ``IssueAssignee`` is never removed *by an allocation* — a
+  reassignment leaves the previous executor as a collaborator until a human
+  decides otherwise. The one exception is returning an item to the queue: the
+  executor who gave it up (or lost it) is taken off, with native history, so
+  Plane and the area never disagree about who is executing a queued item.
 
 This module writes ``IssueAssignee``, ``IssueOrganizationalUnit``,
 ``AssignmentDecision`` and ``IssueResponsibilityEvent``. It writes no
@@ -65,9 +66,10 @@ from plane.db.models import (
     ResponsibilitySource,
     RoutingState,
     StateGroup,
+    WorkspaceMember,
 )
 
-from .alerts import notify_allocation_failed_safely
+from .alerts import build_notification_data, notify_allocation_failed_safely
 from .availability import allocation_settings_for, unavailable_workspace_member_ids
 from .coverage import unit_covers_project
 from .metrics import record_assignment_outcome, record_decision_superseded, record_no_candidate
@@ -480,13 +482,265 @@ def _assert_eligible(unit, project_id, user_id) -> None:
         raise ExecutorNotEligible(user_id=str(user_id), reason="not_an_assignable_project_member")
 
 
-def _ensure_assignee(issue, user_id) -> None:
-    """@description Attach the person to the item if they are not on it already. Never removes anyone."""
-    IssueAssignee.objects.get_or_create(
+def _emit_assignee_activity_safely(
+    *,
+    issue_id,
+    project_id,
+    workspace_id,
+    user_id,
+    previous_assignee_ids: list[str],
+    actor_id=None,
+) -> None:
+    """
+    Notify Plane's activity and notification pipeline after an Orca assignment (R2.08).
+
+    @description Called from ``transaction.on_commit`` only when
+    ``_ensure_assignee`` actually created a new ``IssueAssignee`` row. Failures
+    (such as an unreachable broker) are logged and swallowed so they can never
+    turn a committed allocation into a 500.
+
+    When ``actor_id`` is present, delegates to upstream's ``issue_activity.delay``
+    with ``notification=True`` so ``IssueActivity``, ``IssueSubscriber``, and
+    ``Notification`` follow Plane's native path. When ``actor_id`` is ``None``
+    (automatic system allocation), writes the activity, subscriber, and in-app
+    notification directly to avoid upstream ``notification_task.py``'s
+    non-null ``uuid.UUID(actor_id)`` assumption.
+    """
+    import json
+
+    from plane.db.models import Issue, IssueActivity, IssueSubscriber, Notification, User
+
+    epoch = int(timezone.now().timestamp())
+    user_id_str = str(user_id)
+    new_assignee_ids = list(dict.fromkeys([*previous_assignee_ids, user_id_str]))
+
+    try:
+        if actor_id is not None:
+            from plane.bgtasks.issue_activities_task import issue_activity
+
+            issue_activity.delay(
+                type="issue.activity.updated",
+                requested_data=json.dumps({"assignee_ids": new_assignee_ids}),
+                current_instance=json.dumps({"assignee_ids": previous_assignee_ids}),
+                actor_id=str(actor_id),
+                issue_id=str(issue_id),
+                project_id=str(project_id),
+                epoch=epoch,
+                notification=True,
+            )
+            return
+
+        # System allocation (actor_id is None): write native activity, subscriber,
+        # and in-app notification directly without patching upstream notification_task.
+        user = User.objects.filter(pk=user_id).only("id", "display_name").first()
+        issue = Issue.objects.select_related("project", "state").filter(pk=issue_id).first()
+        if user is None or issue is None:
+            return
+
+        activity = IssueActivity.objects.create(
+            issue_id=issue_id,
+            project_id=project_id,
+            workspace_id=workspace_id,
+            field="assignees",
+            verb="updated",
+            new_value=user.display_name,
+            new_identifier=user.id,
+            comment="added assignee ",
+            actor_id=None,
+            epoch=epoch,
+        )
+        IssueSubscriber.objects.get_or_create(
+            project_id=project_id,
+            issue_id=issue_id,
+            subscriber_id=user_id,
+            defaults={"workspace_id": workspace_id},
+        )
+        identifier = f"{issue.project.identifier}-{issue.sequence_id}"
+        # No ``UserNotificationPreference`` check, on purpose: upstream's
+        # ``notification_task.py`` creates the in-app ``Notification`` for every
+        # subscriber who is an active project member and consults the
+        # preference row only to decide whether to also queue an *email*
+        # (``send_email``). There is no in-app switch to respect; the assignee
+        # is eligible, hence an active project member, hence a recipient there.
+        Notification.objects.create(
+            workspace_id=workspace_id,
+            project_id=project_id,
+            sender="in_app:issue_activities:assigned",
+            triggered_by_id=None,
+            receiver_id=user_id,
+            entity_identifier=issue_id,
+            entity_name="issue",
+            title=f"You were assigned to {identifier}: {issue.name}",
+            data=build_notification_data(
+                issue,
+                issue.project,
+                field="assignees",
+                verb="updated",
+                new_value=user.display_name,
+                activity_id=activity.id,
+                new_identifier=user.id,
+            ),
+        )
+    except Exception:  # noqa: BLE001 - never fail a committed allocation on notification/broker error
+        logger.exception("orca: failed to emit assignee activity/notification for issue %s", issue_id)
+
+
+def _emit_assignee_removal_safely(
+    *,
+    issue_id,
+    project_id,
+    workspace_id,
+    user_id,
+    previous_assignee_ids: list[str],
+    actor_id=None,
+) -> None:
+    """
+    Write the native history and inbox entry for an executor Orca took off an item.
+
+    @description The mirror of ``_emit_assignee_activity_safely``: called from
+    ``transaction.on_commit`` after ``_detach_executor`` removed the
+    ``IssueAssignee`` row, so the item's history shows "removed assignee" and
+    the person hears about it in Plane's own inbox. With an ``actor_id`` it
+    delegates to upstream's ``issue_activity`` (``notification=True``); without
+    one (system return, e.g. the executor left the area) it writes the
+    ``IssueActivity`` and the ``Notification`` itself, because upstream's task
+    assumes a non-null actor. Failures are logged and swallowed.
+    """
+    import json
+
+    from plane.db.models import Issue, IssueActivity, Notification, User
+
+    epoch = int(timezone.now().timestamp())
+    user_id_str = str(user_id)
+    remaining_ids = [uid for uid in previous_assignee_ids if uid != user_id_str]
+
+    try:
+        if actor_id is not None:
+            from plane.bgtasks.issue_activities_task import issue_activity
+
+            issue_activity.delay(
+                type="issue.activity.updated",
+                requested_data=json.dumps({"assignee_ids": remaining_ids}),
+                current_instance=json.dumps({"assignee_ids": previous_assignee_ids}),
+                actor_id=str(actor_id),
+                issue_id=str(issue_id),
+                project_id=str(project_id),
+                epoch=epoch,
+                notification=True,
+            )
+            return
+
+        user = User.objects.filter(pk=user_id).only("id", "display_name").first()
+        issue = Issue.objects.select_related("project", "state").filter(pk=issue_id).first()
+        if user is None or issue is None:
+            return
+
+        activity = IssueActivity.objects.create(
+            issue_id=issue_id,
+            project_id=project_id,
+            workspace_id=workspace_id,
+            field="assignees",
+            verb="updated",
+            old_value=user.display_name,
+            new_value="",
+            old_identifier=user.id,
+            comment="removed assignee ",
+            actor_id=None,
+            epoch=epoch,
+        )
+        # Same recipient rule as upstream: only somebody still on the project
+        # (and in the workspace — a member who just left is the usual reason an
+        # item is returned) can open the item the notification points at.
+        if (
+            ProjectMember.objects.filter(project_id=project_id, member_id=user_id, is_active=True).exists()
+            and WorkspaceMember.objects.filter(workspace_id=workspace_id, member_id=user_id, is_active=True).exists()
+        ):
+            identifier = f"{issue.project.identifier}-{issue.sequence_id}"
+            Notification.objects.create(
+                workspace_id=workspace_id,
+                project_id=project_id,
+                sender="in_app:issue_activities:assigned",
+                triggered_by_id=None,
+                receiver_id=user_id,
+                entity_identifier=issue_id,
+                entity_name="issue",
+                title=f"You were removed from {identifier}: {issue.name}",
+                data=build_notification_data(
+                    issue,
+                    issue.project,
+                    field="assignees",
+                    verb="updated",
+                    new_value="",
+                    old_value=user.display_name,
+                    activity_id=activity.id,
+                    old_identifier=user.id,
+                ),
+            )
+    except Exception:  # noqa: BLE001 - never fail a committed return on notification/broker error
+        logger.exception("orca: failed to emit assignee removal activity for issue %s", issue_id)
+
+
+def _detach_executor(issue, user_id, *, actor=None) -> None:
+    """
+    @description Take the previous executor off the native assignee list when
+    the item goes back to the queue, so Plane and the area agree that nobody is
+    executing it. Only that person's row is touched; collaborators stay.
+    Removes the row through the instance (soft delete) and emits the native
+    activity and notification on commit.
+
+    Call it only after the link left ``assigned``: the soft delete fires the
+    assignee signal, whose requeue path looks for an ``assigned`` link naming
+    this person and so finds nothing.
+    """
+    previous_ids = [str(uid) for uid in IssueAssignee.objects.filter(issue=issue).values_list("assignee_id", flat=True)]
+    rows = list(IssueAssignee.objects.filter(issue=issue, assignee_id=user_id))
+    if not rows:
+        return
+    for row in rows:
+        row.delete()
+    actor_id = getattr(actor, "id", actor) if actor is not None else None
+    issue_id = issue.id
+    project_id = issue.project_id
+    workspace_id = issue.workspace_id
+    transaction.on_commit(
+        lambda: _emit_assignee_removal_safely(
+            issue_id=issue_id,
+            project_id=project_id,
+            workspace_id=workspace_id,
+            user_id=user_id,
+            previous_assignee_ids=previous_ids,
+            actor_id=actor_id,
+        )
+    )
+
+
+def _ensure_assignee(issue, user_id, *, actor=None) -> None:
+    """
+    @description Attach the person to the item if they are not on it already.
+    Never removes anyone. Emits native activity and notification on commit
+    when a new assignee row is created (R2.08).
+    """
+    previous_ids = [str(uid) for uid in IssueAssignee.objects.filter(issue=issue).values_list("assignee_id", flat=True)]
+    _, created = IssueAssignee.objects.get_or_create(
         issue=issue,
         assignee_id=user_id,
         defaults={"project_id": issue.project_id, "workspace_id": issue.workspace_id},
     )
+    if created:
+        actor_id = getattr(actor, "id", actor) if actor is not None else None
+        issue_id = issue.id
+        project_id = issue.project_id
+        workspace_id = issue.workspace_id
+        transaction.on_commit(
+            lambda: _emit_assignee_activity_safely(
+                issue_id=issue_id,
+                project_id=project_id,
+                workspace_id=workspace_id,
+                user_id=user_id,
+                previous_assignee_ids=previous_ids,
+                actor_id=actor_id,
+            )
+        )
 
 
 def _record(
@@ -571,34 +825,13 @@ def _record(
 
 
 def _apply_assigned(link, decision, user_id) -> None:
-    """@description Move the link into ``assigned``, clearing the queue fields."""
+    """@description Move the link into ``assigned``, clearing the queue, SLA, and alert fields (R2.11)."""
     link.routing_state = RoutingState.ASSIGNED
     link.primary_executor_id = user_id
     link.queue_reason = ""
     link.queued_at = None
-    link.current_assignment_decision = decision
-    link.save(
-        update_fields=[
-            "routing_state",
-            "primary_executor",
-            "queue_reason",
-            "queued_at",
-            "current_assignment_decision",
-            "updated_at",
-        ]
-    )
-
-
-def _apply_queued(link, decision, *, state, queue_reason, sla_seconds=None, assignment_due_at=None) -> None:
-    """@description Move the link into ``queued`` or ``allocation_failed``, and set the SLA."""
-    link.routing_state = state
-    link.primary_executor_id = None
-    link.queue_reason = queue_reason
-    link.queued_at = link.queued_at or timezone.now()
-    if assignment_due_at is not None:
-        link.assignment_due_at = assignment_due_at
-    elif sla_seconds:
-        link.assignment_due_at = timezone.now() + timedelta(seconds=sla_seconds)
+    link.assignment_due_at = None
+    link.last_alerted_at = None
     link.current_assignment_decision = decision
     link.save(
         update_fields=[
@@ -607,6 +840,35 @@ def _apply_queued(link, decision, *, state, queue_reason, sla_seconds=None, assi
             "queue_reason",
             "queued_at",
             "assignment_due_at",
+            "last_alerted_at",
+            "current_assignment_decision",
+            "updated_at",
+        ]
+    )
+
+
+def _apply_queued(link, decision, *, state, queue_reason, sla_seconds=None, assignment_due_at=None) -> None:
+    """@description Move the link into ``queued`` or ``allocation_failed``, and set or clear the SLA (R2.11)."""
+    link.routing_state = state
+    link.primary_executor_id = None
+    link.queue_reason = queue_reason
+    link.queued_at = link.queued_at or timezone.now()
+    if assignment_due_at is not None:
+        link.assignment_due_at = assignment_due_at
+    elif sla_seconds:
+        link.assignment_due_at = timezone.now() + timedelta(seconds=sla_seconds)
+    else:
+        link.assignment_due_at = None
+    link.last_alerted_at = None
+    link.current_assignment_decision = decision
+    link.save(
+        update_fields=[
+            "routing_state",
+            "primary_executor",
+            "queue_reason",
+            "queued_at",
+            "assignment_due_at",
+            "last_alerted_at",
             "current_assignment_decision",
             "updated_at",
         ]
@@ -668,28 +930,39 @@ def allocate(
     if not unit_covers_project(unit, issue.project_id):
         raise UnitNotCoveringProject(unit_id=str(unit.id), project_id=str(issue.project_id))
 
-    resolution = None
-    if explicit_executor is None:
-        resolution = resolve_policy(unit, issue.project_id, requested_mode)
-
-    needs_lock = resolution is not None and resolution.effective_mode == AssignmentMode.LEAST_LOADED
-
     with transaction.atomic():
-        if needs_lock:
+        # R2.17: acquire the area advisory lock before the link row lock (same
+        # order as transfer_unit, avoiding deadlock) when policy resolution may
+        # run least_loaded, then re-verify link ownership, coverage, and policy
+        # under the locks so a concurrent transfer or policy change cannot
+        # allocate an executor from the wrong area.
+        if explicit_executor is None:
             unit_allocation_lock(unit.id)
         link = _locked_link(issue)
+        if link.organizational_unit_id != unit.id:
+            raise InvalidTransition(
+                routing_state=link.routing_state,
+                unit_id=str(unit.id),
+            )
+        if not unit_covers_project(unit, issue.project_id):
+            raise UnitNotCoveringProject(unit_id=str(unit.id), project_id=str(issue.project_id))
+
+        resolution = None
+        if explicit_executor is None:
+            resolution = resolve_policy(unit, issue.project_id, requested_mode)
+
         previous_executor_id = link.primary_executor_id
 
         for collaborator in collaborators:
             collaborator_id = getattr(collaborator, "id", collaborator)
             _assert_eligible(unit, issue.project_id, collaborator_id)
-            _ensure_assignee(issue, collaborator_id)
+            _ensure_assignee(issue, collaborator_id, actor=actor)
 
         # --- explicit: the caller names the person -------------------------
         if explicit_executor is not None:
             executor_id = getattr(explicit_executor, "id", explicit_executor)
             _assert_eligible(unit, issue.project_id, executor_id)
-            _ensure_assignee(issue, executor_id)
+            _ensure_assignee(issue, executor_id, actor=actor)
             decision = _record(
                 link,
                 trigger=trigger,
@@ -719,7 +992,7 @@ def allocate(
             ranked = rank_candidates(unit, issue.project_id, resolution, exclude_user_ids=exclude_user_ids)
             if ranked.eligible:
                 chosen = ranked.eligible[0]
-                _ensure_assignee(issue, chosen.user_id)
+                _ensure_assignee(issue, chosen.user_id, actor=actor)
                 decision = _record(
                     link,
                     trigger=trigger,
@@ -841,7 +1114,7 @@ def claim(issue, user, *, actor=None) -> AllocationResult:
 
         resolution = resolve_policy(unit, link.project_id, AssignmentMode.SELF_CLAIM)
         _assert_eligible(unit, link.project_id, user_id)
-        _ensure_assignee(issue, user_id)
+        _ensure_assignee(issue, user_id, actor=actor or user)
 
         decision = _record(
             link,
@@ -889,7 +1162,7 @@ def reassign(
         previous_executor_id = link.primary_executor_id
         # The previous executor keeps their IssueAssignee row: they stay a
         # collaborator until a human removes them (RFC §6.8).
-        _ensure_assignee(issue, executor_id)
+        _ensure_assignee(issue, executor_id, actor=actor)
 
         decision = _record(
             link,
@@ -917,11 +1190,20 @@ def return_to_queue(
     trigger: str = DecisionTrigger.RETURN_TO_QUEUE,
     expected_decision_id=None,
     automation_operation=None,
+    detach_executor: bool = True,
 ) -> AllocationResult:
     """
-    @description Put an assigned item back in the queue. The person keeps their
-    ``IssueAssignee`` row — Plane shows assignees to everyone, and quietly
-    detaching somebody is a human's call, not the allocator's.
+    @description Put an assigned item back in the queue. The previous executor's
+    native ``IssueAssignee`` row is removed (only theirs; collaborators stay)
+    and the removal is written to the item's history and the person's inbox
+    (``_detach_executor``). Before this was changed the row was left in place,
+    which made a ``queued`` item show somebody as its assignee in Plane while
+    the area said nobody was executing it, and let the next native-assignee
+    reconcile adopt that leftover person straight back as executor (R2.05).
+    @param detach_executor: ``False`` keeps the previous executor as a
+        collaborator. Only ``transfer_unit`` passes it: RFC §6.8 step 3 says the
+        previous executor stays visible until the receiving area's coordinator
+        decides.
     @param trigger: What returned it; the audit command passes ``command`` so
         its repairs are not read as somebody clicking in the interface.
     @param expected_decision_id: The same optimistic check ``reassign`` makes,
@@ -939,6 +1221,10 @@ def return_to_queue(
             raise InvalidTransition(routing_state=link.routing_state)
 
         previous_executor_id = link.primary_executor_id
+        # R2.11: recompute the assignment SLA from the current effective policy
+        # so an item returned after an old deadline starts a fresh clock rather
+        # than being born overdue.
+        resolution = resolve_policy(link.organizational_unit, link.project_id)
         decision = _record(
             link,
             trigger=trigger,
@@ -952,7 +1238,16 @@ def return_to_queue(
             automation_operation=automation_operation,
         )
         link.queued_at = None  # the wait starts now, not when it was first queued
-        _apply_queued(link, decision, state=RoutingState.QUEUED, queue_reason=queue_reason)
+        _apply_queued(
+            link,
+            decision,
+            state=RoutingState.QUEUED,
+            queue_reason=queue_reason,
+            sla_seconds=resolution.sla_seconds,
+        )
+        # After the link left ``assigned``, so the assignee signal sees nothing to requeue.
+        if detach_executor and previous_executor_id is not None:
+            _detach_executor(issue, previous_executor_id, actor=actor)
         return AllocationResult(link, decision, DecisionOutcome.QUEUED, None, queue_reason)
 
 
@@ -1012,7 +1307,7 @@ def transfer_unit(
         for collaborator in collaborators:
             collaborator_id = getattr(collaborator, "id", collaborator)
             _assert_eligible(to_unit, link.project_id, collaborator_id)
-            _ensure_assignee(issue, collaborator_id)
+            _ensure_assignee(issue, collaborator_id, actor=actor)
 
         executor_id = link.primary_executor_id
         keeps_executor = (
@@ -1034,6 +1329,8 @@ def transfer_unit(
                 reason=reason,
                 queue_reason=QueueReason.MANUALLY_RETURNED,
                 automation_operation=automation_operation,
+                # RFC §6.8 step 3: the old executor stays visible as a collaborator.
+                detach_executor=False,
             )
             return TransferResult(event=event, allocation=allocation)
 

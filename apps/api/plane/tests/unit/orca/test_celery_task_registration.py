@@ -38,6 +38,7 @@ CLEANUP_TASK_NAME = "plane.bgtasks.orca_automation_cleanup_task.delete_orca_auto
 CLEANUP_TASK_MODULE = "plane.bgtasks.orca_automation_cleanup_task"
 
 QUEUE_TASK_NAME = "plane.bgtasks.organizational_queue_task.sweep_assignment_sla"
+ROUTING_DRIFT_TASK_NAME = "plane.bgtasks.organizational_queue_task.sweep_routing_drift"
 QUEUE_TASK_MODULE = "plane.bgtasks.organizational_queue_task"
 
 AVAILABILITY_TASK_NAME = "plane.bgtasks.organizational_availability_task.sweep_unavailable_executors"
@@ -51,6 +52,7 @@ TASKS = [
     pytest.param(DIRECTORY_TASK_MODULE, DIRECTORY_TASK_NAME, id="resolve_directory_identities"),
     pytest.param(CLEANUP_TASK_MODULE, CLEANUP_TASK_NAME, id="delete_orca_automation_operations"),
     pytest.param(QUEUE_TASK_MODULE, QUEUE_TASK_NAME, id="sweep_assignment_sla"),
+    pytest.param(QUEUE_TASK_MODULE, ROUTING_DRIFT_TASK_NAME, id="sweep_routing_drift"),
     pytest.param(AVAILABILITY_TASK_MODULE, AVAILABILITY_TASK_NAME, id="sweep_unavailable_executors"),
 ]
 
@@ -94,6 +96,8 @@ class TestOrganizationalTaskRegistration:
         assert CLEANUP_TASK_NAME in celery_app.tasks
         assert QUEUE_TASK_NAME in scheduled
         assert QUEUE_TASK_NAME in celery_app.tasks
+        assert ROUTING_DRIFT_TASK_NAME in scheduled
+        assert ROUTING_DRIFT_TASK_NAME in celery_app.tasks
         assert AVAILABILITY_TASK_NAME in scheduled
         assert AVAILABILITY_TASK_NAME in celery_app.tasks
         # The daily reconciliation safety net: a drift here means lost

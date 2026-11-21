@@ -43,6 +43,12 @@ export interface IUnitQueue {
   suspended: IQueueRow[];
   viewer: IQueueViewer;
   loader: boolean;
+  /**
+   * Set when a silent refresh after an action failed: the rows are the
+   * optimistic ones and may differ from the server's. The tab shows a small
+   * retry instead of blanking the list.
+   */
+  stale?: boolean;
 }
 
 export interface IOrganizationalUnitStore {
@@ -157,7 +163,7 @@ export interface IOrganizationalUnitStore {
     issueId: string,
     destinationUnitId: string
   ) => Promise<IIssueRouting>;
-  fetchQueue: (workspaceSlug: string, unitId: string) => Promise<IUnitQueue>;
+  fetchQueue: (workspaceSlug: string, unitId: string, options?: { silent?: boolean }) => Promise<IUnitQueue>;
   claim: (workspaceSlug: string, unitId: string, row: IQueueRow) => Promise<IIssueRouting>;
   assign: (
     workspaceSlug: string,
@@ -603,12 +609,18 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
    * The backend orders overdue first and the store keeps that order, so the
    * row a coordinator owes stays at the top of the list they are reading.
    * @param unitId The area whose queue to load.
+   * @param options `silent` refreshes without raising `loader`, so the rows
+   * already on screen stay mounted (used after claim / assign / return). A
+   * silent refresh that fails marks the queue `stale` instead of blanking it.
    * @returns The stored queue for that area.
    */
-  fetchQueue = async (workspaceSlug: string, unitId: string) => {
-    runInAction(() => {
-      this.queueByUnit[unitId] = { ...this.getQueueByUnitId(unitId), loader: true };
-    });
+  fetchQueue = async (workspaceSlug: string, unitId: string, options?: { silent?: boolean }) => {
+    const silent = options?.silent === true;
+    if (!silent) {
+      runInAction(() => {
+        this.queueByUnit[unitId] = { ...this.getQueueByUnitId(unitId), loader: true };
+      });
+    }
     try {
       const [waitingPage, inProgressPage, suspendedPage] = await Promise.all([
         this.service.getQueue(workspaceSlug, unitId),
@@ -623,6 +635,7 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
         // tab is built around, so it wins if they ever disagree.
         viewer: waitingPage.viewer ?? inProgressPage.viewer ?? EMPTY_QUEUE.viewer,
         loader: false,
+        stale: false,
       };
       runInAction(() => {
         this.queueByUnit[unitId] = queue;
@@ -630,7 +643,12 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       return queue;
     } catch (error) {
       runInAction(() => {
-        this.queueByUnit[unitId] = { ...this.getQueueByUnitId(unitId), loader: false };
+        this.queueByUnit[unitId] = {
+          ...this.getQueueByUnitId(unitId),
+          loader: false,
+          // A failed silent refresh keeps the optimistic rows and flags them.
+          ...(silent ? { stale: true } : {}),
+        };
       });
       throw error;
     }
@@ -650,9 +668,13 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
    * @param routing What the API says about the item now.
    * @returns The row to put back in the list.
    */
-  private mergeRoutingIntoRow = (row: IQueueRow, routing: IIssueRouting): IQueueRow => {
+  private mergeRoutingIntoRow = (unitId: string, row: IQueueRow, routing: IIssueRouting): IQueueRow => {
+    const queue = this.getQueueByUnitId(unitId);
+    const currentUserId = this.rootStore.user.data?.id;
     const executorId = routing.primary_executor;
     const details = executorId ? this.rootStore.memberRoot.workspace.getWorkspaceMemberDetails(executorId) : null;
+    const isAssigned = routing.routing_state === "assigned";
+    const canManage = queue.viewer.is_admin || queue.viewer.is_coordinator;
     return {
       ...row,
       routing_state: routing.routing_state,
@@ -662,7 +684,7 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
       // A just-allocated item cannot be late on an allocation it no longer
       // owes, and one just returned starts its wait over.
       assignment_overdue: false,
-      age_seconds: 0,
+      age_seconds: routing.queued_at ? 0 : null,
       primary_executor: executorId
         ? {
             id: executorId,
@@ -681,6 +703,17 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
           }
         : null,
       current_decision_id: routing.current_assignment_decision?.id ?? null,
+      // R2.13: recompute row permissions immediately so action buttons match
+      // the new routing state without waiting for a full reload.
+      permissions: {
+        // An unowned item can be claimed by any member of the area (the queue
+        // payload's `viewer.is_member`); the earlier claim left the row's own
+        // flag false, so it cannot be reused. The refresh corrects it if the
+        // area's policy forbids self-claim.
+        can_claim: isAssigned ? false : queue.viewer.is_member,
+        can_assign: canManage,
+        can_return: isAssigned && (canManage || (Boolean(currentUserId) && executorId === currentUserId)),
+      },
     };
   };
 
@@ -710,9 +743,35 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
    * holding the mouse.
    */
   claim = async (workspaceSlug: string, unitId: string, row: IQueueRow) => {
-    const routing = await this.service.claimIssue(workspaceSlug, row.project.id, row.issue_id);
-    this.placeRow(unitId, this.mergeRoutingIntoRow(row, routing));
+    const routing = await this.runRowAction(workspaceSlug, unitId, () =>
+      this.service.claimIssue(workspaceSlug, row.project.id, row.issue_id)
+    );
+    this.placeRow(unitId, this.mergeRoutingIntoRow(unitId, row, routing));
+    this.refreshQueueAfterAction(workspaceSlug, unitId);
     return routing;
+  };
+
+  /**
+   * @description Runs a row action. When it fails (somebody else claimed the
+   * item first, the decision moved on, ...) the queue is refreshed silently so
+   * the row shows what is true now, and the error is rethrown for the
+   * component to name.
+   */
+  private runRowAction = async <T>(workspaceSlug: string, unitId: string, run: () => Promise<T>): Promise<T> => {
+    try {
+      return await run();
+    } catch (error) {
+      this.refreshQueueAfterAction(workspaceSlug, unitId);
+      throw error;
+    }
+  };
+
+  /**
+   * @description Post-action refresh: silent (no skeleton), and a failure only
+   * flags the queue as stale — see `fetchQueue`.
+   */
+  private refreshQueueAfterAction = (workspaceSlug: string, unitId: string) => {
+    void this.fetchQueue(workspaceSlug, unitId, { silent: true }).catch(() => undefined);
   };
 
   assign = async (
@@ -722,11 +781,14 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
     executorId: string,
     options?: { reason?: string }
   ) => {
-    const routing = await this.service.reassignIssue(workspaceSlug, row.project.id, row.issue_id, executorId, {
-      expectedDecisionId: row.current_decision_id,
-      reason: options?.reason,
-    });
-    this.placeRow(unitId, this.mergeRoutingIntoRow(row, routing));
+    const routing = await this.runRowAction(workspaceSlug, unitId, () =>
+      this.service.reassignIssue(workspaceSlug, row.project.id, row.issue_id, executorId, {
+        expectedDecisionId: row.current_decision_id,
+        reason: options?.reason,
+      })
+    );
+    this.placeRow(unitId, this.mergeRoutingIntoRow(unitId, row, routing));
+    this.refreshQueueAfterAction(workspaceSlug, unitId);
     return routing;
   };
 
@@ -804,10 +866,13 @@ export class OrganizationalUnitStore implements IOrganizationalUnitStore {
   };
 
   returnToQueue = async (workspaceSlug: string, unitId: string, row: IQueueRow) => {
-    const routing = await this.service.returnIssue(workspaceSlug, row.project.id, row.issue_id, {
-      expectedDecisionId: row.current_decision_id,
-    });
-    this.placeRow(unitId, this.mergeRoutingIntoRow(row, routing));
+    const routing = await this.runRowAction(workspaceSlug, unitId, () =>
+      this.service.returnIssue(workspaceSlug, row.project.id, row.issue_id, {
+        expectedDecisionId: row.current_decision_id,
+      })
+    );
+    this.placeRow(unitId, this.mergeRoutingIntoRow(unitId, row, routing));
+    this.refreshQueueAfterAction(workspaceSlug, unitId);
     return routing;
   };
 

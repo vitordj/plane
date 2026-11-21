@@ -22,6 +22,9 @@ by default and repairs only when asked.
 from dataclasses import dataclass, replace
 from typing import Optional
 
+# Django imports
+from django.db import transaction
+
 # Module imports
 from plane.db.models import (
     AssignmentMode,
@@ -33,8 +36,10 @@ from plane.db.models import (
     RoutingState,
 )
 
+from .alerts import notify_executor_unavailable_safely
 from .assignment_service import _assert_eligible, return_to_queue
 from .errors import ExecutorNotEligible, InvalidTransition
+from .queue import open_work_links
 
 # What each finding means, and whether ``--write`` can do anything about it.
 ASSIGNED_WITHOUT_ASSIGNEE = "assigned_without_assignee"
@@ -75,15 +80,24 @@ class Finding:
         return " ".join(parts)
 
 
-def _assigned_findings(workspace_id, *, write, actor):
-    """@description I3 and I4 over every link the area considers assigned."""
+def _assigned_findings(workspace_id, *, write, actor, alert=False, limit=None):
+    """@description I3 and I4 over every open link the area considers assigned (R2.06)."""
     links = (
-        IssueOrganizationalUnit.objects.filter(workspace_id=workspace_id, routing_state=RoutingState.ASSIGNED)
+        open_work_links(
+            IssueOrganizationalUnit.objects.filter(
+                workspace_id=workspace_id,
+                routing_state=RoutingState.ASSIGNED,
+                organizational_unit__is_active=True,
+            )
+        )
         .select_related("organizational_unit", "issue")
         .order_by("created_at")
     )
 
+    repaired = 0
     for link in links:
+        if limit is not None and repaired >= limit:
+            break
         if link.primary_executor_id is None:
             # The CHECK constraint forbids this, so a row that has it is older
             # than the constraint or was written around it.
@@ -98,7 +112,7 @@ def _assigned_findings(workspace_id, *, write, actor):
 
         holds_item = IssueAssignee.objects.filter(issue_id=link.issue_id, assignee_id=link.primary_executor_id).exists()
         if not holds_item:
-            yield _repair(
+            finding = _repair(
                 Finding(
                     kind=ASSIGNED_WITHOUT_ASSIGNEE,
                     issue_id=link.issue_id,
@@ -110,13 +124,17 @@ def _assigned_findings(workspace_id, *, write, actor):
                 link,
                 write=write,
                 actor=actor,
+                alert=alert,
             )
+            if finding.repaired:
+                repaired += 1
+            yield finding
             continue
 
         try:
             _assert_eligible(link.organizational_unit, link.project_id, link.primary_executor_id)
         except ExecutorNotEligible as exc:
-            yield _repair(
+            finding = _repair(
                 Finding(
                     kind=EXECUTOR_NOT_ELIGIBLE,
                     issue_id=link.issue_id,
@@ -128,19 +146,26 @@ def _assigned_findings(workspace_id, *, write, actor):
                 link,
                 write=write,
                 actor=actor,
+                alert=alert,
             )
+            if finding.repaired:
+                repaired += 1
+            yield finding
 
 
-def _repair(finding, link, *, write, actor):
+def _repair(finding, link, *, write, actor, alert=False):
     """
     @description Put the item back in the queue, through the service, so the
     repair is a decision like any other rather than an UPDATE nobody can trace.
+    @param alert: Tell the area's coordinators, on commit, with the same
+        ``executor_unavailable`` alert ``sweep_unavailable_executors`` raises.
+        Off for the command (an operator is watching it); on for the hourly drift sweep.
     @returns The finding, marked repaired when it was.
     """
     if not write:
         return finding
     try:
-        return_to_queue(
+        result = return_to_queue(
             link.issue,
             actor=actor,
             reason=f"audit: {finding.kind}",
@@ -151,19 +176,25 @@ def _repair(finding, link, *, write, actor):
         # Something moved the item between the read and the write. The next
         # run sees whatever it is now.
         return finding
+    if alert:
+        link_id = result.link.pk
+        transaction.on_commit(lambda: notify_executor_unavailable_safely(link_id))
     return replace(finding, repaired=True)
 
 
 def _queued_findings(workspace_id):
     """
-    @description Items the area is still waiting to hand out that somebody is
-    already on. Reported and never repaired: the assignee may be a
+    @description Open items the area is still waiting to hand out that somebody
+    is already on. Reported and never repaired: the assignee may be a
     collaborator the coordinator added on purpose, and deciding otherwise is a
     person's call.
     """
-    links = IssueOrganizationalUnit.objects.filter(
-        workspace_id=workspace_id,
-        routing_state__in=(RoutingState.QUEUED, RoutingState.ALLOCATION_FAILED),
+    links = open_work_links(
+        IssueOrganizationalUnit.objects.filter(
+            workspace_id=workspace_id,
+            routing_state__in=(RoutingState.QUEUED, RoutingState.ALLOCATION_FAILED),
+            organizational_unit__is_active=True,
+        )
     ).order_by("created_at")
 
     for link in links:
@@ -204,7 +235,7 @@ def _policy_findings(workspace_id):
             )
 
 
-def audit_routing(workspace_id, *, write=False, actor=None) -> list:
+def audit_routing(workspace_id, *, write=False, actor=None, alert=False, limit=None) -> list:
     """
     @description Check every routing invariant that lives outside the database
     for one workspace (RFC §6.1 I3, I4).
@@ -212,11 +243,16 @@ def audit_routing(workspace_id, *, write=False, actor=None) -> list:
     @param write: Return the repairable findings' items to the queue. Off by
         default: the command previews, like the reconciler does.
     @param actor: Who is running it, recorded on the decisions written.
+    @param alert: With ``write``, also raise the coordinators' ``executor_unavailable``
+        alert for every item returned. The hourly drift sweep sets it; the
+        management command does not.
+    @param limit: Optional cap on how many items to repair in this call.
     @returns A list of ``Finding``, in the order they were found.
     """
-    findings = list(_assigned_findings(workspace_id, write=write, actor=actor))
-    findings.extend(_queued_findings(workspace_id))
-    findings.extend(_policy_findings(workspace_id))
+    findings = list(_assigned_findings(workspace_id, write=write, actor=actor, alert=alert, limit=limit))
+    if limit is None:
+        findings.extend(_queued_findings(workspace_id))
+        findings.extend(_policy_findings(workspace_id))
     return findings
 
 

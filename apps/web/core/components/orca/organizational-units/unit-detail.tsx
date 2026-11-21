@@ -47,10 +47,10 @@ export const OrganizationalUnitDetail = observer(function OrganizationalUnitDeta
     store.fetchCoordinators(workspaceSlug, unit.id).catch(() => undefined);
   }, [workspaceSlug, unit.id, store]);
 
-  // The queue is counted from what the Work tab has actually fetched, so the
-  // badge reads 0 until then rather than inventing a number the tab would
-  // contradict a moment later.
-  const waitingCount = store.getQueueByUnitId(unit.id).waiting.length;
+  // R2.16: omit the badge until the Work tab has actually fetched this unit's
+  // queue, rather than showing a misleading `0` before the tab is opened.
+  const hasQueueLoaded = unit.id in store.queueByUnit && !store.getQueueByUnitId(unit.id).loader;
+  const waitingCount = hasQueueLoaded ? store.getQueueByUnitId(unit.id).waiting.length : undefined;
   const coordinatorCount = store.getCoordinatorsByUnitId(unit.id).filter((coordinator) => coordinator.is_active).length;
 
   const tabs: { key: TTab; label: string; count?: number }[] = [

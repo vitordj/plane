@@ -49,6 +49,7 @@ from plane.db.models import (
     OrganizationalUnit,
     OrganizationalUnitCoordinator,
     OrganizationalUnitMembership,
+    RoutingState,
     WorkspaceMember,
 )
 from plane.utils.orca_error_codes import orca_error, orca_not_found
@@ -83,19 +84,21 @@ def is_workspace_admin(user, workspace_id) -> bool:
 def is_unit_coordinator(user, unit) -> bool:
     """
     @description Whether the person actively coordinates this area. The
-    workspace membership must be active too: somebody removed from the
-    workspace stops coordinating it, and leaving that to the coordinator row
-    alone would keep a departed person's authority alive.
+    workspace membership must be active and at least Member (not Guest), and
+    the unit itself must be active (R2.22): somebody removed from the workspace,
+    demoted to Guest, or assigned to a deactivated unit stops coordinating it.
     @param user: The requesting user.
     @param unit: The ``OrganizationalUnit``.
     @returns bool.
     """
-    if unit is None or user is None or getattr(user, "is_anonymous", False):
+    if unit is None or not unit.is_active or user is None or getattr(user, "is_anonymous", False):
         return False
     return OrganizationalUnitCoordinator.objects.filter(
         organizational_unit=unit,
+        organizational_unit__is_active=True,
         workspace_member__member=user,
         workspace_member__is_active=True,
+        workspace_member__role__gte=ROLE.MEMBER.value,
         is_active=True,
     ).exists()
 
@@ -123,10 +126,11 @@ def may_manage_member_availability(user, workspace_member) -> bool:
     Whether the caller may read and write another person's availability windows.
 
     @description Workspace Admin always may. Otherwise the caller has to
-    coordinate **any area this person belongs to** (item 3.3): leave is a
-    fact about the person, not about one area, so the coordinator who
-    would otherwise keep handing them work is the one who may record it.
-    A coordinator of an unrelated area may not.
+    coordinate **any active area this person belongs to** (item 3.3, R2.22):
+    leave is a fact about the person, not about one area, so the coordinator
+    who would otherwise keep handing them work is the one who may record it.
+    A coordinator of an unrelated or deactivated area, or one demoted to Guest,
+    may not.
     @param user: The requesting user.
     @param workspace_member: The ``WorkspaceMember`` whose windows are at stake.
     @returns bool.
@@ -136,14 +140,18 @@ def may_manage_member_availability(user, workspace_member) -> bool:
     if is_workspace_admin(user, workspace_member.workspace_id):
         return True
     unit_ids = OrganizationalUnitMembership.objects.filter(
-        workspace_member=workspace_member, is_active=True
+        workspace_member=workspace_member,
+        is_active=True,
+        organizational_unit__is_active=True,
     ).values_list("organizational_unit_id", flat=True)
     if not unit_ids:
         return False
     return OrganizationalUnitCoordinator.objects.filter(
         organizational_unit_id__in=unit_ids,
+        organizational_unit__is_active=True,
         workspace_member__member=user,
         workspace_member__is_active=True,
+        workspace_member__role__gte=ROLE.MEMBER.value,
         is_active=True,
     ).exists()
 
@@ -209,6 +217,55 @@ def link_for_issue(issue_id, *, slug=None, project_id=None):
     if project_id is not None:
         filters &= Q(project_id=project_id)
     return IssueOrganizationalUnit.objects.filter(filters).select_related("organizational_unit").first()
+
+
+def may_change_item_responsibility(
+    user, link, *, to_unit=None, allow_executor=False, allow_unowned_in_area=False
+) -> bool:
+    """
+    One answer to "may this person change the responsibility of this item?"
+    (D2 / R2.02), so that no route writes the rule out for itself.
+
+    @description Responsibility is the item's area and its executor. The rule:
+
+    * no link yet: any project member may give the item an area, so ``True``
+      (the caller has already checked project membership);
+    * otherwise changing or removing the area, or taking the item away from /
+      replacing its executor, belongs to a coordinator of the item's
+      **current** area or a workspace Admin. A coordinator of the *target*
+      area only, a project Admin who is not a workspace Admin, and a Guest do
+      not qualify. Coordination needs an active area (``is_unit_coordinator``),
+      so for an item whose area was deactivated only a workspace Admin passes.
+
+    Two opt-in relaxations, for routes whose action takes nothing from anybody:
+
+    * ``allow_executor``: the item's current primary executor may let go of
+      their own item (return it to the queue);
+    * ``allow_unowned_in_area``: running the area's allocation policy on an
+      item that is waiting with nobody on it (queued / allocation_failed, no
+      primary executor) in its own area — ``to_unit`` is ``None`` or that same
+      area. Nothing is taken away and the item does not move.
+    @param user: The requesting user.
+    @param link: The item's ``IssueOrganizationalUnit`` (with ``organizational_unit``), or ``None``.
+    @param to_unit: The area the request names, when it names one.
+    @param allow_executor: Let the current executor pass.
+    @param allow_unowned_in_area: Let anybody pass for the unowned-item case above.
+    @returns bool.
+    """
+    if link is None:
+        return True
+    unit = link.organizational_unit
+    if allow_executor and user is not None and link.primary_executor_id is not None:
+        if link.primary_executor_id == getattr(user, "id", None):
+            return True
+    if (
+        allow_unowned_in_area
+        and (to_unit is None or to_unit.id == link.organizational_unit_id)
+        and link.primary_executor_id is None
+        and link.routing_state in (RoutingState.QUEUED, RoutingState.ALLOCATION_FAILED)
+    ):
+        return True
+    return is_workspace_admin(user, unit.workspace_id) or is_unit_coordinator(user, unit)
 
 
 def _has_standing(user, unit, roles) -> bool:

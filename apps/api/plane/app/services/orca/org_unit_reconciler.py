@@ -323,10 +323,10 @@ def _decide(
         if not is_active_member:
             # The row is inactive (or gone) while the layer still claims it: a
             # person removed the access through the native UI after the layer
-            # granted it. The claim is stale — if the same role is later
-            # re-granted by hand, a surviving claim would make that manual
-            # access look like ours and the next run would withdraw it. Drop
-            # the claim; the ProjectMember row is not touched.
+            # granted it. Drop the claim and, if the inactive row still holds
+            # the role this layer wrote, reset it to baseline/self-join role so
+            # rejoining a public project cannot resurrect an inherited role
+            # (R2.01).
             return ACTION_RELINQUISH_CLAIM, None
         if current_role != last_applied:
             # Someone changed the role by hand — the pair is manual now.
@@ -586,10 +586,30 @@ def _apply_change(workspace_member, project_id, project_member, state, action, r
         state.created_by_org_layer = False
         state.project_member = project_member
 
-    elif action in (ACTION_SKIP_MANUAL_DRIFT, ACTION_RELINQUISH_CLAIM):
-        # The current role is no longer ours (drift), or the row it described
-        # is no longer active (stale claim); relinquish the claim so future
-        # runs treat any access on this pair as manual.
+    elif action == ACTION_SKIP_MANUAL_DRIFT:
+        # The current role is no longer ours (drift); relinquish the claim so
+        # future runs treat any access on this pair as manual.
+        state.last_applied_role = None
+        state.created_by_org_layer = False
+
+    elif action == ACTION_RELINQUISH_CLAIM:
+        # The row is no longer active (stale claim), e.g. the person left the
+        # project natively before leaving the unit. If the inactive row still
+        # holds the role this layer wrote, reset it to baseline (capped to
+        # current workspace role) or self_join_role so rejoining a public
+        # project via upstream's invitations endpoint cannot resurrect an
+        # inherited Admin role (R2.01).
+        if (
+            project_member is not None
+            and not project_member.is_active
+            and project_member.role == state.last_applied_role
+        ):
+            project_member.role = (
+                cap_role_to_workspace_role(state.baseline_role, workspace_member.role)
+                if state.baseline_role is not None
+                else self_join_role(workspace_member.role)
+            )
+            project_member.save()
         state.last_applied_role = None
         state.created_by_org_layer = False
 

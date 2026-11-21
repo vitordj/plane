@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name}を更新しました。",
             "created_title": "作成しました",
-            "created": "{name}を使用できるようになりました。",
-            "name_taken": "この名前のエリアはすでに存在します。別の名前を指定してください。"
+            "created": "{name}を使用できるようになりました。"
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "期限超過",
           "attention_suspended": "一時停止",
           "attention_unavailable": "担当者が不在",
-          "attention_no_date": "期限なし",
           "empty_attention": "今すぐ対応が必要なものはありません。",
           "decisions": "決定",
           "empty_decisions": "まだ割り当て決定はありません。",
@@ -740,7 +738,8 @@
           "unavailable_until": "{until}まで不在",
           "unavailable_open": "不在",
           "executor_away": "不在",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "このエリアの作業を読み込めませんでした。"
         },
         "executive": {
           "title": "エグゼクティブビュー",
@@ -793,6 +792,7 @@
           "membership_not_found": "その方はこのエリアにはいません。",
           "lead_already_set": "このエリアにはすでにリードがいます。",
           "unit_not_in_workspace": "そのエリアはこのワークスペースのものではありません。",
+          "unit_has_active_work_items": "このエリアには未完了のワークアイテムが残っています。削除する前に移動または完了してください。",
           "project_required": "紐付けるプロジェクトを選んでください。",
           "invalid_role": "エリアはそのロールを付与できません。",
           "project_not_in_workspace": "そのプロジェクトはこのワークスペースのものではありません。",

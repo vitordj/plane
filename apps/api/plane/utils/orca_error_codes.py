@@ -31,6 +31,7 @@ ORCA_ERROR_CODES = {
     "ORG_UNIT_MEMBERSHIP_NOT_FOUND": 4904,
     "ORG_UNIT_LEAD_ALREADY_SET": 4905,
     "ORG_UNIT_NOT_IN_WORKSPACE": 4906,
+    "ORG_UNIT_HAS_ACTIVE_WORK_ITEMS": 4944,
     # units linked to projects
     "ORG_UNIT_PROJECT_REQUIRED": 4907,
     "ORG_UNIT_INVALID_ROLE": 4908,
@@ -88,6 +89,9 @@ ORCA_ERROR_MESSAGES = {
     "ORG_UNIT_MEMBERSHIP_NOT_FOUND": "Membership not found",
     "ORG_UNIT_LEAD_ALREADY_SET": "This organizational unit already has an active lead",
     "ORG_UNIT_NOT_IN_WORKSPACE": "Organizational unit not found in this workspace",
+    "ORG_UNIT_HAS_ACTIVE_WORK_ITEMS": (
+        "This organizational unit still has open work items; move or close them before deleting it"
+    ),
     "ORG_UNIT_PROJECT_REQUIRED": "Project is required",
     "ORG_UNIT_INVALID_ROLE": "Invalid role",
     "ORG_UNIT_PROJECT_NOT_IN_WORKSPACE": "Project not found in this workspace",

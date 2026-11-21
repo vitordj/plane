@@ -26,6 +26,36 @@ from plane.db.models import MembershipAllocationSettings, WorkspaceMemberAvailab
 from .feature_flags import availability_enabled
 
 
+def all_covering_windows_for(workspace_member_ids, at=None) -> dict:
+    """
+    All covering unavailability windows per workspace member at ``at``.
+
+    @description Not gated by ``ORCA_AVAILABILITY_ENABLED``. Returned in
+    deterministic order so callers that must judge every active absence
+    (such as R2.07's intentional-override check) do not depend on whichever
+    single overlapping window was picked for display.
+    @param workspace_member_ids: WorkspaceMember primary keys to check.
+    @param at: Instant to evaluate; defaults to now.
+    @returns: ``workspace_member_id -> list[WorkspaceMemberAvailability]``.
+    """
+    ids = list(workspace_member_ids)
+    if not ids:
+        return {}
+    instant = timezone.now() if at is None else at
+    windows = (
+        WorkspaceMemberAvailability.objects.filter(
+            workspace_member_id__in=ids,
+            unavailable_from__lte=instant,
+        )
+        .filter(Q(unavailable_until__isnull=True) | Q(unavailable_until__gt=instant))
+        .order_by("unavailable_from", "created_at", "id")
+    )
+    grouped: dict = {}
+    for window in windows:
+        grouped.setdefault(window.workspace_member_id, []).append(window)
+    return grouped
+
+
 def covering_windows_for(workspace_member_ids, at=None) -> dict:
     """
     Covering unavailability window per workspace member at ``at``.
@@ -33,30 +63,31 @@ def covering_windows_for(workspace_member_ids, at=None) -> dict:
     @description Not gated by ``ORCA_AVAILABILITY_ENABLED``: the availability
     API and the UI (item 3.3) read the rows as they are, even while ranking
     still ignores them. When several windows overlap, an unbounded one wins;
-    otherwise the one with the latest ``unavailable_until``.
+    otherwise the one with the latest ``unavailable_until``. Ties break
+    deterministically by latest ``created_at`` then ``id``.
 
     @param workspace_member_ids: WorkspaceMember primary keys to check.
     @param at: Instant to evaluate; defaults to now.
     @returns: ``workspace_member_id -> WorkspaceMemberAvailability``.
     """
-    ids = list(workspace_member_ids)
-    if not ids:
-        return {}
-    instant = timezone.now() if at is None else at
-    windows = WorkspaceMemberAvailability.objects.filter(
-        workspace_member_id__in=ids,
-        unavailable_from__lte=instant,
-    ).filter(Q(unavailable_until__isnull=True) | Q(unavailable_until__gt=instant))
     chosen = {}
-    for window in windows:
-        current = chosen.get(window.workspace_member_id)
-        if current is None:
-            chosen[window.workspace_member_id] = window
-            continue
-        if window.unavailable_until is None:
-            chosen[window.workspace_member_id] = window
-        elif current.unavailable_until is not None and window.unavailable_until > current.unavailable_until:
-            chosen[window.workspace_member_id] = window
+    for member_id, windows in all_covering_windows_for(workspace_member_ids, at=at).items():
+        winner = windows[0]
+        for window in windows[1:]:
+            if window.unavailable_until is None:
+                if winner.unavailable_until is not None or (window.created_at, str(window.id)) > (
+                    winner.created_at,
+                    str(winner.id),
+                ):
+                    winner = window
+            elif winner.unavailable_until is not None:
+                if (window.unavailable_until, window.created_at, str(window.id)) > (
+                    winner.unavailable_until,
+                    winner.created_at,
+                    str(winner.id),
+                ):
+                    winner = window
+        chosen[member_id] = winner
     return chosen
 
 

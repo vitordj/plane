@@ -97,6 +97,13 @@ export const BASE_NOTIFICATION_CONTENT_MAP: TNotificationContentMap = {
     value: "the work item and assigned it to you.",
     showConnector: false,
   }),
+  // Orca: area queue alerts carry their full sentence in newValue; render it
+  // directly without upstream's default "updated queue alert to …" wrapper.
+  queue_alert: ({ newValue }) => ({
+    action: null,
+    value: newValue,
+    showConnector: false,
+  }),
   // Fields below only define value - action falls through to default handler
   attachment: () => ({
     action: null,

@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} a été mis à jour.",
             "created_title": "Créé",
-            "created": "{name} est prêt à l’emploi.",
-            "name_taken": "Un domaine portant ce nom existe déjà. Choisissez un autre nom."
+            "created": "{name} est prêt à l’emploi."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Date d’échéance dépassée",
           "attention_suspended": "En pause",
           "attention_unavailable": "Exécutant indisponible",
-          "attention_no_date": "Sans date d’échéance",
           "empty_attention": "Rien ne demande d’attention pour le moment.",
           "decisions": "Décisions",
           "empty_decisions": "Aucune décision d’affectation pour le moment.",
@@ -740,7 +738,8 @@
           "unavailable_until": "Absent jusqu’au {until}",
           "unavailable_open": "Absent",
           "executor_away": "Absent",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Impossible de charger le travail de ce domaine."
         },
         "executive": {
           "title": "Vue exécutive",
@@ -793,6 +792,7 @@
           "membership_not_found": "Cette personne n’est plus dans cette zone.",
           "lead_already_set": "Cette zone a déjà un responsable.",
           "unit_not_in_workspace": "Cette zone n’appartient pas à cet espace de travail.",
+          "unit_has_active_work_items": "Cette zone contient encore des éléments de travail ouverts. Déplacez-les ou fermez-les avant de la supprimer.",
           "project_required": "Choisissez un projet à lier.",
           "invalid_role": "Une zone ne peut pas accorder ce rôle.",
           "project_not_in_workspace": "Ce projet n’appartient pas à cet espace de travail.",

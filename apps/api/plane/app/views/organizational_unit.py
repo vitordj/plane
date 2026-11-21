@@ -16,6 +16,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count, Prefetch, Q
 from django.http import Http404
+from django.utils import timezone
 from django.utils.text import slugify
 
 # Third party imports
@@ -24,6 +25,7 @@ from rest_framework.response import Response
 
 # Module imports
 from plane.app.permissions.base import ROLE, allow_permission
+from plane.app.permissions.organizational_unit import may_change_item_responsibility
 from plane.app.serializers import (
     AssignmentPolicySerializer,
     IssueRoutingSerializer,
@@ -33,6 +35,7 @@ from plane.app.serializers import (
     OrganizationalUnitProjectSerializer,
     OrganizationalUnitSerializer,
 )
+from plane.app.services.orca.queue import open_work_links
 from plane.app.services.orca import (
     MODE_APPEND,
     MODE_FILL_EMPTY,
@@ -40,6 +43,7 @@ from plane.app.services.orca import (
     allocation_settings_map,
     availability_enabled,
     covering_windows_for,
+    dispatch_reconciliation,
     orca_public_api_enabled,
     organizational_units_enabled,
     process_projection_enabled,
@@ -61,6 +65,7 @@ from plane.db.models import (
     IssueOrganizationalUnit,
     OrganizationalUnit,
     OrganizationalUnitAssignmentPolicy,
+    OrganizationalUnitCoordinator,
     OrganizationalUnitMembership,
     OrganizationalUnitProject,
     ResponsibilitySource,
@@ -105,6 +110,54 @@ def _assigned_payload(result):
         "open_issues": snapshot.get("total_open", 0),
         "last_assigned_at": snapshot.get("last_auto_at"),
     }
+
+
+def retire_stale_unit_ties(unit):
+    """
+    Retire the area's ties whose workspace member has left but never got cleaned up.
+
+    @description Orca seam for R2.09. The signal cleanup on ``WorkspaceMember``
+    does not run when upstream deactivates memberships with ``bulk_update``
+    (account deactivation), which leaves a departed lead holding the single
+    active-lead slot (``org_unit_membership_single_active_lead_per_unit``).
+    Called before the views decide "this area already has a lead" and before
+    they create or promote one: memberships and coordinator appointments of
+    this area that are still active although their workspace member is
+    inactive or soft-deleted are deactivated, the same way
+    ``_deactivate_member_org_ties`` does it (same fields), and the inherited
+    project access is reconciled after commit. A member who is reactivated
+    later does not get the role back, because the row is already inactive.
+    @param unit: The ``OrganizationalUnit`` whose rows are checked.
+    @returns The number of rows retired.
+    """
+    stale = Q(workspace_member__is_active=False) | Q(workspace_member__deleted_at__isnull=False)
+    with transaction.atomic():
+        now = timezone.now()
+        membership_member_ids = list(
+            OrganizationalUnitMembership.objects.filter(organizational_unit=unit, is_active=True)
+            .filter(stale)
+            .values_list("workspace_member_id", flat=True)
+        )
+        coordinator_member_ids = list(
+            OrganizationalUnitCoordinator.objects.filter(organizational_unit=unit, is_active=True)
+            .filter(stale)
+            .values_list("workspace_member_id", flat=True)
+        )
+        if not membership_member_ids and not coordinator_member_ids:
+            return 0
+        OrganizationalUnitMembership.objects.filter(
+            organizational_unit=unit, is_active=True, workspace_member_id__in=membership_member_ids
+        ).update(is_active=False, updated_at=now)
+        OrganizationalUnitCoordinator.objects.filter(
+            organizational_unit=unit, is_active=True, workspace_member_id__in=coordinator_member_ids
+        ).update(is_active=False, updated_at=now)
+
+        member_ids = list(set(membership_member_ids) | set(coordinator_member_ids))
+        project_ids = list(unit.unit_projects.values_list("project_id", flat=True))
+        transaction.on_commit(
+            lambda: dispatch_reconciliation(unit.workspace_id, member_ids=member_ids, project_ids=project_ids or None)
+        )
+    return len(membership_member_ids) + len(coordinator_member_ids)
 
 
 class OrganizationalUnitFeatureMixin:
@@ -165,6 +218,30 @@ class OrcaConfigEndpoint(BaseAPIView):
         )
 
 
+def _visible_unit_projects(queryset, request, slug):
+    """
+    Restrict ``OrganizationalUnitProject`` rows to projects the caller can see.
+
+    @description Mirrors R1.A5 on the public unit map (R2.21): workspace admins
+    see every linked project; workspace members see projects they belong to plus
+    workspace-public projects (``network == 2``); workspace guests see only
+    projects where they hold an active ``ProjectMember`` row. Secret projects
+    are never revealed to people outside them.
+    """
+    workspace_member = WorkspaceMember.objects.filter(workspace__slug=slug, member=request.user, is_active=True).first()
+    if workspace_member is None:
+        return queryset.none()
+    if workspace_member.role == ROLE.ADMIN.value:
+        return queryset
+    member_project_q = Q(
+        project__project_projectmember__member=request.user,
+        project__project_projectmember__is_active=True,
+    )
+    if workspace_member.role == ROLE.GUEST.value:
+        return queryset.filter(member_project_q).distinct()
+    return queryset.filter(member_project_q | Q(project__network=2)).distinct()
+
+
 class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
     """CRUD for organizational units inside a workspace."""
 
@@ -174,18 +251,40 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
     search_fields = ["name", "slug"]
 
     def get_queryset(self):
+        slug = self.kwargs.get("slug")
+        visible_projects_qs = _visible_unit_projects(
+            OrganizationalUnitProject.objects.filter(
+                organizational_unit__workspace__slug=slug,
+                project__archived_at__isnull=True,
+            ),
+            self.request,
+            slug,
+        )
+        visible_project_ids = list(visible_projects_qs.values_list("id", flat=True))
         return (
-            OrganizationalUnit.objects.filter(workspace__slug=self.kwargs.get("slug"))
-            .annotate(member_count=Count("memberships", filter=Q(memberships__is_active=True), distinct=True))
-            .annotate(project_count=Count("unit_projects", distinct=True))
+            OrganizationalUnit.objects.filter(workspace__slug=slug)
+            .annotate(
+                member_count=Count(
+                    "memberships",
+                    filter=Q(memberships__is_active=True, memberships__workspace_member__is_active=True),
+                    distinct=True,
+                )
+            )
+            .annotate(
+                project_count=Count(
+                    "unit_projects",
+                    filter=Q(unit_projects__id__in=visible_project_ids),
+                    distinct=True,
+                )
+            )
             .select_related("workspace")
             # Feeds OrganizationalUnitSerializer.project_ids in one query
             # instead of one per area, and applies the same archived-project
-            # rule the coverage check uses.
+            # and visibility rules (R2.21).
             .prefetch_related(
                 Prefetch(
                     "unit_projects",
-                    queryset=OrganizationalUnitProject.objects.filter(project__archived_at__isnull=True),
+                    queryset=OrganizationalUnitProject.objects.filter(id__in=visible_project_ids),
                     to_attr=OrganizationalUnitSerializer.COVERED_PROJECTS_ATTR,
                 )
             )
@@ -261,11 +360,43 @@ class OrganizationalUnitViewSet(OrganizationalUnitFeatureMixin, BaseViewSet):
         if unit is None:
             return orca_not_found("ORG_UNIT_NOT_FOUND")
 
-        # Withdraw inherited access before the unit disappears, so the ledger
-        # can still tell which project access it was responsible for. All three
-        # steps share one transaction: a half-applied delete would leave the
-        # unit gone and the inherited ProjectMember rows orphaned.
+        # One transaction with the unit row locked, so a link added between the
+        # check and the delete cannot be cascaded without its audit event.
         with transaction.atomic():
+            unit = OrganizationalUnit.objects.select_for_update().filter(workspace__slug=slug, pk=pk).first()
+            if unit is None:
+                return orca_not_found("ORG_UNIT_NOT_FOUND")
+
+            # R2.10: refuse to delete an area that still owns open work items.
+            # Silently soft-deleting links in cascade would drop live items from
+            # every queue and violate invariant I6 (every unit change recorded).
+            # Same definition of "open" as the queue (``open_work_links``); a
+            # soft-deleted project does not count while the async cascade of its
+            # work items catches up.
+            has_active_work = (
+                open_work_links(IssueOrganizationalUnit.objects.filter(organizational_unit=unit))
+                .filter(project__deleted_at__isnull=True)
+                .exists()
+            )
+            if has_active_work:
+                return orca_error("ORG_UNIT_HAS_ACTIVE_WORK_ITEMS", status.HTTP_409_CONFLICT)
+
+            # Withdraw inherited access before the unit disappears, so the ledger
+            # can still tell which project access it was responsible for. Clear any
+            # remaining closed/archived links explicitly with an I6 event inside
+            # the same transaction so no dangling rows wait on Celery cascade.
+            remaining_links = list(IssueOrganizationalUnit.objects.filter(organizational_unit=unit))
+            for link in remaining_links:
+                IssueResponsibilityEvent.objects.create(
+                    issue_id=link.issue_id,
+                    workspace_id=link.workspace_id,
+                    from_unit=unit,
+                    to_unit=None,
+                    actor=request.user,
+                    source=ResponsibilitySource.INTERNAL_API,
+                    reason="organizational unit deleted",
+                )
+                link.delete()
             unit.is_active = False
             unit.save()
             reconcile_unit(unit, force_sync=True)
@@ -294,6 +425,7 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
             organizational_unit_id=unit_id,
             organizational_unit__workspace__slug=slug,
             is_active=True,
+            workspace_member__is_active=True,
         ).select_related("workspace_member", "workspace_member__member")
         # Guest of the workspace does not see email, matching the native
         # workspace member list (R1.A4). The area itself stays readable.
@@ -324,6 +456,9 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
         unit = self.get_unit(slug, unit_id)
         if unit is None:
             return orca_not_found("ORG_UNIT_NOT_FOUND")
+
+        # A departed lead must not block the lead slot (see ``retire_stale_unit_ties``).
+        retire_stale_unit_ties(unit)
 
         # Validated before anything is written: `role` never reaches the model
         # through a serializer on this path, and a second active lead would
@@ -381,6 +516,10 @@ class OrganizationalUnitMemberViewSet(OrganizationalUnitFeatureMixin, BaseViewSe
         if membership is None:
             return orca_not_found("ORG_UNIT_MEMBERSHIP_NOT_FOUND")
 
+        # A departed lead must not block the lead slot (see ``retire_stale_unit_ties``).
+        retire_stale_unit_ties(membership.organizational_unit)
+        membership.refresh_from_db()
+
         # A unit has at most one active lead, enforced by a partial unique
         # index. Rejecting the second lead here keeps it a validation error
         # instead of an IntegrityError that would poison the transaction.
@@ -432,9 +571,13 @@ class OrganizationalUnitProjectViewSet(OrganizationalUnitFeatureMixin, BaseViewS
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="WORKSPACE")
     def list(self, request, slug, unit_id):
-        unit_projects = OrganizationalUnitProject.objects.filter(
-            organizational_unit_id=unit_id,
-            organizational_unit__workspace__slug=slug,
+        unit_projects = _visible_unit_projects(
+            OrganizationalUnitProject.objects.filter(
+                organizational_unit_id=unit_id,
+                organizational_unit__workspace__slug=slug,
+            ),
+            request,
+            slug,
         ).select_related("project")
         serializer = OrganizationalUnitProjectSerializer(unit_projects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -558,8 +701,9 @@ class UserOrganizationalUnitsEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
     The requesting user's own units, their role in each, and linked projects.
 
     @description Cheap read endpoint that lets the UI show "my areas" without
-    admin permissions. The v1 UI only uses workspace settings, but shipping the
-    endpoint now means the view can be added later without reshaping the API.
+    admin permissions. Includes both units the caller belongs to and units
+    they actively coordinate (R2.12), so a coordinator who is not a member of
+    the area still has a screen to open its queue.
     """
 
     use_read_replica = True
@@ -570,6 +714,19 @@ class UserOrganizationalUnitsEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
             OrganizationalUnitMembership.objects.filter(
                 organizational_unit__workspace__slug=slug,
                 workspace_member__member=request.user,
+                workspace_member__is_active=True,
+                is_active=True,
+                organizational_unit__is_active=True,
+            )
+            .select_related("organizational_unit")
+            .prefetch_related("organizational_unit__unit_projects")
+        )
+        coordinators = (
+            OrganizationalUnitCoordinator.objects.filter(
+                organizational_unit__workspace__slug=slug,
+                workspace_member__member=request.user,
+                workspace_member__is_active=True,
+                workspace_member__role__gte=ROLE.MEMBER.value,
                 is_active=True,
                 organizational_unit__is_active=True,
             )
@@ -577,16 +734,29 @@ class UserOrganizationalUnitsEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
             .prefetch_related("organizational_unit__unit_projects")
         )
 
-        payload = [
-            {
-                "organizational_unit": OrganizationalUnitSerializer(membership.organizational_unit).data,
+        entries_by_unit = {}
+        for membership in memberships:
+            unit = membership.organizational_unit
+            entries_by_unit[unit.id] = {
+                "organizational_unit": OrganizationalUnitSerializer(unit).data,
                 "role": membership.role,
-                "projects": OrganizationalUnitProjectSerializer(
-                    membership.organizational_unit.unit_projects.all(), many=True
-                ).data,
+                "is_coordinator": False,
+                "projects": OrganizationalUnitProjectSerializer(unit.unit_projects.all(), many=True).data,
             }
-            for membership in memberships
-        ]
+
+        for coordinator in coordinators:
+            unit = coordinator.organizational_unit
+            if unit.id in entries_by_unit:
+                entries_by_unit[unit.id]["is_coordinator"] = True
+            else:
+                entries_by_unit[unit.id] = {
+                    "organizational_unit": OrganizationalUnitSerializer(unit).data,
+                    "role": "coordinator",
+                    "is_coordinator": True,
+                    "projects": OrganizationalUnitProjectSerializer(unit.unit_projects.all(), many=True).data,
+                }
+
+        payload = sorted(entries_by_unit.values(), key=lambda entry: entry["organizational_unit"]["name"].lower())
         return Response(payload, status=status.HTTP_200_OK)
 
 
@@ -612,7 +782,9 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
         return Response(
             {
                 "organizational_unit": OrganizationalUnitSerializer(link.organizational_unit).data,
-                "routing": IssueRoutingSerializer(link).data,
+                # Context carries the viewer so the routing can say whether they
+                # may change this item's area (``can_change_responsibility``).
+                "routing": IssueRoutingSerializer(link, context={"request": request}).data,
             },
             status=status.HTTP_200_OK,
         )
@@ -629,6 +801,20 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
         if unit is None:
             return orca_error("ORG_UNIT_NOT_IN_WORKSPACE")
 
+        existing = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
+        requested_mode = request.data.get("mode")
+        # D2 / R2.02: Any project member may set an area on a work item that has
+        # none yet. Changing the area or re-running allocation with an explicit
+        # mode (e.g. mode="manual" to return an assigned item to the queue)
+        # requires workspace Admin or coordinator of the item's current area.
+        # An idempotent re-POST of the same area with no mode stays a no-op.
+        # Running the area's policy on an item that is waiting with nobody on it,
+        # in its own area, takes nothing from anyone, so it stays open to Members
+        # (same answer as the ``-assign/`` route below).
+        if existing is not None and (existing.organizational_unit_id != unit.id or requested_mode is not None):
+            if not may_change_item_responsibility(request.user, existing, to_unit=unit, allow_unowned_in_area=True):
+                return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
+
         try:
             # The service creates the link (or transfers it), records the
             # responsibility event, applies the area's policy and writes the
@@ -639,7 +825,7 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
                 unit,
                 actor=request.user,
                 source=ResponsibilitySource.INTERNAL_API,
-                requested_mode=request.data.get("mode"),
+                requested_mode=requested_mode,
                 reason=request.data.get("reason", ""),
             )
         except OrcaDomainError as exc:
@@ -648,18 +834,25 @@ class IssueOrganizationalUnitEndpoint(OrganizationalUnitFeatureMixin, BaseAPIVie
         return Response(
             {
                 "organizational_unit": OrganizationalUnitSerializer(unit).data,
-                "routing": IssueRoutingSerializer(result.link).data,
+                "routing": IssueRoutingSerializer(result.link, context={"request": request}).data,
             },
             status=status.HTTP_200_OK,
         )
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
     def delete(self, request, slug, project_id, issue_id):
-        link = IssueOrganizationalUnit.objects.filter(
-            issue_id=issue_id, project_id=project_id, workspace__slug=slug
-        ).first()
+        link = (
+            IssueOrganizationalUnit.objects.filter(issue_id=issue_id, project_id=project_id, workspace__slug=slug)
+            .select_related("organizational_unit")
+            .first()
+        )
         if link is None:
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+        # D2 / R2.02: Removing an area's responsibility over a work item
+        # requires workspace Admin or coordinator of the current area.
+        if not may_change_item_responsibility(request.user, link):
+            return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
 
         with transaction.atomic():
             # The event is what keeps "this used to belong to Support" from
@@ -702,15 +895,23 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
         if issue is None:
             return orca_not_found("ORG_WORK_ITEM_NOT_FOUND")
 
+        existing = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
         unit_id = request.data.get("organizational_unit_id")
         if unit_id:
             unit = OrganizationalUnit.objects.filter(pk=unit_id, workspace_id=issue.workspace_id).first()
         else:
-            link = IssueOrganizationalUnit.objects.filter(issue=issue).select_related("organizational_unit").first()
-            unit = link.organizational_unit if link else None
+            unit = existing.organizational_unit if existing else None
 
         if unit is None:
             return orca_error("ORG_WORK_ITEM_HAS_NO_UNIT")
+
+        # D2 / R2.02: an item with no area may be given one by any Member, and
+        # the area's policy may be run on an item waiting with nobody on it in
+        # its own area. Anything else (transferring to another area, or
+        # replacing / adding to an executor) needs workspace Admin or a
+        # coordinator of the item's CURRENT area.
+        if not may_change_item_responsibility(request.user, existing, to_unit=unit, allow_unowned_in_area=True):
+            return orca_error("ORG_NOT_UNIT_COORDINATOR", status.HTTP_403_FORBIDDEN)
 
         # Checked here as well as in the service: the service answers "nobody
         # eligible", which is true but unhelpful, and this route can say the
@@ -729,12 +930,13 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
 
         current_assignees = list(IssueAssignee.objects.filter(issue=issue).values_list("assignee_id", flat=True))
         if current_assignees and mode == MODE_FILL_EMPTY:
-            link = IssueOrganizationalUnit.objects.filter(issue=issue).first()
             return Response(
                 {
                     "assigned": None,
                     "reason": "already_assigned",
-                    "routing": IssueRoutingSerializer(link).data if link else None,
+                    "routing": IssueRoutingSerializer(existing, context={"request": request}).data
+                    if existing
+                    else None,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -758,7 +960,7 @@ class IssueOrganizationalUnitAssignEndpoint(OrganizationalUnitFeatureMixin, Base
             {
                 "assigned": _assigned_payload(result),
                 "reason": ASSIGN_REASON_FOR_OUTCOME.get(result.outcome, result.outcome),
-                "routing": IssueRoutingSerializer(result.link).data,
+                "routing": IssueRoutingSerializer(result.link, context={"request": request}).data,
             },
             status=status.HTTP_200_OK,
         )

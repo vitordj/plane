@@ -26,6 +26,7 @@ export const ORCA_ERROR_CODE_KEYS: Record<number, string> = {
   4904: "workspace_settings.settings.organizational_units.errors.membership_not_found",
   4905: "workspace_settings.settings.organizational_units.errors.lead_already_set",
   4906: "workspace_settings.settings.organizational_units.errors.unit_not_in_workspace",
+  4944: "workspace_settings.settings.organizational_units.errors.unit_has_active_work_items",
   // units linked to projects
   4907: "workspace_settings.settings.organizational_units.errors.project_required",
   4908: "workspace_settings.settings.organizational_units.errors.invalid_role",

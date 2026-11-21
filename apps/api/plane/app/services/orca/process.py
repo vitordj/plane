@@ -230,11 +230,17 @@ def refresh_instance_status(instance):
 def instance_progress(instance):
     """
     @description How far along a run is, as the read endpoint and the queue's
-    grouping both need it.
+    grouping both need it. Steps whose project has been archived are excluded
+    so archived projects do not inflate active process progress.
     @param instance: The ``ProcessInstanceReference``.
     @returns: ``{"done": int, "total": int}``.
     """
-    items = list(ProcessInstanceItem.objects.filter(process_instance=instance).select_related("issue__state"))
+    items = list(
+        ProcessInstanceItem.objects.filter(
+            process_instance=instance,
+            issue__project__archived_at__isnull=True,
+        ).select_related("issue__state")
+    )
     total = len(items)
     done = sum(1 for item in items if item.issue.state_id and item.issue.state.group in CLOSED_GROUPS)
     return {"done": done, "total": total}
@@ -246,7 +252,8 @@ def process_payloads_for(links):
 
     One query for the page's steps, one for every sibling of those runs so the
     ``n/m`` is the instance's progress, not "how many of this run happened to
-    land on this page". Items that are not a step of a run are omitted.
+    land on this page". Steps in archived projects are excluded. Items that
+    are not a step of a run are omitted.
     @param links: An iterable of ``IssueOrganizationalUnit``.
     @returns: ``{issue_id: dict}``.
     """
@@ -259,7 +266,10 @@ def process_payloads_for(links):
         return {}
 
     instance_ids = {item.process_instance_id for item in page_items}
-    siblings = ProcessInstanceItem.objects.filter(process_instance_id__in=instance_ids).select_related("issue__state")
+    siblings = ProcessInstanceItem.objects.filter(
+        process_instance_id__in=instance_ids,
+        issue__project__archived_at__isnull=True,
+    ).select_related("issue__state")
     progress: dict = {}
     for item in siblings:
         bucket = progress.setdefault(item.process_instance_id, {"done": 0, "total": 0})
@@ -270,7 +280,7 @@ def process_payloads_for(links):
     payloads = {}
     for item in page_items:
         inst = item.process_instance
-        prog = progress[inst.id]
+        prog = progress.get(inst.id, {"done": 0, "total": 0})
         payloads[item.issue_id] = {
             "source": inst.external_source,
             "instance_id": inst.external_instance_id,

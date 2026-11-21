@@ -324,6 +324,12 @@ class IssueCreateSerializer(BaseSerializer):
             except IntegrityError:
                 pass
 
+            # Orca (R2.05): QuerySet.delete() above bypasses Django signals, so
+            # notify the organizational sidecar if the primary executor was removed.
+            from plane.app.services.orca.signals import reconcile_issue_assignees
+
+            reconcile_issue_assignees(instance.id)
+
         if labels is not None:
             IssueLabel.objects.filter(issue=instance).delete()
             try:

@@ -563,8 +563,7 @@
           "toast": {
             "updated": "Zaktualizowano {name}.",
             "created_title": "Utworzono",
-            "created": "Obszar {name} jest gotowy do użycia.",
-            "name_taken": "Obszar o tej nazwie już istnieje. Proszę wybrać inną nazwę."
+            "created": "Obszar {name} jest gotowy do użycia."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Po terminie",
           "attention_suspended": "Wstrzymane",
           "attention_unavailable": "Wykonawca niedostępny",
-          "attention_no_date": "Brak terminu",
           "empty_attention": "Nic teraz nie wymaga uwagi.",
           "decisions": "Decyzje",
           "empty_decisions": "Nie ma jeszcze decyzji o przydziale.",
@@ -740,7 +738,8 @@
           "unavailable_until": "Nieobecny do {until}",
           "unavailable_open": "Nieobecny",
           "executor_away": "Nieobecny",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Nie udało się załadować pracy tego obszaru."
         },
         "executive": {
           "title": "Widok kierowniczy",
@@ -793,6 +792,7 @@
           "membership_not_found": "Tej osoby już nie ma w tym obszarze.",
           "lead_already_set": "Ten obszar ma już lidera.",
           "unit_not_in_workspace": "Ten obszar nie należy do tej przestrzeni roboczej.",
+          "unit_has_active_work_items": "Ten obszar nadal ma otwarte elementy robocze. Przenieś je lub zamknij przed usunięciem.",
           "project_required": "Wybierz projekt do powiązania.",
           "invalid_role": "Obszar nie może przyznać tej roli.",
           "project_not_in_workspace": "Ten projekt nie należy do tej przestrzeni roboczej.",

@@ -8,14 +8,14 @@ import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react";
 import { ChevronDown, Sparkles } from "lucide-react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel, resolveOrcaErrorKey } from "@plane/constants";
+import { resolveOrcaErrorKey } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import type { IIssueRouting } from "@plane/types";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import { CustomMenu, CustomSearchSelect } from "@plane/ui";
 // hooks
 import { useOrganizationalUnit } from "@/hooks/store/use-organizational-unit";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useUser } from "@/hooks/store/user";
 // components
 import { AssignMemberModal } from "./assign-member-modal";
 import { TransferUnitModal } from "./transfer-unit-modal";
@@ -38,27 +38,35 @@ const TRY_AGAIN = "workspace_settings.settings.organizational_units.try_again";
  * happening to it: waiting, assigned, or stuck, and the actions this viewer
  * may take.
  *
- * The three actions are not driven by a `permissions` object the way a queue
- * row is: this property has no such flags to read (`GET
- * organizational-unit/` returns the item's own routing, not a queue page),
- * so eligibility is read from what this screen already has — the routing's
- * executor and this viewer's workspace role — rather than by adding a call
- * to the queue endpoint just to ask. Whatever this menu offers, the API
- * decides for real: an ineligible click still ends in a toast, not a write.
+ * Whether the viewer may change the item's area (or take it from its
+ * executor) is read from `routing.can_change_responsibility`, which the API
+ * computes with the same helper its routes enforce (D2); the browser does not
+ * recompute roles. Whatever this menu offers, the API still decides for real:
+ * a click that is refused ends in a toast with the real reason, not a write.
  */
 export const IssueOrganizationalUnitProperty = observer(function IssueOrganizationalUnitProperty(props: Props) {
   const { workspaceSlug, projectId, issueId, disabled, onAssigned } = props;
   const store = useOrganizationalUnit();
   const { t } = useTranslation();
   const { data: currentUser } = useUser();
-  const { allowPermissions } = useUserPermissions();
 
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [routing, setRouting] = useState<IIssueRouting | null>(null);
+  // Whether this viewer may change the item's area (D2). Comes from the API
+  // (`routing.can_change_responsibility`, computed by the same helper the
+  // routes enforce) instead of being recomputed from roles here. Routes that
+  // answer without it send null, which leaves the last known value alone.
+  // Starts true: an item with no area can be given one by any Member.
+  const [canChangeArea, setCanChangeArea] = useState(true);
   const [isAssigning, setIsAssigning] = useState(false);
   const [pendingAction, setPendingAction] = useState<"claim" | "return" | null>(null);
   const [isPickingPerson, setIsPickingPerson] = useState(false);
   const [isTransferring, setIsTransferring] = useState(false);
+
+  const applyRouting = (state: IIssueRouting | null) => {
+    setRouting(state);
+    if (typeof state?.can_change_responsibility === "boolean") setCanChangeArea(state.can_change_responsibility);
+  };
 
   useEffect(() => {
     store.fetchUnits(workspaceSlug);
@@ -72,6 +80,8 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
         if (!cancelled) {
           setSelectedUnitId(unit?.id ?? null);
           setRouting(state);
+          // No area on the item: nothing to protect yet, any Member may set one.
+          setCanChangeArea(state?.can_change_responsibility ?? true);
         }
       } catch {
         if (!cancelled) {
@@ -85,14 +95,6 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
       cancelled = true;
     };
   }, [workspaceSlug, projectId, issueId, store]);
-
-  // Fetched once an area is on the item, alongside its routing above — not a
-  // call to the queue, and not one per render: the "am I a coordinator of
-  // this area" question the menu needs has no other source.
-  useEffect(() => {
-    if (!selectedUnitId) return;
-    store.fetchCoordinators(workspaceSlug, selectedUnitId).catch(() => undefined);
-  }, [workspaceSlug, selectedUnitId, store]);
 
   // Only areas that actually cover this project can own work in it: an area
   // that does not link this project grants nobody access to it, so the API
@@ -110,19 +112,20 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
     [store.units, projectId]
   );
 
-  const isWorkspaceAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE, workspaceSlug);
   const isExecutor = Boolean(currentUser?.id && routing?.primary_executor === currentUser.id);
-  const isCoordinator = Boolean(
-    selectedUnitId &&
-    currentUser?.id &&
-    store
-      .getCoordinatorsByUnitId(selectedUnitId)
-      .some((coordinator) => coordinator.is_active && coordinator.member.id === currentUser.id)
-  );
 
   const canClaim = routing != null && routing.routing_state !== "assigned";
-  const canChoosePerson = isWorkspaceAdmin || isCoordinator;
-  const canReturn = routing?.routing_state === "assigned" && (isExecutor || isWorkspaceAdmin || isCoordinator);
+  // Choosing a person, transferring and returning someone else's item all take
+  // work away from somebody or move it between areas: the API says whether
+  // this viewer may (coordinator of the current area, or workspace admin).
+  const canChoosePerson = Boolean(selectedUnitId) && canChangeArea;
+  const canReturn = routing?.routing_state === "assigned" && (isExecutor || canChangeArea);
+  // Running the area's policy needs the same standing, except on an item that
+  // is waiting with nobody on it, which any Member may do.
+  const canAutoAssign = canChangeArea || (routing != null && routing.routing_state !== "assigned");
+  // The area select is locked for a Member once the item has an area they
+  // cannot change.
+  const isAreaLocked = Boolean(selectedUnitId) && !canChangeArea;
 
   const handleChange = async (unitId: string) => {
     const previous = selectedUnitId;
@@ -130,11 +133,16 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
     setSelectedUnitId(unitId);
     try {
       const { routing: state } = await store.setIssueUnit(workspaceSlug, projectId, issueId, unitId);
-      setRouting(state);
-    } catch {
+      applyRouting(state);
+      if (state?.routing_state === "assigned") onAssigned?.();
+    } catch (error) {
       setSelectedUnitId(previous);
       setRouting(previousRouting);
-      setToast({ type: TOAST_TYPE.ERROR, title: t(`${KEY}.toast.area_unchanged`), message: t(TRY_AGAIN) });
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${KEY}.toast.area_unchanged`),
+        message: t(resolveOrcaErrorKey(error) ?? TRY_AGAIN),
+      });
     }
   };
 
@@ -172,8 +180,12 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
           message: t(`${KEY}.toast.nobody`),
         });
       }
-    } catch {
-      setToast({ type: TOAST_TYPE.ERROR, title: t(`${KEY}.toast.not_assigned`), message: t(TRY_AGAIN) });
+    } catch (error) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(`${KEY}.toast.not_assigned`),
+        message: t(resolveOrcaErrorKey(error) ?? TRY_AGAIN),
+      });
     } finally {
       setIsAssigning(false);
     }
@@ -235,7 +247,7 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
         value={selectedUnitId}
         options={options}
         onChange={handleChange}
-        disabled={disabled}
+        disabled={disabled || isAreaLocked}
         label={selectedUnit?.name ?? t("common.none")}
         maxHeight="md"
         className="group min-w-0 flex-1"
@@ -254,12 +266,14 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
           closeOnSelect
           ariaLabel={t(`${KEY}.assign`)}
         >
-          <CustomMenu.MenuItem onClick={handleAutoAssign} disabled={isAssigning}>
-            <span className="flex items-center gap-2">
-              <Sparkles className="size-3.5" />
-              {t(`${KEY}.assign`)}
-            </span>
-          </CustomMenu.MenuItem>
+          {canAutoAssign && (
+            <CustomMenu.MenuItem onClick={handleAutoAssign} disabled={isAssigning}>
+              <span className="flex items-center gap-2">
+                <Sparkles className="size-3.5" />
+                {t(`${KEY}.assign`)}
+              </span>
+            </CustomMenu.MenuItem>
+          )}
           {canClaim && (
             <CustomMenu.MenuItem onClick={handleClaim} disabled={pendingAction !== null}>
               {t(`${OU}.work.claim`)}
@@ -306,6 +320,9 @@ export const IssueOrganizationalUnitProperty = observer(function IssueOrganizati
             const nextRouting = await store.transferIssueRouting(workspaceSlug, projectId, issueId, destinationId);
             setRouting(nextRouting);
             setSelectedUnitId(destinationId);
+            // The viewer's standing was over the old area; ask again for the new one.
+            const { routing: refreshed } = await store.fetchIssueUnit(workspaceSlug, projectId, issueId);
+            applyRouting(refreshed);
             onAssigned?.();
           }}
           onClose={() => setIsTransferring(false)}

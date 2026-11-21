@@ -28,6 +28,7 @@ read back off the timeline.
 """
 
 # Python imports
+from datetime import timedelta
 import logging
 
 # Django imports
@@ -46,6 +47,29 @@ logger = logging.getLogger("plane.worker")
 # the work item, let alone execute it.
 PROJECT_MEMBER_ROLE = 15
 
+# How long a human override protects an assignment made during an open-ended
+# (``unavailable_until=None``) absence before the sweep asks again (R2.07).
+UNBOUNDED_OVERRIDE_GRACE = timedelta(days=7)
+
+
+def _override_covers_window(decision, window, now, human_triggers) -> bool:
+    """
+    @description Whether a human assignment decision intentionally overrode ``window``.
+    @returns True when the decision was made by a person after the window was
+        already known, in force, and last edited — and, for open-ended windows,
+        still within ``UNBOUNDED_OVERRIDE_GRACE``.
+    """
+    if decision is None:
+        return False
+    if decision.decided_by_id is None and decision.trigger not in human_triggers:
+        return False
+    known_since = max(window.unavailable_from, window.created_at, window.updated_at)
+    if decision.created_at < known_since:
+        return False
+    if window.unavailable_until is None and (now - decision.created_at) > UNBOUNDED_OVERRIDE_GRACE:
+        return False
+    return True
+
 
 def unusable_executor_links(now=None):
     """
@@ -60,8 +84,11 @@ def unusable_executor_links(now=None):
     @returns: A list of ``IssueOrganizationalUnit`` with a ``reason`` attribute
         naming which of the four applies — for the log, and for the dry run.
     """
-    from plane.app.services.orca.availability import unavailable_workspace_member_ids
+    from plane.app.services.orca.availability import all_covering_windows_for
+    from plane.app.services.orca.feature_flags import availability_enabled
+    from plane.app.services.orca.queue import open_work_links
     from plane.db.models import (
+        DecisionTrigger,
         IssueOrganizationalUnit,
         OrganizationalUnitMembership,
         ProjectMember,
@@ -72,9 +99,20 @@ def unusable_executor_links(now=None):
     now = now or timezone.now()
 
     links = list(
-        IssueOrganizationalUnit.objects.filter(
-            routing_state=RoutingState.ASSIGNED, primary_executor__isnull=False
-        ).select_related("issue", "organizational_unit", "primary_executor", "project", "workspace")
+        open_work_links(
+            IssueOrganizationalUnit.objects.filter(
+                routing_state=RoutingState.ASSIGNED,
+                primary_executor__isnull=False,
+                organizational_unit__is_active=True,
+            )
+        ).select_related(
+            "issue",
+            "organizational_unit",
+            "primary_executor",
+            "project",
+            "workspace",
+            "current_assignment_decision",
+        )
     )
     if not links:
         return []
@@ -90,8 +128,8 @@ def unusable_executor_links(now=None):
     active_in_workspace = {(user_id, workspace_id) for user_id, workspace_id, _ in member_rows}
     member_row_of = {(user_id, workspace_id): row_id for user_id, workspace_id, row_id in member_rows}
 
-    away_rows = unavailable_workspace_member_ids(member_row_of.values(), at=now)
-    away = {pair for pair, row_id in member_row_of.items() if row_id in away_rows}
+    away_windows = all_covering_windows_for(member_row_of.values(), at=now) if availability_enabled() else {}
+    away_windows_of = {pair: away_windows[row_id] for pair, row_id in member_row_of.items() if row_id in away_windows}
 
     in_project = set(
         ProjectMember.objects.filter(
@@ -109,6 +147,12 @@ def unusable_executor_links(now=None):
         ).values_list("workspace_member__member_id", "organizational_unit_id")
     )
 
+    human_triggers = {
+        DecisionTrigger.UI_COORDINATOR,
+        DecisionTrigger.UI_CLAIM,
+        DecisionTrigger.REASSIGN,
+    }
+
     unusable = []
     for link in links:
         executor_id = link.primary_executor_id
@@ -120,7 +164,16 @@ def unusable_executor_links(now=None):
             link.reason = "left_area"
         elif (executor_id, link.project_id) not in in_project:
             link.reason = "left_project"
-        elif pair in away:
+        elif pair in away_windows_of:
+            # R2.07: nothing automatic undoes a human choice made when every
+            # covering unavailability window already existed and was already in
+            # force (RFC §1.1). A newly added, retroactively recorded, or
+            # extended overlapping window — or an open-ended override past
+            # ``UNBOUNDED_OVERRIDE_GRACE`` — still returns the work to the queue.
+            windows = away_windows_of[pair]
+            decision = link.current_assignment_decision
+            if all(_override_covers_window(decision, window, now, human_triggers) for window in windows):
+                continue
             link.reason = "away"
         else:
             continue

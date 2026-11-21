@@ -81,7 +81,6 @@ from plane.db.models import (
     AssignmentMode,
     DecisionTrigger,
     Issue,
-    IssueOrganizationalUnit,
     OrganizationalUnit,
     OrganizationalUnitCoordinator,
     ResponsibilitySource,
@@ -217,7 +216,7 @@ class IssueClaimEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
         except OrcaDomainError as exc:
             return orca_error(exc.error_code, exc.http_status)
 
-        return Response(_routing_data(result.link), status=status.HTTP_200_OK)
+        return Response(_routing_data(result.link, request), status=status.HTTP_200_OK)
 
 
 class IssueReturnEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
@@ -254,7 +253,7 @@ class IssueReturnEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
         except OrcaDomainError as exc:
             return orca_error(exc.error_code, exc.http_status)
 
-        return Response(_routing_data(result.link), status=status.HTTP_200_OK)
+        return Response(_routing_data(result.link, request), status=status.HTTP_200_OK)
 
 
 class IssueReassignEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
@@ -290,7 +289,7 @@ class IssueReassignEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
             # executor does, so it answers with the same code.
             return orca_error("ORG_EXECUTOR_NOT_ELIGIBLE")
 
-        return Response(_routing_data(result.link), status=status.HTTP_200_OK)
+        return Response(_routing_data(result.link, request), status=status.HTTP_200_OK)
 
 
 class IssueTransferEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
@@ -323,7 +322,7 @@ class IssueTransferEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
             return orca_error(exc.error_code, exc.http_status)
 
         updated_link = link_for_issue(issue_id, slug=slug, project_id=project_id)
-        return Response(_routing_data(updated_link), status=status.HTTP_200_OK)
+        return Response(_routing_data(updated_link, request), status=status.HTTP_200_OK)
 
 
 class OrganizationalUnitQueueEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
@@ -406,7 +405,10 @@ class OrganizationalUnitDecisionsEndpoint(OrganizationalUnitFeatureMixin, BaseAP
 
     use_read_replica = True
 
-    @allow_unit_role([UNIT_COORDINATOR])
+    # The refusal carries the Orca code so the web timeline can tell "not this
+    # area's coordinator" (render nothing) from a real failure (offer a retry)
+    # without matching on the generic 403 sentence.
+    @allow_unit_role([UNIT_COORDINATOR], error_code="ORG_NOT_UNIT_COORDINATOR")
     def get(self, request, slug, unit_id):
         unit = request.organizational_unit
         queryset = (
@@ -446,7 +448,9 @@ class OrganizationalUnitCoordinatorViewSet(OrganizationalUnitFeatureMixin, BaseV
     def list(self, request, slug, unit_id):
         unit = request.organizational_unit
         coordinators = OrganizationalUnitCoordinator.objects.filter(
-            organizational_unit=unit, is_active=True
+            organizational_unit=unit,
+            is_active=True,
+            workspace_member__is_active=True,
         ).select_related("workspace_member", "workspace_member__member")
         serializer = OrganizationalUnitCoordinatorSerializer(coordinators, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -521,9 +525,15 @@ class OrganizationalUnitCoordinatorViewSet(OrganizationalUnitFeatureMixin, BaseV
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-def _routing_data(link):
-    """The response body every action route in this module answers with."""
-    return IssueRoutingSerializer(link).data
+def _routing_data(link, request=None):
+    """
+    @description The response body every action route in this module answers with.
+    @param link: The ``IssueOrganizationalUnit`` to serialize.
+    @param request: The HTTP request, forwarded so ``can_change_responsibility`` is populated.
+    @returns Serialized routing dict.
+    """
+    context = {"request": request} if request is not None else {}
+    return IssueRoutingSerializer(link, context=context).data
 
 
 class IssueCandidatesEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
@@ -539,15 +549,9 @@ class IssueCandidatesEndpoint(OrganizationalUnitFeatureMixin, BaseAPIView):
     use_read_replica = True
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER], level="WORKSPACE")
+    @allow_issue_unit_role([UNIT_COORDINATOR], error_code="ORG_NOT_UNIT_COORDINATOR")
     def get(self, request, slug, project_id, issue_id):
-        issue = Issue.objects.filter(pk=issue_id, project_id=project_id, workspace__slug=slug).first()
-        if issue is None:
-            return orca_not_found("ORG_WORK_ITEM_NOT_FOUND")
-
-        link = IssueOrganizationalUnit.objects.select_related("organizational_unit").filter(issue=issue).first()
-        if link is None:
-            return orca_error("ORG_WORK_ITEM_HAS_NO_UNIT")
-
+        link = request.organizational_unit_link
         resolution = resolve_policy(link.organizational_unit, link.project_id)
         ranked = rank_candidates(link.organizational_unit, link.project_id, resolution)
         users = {

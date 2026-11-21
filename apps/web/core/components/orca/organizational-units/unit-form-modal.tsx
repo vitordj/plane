@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 // plane imports
+import { resolveOrcaErrorKey } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
@@ -61,11 +62,10 @@ export const OrganizationalUnitFormModal = observer(function OrganizationalUnitF
       }
       onClose();
     } catch (error) {
-      const conflict = (error as { status?: number })?.status === 409;
       setToast({
         type: TOAST_TYPE.ERROR,
         title: t(`${OU}.toast.not_saved`),
-        message: conflict ? t(`${OU}.form.toast.name_taken`) : t(`${OU}.try_again`),
+        message: t(resolveOrcaErrorKey(error) ?? `${OU}.try_again`),
       });
     } finally {
       setIsSubmitting(false);

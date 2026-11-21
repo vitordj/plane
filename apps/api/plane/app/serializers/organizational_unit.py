@@ -456,6 +456,7 @@ class IssueRoutingSerializer(BaseSerializer):
 
     organizational_unit = OrganizationalUnitSerializer(read_only=True)
     current_assignment_decision = AssignmentDecisionSerializer(read_only=True)
+    can_change_responsibility = serializers.SerializerMethodField()
 
     class Meta:
         model = IssueOrganizationalUnit
@@ -468,10 +469,28 @@ class IssueRoutingSerializer(BaseSerializer):
             "assignment_due_at",
             "primary_executor",
             "current_assignment_decision",
+            "can_change_responsibility",
             "created_at",
             "updated_at",
         ]
         read_only_fields = fields
+
+    def get_can_change_responsibility(self, obj):
+        """
+        @description Whether the viewer may change this item's area (D2), from
+        the same helper the routes enforce, so the interface does not recompute
+        roles. ``None`` only when serialized without a request in context,
+        meaning "not stated" — the client keeps what it already knew.
+        @returns bool or None.
+        """
+        request = self.context.get("request")
+        if request is None:
+            return None
+        # Imported here: the permissions package imports models and this
+        # module is loaded early, so a top-level import risks a cycle.
+        from plane.app.permissions.organizational_unit import may_change_item_responsibility
+
+        return may_change_item_responsibility(request.user, obj)
 
 
 class WorkspaceMemberAvailabilitySerializer(BaseSerializer):

@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} güncellendi.",
             "created_title": "Oluşturuldu",
-            "created": "{name} kullanıma hazır.",
-            "name_taken": "Bu ada sahip bir alan zaten var. Farklı bir ad seçin."
+            "created": "{name} kullanıma hazır."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Bitiş tarihi geçti",
           "attention_suspended": "Duraklatıldı",
           "attention_unavailable": "Yürüten kişi müsait değil",
-          "attention_no_date": "Bitiş tarihi yok",
           "empty_attention": "Şu anda ilgi gerektiren bir şey yok.",
           "decisions": "Kararlar",
           "empty_decisions": "Henüz tahsis kararı yok.",
@@ -740,7 +738,8 @@
           "unavailable_until": "{until} tarihine kadar uzak",
           "unavailable_open": "Uzak",
           "executor_away": "Uzak",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Bu alanın işleri yüklenemedi."
         },
         "executive": {
           "title": "Yönetici görünümü",
@@ -793,6 +792,7 @@
           "membership_not_found": "Bu kişi artık bu alanda değil.",
           "lead_already_set": "Bu alanın zaten bir lideri var.",
           "unit_not_in_workspace": "Bu alan bu çalışma alanına ait değil.",
+          "unit_has_active_work_items": "Bu alanda hâlâ açık iş öğeleri var. Silmeden önce bunları taşıyın veya kapatın.",
           "project_required": "Bağlanacak bir proje seçin.",
           "invalid_role": "Bir alan bu rolü veremez.",
           "project_not_in_workspace": "Bu proje bu çalışma alanına ait değil.",

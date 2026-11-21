@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} wurde aktualisiert.",
             "created_title": "Erstellt",
-            "created": "{name} ist einsatzbereit.",
-            "name_taken": "Ein Bereich mit diesem Namen existiert bereits. Wählen Sie einen anderen Namen."
+            "created": "{name} ist einsatzbereit."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Fälligkeitsdatum überschritten",
           "attention_suspended": "Pausiert",
           "attention_unavailable": "Ausführende Person nicht verfügbar",
-          "attention_no_date": "Kein Fälligkeitsdatum",
           "empty_attention": "Derzeit nichts, das Aufmerksamkeit braucht.",
           "decisions": "Entscheidungen",
           "empty_decisions": "Noch keine Zuweisungsentscheidungen.",
@@ -740,7 +738,8 @@
           "unavailable_until": "Abwesend bis {until}",
           "unavailable_open": "Abwesend",
           "executor_away": "Abwesend",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Die Arbeit dieses Bereichs konnte nicht geladen werden."
         },
         "executive": {
           "title": "Führungsübersicht",
@@ -793,6 +792,7 @@
           "membership_not_found": "Diese Person ist nicht mehr in diesem Bereich.",
           "lead_already_set": "Dieser Bereich hat bereits eine Leitung.",
           "unit_not_in_workspace": "Dieser Bereich gehört nicht zu diesem Arbeitsbereich.",
+          "unit_has_active_work_items": "Dieser Bereich hat noch offene Arbeitselemente. Verschieben oder schließen Sie sie, bevor Sie ihn löschen.",
           "project_required": "Ein Projekt zum Verknüpfen auswählen.",
           "invalid_role": "Diese Rolle kann ein Bereich nicht vergeben.",
           "project_not_in_workspace": "Dieses Projekt gehört nicht zu diesem Arbeitsbereich.",

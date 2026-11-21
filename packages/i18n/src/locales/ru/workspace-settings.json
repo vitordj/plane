@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} обновлена.",
             "created_title": "Создано",
-            "created": "{name} готова к использованию.",
-            "name_taken": "Область с таким названием уже существует. Выберите другое название."
+            "created": "{name} готова к использованию."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Срок просрочен",
           "attention_suspended": "Приостановлено",
           "attention_unavailable": "Исполнитель недоступен",
-          "attention_no_date": "Нет срока",
           "empty_attention": "Сейчас ничего не требует внимания.",
           "decisions": "Решения",
           "empty_decisions": "Решений о назначении пока нет.",
@@ -740,7 +738,8 @@
           "unavailable_until": "Отсутствует до {until}",
           "unavailable_open": "Отсутствует",
           "executor_away": "Отсутствует",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Не удалось загрузить задачи этой области."
         },
         "executive": {
           "title": "Руководящий обзор",
@@ -793,6 +792,7 @@
           "membership_not_found": "Этого человека больше нет в этой области.",
           "lead_already_set": "У этой области уже есть руководитель.",
           "unit_not_in_workspace": "Эта область не относится к этому пространству.",
+          "unit_has_active_work_items": "В этой области ещё есть открытые рабочие элементы. Переместите или закройте их перед удалением.",
           "project_required": "Выберите проект для привязки.",
           "invalid_role": "Такую роль область выдать не может.",
           "project_not_in_workspace": "Этот проект не относится к этому пространству.",

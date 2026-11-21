@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} оновлено.",
             "created_title": "Створено",
-            "created": "{name} готова до використання.",
-            "name_taken": "Область із такою назвою вже існує. Виберіть іншу назву."
+            "created": "{name} готова до використання."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Термін минув",
           "attention_suspended": "Призупинено",
           "attention_unavailable": "Виконавець недоступний",
-          "attention_no_date": "Без терміну",
           "empty_attention": "Зараз нічого не потребує уваги.",
           "decisions": "Рішення",
           "empty_decisions": "Рішень про розподіл ще немає.",
@@ -740,7 +738,8 @@
           "unavailable_until": "Відсутній до {until}",
           "unavailable_open": "Відсутній",
           "executor_away": "Відсутній",
-          "process_progress": "{done}/{total}"
+          "process_progress": "{done}/{total}",
+          "load_failed": "Не вдалося завантажити роботу цієї області."
         },
         "executive": {
           "title": "Керівний огляд",
@@ -793,6 +792,7 @@
           "membership_not_found": "Цієї людини більше немає в цій області.",
           "lead_already_set": "Ця область уже має керівника.",
           "unit_not_in_workspace": "Ця область не належить до цього робочого простору.",
+          "unit_has_active_work_items": "У цій області ще є відкриті робочі елементи. Перемістіть або закрийте їх перед видаленням.",
           "project_required": "Виберіть проєкт для приєднання.",
           "invalid_role": "Таку роль область надати не може.",
           "project_not_in_workspace": "Цей проєкт не належить до цього робочого простору.",
