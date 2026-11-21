@@ -339,8 +339,7 @@
           "toast": {
             "updated": "{name} was updated.",
             "created_title": "Created",
-            "created": "{name} is ready to use.",
-            "name_taken": "An area with this name already exists. Pick a different name."
+            "created": "{name} is ready to use."
           }
         },
         "detail": {
@@ -494,7 +493,6 @@
           "attention_overdue_date": "Past due date",
           "attention_suspended": "Paused",
           "attention_unavailable": "Executor unavailable",
-          "attention_no_date": "No due date",
           "empty_attention": "Nothing needs attention right now.",
           "decisions": "Decisions",
           "empty_decisions": "No allocation decisions yet.",

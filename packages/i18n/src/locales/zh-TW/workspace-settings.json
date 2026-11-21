@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} 已更新。",
             "created_title": "已建立",
-            "created": "{name} 已可使用。",
-            "name_taken": "已有同名的區域。請選擇其他名稱。"
+            "created": "{name} 已可使用。"
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "已過截止日期",
           "attention_suspended": "已暫停",
           "attention_unavailable": "執行人無法使用",
-          "attention_no_date": "沒有截止日期",
           "empty_attention": "目前沒有需要關注的事項。",
           "decisions": "決策",
           "empty_decisions": "尚無分配決策。",

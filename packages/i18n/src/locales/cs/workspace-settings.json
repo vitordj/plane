@@ -563,8 +563,7 @@
           "toast": {
             "updated": "Oblast {name} byla aktualizována.",
             "created_title": "Vytvořeno",
-            "created": "Oblast {name} je připravena k použití.",
-            "name_taken": "Oblast s tímto názvem již existuje. Zvolte jiný název."
+            "created": "Oblast {name} je připravena k použití."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Po termínu",
           "attention_suspended": "Pozastaveno",
           "attention_unavailable": "Vykonavatel není k dispozici",
-          "attention_no_date": "Bez termínu",
           "empty_attention": "Teď nic nevyžaduje pozornost.",
           "decisions": "Rozhodnutí",
           "empty_decisions": "Zatím žádná rozhodnutí o přidělení.",

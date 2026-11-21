@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} a été mis à jour.",
             "created_title": "Créé",
-            "created": "{name} est prêt à l’emploi.",
-            "name_taken": "Un domaine portant ce nom existe déjà. Choisissez un autre nom."
+            "created": "{name} est prêt à l’emploi."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Date d’échéance dépassée",
           "attention_suspended": "En pause",
           "attention_unavailable": "Exécutant indisponible",
-          "attention_no_date": "Sans date d’échéance",
           "empty_attention": "Rien ne demande d’attention pour le moment.",
           "decisions": "Décisions",
           "empty_decisions": "Aucune décision d’affectation pour le moment.",

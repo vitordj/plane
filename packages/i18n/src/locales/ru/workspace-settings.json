@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} обновлена.",
             "created_title": "Создано",
-            "created": "{name} готова к использованию.",
-            "name_taken": "Область с таким названием уже существует. Выберите другое название."
+            "created": "{name} готова к использованию."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Срок просрочен",
           "attention_suspended": "Приостановлено",
           "attention_unavailable": "Исполнитель недоступен",
-          "attention_no_date": "Нет срока",
           "empty_attention": "Сейчас ничего не требует внимания.",
           "decisions": "Решения",
           "empty_decisions": "Решений о назначении пока нет.",

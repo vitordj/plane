@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} a fost actualizată.",
             "created_title": "Creată",
-            "created": "{name} este gata de utilizare.",
-            "name_taken": "Există deja o zonă cu acest nume. Alegeți un alt nume."
+            "created": "{name} este gata de utilizare."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Termen depășit",
           "attention_suspended": "Întrerupt",
           "attention_unavailable": "Executor indisponibil",
-          "attention_no_date": "Fără termen",
           "empty_attention": "Nimic nu necesită atenție acum.",
           "decisions": "Decizii",
           "empty_decisions": "Nu există încă decizii de alocare.",

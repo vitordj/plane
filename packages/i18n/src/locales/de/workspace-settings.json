@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} wurde aktualisiert.",
             "created_title": "Erstellt",
-            "created": "{name} ist einsatzbereit.",
-            "name_taken": "Ein Bereich mit diesem Namen existiert bereits. Wählen Sie einen anderen Namen."
+            "created": "{name} ist einsatzbereit."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Fälligkeitsdatum überschritten",
           "attention_suspended": "Pausiert",
           "attention_unavailable": "Ausführende Person nicht verfügbar",
-          "attention_no_date": "Kein Fälligkeitsdatum",
           "empty_attention": "Derzeit nichts, das Aufmerksamkeit braucht.",
           "decisions": "Entscheidungen",
           "empty_decisions": "Noch keine Zuweisungsentscheidungen.",

@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} đã được cập nhật.",
             "created_title": "Đã tạo",
-            "created": "{name} đã sẵn sàng để sử dụng.",
-            "name_taken": "Đã có khu vực với tên này. Vui lòng chọn tên khác."
+            "created": "{name} đã sẵn sàng để sử dụng."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Quá hạn",
           "attention_suspended": "Tạm dừng",
           "attention_unavailable": "Người thực hiện không sẵn sàng",
-          "attention_no_date": "Không có hạn",
           "empty_attention": "Hiện không có gì cần chú ý.",
           "decisions": "Quyết định",
           "empty_decisions": "Chưa có quyết định phân công.",

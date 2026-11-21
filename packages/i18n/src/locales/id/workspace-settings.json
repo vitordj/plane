@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} telah diperbarui.",
             "created_title": "Dibuat",
-            "created": "{name} siap digunakan.",
-            "name_taken": "Area dengan nama ini sudah ada. Pilih nama lain."
+            "created": "{name} siap digunakan."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Lewat tanggal jatuh tempo",
           "attention_suspended": "Dijeda",
           "attention_unavailable": "Pelaksana tidak tersedia",
-          "attention_no_date": "Tanpa tanggal jatuh tempo",
           "empty_attention": "Tidak ada yang perlu diperhatikan saat ini.",
           "decisions": "Keputusan",
           "empty_decisions": "Belum ada keputusan alokasi.",

@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} se actualizó.",
             "created_title": "Creada",
-            "created": "{name} está lista para usarse.",
-            "name_taken": "Ya existe un área con este nombre. Elija un nombre diferente."
+            "created": "{name} está lista para usarse."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Fecha de entrega vencida",
           "attention_suspended": "En pausa",
           "attention_unavailable": "Ejecutor no disponible",
-          "attention_no_date": "Sin fecha de entrega",
           "empty_attention": "Nada requiere atención ahora.",
           "decisions": "Decisiones",
           "empty_decisions": "Aún no hay decisiones de asignación.",

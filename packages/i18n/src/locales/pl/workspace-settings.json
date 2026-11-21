@@ -563,8 +563,7 @@
           "toast": {
             "updated": "Zaktualizowano {name}.",
             "created_title": "Utworzono",
-            "created": "Obszar {name} jest gotowy do użycia.",
-            "name_taken": "Obszar o tej nazwie już istnieje. Proszę wybrać inną nazwę."
+            "created": "Obszar {name} jest gotowy do użycia."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Po terminie",
           "attention_suspended": "Wstrzymane",
           "attention_unavailable": "Wykonawca niedostępny",
-          "attention_no_date": "Brak terminu",
           "empty_attention": "Nic teraz nie wymaga uwagi.",
           "decisions": "Decyzje",
           "empty_decisions": "Nie ma jeszcze decyzji o przydziale.",

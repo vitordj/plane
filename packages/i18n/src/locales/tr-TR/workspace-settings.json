@@ -563,8 +563,7 @@
           "toast": {
             "updated": "{name} güncellendi.",
             "created_title": "Oluşturuldu",
-            "created": "{name} kullanıma hazır.",
-            "name_taken": "Bu ada sahip bir alan zaten var. Farklı bir ad seçin."
+            "created": "{name} kullanıma hazır."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Bitiş tarihi geçti",
           "attention_suspended": "Duraklatıldı",
           "attention_unavailable": "Yürüten kişi müsait değil",
-          "attention_no_date": "Bitiş tarihi yok",
           "empty_attention": "Şu anda ilgi gerektiren bir şey yok.",
           "decisions": "Kararlar",
           "empty_decisions": "Henüz tahsis kararı yok.",

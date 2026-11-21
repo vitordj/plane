@@ -563,8 +563,7 @@
           "toast": {
             "updated": "Oblasť {name} bola aktualizovaná.",
             "created_title": "Vytvorené",
-            "created": "Oblasť {name} je pripravená na použitie.",
-            "name_taken": "Oblasť s týmto názvom už existuje. Zvoľte iný názov."
+            "created": "Oblasť {name} je pripravená na použitie."
           }
         },
         "detail": {
@@ -718,7 +717,6 @@
           "attention_overdue_date": "Po termíne",
           "attention_suspended": "Pozastavené",
           "attention_unavailable": "Vykonávateľ nedostupný",
-          "attention_no_date": "Bez termínu",
           "empty_attention": "Momentálne nič nevyžaduje pozornosť.",
           "decisions": "Rozhodnutia",
           "empty_decisions": "Zatiaľ žiadne rozhodnutia o pridelení.",
